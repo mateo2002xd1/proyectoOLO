@@ -1,4 +1,4 @@
-import { RecoveryView } from '@/features/administracion/auth';
+import { RecoveryView } from '@/features/admin-panel/auth';
 
 export const metadata = {
   title: 'Recuperar acceso | Observatorio Laboral y Ocupacional',

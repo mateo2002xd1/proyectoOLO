@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
   // La sesión se comprueba CONTRA LA FIRMA (ver `verificar-sesion.ts`). Antes se
   // descodificaba sin verificar y, peor, el rol se leía de la cookie `sitio_role`,
   // que no es HttpOnly: cualquiera podía escribir `sitio_role=Superadmin` en el
-  // navegador y abrir /admin/users o /admin/auditoria. La API nunca entregó datos
+  // navegador y abrir /admin-panel/users o /admin-panel/changelog-view. La API nunca entregó datos
   // así, pero las pantallas se abrían.
   const sesion = await verificarSesion(token);
   const hasValidSession = sesion !== null;
@@ -53,12 +53,12 @@ export async function proxy(request: NextRequest) {
   // Editores u otros roles ven el formulario/selector post-login (el propio LoginView enruta).
   if (pathname === '/login') {
     if (hasValidSession && hasAccesoPanel) {
-      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      return NextResponse.redirect(new URL('/admin-panel/dashboard', request.url));
     }
     return NextResponse.next();
   }
 
-  // Protected routes (/admin/dashboard, /admin/usuarios, /editor/*): require session
+  // Protected routes (/admin-panel/dashboard, /admin/usuarios, /editor/*): require session
   if (!hasValidSession) {
     const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
@@ -81,8 +81,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   };
 
-  // /admin/dashboard/* — requiere acceso al panel
-  if (pathname.startsWith('/admin/dashboard')) {
+  // /admin-panel/dashboard/* — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/dashboard')) {
     if (!hasAccesoPanel) {
       if (hasPermisosEdicion) {
         return NextResponse.redirect(new URL('/editor', request.url));
@@ -96,71 +96,71 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /admin/users y /admin/usuarios — requiere acceso al panel
-  if (pathname.startsWith('/admin/users') || pathname.startsWith('/admin/usuarios')) {
+  // /admin-panel/users y /admin/usuarios — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/users') || pathname.startsWith('/admin/usuarios')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/roles — requiere acceso al panel
-  if (pathname.startsWith('/admin/roles')) {
+  // /admin-panel/roles-and-permissions — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/roles-and-permissions')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/auditoria — requiere acceso al panel
-  if (pathname.startsWith('/admin/auditoria')) {
+  // /admin-panel/changelog-view — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/changelog-view')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/revision — requiere acceso al panel
-  if (pathname.startsWith('/admin/revision')) {
+  // /admin-panel/review-section — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/review-section')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/actualizaciones — requiere acceso al panel (antes "Soporte", sin uso real)
-  if (pathname.startsWith('/admin/actualizaciones')) {
+  // /admin-panel/update-section — requiere acceso al panel (antes "Soporte", sin uso real)
+  if (pathname.startsWith('/admin-panel/update-section')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/configuracion — requiere acceso al panel
-  if (pathname.startsWith('/admin/configuracion')) {
+  // /admin-panel/configuration — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/configuration')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/respaldos — requiere acceso al panel
-  if (pathname.startsWith('/admin/respaldos')) {
+  // /admin-panel/backup-section — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/backup-section')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/buscar — requiere acceso al panel
-  if (pathname.startsWith('/admin/buscar')) {
+  // /admin-panel/search-section — requiere acceso al panel
+  if (pathname.startsWith('/admin-panel/search-section')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/perfil — requiere acceso al panel. `/admin/mi-perfil` no llega aquí: lo
+  // /admin-panel/profile — requiere acceso al panel. `/admin/mi-perfil` no llega aquí: lo
   // redirige `next.config.mjs`, que se evalúa antes.
-  if (pathname.startsWith('/admin/perfil')) {
+  if (pathname.startsWith('/admin-panel/profile')) {
     if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /editor/* — cualquiera con permisos de edición. Vive fuera de /admin desde el
+  // /editor/* — cualquiera con permisos de edición. Vive fuera del panel desde el
   // 2026-09-18; /admin/editor/* redirige aquí desde next.config.mjs.
   if (pathname.startsWith('/editor')) {
     if (!hasAccesoPanel && !hasPermisosEdicion) {
@@ -193,27 +193,27 @@ export const config = {
   // (`/login/recovery/*`) quedan fuera a propósito, porque quien va a recuperar su
   // contraseña no tiene sesión.
   matcher: [
-    '/admin/dashboard/:path*',
-    '/admin/users/:path*',
-    '/admin/users',
+    '/admin-panel/dashboard/:path*',
+    '/admin-panel/users/:path*',
+    '/admin-panel/users',
     '/admin/usuarios/:path*',
     '/admin/usuarios',
-    '/admin/auditoria/:path*',
-    '/admin/auditoria',
-    '/admin/roles/:path*',
-    '/admin/roles',
-    '/admin/revision/:path*',
-    '/admin/revision',
-    '/admin/actualizaciones/:path*',
-    '/admin/actualizaciones',
-    '/admin/configuracion/:path*',
-    '/admin/configuracion',
-    '/admin/respaldos/:path*',
-    '/admin/respaldos',
-    '/admin/buscar/:path*',
-    '/admin/buscar',
-    '/admin/perfil/:path*',
-    '/admin/perfil',
+    '/admin-panel/changelog-view/:path*',
+    '/admin-panel/changelog-view',
+    '/admin-panel/roles-and-permissions/:path*',
+    '/admin-panel/roles-and-permissions',
+    '/admin-panel/review-section/:path*',
+    '/admin-panel/review-section',
+    '/admin-panel/update-section/:path*',
+    '/admin-panel/update-section',
+    '/admin-panel/configuration/:path*',
+    '/admin-panel/configuration',
+    '/admin-panel/backup-section/:path*',
+    '/admin-panel/backup-section',
+    '/admin-panel/search-section/:path*',
+    '/admin-panel/search-section',
+    '/admin-panel/profile/:path*',
+    '/admin-panel/profile',
     '/editor/:path*',
     '/login',
     '/login/first-login',

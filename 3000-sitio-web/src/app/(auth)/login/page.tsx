@@ -1,4 +1,4 @@
-import { LoginView } from '@/features/administracion/auth';
+import { LoginView } from '@/features/admin-panel/auth';
 
 export const metadata = {
   title: 'Iniciar sesión | Observatorio Laboral y Ocupacional',

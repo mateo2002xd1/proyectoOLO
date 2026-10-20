@@ -19,7 +19,7 @@ export const poppins = Poppins({
  * se diseñó para leer con menos esfuerzo (letras más anchas y espaciadas) y, a diferencia
  * de OpenDyslexic, está en Google Fonts y sale por `next/font` sin archivos propios.
  * `preload: false`: solo la descarga quien la activa, el resto de visitantes no la paga.
- * La usa `globals.css` por `--font-dislexia`, que define `(public)/layout.tsx`.
+ * La usa `globals.css` por `--font-dislexia`, que define `(paginas)/layout.tsx`.
  */
 export const lexend = Lexend({
   subsets: ['latin'],

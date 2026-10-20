@@ -39,7 +39,7 @@ export default async function PreviewPage({
   const sesion = await getAuthSessionSnapshot();
   // Con `versionId` se llega desde Respaldos (una versión archivada); sin él, desde
   // el ojo de la cola de revisión, que abre en la misma pestaña.
-  const volverA = versionId ? '/admin/respaldos' : '/admin/revision';
+  const volverA = versionId ? '/admin-panel/backup-section' : '/admin-panel/review-section';
 
   if (!ROLES_CON_ACCESO.includes((sesion.role ?? '').trim().toLowerCase())) {
     notFound();

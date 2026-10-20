@@ -1,5 +1,5 @@
 /**
- * El tema oscuro es del panel (`/admin`), no del sitio público.
+ * El tema oscuro es del panel (`/admin-panel`), no del sitio público.
  *
  * El botón de tema solo existe en el panel, pero el script que lo aplicaba antes de
  * pintar corría en todo el sitio: quien había elegido oscuro en el panel veía el
@@ -15,7 +15,7 @@
 export const CLAVE_TEMA = 'olo-theme';
 
 /** Las rutas que tienen modo oscuro. */
-export const RUTA_DEL_PANEL = '/admin';
+export const RUTA_DEL_PANEL = '/admin-panel';
 
 export const esRutaDelPanel = (ruta: string) =>
   ruta === RUTA_DEL_PANEL || ruta.startsWith(`${RUTA_DEL_PANEL}/`);

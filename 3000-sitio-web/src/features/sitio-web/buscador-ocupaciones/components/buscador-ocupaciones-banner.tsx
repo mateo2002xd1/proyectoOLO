@@ -29,12 +29,13 @@ type BuscadorOcupacionesBannerProps = Omit<
  * completa, con sus dos vistas encadenadas dentro del mismo diálogo.
  */
 export function BuscadorOcupacionesBanner(props: BuscadorOcupacionesBannerProps) {
-  const { resultados, terminoBuscado, loading, consultaRealizada, buscar, limpiar } =
+  const { resultados, terminoBuscado, loading, error, consultaRealizada, buscar, limpiar } =
     useBuscadorOcupaciones();
   const {
     codigoAbierto,
     detalle,
     loading: cargandoDetalle,
+    error: errorDetalle,
     abrir,
     cerrar: cerrarDetalle,
   } = useDetalleOcupacion();
@@ -86,12 +87,13 @@ export function BuscadorOcupacionesBanner(props: BuscadorOcupacionesBannerProps)
         }
       >
         {codigoAbierto ? (
-          <DetalleOcupacion detalle={detalle} loading={cargandoDetalle} />
+          <DetalleOcupacion detalle={detalle} loading={cargandoDetalle} error={errorDetalle} />
         ) : (
           <ResultadosOcupaciones
             resultados={resultados}
             termino={terminoBuscado}
             loading={loading}
+            error={error}
             onSeleccionar={abrir}
           />
         )}

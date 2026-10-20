@@ -18,6 +18,8 @@ export function useBuscadorOcupaciones() {
   const [resultados, setResultados] = useState<ResultadoOcupacion[]>([]);
   const [terminoBuscado, setTerminoBuscado] = useState('');
   const [loading, setLoading] = useState(false);
+  /** Mensaje para la pantalla si la última consulta falló; `null` si respondió bien. */
+  const [error, setError] = useState<string | null>(null);
   /** Falso hasta la primera búsqueda; es lo que decide si la vista de resultados se abre. */
   const [consultaRealizada, setConsultaRealizada] = useState(false);
 
@@ -34,6 +36,7 @@ export function useBuscadorOcupaciones() {
     setTerminoBuscado('');
     setConsultaRealizada(false);
     setLoading(false);
+    setError(null);
   }, []);
 
   const buscar = useCallback(
@@ -48,11 +51,16 @@ export function useBuscadorOcupaciones() {
       setTerminoBuscado(texto);
       setConsultaRealizada(true);
       setLoading(true);
+      setError(null);
 
       try {
         const encontradas = await consultarOcupaciones(texto);
         if (idPeticion !== peticionVigente.current) return;
         setResultados(encontradas);
+      } catch (fallo) {
+        if (idPeticion !== peticionVigente.current) return;
+        setResultados([]);
+        setError(fallo instanceof Error ? fallo.message : 'No se pudo consultar el catálogo de ocupaciones.');
       } finally {
         if (idPeticion === peticionVigente.current) setLoading(false);
       }
@@ -60,5 +68,5 @@ export function useBuscadorOcupaciones() {
     [limpiar],
   );
 
-  return { resultados, terminoBuscado, loading, consultaRealizada, buscar, limpiar };
+  return { resultados, terminoBuscado, loading, error, consultaRealizada, buscar, limpiar };
 }

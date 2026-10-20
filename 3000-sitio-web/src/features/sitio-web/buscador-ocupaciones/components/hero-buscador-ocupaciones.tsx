@@ -94,12 +94,13 @@ export function HeroBuscadorOcupaciones({
   colorFondo,
   className = 'w-full',
 }: HeroBuscadorOcupacionesProps) {
-  const { resultados, terminoBuscado, loading, consultaRealizada, buscar, limpiar } =
+  const { resultados, terminoBuscado, loading, error, consultaRealizada, buscar, limpiar } =
     useBuscadorOcupaciones();
   const {
     codigoAbierto,
     detalle,
     loading: cargandoDetalle,
+    error: errorDetalle,
     abrir,
     cerrar: cerrarDetalle,
   } = useDetalleOcupacion();
@@ -156,12 +157,13 @@ export function HeroBuscadorOcupaciones({
         }
       >
         {codigoAbierto ? (
-          <DetalleOcupacion detalle={detalle} loading={cargandoDetalle} />
+          <DetalleOcupacion detalle={detalle} loading={cargandoDetalle} error={errorDetalle} />
         ) : (
           <ResultadosOcupaciones
             resultados={resultados}
             termino={terminoBuscado}
             loading={loading}
+            error={error}
             onSeleccionar={abrir}
           />
         )}

@@ -189,11 +189,11 @@ export async function puedeEditarSeccion(slug: string): Promise<boolean> {
 
 export async function resolveFirstAccessibleRoute(role: string): Promise<string> {
   const roleRoutes: Record<string, string[]> = {
-    Superadmin: ['/admin/dashboard'],
-    Administrador: ['/admin/dashboard'],
-    Editor: ['/admin/dashboard'],
-    Director: ['/admin/dashboard'],
-    Subdirector: ['/admin/dashboard'],
+    Superadmin: ['/admin-panel/dashboard'],
+    Administrador: ['/admin-panel/dashboard'],
+    Editor: ['/admin-panel/dashboard'],
+    Director: ['/admin-panel/dashboard'],
+    Subdirector: ['/admin-panel/dashboard'],
   };
 
   const routes = roleRoutes[role] || ['/sin-acceso'];

@@ -7,9 +7,11 @@ import type { DetalleOcupacion as Detalle, OcupacionRelacionada } from '../types
 interface DetalleOcupacionProps {
   detalle: Detalle | null;
   loading: boolean;
+  /** Mensaje de la consulta fallida; sin él, `detalle === null` significa que la ocupación no existe. */
+  error?: string | null;
 }
 
-/** Lo que se pinta donde la clasificación todavía no tiene tabla de origen. */
+/** Lo que se pinta donde la API todavía no entrega datos. */
 const SIN_INFORMACION = 'Sin información disponible.';
 
 function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) {
@@ -57,7 +59,7 @@ function CampoPlegable({
       className="group overflow-hidden rounded-[16px] border border-[#eaecf0] open:bg-[#f8f9fa]"
     >
       {/* `min-h-14` iguala la altura de todos los apartados: el contador mide 32px
-          y los apartados que no lo llevan —normas asociadas, correlativa CUOC—
+          y los apartados que no lo llevan —normas asociadas o una correlativa vacía—
           quedarían más bajos que el resto de la pila. */}
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-2 px-4 py-3 transition-colors hover:bg-[#f8f9fa] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB828] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
         <ChevronDownIcon
@@ -142,13 +144,15 @@ function ListaRelacionadas({ valores }: { valores: OcupacionRelacionada[] }) {
  * El título (`cod_ocupacion_cno` + `nomb_ocupacion_cno`) lo pinta el encabezado
  * del diálogo; aquí empieza en la descripción.
  *
- * Los cuatro apartados sin tabla de origen —área ocupacional, campo
- * ocupacional, normas asociadas y correlativa CUOC— se muestran con su rótulo y
- * el aviso de que no hay datos, en vez de omitirse: la estructura de la
- * clasificación tiene que verse completa aunque el archivo maestro todavía no
- * la llene, y quien consulta necesita saber que ese apartado existe.
+ * Los tres apartados que la API todavía no llena —área ocupacional, campo
+ * ocupacional y normas asociadas— se muestran con su rótulo y el aviso de que
+ * no hay datos, en vez de omitirse: la estructura de la clasificación tiene que
+ * verse completa, y quien consulta necesita saber que ese apartado existe.
+ *
+ * La correlativa es la de la clasificación contraria: una ficha CNO trae sus
+ * equivalentes CUOC y una CUOC los CNO, de ahí el rótulo variable.
  */
-export function DetalleOcupacion({ detalle, loading }: DetalleOcupacionProps) {
+export function DetalleOcupacion({ detalle, loading, error }: DetalleOcupacionProps) {
   if (loading) {
     return (
       <p className="py-10 text-center text-sm text-[#667085]" aria-live="polite">
@@ -157,10 +161,18 @@ export function DetalleOcupacion({ detalle, loading }: DetalleOcupacionProps) {
     );
   }
 
+  if (error) {
+    return (
+      <p className="py-10 text-center text-sm text-[#344054]" role="alert">
+        {error}
+      </p>
+    );
+  }
+
   if (!detalle) {
     return (
       <p className="py-10 text-center text-sm text-[#344054]" aria-live="polite">
-        No se pudo cargar el detalle de esta ocupación.
+        No se encontró esta ocupación en el catálogo.
       </p>
     );
   }
@@ -223,8 +235,11 @@ export function DetalleOcupacion({ detalle, loading }: DetalleOcupacionProps) {
             <ListaEtiquetas valores={detalle.conocimientos} />
           </CampoPlegable>
 
-          <CampoPlegable titulo="Correlativa CUOC">
-            <TextoVacio />
+          <CampoPlegable
+            titulo={`Correlativa ${detalle.correlativa.tipo}`}
+            cantidad={detalle.correlativa.ocupaciones.length}
+          >
+            <ListaRelacionadas valores={detalle.correlativa.ocupaciones} />
           </CampoPlegable>
         </div>
       </Seccion>

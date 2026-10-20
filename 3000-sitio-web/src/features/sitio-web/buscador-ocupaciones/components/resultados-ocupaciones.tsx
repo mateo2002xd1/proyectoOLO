@@ -8,6 +8,8 @@ interface ResultadosOcupacionesProps {
   /** Término de la última consulta; se resalta dentro de cada coincidencia. */
   termino: string;
   loading: boolean;
+  /** Mensaje de la consulta fallida; se pinta en lugar del "sin coincidencias", que sería falso. */
+  error?: string | null;
   onSeleccionar: (codigoOcupacion: string) => void;
 }
 
@@ -32,12 +34,21 @@ export function ResultadosOcupaciones({
   resultados,
   termino,
   loading,
+  error,
   onSeleccionar,
 }: ResultadosOcupacionesProps) {
   if (loading) {
     return (
       <p className="py-10 text-center text-sm text-[#667085]" aria-live="polite">
         Consultando el catálogo de ocupaciones…
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="py-10 text-center text-sm text-[#344054]" role="alert">
+        {error}
       </p>
     );
   }
@@ -84,7 +95,7 @@ export function ResultadosOcupaciones({
             const restantes = mostradas.length - DENOMINACIONES_VISIBLES;
 
             return (
-              <li key={ocupacion.codigoOcupacion}>
+              <li key={`${ocupacion.tipo}-${ocupacion.codigoOcupacion}`}>
                 <button
                   type="button"
                   onClick={() => onSeleccionar(ocupacion.codigoOcupacion)}

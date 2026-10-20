@@ -15,7 +15,7 @@ export interface EnlaceDelMenu {
 const INICIO: BreadcrumbItem = { label: 'Inicio', href: '/inicio' };
 
 /**
- * Nombres de las páginas con carpeta propia en `app/(public)/` que el menú no tiene por
+ * Nombres de las páginas con carpeta propia en `app/(paginas)/` que el menú no tiene por
  * qué enlazar. Lo que sí está en el menú toma el nombre del menú, que manda: así un
  * cambio de nombre en «Menú y pie» se ve también aquí.
  */
@@ -110,7 +110,7 @@ export function eslabonesDeLaRuta(ruta: string, menu: EnlaceDelMenu[]): Breadcru
 
 /**
  * Migas de pan de todo el sitio público, fijas debajo de la cabecera. No se editan:
- * salen de la ruta y del menú de «Menú y pie» (`(public)/layout.tsx` le pasa el menú).
+ * salen de la ruta y del menú de «Menú y pie» (`(paginas)/layout.tsx` le pasa el menú).
  * Ayudan a ubicarse a quien llega desde un buscador y a quien usa un lector de pantalla
  * (WCAG 2.4.8, nivel AAA, por encima del AA exigido; las pide la guía de sitios web de
  * GOV.CO). La lista y su accesibilidad son las de `Breadcrumb`.

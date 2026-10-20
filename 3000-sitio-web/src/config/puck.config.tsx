@@ -384,7 +384,7 @@ const puckConfigBase: Config = {
     Grid: conCaja(crearGridConfig(campoImagen)),
     // ─── Plantilla: la cabecera y el pie que rodean a todas las páginas ───
     // Solo se ofrecen al editar el slug `plantilla` (ver COMPONENTES_POR_SLUG).
-    // Los pinta `app/(public)/layout.tsx` leyendo esa página, no el contenido de
+    // Los pinta `app/(paginas)/layout.tsx` leyendo esa página, no el contenido de
     // cada sección: así el menú es uno solo para todo el sitio.
     Header: {
       label: 'Cabecera / Menú',
@@ -2471,7 +2471,7 @@ export const puckConfig: Config = {
  * Un slug que no esté aquí recibe el catálogo completo, que es lo razonable
  * cuando no se sabe qué va a contener.
  *
- * `Header` y `Footer` NO están en `inicio`: los pinta `app/(public)/layout.tsx` a
+ * `Header` y `Footer` NO están en `inicio`: los pinta `app/(paginas)/layout.tsx` a
  * partir de la página `plantilla`, y ofrecerlos en una sección dejaría volver a
  * tener una cabecera distinta por página, que es justo lo que se acaba de quitar.
  */

@@ -1,4 +1,4 @@
-import { FirstLoginFlow } from '@/features/administracion/auth';
+import { FirstLoginFlow } from '@/features/admin-panel/auth';
 
 export const metadata = {
   title: 'Configurar tu acceso | Observatorio Laboral y Ocupacional',

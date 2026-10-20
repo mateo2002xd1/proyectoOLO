@@ -39,7 +39,7 @@ export function SidebarLayout({
             invisible de las que hay repartidas por el panel se quedaba en su posición
             estática —abajo del todo del contenido— y estiraba el alto del documento.
             Resultado: la ventana entera hacía scroll y aparecía una franja blanca bajo
-            el panel. Medido el 2026-10-03 en `/admin/actualizaciones`: 1.306 px de
+            el panel. Medido el 2026-10-03 en `/admin-panel/update-section`: 1.306 px de
             documento para 784 px de ventana; con `relative`, 784.
 
             El hueco de la navegación mobile (`navegacion-mobile-reserva`) va aquí, como

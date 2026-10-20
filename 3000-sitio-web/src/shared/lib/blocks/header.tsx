@@ -391,7 +391,7 @@ export function Header({
     };
   }, [govBannerEnabled]);
 
-  const editHref = hasSession ? '/admin/dashboard' : '/login';
+  const editHref = hasSession ? '/admin-panel/dashboard' : '/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
 
   const navLinks = customNavLinks || [

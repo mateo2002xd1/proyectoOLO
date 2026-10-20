@@ -15,6 +15,8 @@ export function useDetalleOcupacion() {
   const [codigoAbierto, setCodigoAbierto] = useState<string | null>(null);
   const [detalle, setDetalle] = useState<DetalleOcupacion | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Mensaje para la pantalla si la consulta falló; una ocupación inexistente no es un error, es `detalle === null`. */
+  const [error, setError] = useState<string | null>(null);
 
   /** Mismo guardia contra respuestas fuera de orden que en `use-buscador-ocupaciones`. */
   const peticionVigente = useRef(0);
@@ -24,6 +26,7 @@ export function useDetalleOcupacion() {
     setCodigoAbierto(null);
     setDetalle(null);
     setLoading(false);
+    setError(null);
   }, []);
 
   const abrir = useCallback(async (codigoOcupacion: string) => {
@@ -31,15 +34,19 @@ export function useDetalleOcupacion() {
     setCodigoAbierto(codigoOcupacion);
     setDetalle(null);
     setLoading(true);
+    setError(null);
 
     try {
       const encontrado = await obtenerDetalleOcupacion(codigoOcupacion);
       if (idPeticion !== peticionVigente.current) return;
       setDetalle(encontrado);
+    } catch (fallo) {
+      if (idPeticion !== peticionVigente.current) return;
+      setError(fallo instanceof Error ? fallo.message : 'No se pudo cargar el detalle de esta ocupación.');
     } finally {
       if (idPeticion === peticionVigente.current) setLoading(false);
     }
   }, []);
 
-  return { codigoAbierto, detalle, loading, abrir, cerrar };
+  return { codigoAbierto, detalle, loading, error, abrir, cerrar };
 }

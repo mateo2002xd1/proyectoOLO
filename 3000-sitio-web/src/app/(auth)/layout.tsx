@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { FlujoDeRecuperacionProvider, LetraDelPanel } from '@/features/administracion/auth';
+import { FlujoDeRecuperacionProvider, LetraDelPanel } from '@/features/admin-panel/auth';
 
 /**
  * Lo común a las pantallas de acceso: login, primer ingreso y los cuatro pasos de la

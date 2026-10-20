@@ -37,10 +37,6 @@ COPY 3000-sitio-web/next.config.mjs 3000-sitio-web/jsconfig.json 3000-sitio-web/
 COPY 3000-sitio-web/postcss.config.mjs ./
 COPY 3000-sitio-web/public ./public
 COPY 3000-sitio-web/src ./src
-# Catalogo CNO temporal (ver catalogo-cno-temporal.ts): se lee con fs.readFile
-# en runtime, asi que el file-tracing de `next build` no lo detecta solo y hay
-# que copiarlo a mano, igual que src/ y public/.
-COPY 3000-sitio-web/data_temporal ./data_temporal
 
 ARG BACKEND_URL=http://localhost:4000
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
@@ -78,7 +74,6 @@ WORKDIR /app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./app/.next/static
 COPY --from=builder /app/public ./app/public
-COPY --from=builder /app/data_temporal ./app/data_temporal
 
 EXPOSE 3000
 

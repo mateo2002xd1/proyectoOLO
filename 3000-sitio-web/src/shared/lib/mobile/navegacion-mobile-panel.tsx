@@ -12,7 +12,7 @@ import { IconoAccesos } from '@/shared/ui/atoms/icono-accesos';
 import { NavegacionMobile, type DestinoMobile } from './navegacion-mobile';
 
 /** Las secciones que van dentro de «Más»: si se está en una, «Más» sale marcado. */
-const RUTAS_DE_MAS = ['/admin/actualizaciones', '/admin/respaldos', '/admin/configuracion'];
+const RUTAS_DE_MAS = ['/admin-panel/update-section', '/admin-panel/backup-section', '/admin-panel/configuration'];
 
 interface NavegacionMobilePanelProps {
   /** Páginas esperando aprobación: el globo de «Revisión». */
@@ -37,26 +37,26 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
       clave: 'accesos',
       etiqueta: 'Accesos',
       icono: <IconoAccesos />,
-      activo: pathname.startsWith('/admin/users') || pathname.startsWith('/admin/roles'),
+      activo: pathname.startsWith('/admin-panel/users') || pathname.startsWith('/admin-panel/roles-and-permissions'),
       hijos: [
-        { clave: 'usuarios', etiqueta: 'Usuarios', href: '/admin/users', activo: pathname.startsWith('/admin/users') },
-        { clave: 'roles', etiqueta: 'Roles y Permisos', href: '/admin/roles', activo: pathname.startsWith('/admin/roles') },
+        { clave: 'usuarios', etiqueta: 'Usuarios', href: '/admin-panel/users', activo: pathname.startsWith('/admin-panel/users') },
+        { clave: 'roles', etiqueta: 'Roles y Permisos', href: '/admin-panel/roles-and-permissions', activo: pathname.startsWith('/admin-panel/roles-and-permissions') },
       ],
     },
     {
       clave: 'revision',
       etiqueta: 'Revisión',
       icono: <ClipboardDocumentCheckIcon />,
-      href: '/admin/revision',
-      activo: pathname.startsWith('/admin/revision'),
+      href: '/admin-panel/review-section',
+      activo: pathname.startsWith('/admin-panel/review-section'),
       contador: pendientesRevision,
     },
     {
       clave: 'auditoria',
       etiqueta: 'Auditoría',
       icono: <ShieldCheckIcon />,
-      href: '/admin/auditoria',
-      activo: pathname.startsWith('/admin/auditoria'),
+      href: '/admin-panel/changelog-view',
+      activo: pathname.startsWith('/admin-panel/changelog-view'),
     },
     {
       clave: 'mas',
@@ -64,9 +64,9 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
       icono: <EllipsisHorizontalIcon />,
       activo: enMas,
       hijos: [
-        { clave: 'actualizaciones', etiqueta: 'Actualizaciones', icono: <IconoActualizaciones />, href: '/admin/actualizaciones', activo: pathname.startsWith('/admin/actualizaciones') },
-        { clave: 'respaldos', etiqueta: 'Respaldos', icono: <ArchiveBoxIcon />, href: '/admin/respaldos', activo: pathname.startsWith('/admin/respaldos') },
-        { clave: 'configuracion', etiqueta: 'Configuración', icono: <Cog8ToothIcon />, href: '/admin/configuracion', activo: pathname.startsWith('/admin/configuracion') },
+        { clave: 'actualizaciones', etiqueta: 'Actualizaciones', icono: <IconoActualizaciones />, href: '/admin-panel/update-section', activo: pathname.startsWith('/admin-panel/update-section') },
+        { clave: 'respaldos', etiqueta: 'Respaldos', icono: <ArchiveBoxIcon />, href: '/admin-panel/backup-section', activo: pathname.startsWith('/admin-panel/backup-section') },
+        { clave: 'configuracion', etiqueta: 'Configuración', icono: <Cog8ToothIcon />, href: '/admin-panel/configuration', activo: pathname.startsWith('/admin-panel/configuration') },
       ],
     },
   ];
@@ -76,11 +76,11 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
       etiqueta="Secciones del panel"
       destinos={destinos}
       inicio={{
-        href: '/admin/dashboard',
+        href: '/admin-panel/dashboard',
         etiqueta: 'Dashboard',
         logo,
         logoEnBlancoEnOscuro,
-        activo: pathname.startsWith('/admin/dashboard') && !enMas,
+        activo: pathname.startsWith('/admin-panel/dashboard') && !enMas,
       }}
     />
   );

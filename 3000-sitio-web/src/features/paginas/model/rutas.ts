@@ -26,7 +26,7 @@ export function enlaceAlEditor(slug: string, volverA: string): string {
 /**
  * Las carpetas del sitio: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
  *
- * Todas las páginas las sirve el comodín `app/(public)/[...puckPath]`, que une los
+ * Todas las páginas las sirve el comodín `app/(paginas)/[...puckPath]`, que une los
  * segmentos de la URL con guion para sacar el slug (`/clasificacion/cno` →
  * `clasificacion-cno`). Esa ida no necesita nada; la vuelta sí, porque un guion no dice
  * si separa carpetas o palabras: `clasificacion-cno` podría ser `/clasificacion-cno`.

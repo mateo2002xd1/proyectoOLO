@@ -7,7 +7,7 @@
  * comprueba la firma**: solo miraba que el `exp` no hubiera pasado. Un JWT es texto
  * que cualquiera puede escribir, así que bastaba con inventarse uno —firma basura,
  * `role: "Superadmin"`, `exp` lejano— para que el middleware diera por buena la
- * sesión. Comprobado contra este mismo proyecto: `/admin/users` y `/admin/auditoria`
+ * sesión. Comprobado contra este mismo proyecto: `/admin-panel/users` y `/admin-panel/changelog-view`
  * respondían 200 con un token fabricado a mano.
  *
  * No se filtraban datos —la API sí verifica y devolvía 401 a todo—, pero el control

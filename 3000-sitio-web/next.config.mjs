@@ -186,19 +186,42 @@ const nextConfig = {
         // Configuración, el buscador y el perfil dejaron `/admin/dashboard/` y
         // `/admin/mi-perfil` el 2026-10-15: cuelgan directamente de `/admin`.
         source: '/admin/dashboard/configuracion',
-        destination: '/admin/configuracion',
+        destination: '/admin-panel/configuration',
         permanent: false,
       },
       {
         source: '/admin/dashboard/buscar',
-        destination: '/admin/buscar',
+        destination: '/admin-panel/search-section',
         permanent: false,
       },
       {
         source: '/admin/mi-perfil',
-        destination: '/admin/perfil',
+        destination: '/admin-panel/profile',
         permanent: false,
       },
+      /**
+       * El panel pasó de `/admin` a `/admin-panel` el 2026-10-20, con las secciones en
+       * inglés. Cada sección vieja va a la nueva para no romper marcadores, enlaces de
+       * correos ya enviados ni el `?redirect=` de un login que quedó con la URL vieja.
+       * Van después de las de arriba: `/admin/dashboard/configuracion` gana antes que
+       * `/admin/dashboard/:path*`.
+       */
+      ...Object.entries({
+        actualizaciones: 'update-section',
+        auditoria: 'changelog-view',
+        buscar: 'search-section',
+        configuracion: 'configuration',
+        dashboard: 'dashboard',
+        perfil: 'profile',
+        respaldos: 'backup-section',
+        revision: 'review-section',
+        roles: 'roles-and-permissions',
+        users: 'users',
+      }).map(([antes, ahora]) => ({
+        source: `/admin/${antes}/:path*`,
+        destination: `/admin-panel/${ahora}/:path*`,
+        permanent: false,
+      })),
     ];
   },
   async rewrites() {
