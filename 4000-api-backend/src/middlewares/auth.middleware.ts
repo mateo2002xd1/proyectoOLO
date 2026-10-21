@@ -55,7 +55,7 @@ export function requireAuthConConfiguracionPendiente(req: Request, res: Response
  *
  * `token` la usa la intranet (pasa la cookie de la API sin tocar); `sitio_token` la
  * emite el sitio web con nombre propio para no compartir sesión con la intranet en el
- * mismo navegador — ver `3000-sitio-web/src/shared/lib/auth-cookies.ts`.
+ * mismo navegador — ver `3000-sitio-web/src/shared/lib/session/auth-cookies.ts`.
  *
  * Pero las cookies no se separan por puerto: en `localhost` el navegador manda las dos
  * a la API, sea cual sea la app que pide. Antes se leía `token ?? sitio_token`, así que

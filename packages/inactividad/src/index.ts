@@ -46,7 +46,7 @@ export const MS_DE_AVISO = SEGUNDOS_DE_AVISO * 1000;
  *
  * El prefijo evita que `sitio-web` y la intranet se pisen: en desarrollo comparten
  * `localhost` y el almacenamiento no distingue por puerto, igual que las cookies — el
- * mismo motivo por el que existe `sitio_token` (ver `sitio-web/src/shared/lib/auth-cookies.ts`).
+ * mismo motivo por el que existe `sitio_token` (ver `sitio-web/src/shared/lib/session/auth-cookies.ts`).
  */
 export const claveDeActividad = (ambito: string) => `olo:${ambito}:ultima-actividad`;
 
