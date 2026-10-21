@@ -20,48 +20,13 @@
 
 Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
-## Carpetas sin descripción (36)
+## Carpetas sin descripción (3)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
-- `3000-sitio-web/src/features/admin-panel/`
-- `3000-sitio-web/src/features/admin-panel/auth/`
-- `3000-sitio-web/src/features/admin-panel/backup-section/`
-- `3000-sitio-web/src/features/admin-panel/changelog-view/`
-- `3000-sitio-web/src/features/admin-panel/configuration/`
-- `3000-sitio-web/src/features/admin-panel/search/`
-- `3000-sitio-web/src/features/admin-panel/update-section/`
-- `3000-sitio-web/src/features/editor/`
-- `3000-sitio-web/src/features/editor/edition/`
-- `3000-sitio-web/src/features/editor/navegation/`
-- `3000-sitio-web/src/features/editor/publishing/`
-- `3000-sitio-web/src/features/editor/review/`
-- `3000-sitio-web/src/features/editor/sections/`
-- `3000-sitio-web/src/shared/lib/alertas-inversion/`
-- `3000-sitio-web/src/shared/lib/api/`
-- `3000-sitio-web/src/shared/lib/buscador-ocupaciones/`
-- `3000-sitio-web/src/shared/lib/geography/`
-- `3000-sitio-web/src/shared/lib/identidad-panel/`
-- `3000-sitio-web/src/shared/lib/modals/`
-- `3000-sitio-web/src/shared/lib/programas-sobresalientes/`
-- `3000-sitio-web/src/shared/lib/session/`
-- `3000-sitio-web/src/shared/lib/tendencia-ocupacional/`
-- `3000-sitio-web/src/shared/lib/typography/`
-- `3001-intranet/src/features/editor/`
-- `3001-intranet/src/features/editor/edition/`
-- `3001-intranet/src/features/editor/navegation/`
-- `3001-intranet/src/features/editor/publishing/`
-- `3001-intranet/src/features/editor/sections/`
-- `3001-intranet/src/shared/lib/api/`
-- `3001-intranet/src/shared/lib/layout/`
-- `3001-intranet/src/shared/lib/modals/`
-- `3001-intranet/src/shared/lib/session/`
-- `3001-intranet/src/shared/lib/typography/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
 - `auditorias/`
-
-**Descripciones de carpetas que ya no existen (23):** `3000-sitio-web/src/features/administracion/`, `3000-sitio-web/src/features/administracion/actualizaciones/`, `3000-sitio-web/src/features/administracion/auditoria/`, `3000-sitio-web/src/features/administracion/auth/`, `3000-sitio-web/src/features/administracion/buscador/`, `3000-sitio-web/src/features/administracion/configuracion/`, `3000-sitio-web/src/features/administracion/mi-perfil/`, `3000-sitio-web/src/features/administracion/respaldos/`, `3000-sitio-web/src/features/paginas/`, `3000-sitio-web/src/features/paginas/edicion/`, `3000-sitio-web/src/features/paginas/menu-y-pie/`, `3000-sitio-web/src/features/paginas/publicacion/`, `3000-sitio-web/src/features/paginas/revision/`, `3000-sitio-web/src/features/paginas/secciones/`, `3000-sitio-web/src/features/sitio-web/`, `3000-sitio-web/src/features/sitio-web/buscador-ocupaciones/`, `3000-sitio-web/src/features/sitio-web/programas-sobresalientes/`, `3000-sitio-web/src/features/sitio-web/tendencia-ocupacional/`, `3001-intranet/src/features/paginas/`, `3001-intranet/src/features/paginas/edicion/`, `3001-intranet/src/features/paginas/menu-y-pie/`, `3001-intranet/src/features/paginas/publicacion/`, `3001-intranet/src/features/paginas/secciones/`. Se borran de `descripciones.md` o se corrige la ruta.
 
 ## Carpetas
 
@@ -83,39 +48,39 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   └── preview/
     ├── config/                                catálogo de bloques del editor (`puck.config.tsx`)
     ├── features/                              un dominio por carpeta
-    │   ├── admin-panel/                       ⚠ sin descripción
-    │   │   ├── auth/                          ⚠ sin descripción
-    │   │   ├── backup-section/                ⚠ sin descripción
-    │   │   ├── changelog-view/                ⚠ sin descripción
-    │   │   ├── configuration/                 ⚠ sin descripción
-    │   │   ├── search/                        ⚠ sin descripción
-    │   │   └── update-section/                ⚠ sin descripción
-    │   └── editor/                            ⚠ sin descripción
-    │       ├── edition/                       ⚠ sin descripción
+    │   ├── admin-panel/                       el panel: usuarios, roles, auditoría, respaldos, cargas
+    │   │   ├── auth/                          login, primer ingreso, recuperación, usuarios y roles
+    │   │   ├── backup-section/                restaurar versiones archivadas de una página
+    │   │   ├── changelog-view/                historial de cambios (RF-07)
+    │   │   ├── configuration/                 preferencias del panel en este navegador, como el sonido de los avisos
+    │   │   ├── search/                        buscador del propio panel
+    │   │   └── update-section/                cargas de Excel del Observatorio y su historial
+    │   └── editor/                            páginas editables con Puck, organizadas por etapa del ciclo
+    │       ├── edition/                       etapa 1: borrador, editor, subidas y candado
     │       ├── model/                         lo que comparten las etapas del dominio
-    │       ├── navegation/                    ⚠ sin descripción
-    │       ├── publishing/                    ⚠ sin descripción
-    │       ├── review/                        ⚠ sin descripción
-    │       └── sections/                      ⚠ sin descripción
+    │       ├── navegation/                    cabecera y pie de todo el sitio
+    │       ├── publishing/                    etapa 6: lo que ve el público (ISR, sin credenciales)
+    │       ├── review/                        etapas 3 a 5: cola de revisión, aprobar, rechazar
+    │       └── sections/                      crear y eliminar páginas
     ├── shared/                                lo transversal del sitio: sistema de diseño y utilidades
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── accesibilidad/                 botón y panel de accesibilidad del sitio público, y las preferencias del visitante
-    │   │   ├── alertas-inversion/             ⚠ sin descripción
-    │   │   ├── api/                           ⚠ sin descripción
+    │   │   ├── alertas-inversion/             alertas de inversión: filtros, gráfico por sector y listado de proyectos
+    │   │   ├── api/                           cliente HTTP, URL de la API, lectura de sus errores y el proxy con cookie a la API
     │   │   ├── blocks/                        los bloques Puck de esta app
-    │   │   ├── buscador-ocupaciones/          ⚠ sin descripción
-    │   │   ├── geography/                     ⚠ sin descripción
-    │   │   ├── identidad-panel/               ⚠ sin descripción
+    │   │   ├── buscador-ocupaciones/          buscador CNO/CUOC (RF-09)
+    │   │   ├── geography/                     geometría de los departamentos de Colombia para los mapas
+    │   │   ├── identidad-panel/               logo, icono y colores de etiquetas y botones del panel
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
     │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
-    │   │   ├── modals/                        ⚠ sin descripción
-    │   │   ├── programas-sobresalientes/      ⚠ sin descripción
+    │   │   ├── modals/                        la salida animada de los modales (`useCierreAnimado`)
+    │   │   ├── programas-sobresalientes/      mapa, filtros y tabla del Observatorio
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
-    │   │   ├── session/                       ⚠ sin descripción
+    │   │   ├── session/                       cookies de sesión, lectura y verificación de la sesión, y a qué paso del primer ingreso va una cuenta
     │   │   ├── sonido-avisos/                 el tono de los avisos flotantes y la preferencia de silenciarlo
     │   │   ├── tema/                          tema oscuro del panel, sin parpadeo al cargar
-    │   │   ├── tendencia-ocupacional/         ⚠ sin descripción
-    │   │   └── typography/                    ⚠ sin descripción
+    │   │   ├── tendencia-ocupacional/         tendencia ocupacional (bloque Puck)
+    │   │   └── typography/                    las letras que carga la app (`next/font`)
     │   └── ui/                                sistema de diseño institucional y catálogo del editor
     │       ├── atoms/                         piezas mínimas: botón, avatar, interruptor…
     │       ├── molecules/                     piezas compuestas: alertas, paginación, selectores…
@@ -133,27 +98,27 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   └── preview/
     ├── config/                                catálogo de bloques del editor de la intranet
     ├── features/                              un dominio por carpeta
-    │   ├── editor/                            ⚠ sin descripción
-    │   │   ├── edition/                       ⚠ sin descripción
+    │   ├── editor/                            secciones editables con Puck, gemela de la del sitio
+    │   │   ├── edition/                       etapa 1: borrador, editor, subidas y candado
     │   │   ├── model/                         lo que comparten las etapas del dominio
-    │   │   ├── navegation/                    ⚠ sin descripción
-    │   │   ├── publishing/                    ⚠ sin descripción
-    │   │   └── sections/                      ⚠ sin descripción
+    │   │   ├── navegation/                    cabecera y pie de la intranet
+    │   │   ├── publishing/                    lo que ven directores y subdirectores
+    │   │   └── sections/                      crear y eliminar secciones
     │   └── login/                             pantallas del flujo de acceso
     │       ├── components/                    UI del dominio
     │       ├── hooks/                         estado y efectos del dominio
     │       └── services/                      única capa que llama a la API
     ├── shared/                                lo transversal de la intranet
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
-    │   │   ├── api/                           ⚠ sin descripción
+    │   │   ├── api/                           cliente HTTP, lectura de errores y la URL del sitio web
     │   │   ├── blocks/                        los bloques Puck de la intranet
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
-    │   │   ├── layout/                        ⚠ sin descripción
+    │   │   ├── layout/                        cuántas piezas caben en un ancho (`useCuantosCaben`)
     │   │   ├── mobile/                        navegación mobile de la intranet, con el menú de la plantilla
-    │   │   ├── modals/                        ⚠ sin descripción
+    │   │   ├── modals/                        la salida animada de los modales (`useCierreAnimado`)
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
-    │   │   ├── session/                       ⚠ sin descripción
-    │   │   └── typography/                    ⚠ sin descripción
+    │   │   ├── session/                       lectura y verificación de la sesión, y quién edita páginas
+    │   │   └── typography/                    las letras que carga la app (`next/font`)
     │   └── ui/                                sistema de diseño propio de la intranet
     │       ├── atoms/                         piezas mínimas
     │       ├── molecules/                     campos de contraseña y enlace de vuelta al sitio
@@ -235,14 +200,14 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `admin-panel/` | ⚠ sin descripción | `auth/` `backup-section/` `changelog-view/` `configuration/` `search/` `update-section/` | **no** | 77 |
-| `editor/` | ⚠ sin descripción | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 40 |
+| `admin-panel/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `auth/` `backup-section/` `changelog-view/` `configuration/` `search/` `update-section/` | **no** | 77 |
+| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 40 |
 
 ### 3001-intranet
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `editor/` | ⚠ sin descripción | `edition/` `model/` `navegation/` `publishing/` `sections/` | sí | 26 |
+| `editor/` | secciones editables con Puck, gemela de la del sitio | `edition/` `model/` `navegation/` `publishing/` `sections/` | sí | 26 |
 | `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 14 |
 
 ## Rutas de Next

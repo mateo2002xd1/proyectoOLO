@@ -90,33 +90,38 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/app/` — solo enrutamiento: `(public)`, `(auth)`, `admin`, `editor`, `preview`, `api`
 - `3000-sitio-web/src/config/` — catálogo de bloques del editor (`puck.config.tsx`)
 - `3000-sitio-web/src/features/` — un dominio por carpeta
-- `3000-sitio-web/src/features/administracion/` — el panel: usuarios, roles, auditoría, respaldos, cargas
-- `3000-sitio-web/src/features/administracion/actualizaciones/` — cargas de Excel del Observatorio y su historial
-- `3000-sitio-web/src/features/administracion/auditoria/` — historial de cambios (RF-07)
-- `3000-sitio-web/src/features/administracion/auth/` — login, primer ingreso, recuperación, usuarios y roles
-- `3000-sitio-web/src/features/administracion/buscador/` — buscador del propio panel
-- `3000-sitio-web/src/features/administracion/configuracion/` — preferencias del panel en este navegador, como el sonido de los avisos
-- `3000-sitio-web/src/features/administracion/mi-perfil/` — la cuenta de quien inició sesión
-- `3000-sitio-web/src/features/administracion/respaldos/` — restaurar versiones archivadas de una página
-- `3000-sitio-web/src/features/paginas/` — páginas editables con Puck, organizadas por etapa del ciclo
-- `3000-sitio-web/src/features/paginas/edicion/` — etapa 1: borrador, editor, subidas y candado
-- `3000-sitio-web/src/features/paginas/menu-y-pie/` — cabecera y pie de todo el sitio
-- `3000-sitio-web/src/features/paginas/publicacion/` — etapa 6: lo que ve el público (ISR, sin credenciales)
-- `3000-sitio-web/src/features/paginas/revision/` — etapas 3 a 5: cola de revisión, aprobar, rechazar
-- `3000-sitio-web/src/features/paginas/secciones/` — crear y eliminar páginas
-- `3000-sitio-web/src/features/sitio-web/` — agrupador de lo público
-- `3000-sitio-web/src/features/sitio-web/buscador-ocupaciones/` — buscador CNO/CUOC (RF-09)
-- `3000-sitio-web/src/features/sitio-web/programas-sobresalientes/` — mapa, filtros y tabla del Observatorio
-- `3000-sitio-web/src/features/sitio-web/tendencia-ocupacional/` — tendencia ocupacional (bloque Puck)
+- `3000-sitio-web/src/features/admin-panel/` — el panel: usuarios, roles, auditoría, respaldos, cargas
+- `3000-sitio-web/src/features/admin-panel/update-section/` — cargas de Excel del Observatorio y su historial
+- `3000-sitio-web/src/features/admin-panel/changelog-view/` — historial de cambios (RF-07)
+- `3000-sitio-web/src/features/admin-panel/auth/` — login, primer ingreso, recuperación, usuarios y roles
+- `3000-sitio-web/src/features/admin-panel/search/` — buscador del propio panel
+- `3000-sitio-web/src/features/admin-panel/configuration/` — preferencias del panel en este navegador, como el sonido de los avisos
+- `3000-sitio-web/src/features/admin-panel/backup-section/` — restaurar versiones archivadas de una página
+- `3000-sitio-web/src/features/editor/` — páginas editables con Puck, organizadas por etapa del ciclo
+- `3000-sitio-web/src/features/editor/edition/` — etapa 1: borrador, editor, subidas y candado
+- `3000-sitio-web/src/features/editor/navegation/` — cabecera y pie de todo el sitio
+- `3000-sitio-web/src/features/editor/publishing/` — etapa 6: lo que ve el público (ISR, sin credenciales)
+- `3000-sitio-web/src/features/editor/review/` — etapas 3 a 5: cola de revisión, aprobar, rechazar
+- `3000-sitio-web/src/features/editor/sections/` — crear y eliminar páginas
+- `3000-sitio-web/src/shared/lib/alertas-inversion/` — alertas de inversión: filtros, gráfico por sector y listado de proyectos
+- `3000-sitio-web/src/shared/lib/buscador-ocupaciones/` — buscador CNO/CUOC (RF-09)
+- `3000-sitio-web/src/shared/lib/programas-sobresalientes/` — mapa, filtros y tabla del Observatorio
+- `3000-sitio-web/src/shared/lib/tendencia-ocupacional/` — tendencia ocupacional (bloque Puck)
 - `3000-sitio-web/src/shared/` — lo transversal del sitio: sistema de diseño y utilidades
 - `3000-sitio-web/src/shared/lib/` — utilidades transversales: cliente HTTP, sesión, bloques
 - `3000-sitio-web/src/shared/lib/accesibilidad/` — botón y panel de accesibilidad del sitio público, y las preferencias del visitante
 - `3000-sitio-web/src/shared/lib/blocks/` — los bloques Puck de esta app
+- `3000-sitio-web/src/shared/lib/identidad-panel/` — logo, icono y colores de etiquetas y botones del panel
 - `3000-sitio-web/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
 - `3000-sitio-web/src/shared/lib/mobile/` — navegación mobile del panel: barra de abajo con el logo al centro
 - `3000-sitio-web/src/shared/lib/pwa/` — manifiesto, íconos y registro del service worker
 - `3000-sitio-web/src/shared/lib/sonido-avisos/` — el tono de los avisos flotantes y la preferencia de silenciarlo
 - `3000-sitio-web/src/shared/lib/tema/` — tema oscuro del panel, sin parpadeo al cargar
+- `3000-sitio-web/src/shared/lib/api/` — cliente HTTP, URL de la API, lectura de sus errores y el proxy con cookie a la API
+- `3000-sitio-web/src/shared/lib/geography/` — geometría de los departamentos de Colombia para los mapas
+- `3000-sitio-web/src/shared/lib/modals/` — la salida animada de los modales (`useCierreAnimado`)
+- `3000-sitio-web/src/shared/lib/session/` — cookies de sesión, lectura y verificación de la sesión, y a qué paso del primer ingreso va una cuenta
+- `3000-sitio-web/src/shared/lib/typography/` — las letras que carga la app (`next/font`)
 - `3000-sitio-web/src/shared/ui/` — sistema de diseño institucional y catálogo del editor
 - `3000-sitio-web/src/shared/ui/atoms/` — piezas mínimas: botón, avatar, interruptor…
 - `3000-sitio-web/src/shared/ui/molecules/` — piezas compuestas: alertas, paginación, selectores…
@@ -131,17 +136,22 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3001-intranet/src/config/` — catálogo de bloques del editor de la intranet
 - `3001-intranet/src/features/` — un dominio por carpeta
 - `3001-intranet/src/features/login/` — pantallas del flujo de acceso
-- `3001-intranet/src/features/paginas/` — secciones editables con Puck, gemela de la del sitio
-- `3001-intranet/src/features/paginas/edicion/` — etapa 1: borrador, editor, subidas y candado
-- `3001-intranet/src/features/paginas/menu-y-pie/` — cabecera y pie de la intranet
-- `3001-intranet/src/features/paginas/publicacion/` — lo que ven directores y subdirectores
-- `3001-intranet/src/features/paginas/secciones/` — crear y eliminar secciones
+- `3001-intranet/src/features/editor/` — secciones editables con Puck, gemela de la del sitio
+- `3001-intranet/src/features/editor/edition/` — etapa 1: borrador, editor, subidas y candado
+- `3001-intranet/src/features/editor/navegation/` — cabecera y pie de la intranet
+- `3001-intranet/src/features/editor/publishing/` — lo que ven directores y subdirectores
+- `3001-intranet/src/features/editor/sections/` — crear y eliminar secciones
 - `3001-intranet/src/shared/` — lo transversal de la intranet
 - `3001-intranet/src/shared/lib/` — utilidades transversales: cliente HTTP, sesión, bloques
 - `3001-intranet/src/shared/lib/blocks/` — los bloques Puck de la intranet
 - `3001-intranet/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
 - `3001-intranet/src/shared/lib/mobile/` — navegación mobile de la intranet, con el menú de la plantilla
 - `3001-intranet/src/shared/lib/pwa/` — manifiesto, íconos y registro del service worker
+- `3001-intranet/src/shared/lib/api/` — cliente HTTP, lectura de errores y la URL del sitio web
+- `3001-intranet/src/shared/lib/layout/` — cuántas piezas caben en un ancho (`useCuantosCaben`)
+- `3001-intranet/src/shared/lib/modals/` — la salida animada de los modales (`useCierreAnimado`)
+- `3001-intranet/src/shared/lib/session/` — lectura y verificación de la sesión, y quién edita páginas
+- `3001-intranet/src/shared/lib/typography/` — las letras que carga la app (`next/font`)
 - `3001-intranet/src/shared/ui/` — sistema de diseño propio de la intranet
 - `3001-intranet/src/shared/ui/atoms/` — piezas mínimas
 - `3001-intranet/src/shared/ui/molecules/` — campos de contraseña y enlace de vuelta al sitio

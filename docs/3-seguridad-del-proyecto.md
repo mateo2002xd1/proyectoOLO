@@ -292,7 +292,7 @@ grep -rl "$SECRETO" 3000-sitio-web/.next/static 3001-intranet/.next/static
 | Contraseñas con bcrypt y política única compartida | `packages/password-policy/`, `4000-api-backend/src/shared/password-policy` |
 | El JWT se firma y se verifica **solo** en la API | `use-cases/auth/login.usecase.ts`, `middlewares/auth.middleware.ts` |
 | Token en cookie `httpOnly`, `Secure` en producción, `SameSite=lax` — nunca en `localStorage` | `controllers/auth.controller.ts`, `3000-sitio-web/src/app/api/auth/login/route.ts` |
-| Cookies de sesión separadas por aplicación (`sitio_token` / `token`) | `3000-sitio-web/src/shared/lib/auth-cookies.ts`, aceptadas en `auth.middleware.ts` |
+| Cookies de sesión separadas por aplicación (`sitio_token` / `token`) | `3000-sitio-web/src/shared/lib/session/auth-cookies.ts`, aceptadas en `auth.middleware.ts` |
 | Bloqueo de cuenta a los 5 intentos fallidos, 15 minutos | `login.usecase.ts` → `registrarFalloDeLogin` |
 | Estado, bloqueo y caducidad revalidados en **cada** petición, no solo al entrar | `auth.middleware.ts` |
 | Cierre por inactividad verificado en el servidor (20 min) además del aviso del navegador (15 min) | `auth.middleware.ts` + `packages/inactividad/` |
@@ -418,7 +418,7 @@ Las tres piezas que hacen que esto funcione están separadas y **ninguna sirve s
    su cuenta queda a la izquierda y se ignora, así que activarlo no permite falsificar
    la IP.
 2. Los route handlers del sitio reenvían esa cabecera **sin tocarla**
-   (`3000-sitio-web/src/shared/lib/reenviar-cliente.ts`). Añadir una entrada propia correría
+   (`3000-sitio-web/src/shared/lib/api/reenviar-cliente.ts`). Añadir una entrada propia correría
    la posición y volvería a romper la cuenta.
 3. `4000-api-backend/src/middlewares/rate-limit.middleware.ts` construye todos los
    limitadores desde una sola fábrica. Estaban repetidos en tres routers, que es como

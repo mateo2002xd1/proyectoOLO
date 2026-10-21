@@ -5,6 +5,77 @@
 
 ---
 
+## sesión 21-10-2026: el editor en `/edit`, y los `.ts` sueltos de `shared/lib` en carpetas
+
+**Qué pidió el usuario:** se queda con `app/edit/` (antes `app/editor/`) en las dos apps y con el grupo `app/(pages)/` (antes `(paginas)`, que no cambia ninguna URL), y pidió poner al día el proxy y las rutas. Después, ordenar los `.ts` sueltos de `shared/lib` del sitio según el carpetado; eligió nombres en inglés, borrar los que nadie importaba y hacer lo mismo en la intranet.
+
+**El editor en `/edit/…`.** En `app/` la carpeta es la URL: con `app/edit/` y los enlaces armando `/editor/…`, todos los botones «Editar» daban 404 (también en la intranet, que ya estaba commiteada así) y el proxy del sitio dejó de cubrir el editor.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Las dos | `features/editor/model/rutas.ts` | `enlaceAlEditor` arma `/edit/${slug}` |
+| Sitio | `proxy.ts` | Protege `/edit` y `/edit/…` (exacto, para no proteger por error una página pública `/editorial`) y su `matcher` es `/edit/:path*`. El panel manda a `/edit` a quien solo puede editar |
+| Sitio | `app/edit/[slug]/page.tsx`, `admin-panel/search/lib/indice-panel.ts` | El `?redirect=` del login y la entrada «Menú y pie» del buscador del panel |
+| Las dos | `next.config` | `/editor/:path*` → `/edit/:path*` (marcadores y enlaces viejos); en el sitio, `/admin/editor/*` también va a `/edit` |
+| Las dos | `rastreador-visitas.tsx`, bloques `publicaciones` y `recursos-visuales-bloque` | Reconocen el editor por `/edit/…`: no cuentan visitas ahí y los bloques se muestran en modo edición |
+| Sitio | `public/sw.js` | `/edit` entra en las rutas que el service worker no guarda; `/editor` se queda por la redirección |
+
+**`shared/lib` sin archivos sueltos.** El script recalculó las importaciones con alias y relativas, incluidas las de los archivos movidos entre sí (`api-client` → `../session/auth-cookies`).
+
+| App | Carpeta nueva | Archivos |
+|---|---|---|
+| Sitio | `session/` | `session`, `auth-cookies`, `verificar-sesion`, `ruta-del-primer-ingreso` |
+| Sitio | `api/` | `api-client`, `url-de-la-api`, `errores-api`, `backend-proxy`, `reenviar-cliente` |
+| Sitio | `geography/` · `typography/` · `modals/` | `departamentos-colombia` · `fonts` · `use-cierre-animado` |
+| Intranet | `session/` · `api/` | `sesion`, `verificar-sesion`, `edicion` · `api-client`, `errors`, `constants` (la URL del sitio web) |
+| Intranet | `typography/` · `modals/` · `layout/` | `fonts` · `use-cierre-animado` · `use-cuantos-caben` |
+| Las dos | Borrados | `types.ts` (tipos de bloques de una versión antigua) y `auth-server.ts`: nadie los importaba |
+
+Docs y comentarios al día: `1-guia` (árbol de `shared/lib` de la intranet y RF-03), `2-convenciones` §10 (`modals/use-cierre-animado.ts`), `3-seguridad` (cookies y `reenviar-cliente`), `8-ciclo-editorial`, comentarios de la API y de `packages/inactividad`. `scripts/mapa/descripciones.md` describe las carpetas nuevas, y además se pasaron sus entradas `features/administracion/…` a `features/admin-panel/…` (ya iban atrasadas) y se describieron `alertas-inversion/` e `identidad-panel/`.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de sitio, intranet, API y `packages/inactividad` | Sin errores |
+| `eslint` de los archivos con URLs del editor | Sin avisos |
+| Cada archivo que estaba en git, contra su ruta nueva | 68 idénticos, 31 con solo rutas o comentarios, 7 con los cambios de la sesión; faltan solo los 8 de fuentes futuras y los 4 sin uso, borrados a propósito |
+| `generar-mapa.mjs --pendientes` | Ninguna carpeta del front sin descripción |
+| En el navegador | **No se vio:** los servidores de dev estaban apagados |
+
+**Pendiente al cierre:** con los servidores encendidos, abrir un «Editar» del sitio y de la intranet (debe abrir `/edit/<página>`), comprobar que `/editor/inicio` redirige y que `/edit/…` sin sesión manda al login.
+
+---
+
+## sesión 20-10-2026 (8.ª parte): las importaciones y referencias, al día con las carpetas nuevas de `features/`
+
+**Qué pidió el usuario:** movió carpetas en `features/` de las dos apps y pidió poner al día las rutas que las usaban.
+
+| Antes | Ahora | App |
+|---|---|---|
+| `features/paginas/` | `features/editor/` | las dos |
+| `…/edicion/`, `…/menu-y-pie/`, `…/publicacion/`, `…/revision/`, `…/secciones/` | `…/edition/`, `…/navegation/`, `…/publishing/`, `…/review/`, `…/sections/` | las dos (`review/` solo existe en el sitio) |
+| `features/sitio-web/{alertas-inversion,buscador-ocupaciones,fuentes-futuras-empleo,programas-sobresalientes,tendencia-ocupacional}/` | `shared/lib/…` (mismos nombres) | sitio |
+| `features/admin-panel/buscador/` | `features/admin-panel/search/` | sitio |
+
+| Capa | Cambio |
+|---|---|
+| Importaciones | El editor del usuario actualizó la mayoría. A mano: 8 de la intranet que quedaron en `@/features/page` y `@/features/page/edicion/…` (paso intermedio), 2 del sitio con la errata `admin-panel/shearch`, y 10 del sitio que seguían en `@/features/sitio-web/…` |
+| Restos | Dos copias de `features/pages/` (`listado-proyectos.tsx`, `fuentes-futuras-empleo-view.tsx`) que no se movieron porque se estaban editando a la vez: eran idénticas a las de `shared/lib/` y nadie las importaba; se borraron |
+| Comentarios | Rutas puestas al día en el sitio, la intranet y los comentarios de la API que apuntan a archivos del front (`sembrar-*`, `pagina.controller`, `extraer-textos-puck`, `paginas.validators`) |
+| Docs | `1-guia-del-proyecto.md` (árbol de la intranet, tabla de RF), `8-ciclo-editorial.md` (§3.2 y tabla de features de la intranet) y `scripts/mapa/descripciones.md`; en los árboles se mantuvo la columna de los comentarios. Fuera de git: `.claude/agents/auditor-arquitectura.md` y `.claude/skills/auditar/excepciones.md` |
+| Borrado (pedido después) | `shared/lib/fuentes-futuras-empleo/` (8 archivos), y con él el bloque «Fuentes futuras de empleo» del catálogo del sitio (`puck.config.tsx`: importación, categoría y definición) y su arreglo de datos en `puck-editor-wrapper.tsx`. Ninguna página lo tenía, ni publicada ni en ninguna versión (Neon, solo lectura). La API (`/api/observatorio/fuentes-futuras-empleo`) y las cargas de Excel del panel se quedan: no dependen de esa carpeta |
+| Sin tocar | Esta bitácora (es historia), `13-mapa-del-proyecto.md` (lo regenera el pre-commit), y tres menciones a archivos que ya no existían antes del cambio (`features/paginas/services/paginas.service.ts` en `8-ciclo-editorial.md` y en la prueba k6, `features/sitio-web/politica-privacidad` en la tabla de RF) |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de sitio, intranet y API | Sin errores |
+| Todos los archivos que estaban en git, contra su ruta nueva | 88 idénticos, 16 solo con rutas o comentarios distintos, 3 con los cambios de esta sesión (editor sin la rama de fuentes futuras; portada de respaldo y banner del buscador con la tarjeta «Textos»); faltan solo los 8 de fuentes futuras, a propósito |
+| `next dev` del usuario, antes del borrado | `/inicio`, `/clasificacion` y `/alertas-inversion` (sitio) y `/login` (intranet) responden 200. Después del borrado los servidores estaban apagados: solo se comprobó con `tsc` |
+| Finales de línea y `git diff --check` | Ningún archivo mezclado; sin espacios sobrantes |
+
+> `descripciones.md` ya iba atrasado antes de esto: sigue describiendo `features/administracion/…`, que hoy es `features/admin-panel/…`. No se tocó.
+
+---
+
 ## sesión 20-10-2026 (7.ª parte): «Eliminar página» dice en qué bloque, en qué lista y en qué parte del portal está el enlace que lo impide
 
 **Qué pasó:** al eliminar «Mapa del sitio» el diálogo decía «está enlazada en el menú principal», y el usuario no la tenía en el menú. La comprobación acertaba: el `menu-y-pie` publicado (versión 35) tiene en el **pie** `enlacesFila3[0] = { texto: 'Mapa del sitio', url: '/mapa-del-sitio' }`, y el sitio en vivo lo pinta. Lo que fallaba era el aviso, que decía siempre «menú principal» y no decía dónde buscar. El usuario pidió dejar la lógica como está y mejorar el paso a paso, y que el paso 3 diga siempre si el enlace está en el pie o en el menú.

@@ -275,10 +275,10 @@ features/<dominio>/
 
 Ejemplos actuales que ya siguen esta forma: `administracion/`, `buscador-ocupaciones/`.
 
-### 3.2 Dominio con ciclo de vida (`paginas/`)
+### 3.2 Dominio con ciclo de vida (`editor/`)
 
 ```
-features/paginas/
+features/editor/
 ├── index.ts                        # ÚNICA puerta pública del módulo (§0.3)
 │
 ├── client.ts                       # segunda puerta, sin axios (CABECERA_POR_DEFECTO)
@@ -287,11 +287,11 @@ features/paginas/
 │   ├── pagina.types.ts             # Pagina, PaginaVersion, Bloque, PuckData, EstadoPagina
 │   ├── rutas.ts                    # CARPETAS, slug ↔ URL, ruta de vuelta del editor
 │   ├── ambito.ts                   # cabecera X-Ambito: sitio
-│   ├── api-con-sesion.ts           # axios withCredentials — nunca desde publicacion/
+│   ├── api-con-sesion.ts           # axios withCredentials — nunca desde publishing/
 │   ├── eventos.ts                  # notificarRevisionActualizada
 │   └── home-fallback-data.ts       # portada de respaldo (publicación) y semilla (edición)
 │
-├── publicacion/                    # ETAPA 6 — consumo público
+├── publishing/                     # ETAPA 6 — consumo público
 │   ├── publicacion.service.ts      # fetch + ISR y axios SIN credenciales
 │   ├── client-puck-render.tsx
 │   ├── pagina-puck-fija.tsx
@@ -299,7 +299,7 @@ features/paginas/
 │   ├── etiquetas-cache.ts
 │   └── sitio-busqueda-fallback.ts
 │
-├── edicion/                        # ETAPA 1 — borrador
+├── edition/                        # ETAPA 1 — borrador
 │   ├── edicion.service.ts          # editable, borrador, subidas, enviar a revisión, candado
 │   ├── use-pagina.ts
 │   ├── use-bloqueo-de-edicion.ts
@@ -312,12 +312,12 @@ features/paginas/
 │   ├── pagina-en-edicion.tsx
 │   └── page-seeds.ts
 │
-├── revision/                       # ETAPAS 3 a 5 — gobernanza
+├── review/                         # ETAPAS 3 a 5 — gobernanza
 │   ├── revision.service.ts         # listarEnRevision, aprobarPagina, rechazarPagina, eliminarVersion
 │   ├── use-revision-queue.ts
 │   └── revision-queue-view.tsx
 │
-├── secciones/                      # crear y eliminar páginas (no es etapa)
+├── sections/                       # crear y eliminar páginas (no es etapa)
 │   ├── secciones.service.ts        # crear, analizar y hacer el borrado, permisos, resumen del panel
 │   ├── paginas-fab-speed-dial.tsx  # el botón flotante de acciones
 │   ├── modal-nueva-seccion.tsx
@@ -325,7 +325,7 @@ features/paginas/
 │   ├── aviso-seccion-nueva.tsx
 │   └── use-permiso-de-seccion.ts
 │
-└── menu-y-pie/                     # la cabecera y el pie de todo el sitio (no es etapa)
+└── navegation/                     # la cabecera y el pie de todo el sitio (no es etapa)
     ├── menu-y-pie.ts               # obtenerPlantilla, SLUG_PLANTILLA
     ├── cabecera-por-defecto.ts     # ex features/identidad-visual
     └── menu-y-pie-fallback-data.ts # semilla del editor
@@ -428,7 +428,7 @@ El **identificador** sigue siendo `PascalCase`: archivo `tabla-usuarios.tsx` →
 
 Ya estaba decidido en §4.4 de la guía ("`editor-core/` — PLANEADO"), con la regla: *algo va a `packages/` solo si ambos frontends lo necesitan con el mismo comportamiento*. Aquí se detalla el alcance.
 
-**Duplicación medida hoy** entre `3000-sitio-web/src/features/paginas/` e `3001-intranet/src/features/paginas/`: `client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`.
+**Duplicación medida hoy** entre `3000-sitio-web/src/features/editor/` e `3001-intranet/src/features/editor/`: `client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`.
 
 **Consecuencia ya observable de esa duplicación:** la etapa de revisión (`revision-queue-view`, `use-revision-queue`) **solo existe en `sitio-web`**. La intranet no tiene gobernanza. Es exactamente la divergencia que la regla de `packages/` busca evitar.
 
@@ -501,7 +501,7 @@ seguridad en estructura en vez de en disciplina.
 1. Crear `publicacion/publicacion.service.ts` con `obtenerPagina` y `obtenerPaginaInicio` (transporte `fetch` + ISR).
 2. Crear `edicion/edicion.service.ts` con `obtenerPaginaEditable`, `guardarBorrador`, `enviarARevision`.
 3. Crear `revision/revision.service.ts` con `listarEnRevision`, `aprobarPagina`, `rechazarPagina`.
-4. Mover la instancia de `axios` a `shared/lib/api-client.ts` (hoy se declara dentro del servicio).
+4. Mover la instancia de `axios` a `shared/lib/api/api-client.ts` (hoy se declara dentro del servicio).
 5. Actualizar `index.ts`. Borrar `services/paginas.service.ts`.
 
 **Verificación:** `npx tsc --noEmit`, `npx eslint .`, `npm run build`.
@@ -533,7 +533,7 @@ Estado hoy — 2 features:
 
 | Feature | Carpetas | Qué es |
 |---|---|---|
-| `paginas/` | `model/ publicacion/ edicion/ secciones/ menu-y-pie/ index.ts client.ts` | La gemela de `3000-sitio-web/src/features/paginas/`, con el mismo árbol (§3.2) salvo `revision/`. Se llamó `gestor-secciones/` hasta el 2026-09-18 |
+| `editor/` | `model/ publishing/ edition/ sections/ navegation/ index.ts client.ts` | La gemela de `3000-sitio-web/src/features/editor/`, con el mismo árbol (§3.2) salvo `review/`. Se llamó `gestor-secciones/` hasta el 2026-09-18 y `paginas/` hasta el 2026-10-20 |
 | `login/` | `services/ components/ hooks/ index.ts` | Absorbió a `auth/`: el hook `use-auth` y `auth.service.ts` viven aquí junto a las ocho vistas del flujo |
 
 Traducido a los pasos originales:
