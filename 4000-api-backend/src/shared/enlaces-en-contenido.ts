@@ -25,7 +25,25 @@ export interface EnlaceEncontrado {
   texto: string | null;
   /** El valor tal cual está guardado. */
   href: string;
+  /**
+   * El tipo del bloque de Puck que lo contiene (`Footer`, `Header`…), o `null` si está
+   * fuera de un bloque (en `root`). Con esto y `campo` el diálogo nombra el sitio exacto
+   * con las etiquetas del editor: «Pie de página» › «Enlaces inferiores · fila 3».
+   */
+  bloque: string | null;
+  /** La prop del bloque donde está (`enlacesFila3`, `navLinks`…), o `null` fuera de un bloque. */
+  campo: string | null;
 }
+
+/** Bloque y prop en los que se está recorriendo. */
+interface Ubicacion {
+  bloque: string | null;
+  campo: string | null;
+}
+
+/** Un bloque de Puck: `{ type, props }`, en `content`, en `zones` o dentro de un slot. */
+const esBloque = (objeto: Record<string, unknown>): boolean =>
+  typeof objeto.type === 'string' && typeof objeto.props === 'object' && objeto.props !== null;
 
 /** Claves que en este contenido significan «a dónde lleva esto». */
 const CLAVES_DE_ENLACE = ['href', 'url'];
@@ -81,18 +99,8 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
   // un recorrido recursivo sin red se cuelga en vez de fallar si algún día las tiene.
   const visitados = new WeakSet<object>();
 
-  const recorrer = (nodo: unknown): void => {
-    if (nodo === null || typeof nodo !== 'object') return;
-    if (visitados.has(nodo)) return;
-    visitados.add(nodo);
-
-    if (Array.isArray(nodo)) {
-      nodo.forEach(recorrer);
-      return;
-    }
-
-    const objeto = nodo as Record<string, unknown>;
-
+  /** Apunta los `href`/`url` de `objeto` que llevan a la ruta. */
+  const registrar = (objeto: Record<string, unknown>, ubicacion: (clave: string) => Ubicacion): void => {
     for (const clave of CLAVES_DE_ENLACE) {
       const valor = objeto[clave];
       if (typeof valor === 'string' && apuntaA(valor, ruta)) {
@@ -100,13 +108,39 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
         encontrados.push({
           texto: claveTexto ? String(objeto[claveTexto]) : null,
           href: valor,
+          ...ubicacion(clave),
         });
       }
     }
-
-    Object.values(objeto).forEach(recorrer);
   };
 
-  recorrer(contenido);
+  const recorrer = (nodo: unknown, ubicacion: Ubicacion): void => {
+    if (nodo === null || typeof nodo !== 'object') return;
+    if (visitados.has(nodo)) return;
+    visitados.add(nodo);
+
+    if (Array.isArray(nodo)) {
+      nodo.forEach((hijo) => recorrer(hijo, ubicacion));
+      return;
+    }
+
+    const objeto = nodo as Record<string, unknown>;
+
+    // Al entrar en un bloque, cada prop suya es el campo; un bloque dentro de un slot
+    // pasa a ser el bloque de lo que tenga dentro.
+    if (esBloque(objeto)) {
+      const bloque = objeto.type as string;
+      const props = objeto.props as Record<string, unknown>;
+      visitados.add(props);
+      registrar(props, (clave) => ({ bloque, campo: clave }));
+      for (const [campo, valor] of Object.entries(props)) recorrer(valor, { bloque, campo });
+      return;
+    }
+
+    registrar(objeto, () => ubicacion);
+    Object.values(objeto).forEach((hijo) => recorrer(hijo, ubicacion));
+  };
+
+  recorrer(contenido, { bloque: null, campo: null });
   return encontrados;
 }

@@ -61,6 +61,10 @@ export interface ReferenciaAEnlace {
   titulo: string;
   /** El texto visible del enlace, si lo tiene. */
   texto: string | null;
+  /** El tipo del bloque que lo tiene (`Footer`, `Header`…); el diálogo lo traduce a su etiqueta. */
+  bloque: string | null;
+  /** La prop de ese bloque donde está (`enlacesFila3`, `navLinks`…). */
+  campo: string | null;
 }
 
 /** Lo que hace falta saber para decidir si se borra, y para pintar el diálogo. */
@@ -151,7 +155,13 @@ async function buscarReferencias(
       buscarEnlacesA(version.contenido, ruta)
     );
     for (const enlace of enlaces) {
-      referencias.push({ slug: otra.slug, titulo: otra.titulo, texto: enlace.texto });
+      referencias.push({
+        slug: otra.slug,
+        titulo: otra.titulo,
+        texto: enlace.texto,
+        bloque: enlace.bloque,
+        campo: enlace.campo,
+      });
     }
   }
 
