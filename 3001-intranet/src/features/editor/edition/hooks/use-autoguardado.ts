@@ -28,7 +28,7 @@
  * es el que sabe si hay un guardado en curso, un diálogo abierto o una versión en
  * revisión.
  *
- * Gemelo de `sitio-web/src/features/paginas/edicion/hooks/use-autoguardado.ts`.
+ * Gemelo de `sitio-web/src/features/editor/edition/hooks/use-autoguardado.ts`.
  */
 "use client";
 

@@ -3,7 +3,7 @@ import {
   MarcoSecciones,
   PaginasFabSpeedDial,
   RastreadorVisitas,
-} from '@/features/paginas';
+} from '@/features/editor';
 import {
   obtenerSesion,
   puedeEditarPaginas,
@@ -18,7 +18,7 @@ import { BotonSubir } from '@/shared/ui/atoms/boton-subir';
  * `IntranetTopbar` e `IntranetFooter` dentro de su contenido, así que editar el
  * menú en `/inicio` no tocaba el de `/tasa` y los cinco menús acabaron
  * divergiendo. Ahora se pintan una sola vez, en `MarcoSecciones`, con lo que
- * guarda la página `plantilla` (ver `features/paginas/menu-y-pie/menu-y-pie.ts`).
+ * guarda la página `plantilla` (ver `features/editor/navegation/menu-y-pie.ts`).
  *
  * El acceso, el editor y la vista previa quedan fuera a propósito: viven en
  * `app/(auth)/`, `app/editor/` y `app/preview/`, fuera de este grupo de rutas. Los

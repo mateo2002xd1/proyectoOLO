@@ -27,7 +27,7 @@ export interface Rechazo {
  * viera" al pulsar. Como modal centrado, ya no depende de dónde quede el botón
  * dentro de ese toolbar.
  *
- * Gemelo del de `sitio-web` (`features/paginas/components/aviso-rechazo.tsx`).
+ * Gemelo del de `sitio-web` (`features/editor/edition/components/aviso-rechazo.tsx`).
  */
 export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
   const [abierto, setAbierto] = useState(false);

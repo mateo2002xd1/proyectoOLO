@@ -25,7 +25,7 @@ import {
   type PaginaVersion,
   type Plantilla,
   type PaginaPublicada,
-} from "@/features/paginas";
+} from "@/features/editor";
 import type { ContextoDeEdicion } from "@/config/puck.config";
 import { GooLoader } from "@/shared/ui/atoms/goo-loader";
 import { MensajeEstado } from "@/shared/ui/molecules/mensaje-estado";

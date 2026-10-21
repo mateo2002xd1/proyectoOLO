@@ -9,5 +9,5 @@
  * de `puck.config`. Es el mismo arreglo que `client.ts` en sitio-web.
  */
 
-export { obtenerIndiceBusqueda } from './publicacion/services/publicacion.service';
+export { obtenerIndiceBusqueda } from './publishing/services/publicacion.service';
 export type { ItemTextoBusqueda, PaginaIndiceBusqueda } from './model/pagina.types';

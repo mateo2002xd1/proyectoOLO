@@ -20,7 +20,7 @@
 
 Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
-## Carpetas sin descripción (13)
+## Carpetas sin descripción (18)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
@@ -34,11 +34,16 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
 - `3000-sitio-web/src/shared/lib/identidad-panel/`
+- `3001-intranet/src/features/editor/`
+- `3001-intranet/src/features/editor/edition/`
+- `3001-intranet/src/features/editor/navegation/`
+- `3001-intranet/src/features/editor/publishing/`
+- `3001-intranet/src/features/editor/sections/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
 - `auditorias/`
 
-**Descripciones de carpetas que ya no existen (8):** `3000-sitio-web/src/features/administracion/`, `3000-sitio-web/src/features/administracion/actualizaciones/`, `3000-sitio-web/src/features/administracion/auditoria/`, `3000-sitio-web/src/features/administracion/auth/`, `3000-sitio-web/src/features/administracion/buscador/`, `3000-sitio-web/src/features/administracion/configuracion/`, `3000-sitio-web/src/features/administracion/mi-perfil/`, `3000-sitio-web/src/features/administracion/respaldos/`. Se borran de `descripciones.md` o se corrige la ruta.
+**Descripciones de carpetas que ya no existen (13):** `3000-sitio-web/src/features/administracion/`, `3000-sitio-web/src/features/administracion/actualizaciones/`, `3000-sitio-web/src/features/administracion/auditoria/`, `3000-sitio-web/src/features/administracion/auth/`, `3000-sitio-web/src/features/administracion/buscador/`, `3000-sitio-web/src/features/administracion/configuracion/`, `3000-sitio-web/src/features/administracion/mi-perfil/`, `3000-sitio-web/src/features/administracion/respaldos/`, `3001-intranet/src/features/paginas/`, `3001-intranet/src/features/paginas/edicion/`, `3001-intranet/src/features/paginas/menu-y-pie/`, `3001-intranet/src/features/paginas/publicacion/`, `3001-intranet/src/features/paginas/secciones/`. Se borran de `descripciones.md` o se corrige la ruta.
 
 ## Carpetas
 
@@ -102,21 +107,21 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 └── src/                                       código de la intranet
     ├── app/                                   solo enrutamiento: `(secciones)` (comodín Puck), `(auth)`, `editor`, `preview`
     │   ├── (auth)/
-    │   ├── (paginas)/
-    │   ├── editor/
+    │   ├── (pages)/
+    │   ├── edit/
     │   └── preview/
     ├── config/                                catálogo de bloques del editor de la intranet
     ├── features/                              un dominio por carpeta
-    │   ├── login/                             pantallas del flujo de acceso
-    │   │   ├── components/                    UI del dominio
-    │   │   ├── hooks/                         estado y efectos del dominio
-    │   │   └── services/                      única capa que llama a la API
-    │   └── paginas/                           secciones editables con Puck, gemela de la del sitio
-    │       ├── edicion/                       etapa 1: borrador, editor, subidas y candado
-    │       ├── menu-y-pie/                    cabecera y pie de la intranet
-    │       ├── model/                         lo que comparten las etapas del dominio
-    │       ├── publicacion/                   lo que ven directores y subdirectores
-    │       └── secciones/                     crear y eliminar secciones
+    │   ├── editor/                            ⚠ sin descripción
+    │   │   ├── edition/                       ⚠ sin descripción
+    │   │   ├── model/                         lo que comparten las etapas del dominio
+    │   │   ├── navegation/                    ⚠ sin descripción
+    │   │   ├── publishing/                    ⚠ sin descripción
+    │   │   └── sections/                      ⚠ sin descripción
+    │   └── login/                             pantallas del flujo de acceso
+    │       ├── components/                    UI del dominio
+    │       ├── hooks/                         estado y efectos del dominio
+    │       └── services/                      única capa que llama a la API
     ├── shared/                                lo transversal de la intranet
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de la intranet
@@ -212,8 +217,8 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
+| `editor/` | ⚠ sin descripción | `edition/` `model/` `navegation/` `publishing/` `sections/` | sí | 26 |
 | `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 14 |
-| `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 26 |
 
 ## Rutas de Next
 
@@ -276,8 +281,8 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | URL | Tipo | Grupo | Archivo |
 |---|---|---|---|
 | `/` | página |  | `page.tsx` |
-| `/[...puckPath]` | página | `(paginas)` | `(paginas)/[...puckPath]/page.tsx` |
-| `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
+| `/[...puckPath]` | página | `(pages)` | `(pages)/[...puckPath]/page.tsx` |
+| `/edit/[slug]` | página |  | `edit/[slug]/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
 | `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |

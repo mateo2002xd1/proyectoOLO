@@ -2,7 +2,7 @@
  * Punto de entrada público del módulo paginas.
  *
  * Un módulo de dominio no importa archivos internos de otro módulo. Todo lo que
- * otros módulos necesiten de `features/paginas/` se exporta desde aquí.
+ * otros módulos necesiten de `features/editor/` se exporta desde aquí.
  *
  * Agrupado por carpeta, igual que el módulo y que su gemelo de sitio-web
  * (`8-ciclo-editorial.md` §3.2): `model/`, las etapas `publicacion/` y `edicion/`, y
@@ -41,40 +41,40 @@ export {
   obtenerPaginaPublicada,
   obtenerIndiceBusqueda,
   registrarVisita,
-} from "./publicacion/services/publicacion.service";
-export { ClientPuckRender } from "./publicacion/components/client-puck-render";
-export { RastreadorVisitas } from "./publicacion/components/rastreador-visitas";
+} from "./publishing/services/publicacion.service";
+export { ClientPuckRender } from "./publishing/components/client-puck-render";
+export { RastreadorVisitas } from "./publishing/components/rastreador-visitas";
 
 // edicion/ — el editor Puck, el borrador y el candado de edición
 export {
   obtenerVersionEditable,
   guardarBorrador,
   enviarARevision,
-} from "./edicion/services/edicion.service";
-export { PuckEditorWrapper } from "./edicion/components/puck-editor-wrapper";
-export { AvisoEditorOcupado } from "./edicion/components/aviso-editor-ocupado";
-export { useEditorActions } from "./edicion/hooks/use-editor-actions";
-export { useBloqueoDeEdicion } from "./edicion/hooks/use-bloqueo-de-edicion";
-export type { Bloqueo, EstadoDeBloqueo } from "./edicion/hooks/use-bloqueo-de-edicion";
-export { getPageSeed, isEmptyContent } from "./edicion/lib/page-seeds";
+} from "./edition/services/edicion.service";
+export { PuckEditorWrapper } from "./edition/components/puck-editor-wrapper";
+export { AvisoEditorOcupado } from "./edition/components/aviso-editor-ocupado";
+export { useEditorActions } from "./edition/hooks/use-editor-actions";
+export { useBloqueoDeEdicion } from "./edition/hooks/use-bloqueo-de-edicion";
+export type { Bloqueo, EstadoDeBloqueo } from "./edition/hooks/use-bloqueo-de-edicion";
+export { getPageSeed, isEmptyContent } from "./edition/lib/page-seeds";
 
 // menu-y-pie/ — la barra y el pie que comparten todas las secciones
-export { obtenerPlantilla, SLUG_PLANTILLA } from "./menu-y-pie/menu-y-pie";
-export type { Plantilla } from "./menu-y-pie/menu-y-pie";
-export { MarcoSecciones } from "./menu-y-pie/marco-secciones";
+export { obtenerPlantilla, SLUG_PLANTILLA } from "./navegation/menu-y-pie";
+export type { Plantilla } from "./navegation/menu-y-pie";
+export { MarcoSecciones } from "./navegation/marco-secciones";
 
 // secciones/ — crear y eliminar secciones, botón flotante
 export {
   crearSeccion,
   analizarEliminacion,
   eliminarSeccion,
-} from "./secciones/services/secciones.service";
+} from "./sections/services/secciones.service";
 export type {
   SeccionCreada,
   SeccionEliminada,
   AnalisisDeEliminacion,
-} from "./secciones/services/secciones.service";
-export { PaginasFabSpeedDial } from "./secciones/components/paginas-fab-speed-dial";
-export { ModalNuevaSeccion } from "./secciones/components/modal-nueva-seccion";
-export { ModalEliminarSeccion } from "./secciones/components/modal-eliminar-seccion";
-export { AvisoSeccionNueva } from "./secciones/components/aviso-seccion-nueva";
+} from "./sections/services/secciones.service";
+export { PaginasFabSpeedDial } from "./sections/components/paginas-fab-speed-dial";
+export { ModalNuevaSeccion } from "./sections/components/modal-nueva-seccion";
+export { ModalEliminarSeccion } from "./sections/components/modal-eliminar-seccion";
+export { AvisoSeccionNueva } from "./sections/components/aviso-seccion-nueva";

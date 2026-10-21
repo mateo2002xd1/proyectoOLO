@@ -23,7 +23,7 @@ import {
   obtenerPaginaPublicada,
   SLUG_PLANTILLA,
   slugDeOrigen,
-} from "@/features/paginas";
+} from "@/features/editor";
 import { EditorClient } from "./editor-client";
 
 export default async function EditorPage({

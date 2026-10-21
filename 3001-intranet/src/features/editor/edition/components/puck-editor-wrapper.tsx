@@ -450,7 +450,7 @@ function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
  * justo lo que hace la `x`. No se cierra sola ni con Escape/clic afuera: que
  * quien acaba de enviar decida cuándo salir, no un timer.
  *
- * Gemela de la de sitio-web (`features/paginas/components/puck-editor-wrapper.tsx`).
+ * Gemela de la de sitio-web (`features/editor/edition/components/puck-editor-wrapper.tsx`).
  */
 function PantallaEnvioExitoso({
   abierto,

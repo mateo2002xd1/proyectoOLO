@@ -5,7 +5,7 @@ import {
   MarcoSecciones,
   obtenerVersionEditable,
   SLUG_PLANTILLA,
-} from '@/features/paginas';
+} from '@/features/editor';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';

@@ -18,7 +18,7 @@
 import type { ComponentProps } from 'react';
 import type { IntranetTopbar } from '@/shared/lib/blocks/plantilla/intranet-topbar';
 import type { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
-import { obtenerPaginaPublicada } from '../publicacion/services/publicacion.service';
+import { obtenerPaginaPublicada } from '../publishing/services/publicacion.service';
 
 /** Slug de la página que guarda la barra y el pie comunes. */
 export const SLUG_PLANTILLA = 'menu-y-pie';

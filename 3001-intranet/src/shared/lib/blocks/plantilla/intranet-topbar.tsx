@@ -8,7 +8,7 @@ import {
   obtenerIndiceBusqueda,
   type PaginaIndiceBusqueda,
   type ItemTextoBusqueda,
-} from '@/features/paginas/client';
+} from '@/features/editor/client';
 import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 import { NavegacionMobileIntranet } from '@/shared/lib/mobile';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';

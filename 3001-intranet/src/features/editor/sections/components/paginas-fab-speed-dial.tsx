@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { enlaceAlEditor, slugDeRutaPublica } from '../../model/rutas';
-import { SLUG_PLANTILLA } from '../../menu-y-pie/menu-y-pie';
+import { SLUG_PLANTILLA } from '../../navegation/menu-y-pie';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
 import { ModalCerrarSesion } from './modal-cerrar-sesion';
