@@ -1,6 +1,6 @@
 import type { FiltrosAuditoria, RespuestaAuditoria } from '../types';
-import { alLoginPorSesionExpirada } from '@/shared/lib/api-client';
-import { MENSAJE_SIN_RESPUESTA } from '@/shared/lib/errores-api';
+import { alLoginPorSesionExpirada } from '@/shared/lib/api/api-client';
+import { MENSAJE_SIN_RESPUESTA } from '@/shared/lib/api/errores-api';
 
 /** El proxy de Next responde 502 cuando no llega a la API; 503 y 504, un intermedio. */
 const SIN_RESPUESTA_DE_LA_API = new Set([502, 503, 504]);

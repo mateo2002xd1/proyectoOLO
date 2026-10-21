@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ErrorApi, pedirJson } from '@/shared/lib/api-client';
+import { ErrorApi, pedirJson } from '@/shared/lib/api/api-client';
 
 /**
  * Registra en consola solo lo inesperado. Un `ErrorApi` es la API caída o una respuesta de

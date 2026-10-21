@@ -1,6 +1,6 @@
 'use client';
 
-import { MENSAJE_CONFIGURACION_PENDIENTE } from '@/shared/lib/errores-api';
+import { MENSAJE_CONFIGURACION_PENDIENTE } from '@/shared/lib/api/errores-api';
 import { Button } from '@/shared/ui/atoms/button';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 

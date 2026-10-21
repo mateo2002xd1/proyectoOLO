@@ -8,10 +8,10 @@ import { useAuth } from '@/features/login';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
-import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
-import { SITE_URL } from '@/shared/lib/constants';
-import { permisosEditan, rolEdita } from '@/shared/lib/edicion';
+import { SITE_URL } from '@/shared/lib/api/constants';
+import { permisosEditan, rolEdita } from '@/shared/lib/session/edicion';
 import {
   accesoBotonClass,
   accesoBotonEnBlancoClass,

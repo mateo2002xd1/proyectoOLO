@@ -12,6 +12,7 @@ import {
   campoGrupoEnUnAcordeon,
   campoListaEnAcordeones,
   campoObjetoEnAcordeon,
+  crearCampoTextoRico,
   type CampoDeAcordeon,
   TextoRico,
   ImagenDestacada,
@@ -37,30 +38,26 @@ import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
 import { TAMANOS_TEXTO_MENU } from '@/shared/lib/blocks/tamanos-texto-menu';
-import { crearCamposDelPie, resolverGruposDelPie } from '@/features/paginas/menu-y-pie/campos-del-pie';
-import { resolverGruposDeProps } from '@/features/paginas/menu-y-pie/grupos-de-props';
+import { crearCamposDelPie, resolverGruposDelPie } from '@/features/editor/navegation/campos-del-pie';
+import { resolverGruposDeProps } from '@/features/editor/navegation/grupos-de-props';
 import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA } from '@/shared/lib/blocks/disposicion-de-franja';
 import { Footer } from '@/shared/lib/blocks/footer';
 import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
-import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
+import { obtenerIndiceBusqueda } from '@/features/editor/publishing/services/publicacion.service';
 
-import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
-import { HeroBuscadorOcupaciones, BuscadorOcupacionesView } from '@/features/sitio-web/buscador-ocupaciones';
-import { AlertasInversionView } from '@/features/sitio-web/alertas-inversion';
-import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
+import { CABECERA_POR_DEFECTO } from '@/features/editor/client';
+import { HeroBuscadorOcupaciones, BuscadorOcupacionesView } from '@/shared/lib/buscador-ocupaciones';
+import { AlertasInversionView } from '@/shared/lib/alertas-inversion';
+import { ProgramasSobresalientesView } from '@/shared/lib/programas-sobresalientes';
 import {
   TendenciaOcupacionalView,
   TITULOS_TENDENCIA,
   type TipoTendenciaOcupacional,
-} from '@/features/sitio-web/tendencia-ocupacional';
-import {
-  FuentesFuturasEmpleoView,
-  CampoDescripcionConVariables,
-} from '@/features/sitio-web/fuentes-futuras-empleo';
-import { EditorjsWrapper } from '@/features/paginas/edicion/components/editorjs-wrapper';
-import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
-import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
-import { Render, type Config, type Data } from '@puckeditor/core';
+} from '@/shared/lib/tendencia-ocupacional';
+import { EditorjsWrapper } from '@/features/editor/edition/components/editorjs-wrapper';
+import { ImageUploaderField } from '@/features/editor/edition/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/editor/edition/components/archivo-uploader-field';
+import { Render, RichTextMenu, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
 /** Props que Puck inyecta en el render de un campo `custom`. */
@@ -121,34 +118,27 @@ const campoImagenDeFondo = () =>
   });
 
 /**
- * Barra de formato de un titular: negrita, cursiva, subrayado, enlaces y saltos de línea,
- * sin encabezados, listas ni citas. El texto ya va dentro de un `<h2>`, y un encabezado
- * dentro de otro lo parte en dos.
+ * Todos los textos enriquecidos llevan la misma barra: H1–H6, viñetas, negrita,
+ * cursiva, subrayado y alineación (ver `crearCampoTextoRico`).
  */
-const OPCIONES_TEXTO_EN_LINEA = {
-  heading: false,
-  blockquote: false,
-  bulletList: false,
-  orderedList: false,
-  codeBlock: false,
-  horizontalRule: false,
-} as const;
+const campoTextoRico = crearCampoTextoRico(RichTextMenu);
+
+/** La tarjeta «Textos» del bloque «Buscador de ocupaciones» (`Hero`) recién puesto. */
+const TEXTOS_DEL_BUSCADOR_POR_DEFECTO = {
+  tituloSeccion: '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
+  descripcion:
+    '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
+  titulo:
+    '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
+};
 
 /**
- * Barra de formato del párrafo del carrusel: encabezados H1–H4 para subir o
- * bajar el tamaño, viñetas, negrita, cursiva, subrayado y alineación. Sin citas, código,
- * tachado, listas numeradas ni enlaces.
+ * Un texto enriquecido guardado en una prop que ya no es campo: Puck solo convierte a
+ * nodos los `richtext` que declara el bloque. Se pinta como lo pinta Puck, en un
+ * `.rich-text`; la API ya lo saneó al guardarlo (`sanitizar-contenido.ts`).
  */
-const OPCIONES_TEXTO_DEL_CARRUSEL = {
-  heading: { levels: [1, 2, 3, 4] as (1 | 2 | 3 | 4)[] },
-  blockquote: false as const,
-  code: false as const,
-  codeBlock: false as const,
-  horizontalRule: false as const,
-  strike: false as const,
-  orderedList: false as const,
-  link: false as const,
-};
+const htmlGuardado = (html?: string): ReactNode =>
+  html ? <div className="rich-text" dangerouslySetInnerHTML={{ __html: html }} /> : undefined;
 
 /**
  * La tarjeta «Franja superior GOV.CO» de la cabecera. Las opciones siguen siendo props
@@ -348,7 +338,6 @@ const puckConfigBase: Config = {
         'BuscadorOcupaciones',
         'AlertasInversion',
         'TendenciaOcupacional',
-        'FuentesFuturasEmpleo',
         'MapaSitio',
       ],
     },
@@ -384,7 +373,7 @@ const puckConfigBase: Config = {
     Grid: conCaja(crearGridConfig(campoImagen)),
     // ─── Plantilla: la cabecera y el pie que rodean a todas las páginas ───
     // Solo se ofrecen al editar el slug `plantilla` (ver COMPONENTES_POR_SLUG).
-    // Los pinta `app/(paginas)/layout.tsx` leyendo esa página, no el contenido de
+    // Los pinta `app/(pages)/layout.tsx` leyendo esa página, no el contenido de
     // cada sección: así el menú es uno solo para todo el sitio.
     Header: {
       label: 'Cabecera / Menú',
@@ -563,28 +552,23 @@ const puckConfigBase: Config = {
      * nombres `titulo` (ahora el texto del recuadro) y `colorFondo` (ahora el color del
      * recuadro) para que la portada guardada siga sirviendo; `imageUrl`, `imageAlt`,
      * `modelSrc` y `modelAlt` quedan en el JSON viejo y ya no se leen.
+     *
+     * Los tres textos van en una sola tarjeta, «Textos» (`textos`). Antes eran props
+     * sueltas: `resolveData` las mueve al abrir el editor, y hasta que se vuelva a
+     * publicar el render las sigue leyendo sueltas (`htmlGuardado`).
      */
     Hero: {
-      label: 'Buscador de Ocupaciones (Banner)',
+      label: 'Buscador de ocupaciones',
       fields: {
-        tituloSeccion: {
-          type: 'richtext' as const,
-          label: 'Titular',
-          contentEditable: true,
-          options: OPCIONES_TEXTO_EN_LINEA,
-        },
-        descripcion: {
-          type: 'richtext' as const,
-          label: 'Descripción',
-          contentEditable: true,
-          options: { heading: false },
-        },
-        titulo: {
-          type: 'richtext' as const,
-          label: 'Texto del recuadro',
-          contentEditable: true,
-          options: OPCIONES_TEXTO_EN_LINEA,
-        },
+        textos: campoObjetoEnAcordeon(
+          'Textos',
+          {
+            tituloSeccion: campoTextoRico('Titular'),
+            descripcion: campoTextoRico('Descripción'),
+            titulo: campoTextoRico('Texto del recuadro'),
+          },
+          { abierto: true }
+        ),
         searchPlaceholder: campoEnAcordeon({
           type: 'text',
           label: 'Texto de ejemplo del buscador',
@@ -614,29 +598,31 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         id: 'hero-1',
-        tituloSeccion: '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
-        descripcion:
-          '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
-        titulo:
-          '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
+        textos: TEXTOS_DEL_BUSCADOR_POR_DEFECTO,
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         imagenFondo: '',
         transparenciaFondo: '',
         colorFondo: '',
       },
-      // Una portada guardada antes del rediseño no trae titular ni descripción: se
-      // completan al abrirla en el editor, para que se vean y se puedan corregir.
+      // Una portada guardada antes de la tarjeta «Textos» los trae sueltos (y una de
+      // antes del rediseño, sin titular ni descripción): se pasan a la tarjeta al abrirla
+      // en el editor, completando lo que falte, para que se vean y se puedan corregir.
       resolveData: ({ props }: { props: Record<string, any> }) => {
-        if (props.tituloSeccion !== undefined && props.descripcion !== undefined) return { props };
+        if (props.textos) return { props };
+        const { tituloSeccion, descripcion, titulo, ...resto } = props;
         return {
           props: {
-            ...props,
-            tituloSeccion: props.tituloSeccion ?? '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
-            descripcion: props.descripcion ?? '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
+            ...resto,
+            textos: {
+              tituloSeccion: tituloSeccion ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.tituloSeccion,
+              descripcion: descripcion ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.descripcion,
+              titulo: titulo ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.titulo,
+            },
           },
         };
       },
       render: ({
+        textos,
         tituloSeccion,
         descripcion,
         titulo,
@@ -646,19 +632,21 @@ const puckConfigBase: Config = {
         colorFondo,
       }: BlockRender<{
         // `ReactNode` y no `string`: Puck convierte los campos `richtext` a nodos
-        // antes de llamar al render, igual que en `TextoRico` de la intranet.
-        tituloSeccion?: ReactNode;
-        descripcion?: ReactNode;
-        titulo?: ReactNode;
+        // antes de llamar al render, también dentro de un `object`.
+        textos?: { tituloSeccion?: ReactNode; descripcion?: ReactNode; titulo?: ReactNode };
+        // Los sueltos de una portada sin la tarjeta: HTML que Puck ya no convierte.
+        tituloSeccion?: string;
+        descripcion?: string;
+        titulo?: string;
         searchPlaceholder?: string;
         imagenFondo?: string;
         transparenciaFondo?: number | '';
         colorFondo?: string;
       }>) => (
         <HeroBuscadorOcupaciones
-          tituloSeccion={tituloSeccion}
-          descripcion={descripcion}
-          titulo={titulo}
+          tituloSeccion={textos ? textos.tituloSeccion : htmlGuardado(tituloSeccion)}
+          descripcion={textos ? textos.descripcion : htmlGuardado(descripcion)}
+          titulo={textos ? textos.titulo : htmlGuardado(titulo)}
           searchPlaceholder={searchPlaceholder}
           imagenFondo={imagenFondo}
           transparenciaFondo={transparenciaFondo}
@@ -683,7 +671,7 @@ const puckConfigBase: Config = {
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
             title: { type: 'text' as const, label: 'Título', contentEditable: true },
-            description: { type: 'richtext' as const, label: 'Descripción', contentEditable: true },
+            description: campoTextoRico('Descripción'),
           },
           defaultItemProps: {
             id: 'nuevo-servicio',
@@ -838,7 +826,7 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Lista de videos',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         videos: {
           type: 'array' as const,
           label: 'Videos',
@@ -924,7 +912,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         fondo: campoColor('Color de fondo (opcional)'),
         movimiento: {
           type: 'radio' as const,
@@ -958,18 +946,8 @@ const puckConfigBase: Config = {
             url: { type: 'text' as const, label: 'Enlace de la flecha (/ruta o https://…; vacío: abre el PDF)' },
             // Siguen llamándose `mes` y `dia` porque así están en el JSON guardado: el mes
             // (línea pequeña) y el año (línea grande) de la insignia, con formato.
-            mes: {
-              type: 'richtext' as const,
-              label: 'Mes (p. ej. ENE - MAR)',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_EN_LINEA,
-            },
-            dia: {
-              type: 'richtext' as const,
-              label: 'Año (p. ej. 2026)',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_EN_LINEA,
-            },
+            mes: campoTextoRico('Mes (p. ej. ENE - MAR)'),
+            dia: campoTextoRico('Año (p. ej. 2026)'),
           },
           getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
             const titulo = typeof item.titulo === 'string' ? item.titulo.replace(/\s+/g, ' ').trim() : '';
@@ -1026,8 +1004,8 @@ const puckConfigBase: Config = {
     PoliticaPrivacidadEncabezado: {
       label: 'Encabezado de política',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título (h1 de la página)', contentEditable: true },
-        intro: { type: 'richtext' as const, label: 'Párrafos de introducción', contentEditable: true },
+        titulo: campoTextoRico('Título (h1 de la página)'),
+        intro: campoTextoRico('Párrafos de introducción'),
         colorTitulo: campoColor('Color del título (opcional)'),
         colorContenido: campoColor('Color de la introducción / contenido (opcional)'),
       },
@@ -1063,7 +1041,7 @@ const puckConfigBase: Config = {
     VisorDocumentosNormativos: {
       label: 'Visor de documentos normativos',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
+        titulo: campoTextoRico('Título de la sección'),
         colorTitulo: campoColor('Color del título (opcional)'),
         documentos: {
           type: 'array' as const,
@@ -1122,8 +1100,8 @@ const puckConfigBase: Config = {
     CanalesAtencion: {
       label: 'Canales de atención',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
-        intro: { type: 'richtext' as const, label: 'Párrafo de introducción', contentEditable: true },
+        titulo: campoTextoRico('Título de la sección'),
+        intro: campoTextoRico('Párrafo de introducción'),
         colorTitulo: campoColor('Color del título (opcional)'),
         colorContenido: campoColor('Color del contenido / introducción (opcional)'),
         canales: {
@@ -1208,13 +1186,8 @@ const puckConfigBase: Config = {
                   ICONOS_DE_PORTALES.find((icono) => icono.id === ruta)?.nombre ?? (ruta ? 'Otro' : 'Sin ícono'),
               }
             ),
-            texto: {
-              type: 'richtext' as const,
-              label: 'Texto',
-              contentEditable: true,
-              // La tarjeta entera ya es un enlace: un enlace dentro de otro no vale.
-              options: { ...OPCIONES_TEXTO_EN_LINEA, link: false },
-            },
+            // La tarjeta entera ya es un enlace: un enlace dentro de otro no vale.
+            texto: campoTextoRico('Texto', { link: false }),
             enlace: campoEnAcordeon({
               type: 'text',
               label: 'Hipervínculo',
@@ -1327,18 +1300,8 @@ const puckConfigBase: Config = {
     VideoEmbebido: {
       label: 'Video embebido',
       fields: {
-        titulo: {
-          type: 'richtext' as const,
-          label: 'Título',
-          contentEditable: true,
-          options: OPCIONES_TEXTO_EN_LINEA,
-        },
-        subtitulo: {
-          type: 'richtext' as const,
-          label: 'Subtítulo (opcional)',
-          contentEditable: true,
-          options: OPCIONES_TEXTO_EN_LINEA,
-        },
+        titulo: campoTextoRico('Título'),
+        subtitulo: campoTextoRico('Subtítulo (opcional)'),
         video: campoEnAcordeon(
           {
             type: 'custom',
@@ -1397,12 +1360,7 @@ const puckConfigBase: Config = {
         textos: campoObjetoEnAcordeon(
           'Párrafo',
           {
-            parrafo: {
-              type: 'richtext' as const,
-              label: 'Párrafo',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_DEL_CARRUSEL,
-            },
+            parrafo: campoTextoRico('Párrafo'),
             // El de la franja del texto, aparte del banner de imágenes.
             colorFondo: campoColor('Color de fondo'),
           },
@@ -1473,7 +1431,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         mostrarSubtitulo: {
           type: 'radio',
           label: 'Mostrar subtítulo',
@@ -1482,8 +1440,8 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
-        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
+        subtitulo: campoTextoRico('Subtítulo'),
+        contenido: campoTextoRico('Contenido'),
         fondo: campoFondo,
         colorTitulo: campoColor('Color del título (opcional)'),
         colorContenido: campoColor('Color del contenido (opcional)'),
@@ -2141,246 +2099,6 @@ const puckConfigBase: Config = {
         />
       ),
     },
-    FuentesFuturasEmpleo: {
-      label: 'Fuentes futuras de empleo',
-      fields: {
-        modoSeleccionDepartamento: {
-          type: 'radio',
-          label: 'Modo de selección de departamento',
-          options: [
-            { label: 'Por lista', value: 'lista' },
-            { label: 'Por mapa', value: 'mapa' },
-          ],
-        },
-        mostrarTotales: {
-          type: 'radio',
-          label: 'Mostrar fila de totales',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        mostrarBannerDepartamento: {
-          type: 'radio',
-          label: 'Mostrar información por departamento',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        subtituloInfoDepto: {
-          type: 'text',
-          label: 'Subtítulo info departamento',
-        },
-        descripcionInfoDepto: {
-          type: 'custom',
-          label: 'Descripción info departamento',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <CampoDescripcionConVariables value={value} onChange={onChange} />
-          ),
-        },
-        colorBanner: campoColor('Color de acento información departamento (opcional)'),
-        mostrarTitulo: {
-          type: 'radio',
-          label: 'Mostrar título',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        titulo: {
-          type: 'text',
-          label: 'Título',
-        },
-        alineacionTitulo: {
-          type: 'radio',
-          label: 'Alineación del título',
-          options: [
-            { label: 'Izquierda', value: 'izquierda' },
-            { label: 'Centro', value: 'centro' },
-            { label: 'Derecha', value: 'derecha' },
-          ],
-        },
-        colorTitulo: campoColor('Color del título (opcional)'),
-        mostrarSubtitulo: {
-          type: 'radio',
-          label: 'Mostrar subtítulo',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        subtitulo: {
-          type: 'text',
-          label: 'Subtítulo (opcional)',
-        },
-        alineacionSubtitulo: {
-          type: 'radio',
-          label: 'Alineación del subtítulo',
-          options: [
-            { label: 'Izquierda', value: 'izquierda' },
-            { label: 'Centro', value: 'centro' },
-            { label: 'Derecha', value: 'derecha' },
-          ],
-        },
-        colorSubtitulo: campoColor('Color del subtítulo (opcional)'),
-        mostrarDescripcion: {
-          type: 'radio',
-          label: 'Mostrar descripción',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        descripcion: {
-          type: 'textarea',
-          label: 'Descripción',
-        },
-        alineacionDescripcion: {
-          type: 'radio',
-          label: 'Alineación de la descripción',
-          options: [
-            { label: 'Izquierda', value: 'izquierda' },
-            { label: 'Centro', value: 'centro' },
-            { label: 'Derecha', value: 'derecha' },
-          ],
-        },
-        colorDescripcion: campoColor('Color de la descripción (opcional)'),
-      },
-      defaultProps: {
-        modoSeleccionDepartamento: 'mapa',
-        mostrarTotales: true,
-        mostrarTitulo: true,
-        titulo: 'Fuentes futuras de empleo',
-        alineacionTitulo: 'centro',
-        colorTitulo: '',
-        mostrarSubtitulo: false,
-        subtitulo: '',
-        alineacionSubtitulo: 'centro',
-        colorSubtitulo: '',
-        mostrarDescripcion: false,
-        descripcion: '',
-        alineacionDescripcion: 'centro',
-        colorDescripcion: '',
-        mostrarBannerDepartamento: true,
-        subtituloInfoDepto: 'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.',
-        descripcionInfoDepto: 'En lo corrido del año se han detectado {proyectos} proyectos, con una participación del {porcentaje}% sobre el total nacional.',
-        colorBanner: '',
-      },
-      resolveData: async (data) => {
-        const propsActualizadas = { ...data.props };
-        let huboCambios = false;
-
-        if (!propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
-          propsActualizadas.titulo = 'Fuentes futuras de empleo';
-          huboCambios = true;
-        }
-
-        if (!propsActualizadas.modoSeleccionDepartamento) {
-          propsActualizadas.modoSeleccionDepartamento = 'mapa';
-          huboCambios = true;
-        }
-
-        const propsCualquiera = propsActualizadas as Record<string, unknown>;
-        if (
-          propsCualquiera.subtituloBanner !== undefined ||
-          propsCualquiera.tituloBanner !== undefined ||
-          propsCualquiera.descripcionBanner !== undefined
-        ) {
-          delete propsCualquiera.subtituloBanner;
-          delete propsCualquiera.tituloBanner;
-          delete propsCualquiera.descripcionBanner;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.mostrarTotales === undefined) {
-          propsActualizadas.mostrarTotales = true;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.mostrarTitulo === undefined) {
-          propsActualizadas.mostrarTitulo = true;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.mostrarSubtitulo === undefined) {
-          propsActualizadas.mostrarSubtitulo = false;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.mostrarDescripcion === undefined) {
-          propsActualizadas.mostrarDescripcion = false;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.mostrarBannerDepartamento === undefined) {
-          propsActualizadas.mostrarBannerDepartamento = true;
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.subtituloInfoDepto === undefined) {
-          propsActualizadas.subtituloInfoDepto = 'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.';
-          huboCambios = true;
-        }
-
-        if (propsActualizadas.descripcionInfoDepto === undefined) {
-          propsActualizadas.descripcionInfoDepto = 'En lo corrido del año se han detectado {proyectos} proyectos, con una participación del {porcentaje}% sobre el total nacional.';
-          huboCambios = true;
-        }
-
-        if (huboCambios) {
-          return {
-            ...data,
-            props: propsActualizadas,
-          };
-        }
-
-        return data;
-      },
-      render: (
-        props: BlockRender<{
-          modoSeleccionDepartamento?: 'lista' | 'mapa';
-          mostrarBannerDepartamento?: boolean;
-          subtituloInfoDepto?: string;
-          descripcionInfoDepto?: string;
-          colorBanner?: string;
-          mostrarTotales?: boolean;
-          mostrarTitulo?: boolean;
-          titulo?: string;
-          alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
-          colorTitulo?: string;
-          mostrarSubtitulo?: boolean;
-          subtitulo?: string;
-          alineacionSubtitulo?: 'izquierda' | 'centro' | 'derecha';
-          colorSubtitulo?: string;
-          mostrarDescripcion?: boolean;
-          descripcion?: string;
-          alineacionDescripcion?: 'izquierda' | 'centro' | 'derecha';
-          colorDescripcion?: string;
-        }>
-      ) => (
-        <FuentesFuturasEmpleoView
-          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'mapa'}
-          mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? true}
-          subtituloInfoDepto={props.subtituloInfoDepto}
-          descripcionInfoDepto={props.descripcionInfoDepto}
-          colorBanner={props.colorBanner}
-          mostrarTotales={props.mostrarTotales ?? true}
-          mostrarTitulo={props.mostrarTitulo}
-          titulo={props.titulo}
-          alineacionTitulo={props.alineacionTitulo}
-          colorTitulo={props.colorTitulo}
-          mostrarSubtitulo={props.mostrarSubtitulo}
-          subtitulo={props.subtitulo}
-          alineacionSubtitulo={props.alineacionSubtitulo}
-          colorSubtitulo={props.colorSubtitulo}
-          mostrarDescripcion={props.mostrarDescripcion}
-          descripcion={props.descripcion}
-          alineacionDescripcion={props.alineacionDescripcion}
-          colorDescripcion={props.colorDescripcion}
-        />
-      ),
-    },
     MapaSitio: {
       label: 'Mapa del Sitio',
       defaultProps: VALORES_MAPA_SITIO_POR_DEFECTO,
@@ -2471,14 +2189,14 @@ export const puckConfig: Config = {
  * Un slug que no esté aquí recibe el catálogo completo, que es lo razonable
  * cuando no se sabe qué va a contener.
  *
- * `Header` y `Footer` NO están en `inicio`: los pinta `app/(paginas)/layout.tsx` a
+ * `Header` y `Footer` NO están en `inicio`: los pinta `app/(pages)/layout.tsx` a
  * partir de la página `plantilla`, y ofrecerlos en una sección dejaría volver a
  * tener una cabecera distinta por página, que es justo lo que se acaba de quitar.
  */
 /**
  * La página que guarda la cabecera y el pie comunes.
  *
- * Espejo de `SLUG_PLANTILLA` en `features/paginas/menu-y-pie/menu-y-pie.ts`. No se importa de
+ * Espejo de `SLUG_PLANTILLA` en `features/editor/navegation/menu-y-pie.ts`. No se importa de
  * allí para no atar el catálogo de bloques a una feature: aquí solo hace falta el
  * literal, y si algún día cambia, cambia en los dos sitios.
  */
@@ -2491,7 +2209,7 @@ const SLUG_DE_PLANTILLA = 'menu-y-pie';
  *
  * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien visita
  * el sitio. Los resuelve el Server Component del editor y llegan hasta aquí por
- * props — ver `app/editor/[slug]/page.tsx`.
+ * props — ver `app/edit/[slug]/page.tsx`.
  */
 export interface ContextoDeEdicion {
   /** Cabecera y pie publicados. Se usa al editar una página normal. */

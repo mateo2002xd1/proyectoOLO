@@ -31,6 +31,9 @@ export {
 } from './primitives/campos-en-acordeon';
 export type { CampoDeAcordeon, OpcionesDeAcordeon, OpcionesDeLista } from './primitives/campos-en-acordeon';
 
+// ─── Campo de texto enriquecido con la barra de formato del OLO ───
+export { crearCampoTextoRico, OPCIONES_TEXTO_RICO } from './primitives/campo-texto-rico';
+
 // ─── Campos para Icono y Color de Icono ───
 export { IconSelectorField, campoIcono, IconoRenderer, ICONOS_DISPONIBLES } from './primitives/icon-selector-field';
 export type { IconSelectorFieldProps, IconoDelCatalogo } from './primitives/icon-selector-field';

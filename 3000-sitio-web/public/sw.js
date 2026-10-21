@@ -43,11 +43,13 @@ const MAXIMO_POR_CACHE = {
   [CACHE_IMAGENES]: 80,
 };
 
-/** `app/admin-panel`, `app/editor`, `app/preview`, las pantallas de `app/(auth)` y `app/api`. */
+/** `app/admin-panel`, `app/edit`, `app/preview`, las pantallas de `app/(auth)` y `app/api`. */
 const RUTAS_PRIVADAS = [
   '/admin-panel',
   // URLs del panel de antes del 2026-10-20, que ahora redirigen a `/admin-panel/...`.
   '/admin',
+  '/edit',
+  // El editor se llamó así hasta el 2026-10-21; ahora redirige a `/edit/...`.
   '/editor',
   '/preview',
   '/api',

@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { useCargasAlertasInversion } from '../hooks/use-cargas-alertas-inversion';
 import { descargarFormatoAlertasInversion, descargarFormatoSectoresCiiu } from '../services/observatorio.service';

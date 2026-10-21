@@ -21,7 +21,7 @@ const enServidor = () => false;
 
 /**
  * Accesibilidad del sitio público: el botón pegado al borde derecho, que acompaña el
- * scroll, y el panel que abre. Lo monta `(paginas)/layout.tsx`, así que el panel, el editor
+ * scroll, y el panel que abre. Lo monta `(pages)/layout.tsx`, así que el panel, el editor
  * y la vista previa no lo tienen.
  *
  * El botón, el panel y la guía de lectura salen por portal al `<body>`, fuera de

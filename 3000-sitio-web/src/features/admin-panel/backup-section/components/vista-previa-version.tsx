@@ -3,7 +3,7 @@
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useRef, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
-import { codigoDeError, estadoHttp, mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { codigoDeError, estadoHttp, mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import type { RegistroRespaldo } from '../types';
 import { restaurarRespaldo, verificarBloqueo } from '../services/respaldos.service';
 import { ModalConfirmarRestauracion } from './modal-confirmar-restauracion';

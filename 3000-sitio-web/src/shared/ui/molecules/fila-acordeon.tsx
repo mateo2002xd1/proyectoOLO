@@ -54,7 +54,7 @@ export function fechaDeFila(iso: string): string {
 /**
  * La fecha en una celda de la tabla (escritorio): el día arriba y la hora debajo, más
  * pequeña y fina. Pedido del usuario el 2026-10-12 en «Páginas en revisión» y Respaldos.
- * `font-light` (300) y no `font-thin`: Poppins se carga en 300–700 (`shared/lib/fonts.ts`)
+ * `font-light` (300) y no `font-thin`: Poppins se carga en 300–700 (`shared/lib/typography/fonts.ts`)
  * y el 100 caería en el mismo 300.
  *
  * `exacta`: «12/10/2026» y «5:30:15 p. m.», con segundos, para Auditoría, donde el orden

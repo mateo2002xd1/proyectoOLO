@@ -195,7 +195,7 @@ etiqueta de caché. El comodín lo saca **uniendo los segmentos con guion**:
 `/tendencias` → `tendencias`, `/clasificacion/cno` → `clasificacion-cno`.
 
 La vuelta (slug → URL) no se puede deducir del guion solo: `clasificacion-cno` podría ser
-`/clasificacion-cno`. La decide la lista **`CARPETAS`** de `features/paginas/model/rutas.ts`:
+`/clasificacion-cno`. La decide la lista **`CARPETAS`** de `features/editor/model/rutas.ts`:
 un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`. Hoy solo es `clasificacion`; en
 la intranet es `encuestas`. La API tiene la misma lista (`CARPETAS` en
 `4000-api-backend/src/shared/extraer-textos-puck.ts`) para los enlaces del buscador.
@@ -255,30 +255,30 @@ Contenido del proyecto en capa `3001-intranet/src/`:
 │   └── api/upload/                   # El único route handler propio
 │
 ├── features/                         # Solo dos, y es lo correcto para lo que hace la app
-│   ├── paginas/                      # Gemela de 3000-sitio-web/src/features/paginas (antes
+│   ├── editor/                       # Gemela de 3000-sitio-web/src/features/editor (antes
 │   │   │                             #   se llamaba gestor-secciones/). Mismo orden: POR
 │   │   │                             #   ETAPA (8-ciclo-editorial.md §3.2) y, dentro de
 │   │   │                             #   cada etapa, subcarpetas por tipo (§4.0); model/ y
-│   │   │                             #   menu-y-pie/ son planas. Sin etapa revision/: la
+│   │   │                             #   navegation/ son planas. Sin etapa review/: la
 │   │   │                             #   intranet se aprueba desde el panel del sitio
 │   │   ├── model/                    #   pagina.types.ts (ContenidoPagina, PaginaVersion,
 │   │   │                             #   PaginaPublicada, VersionEditable, índice de
 │   │   │                             #   búsqueda), rutas.ts (slug ↔ URL, encuestas-* →
 │   │   │                             #   /encuestas/*, ruta de vuelta del editor)
-│   │   ├── publicacion/              #   publicacion.service.ts (publicada, índice de
+│   │   ├── publishing/               #   publicacion.service.ts (publicada, índice de
 │   │   │                             #   búsqueda, visita), ClientPuckRender,
 │   │   │                             #   RastreadorVisitas
-│   │   ├── edicion/                  #   edicion.service.ts (editable, borrador, enviar a
+│   │   ├── edition/                  #   edicion.service.ts (editable, borrador, enviar a
 │   │   │                             #   revisión, candado, subidas), puck-editor-wrapper,
 │   │   │                             #   editorjs-wrapper, uploaders de imagen y archivo,
 │   │   │                             #   avisos de rechazo y de editor ocupado,
 │   │   │                             #   use-editor-actions, use-bloqueo-de-edicion,
 │   │   │                             #   use-pagina, page-seeds, pagina-en-edicion
-│   │   ├── secciones/                #   secciones.service.ts (crear, analizar y hacer el
+│   │   ├── sections/                 #   secciones.service.ts (crear, analizar y hacer el
 │   │   │                             #   borrado, permisos de la sesión desde el
 │   │   │                             #   navegador), paginas-fab-speed-dial, modales de
 │   │   │                             #   nueva y eliminar sección, aviso-seccion-nueva
-│   │   ├── menu-y-pie/               #   menu-y-pie.ts (obtenerPlantilla, SLUG_PLANTILLA),
+│   │   ├── navegation/               #   menu-y-pie.ts (obtenerPlantilla, SLUG_PLANTILLA),
 │   │   │                             #   marco-secciones.tsx (MarcoSecciones: la barra y
 │   │   │                             #   el pie alrededor de cada sección)
 │   │   ├── index.ts                  #   agrupado por carpeta
@@ -307,13 +307,16 @@ Contenido del proyecto en capa `3001-intranet/src/`:
 │       ├── pwa/                      #   PWA: íconos y color del manifiesto
 │       │                             #   (app/manifest.ts) y registro de public/sw.js,
 │       │                             #   que NO guarda ninguna página
-│       └── api-client.ts, auth-server.ts, constants.ts, errors.ts,
-│           fonts.ts, sesion.ts, types.ts, verificar-sesion.ts
+│       ├── api/                      #   api-client.ts, errors.ts, constants.ts (URL del sitio)
+│       ├── layout/                   #   use-cuantos-caben.ts
+│       ├── modals/                   #   use-cierre-animado.ts
+│       ├── session/                  #   sesion.ts, verificar-sesion.ts, edicion.ts
+│       └── typography/               #   fonts.ts
 │
 └── config/
     └── puck.config.tsx               # Catálogo de bloques. Importa ImageUploaderField y
                                        #   ArchivoUploaderField directo desde
-                                       #   paginas/edicion/components — no pasa por el
+                                       #   editor/edition/components — no pasa por el
                                        #   index.ts de la feature (ver nota de más abajo)
 ```
 
@@ -360,7 +363,7 @@ la divergencia que la regla de `packages/` buscaba evitar, y la cierra la fase 6
 importa rutas internas. Fuera de `app/` hay tres excepciones:
 
 - `config/puck.config.tsx` importa `ImageUploaderField` y `ArchivoUploaderField` directo
-  desde `paginas/edicion/components/`, porque importar el `index.ts` cerraría un ciclo
+  desde `editor/edition/components/`, porque importar el `index.ts` cerraría un ciclo
   (`index.ts` → `ClientPuckRender` → `puck.config`). Igual que en el sitio.
 - La barra de navegación (`shared/lib/blocks/plantilla/intranet-topbar.tsx`) es un
   bloque de ese mismo catálogo y lee el índice de búsqueda por `paginas/client.ts`, por
@@ -390,7 +393,7 @@ packages/
 
 De ahí sale el criterio para el siguiente: **`packages/` es para reglas que dos capas tienen que decidir idénticamente, no para código que simplemente se parece.**
 
-**Costo de no haber extraído `editor-core`, medido hoy:** la duplicación entre `3000-sitio-web/src/features/paginas/` e `3001-intranet/src/features/paginas/` no bajó, creció. A los siete archivos originales (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`) se sumaron los de crear y eliminar sección, el menú y pie, la ruta de vuelta y el candado de edición. Cada funcionalidad nueva del editor se escribe dos veces. Lo que sí cambió el 2026-09-18 es que la duplicación **se puede medir de un vistazo**: desde que las dos features tienen el mismo nombre y el mismo orden, **22 archivos están en la misma ruta en las dos apps** (`edicion/components/puck-editor-wrapper.tsx`, `model/rutas.ts`, `secciones/services/secciones.service.ts`...). Esa lista es el punto de partida de la extracción. Y la divergencia sigue donde estaba: **la etapa de revisión existe solo en `sitio-web`**. El alcance exacto de `editor-core` está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6.
+**Costo de no haber extraído `editor-core`, medido hoy:** la duplicación entre `3000-sitio-web/src/features/editor/` e `3001-intranet/src/features/editor/` no bajó, creció. A los siete archivos originales (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`) se sumaron los de crear y eliminar sección, el menú y pie, la ruta de vuelta y el candado de edición. Cada funcionalidad nueva del editor se escribe dos veces. Lo que sí cambió el 2026-09-18 es que la duplicación **se puede medir de un vistazo**: desde que las dos features tienen el mismo nombre y el mismo orden, **22 archivos están en la misma ruta en las dos apps** (`edicion/components/puck-editor-wrapper.tsx`, `model/rutas.ts`, `secciones/services/secciones.service.ts`...). Esa lista es el punto de partida de la extracción. Y la divergencia sigue donde estaba: **la etapa de revisión existe solo en `sitio-web`**. El alcance exacto de `editor-core` está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6.
 
 ---
 
@@ -402,14 +405,14 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 
 | RF | Backend | Frontend | |
 |---|---|---|---|
-| RF-01 contenidos | `use-cases/contenidos`, `use-cases/paginas` | `features/paginas`, `admin/editor` | ✅ |
-| RF-02 archivos | subida y servido en `routes/archivos.routes.ts` + `use-cases/archivos`, con `@olo/upload-policy`; filesystem, respaldo, restauración y borrado de huérfanos en `infrastructure/storage` + `borrar-archivos-huerfanos` | `features/paginas` (uploaders); los fronts solo reenvían `/api/upload` y `/uploads` a la API | ✅ fuera del webroot desde 2026-10-06 |
-| RF-03 identidad | **ninguno**: `marca_versiones` se eliminó en la migración 020 sin haberse usado | ninguno propio: logo, menú y franja gov.co se editan en «Menú y pie» (`features/paginas/menu-y-pie`); tipografías en `shared/lib/fonts` (el panel y el acceso toman Poppins de ahí con `LetraDelPanel`), colores en `globals.css` | 🟡 |
+| RF-01 contenidos | `use-cases/contenidos`, `use-cases/paginas` | `features/editor`, `admin/editor` | ✅ |
+| RF-02 archivos | subida y servido en `routes/archivos.routes.ts` + `use-cases/archivos`, con `@olo/upload-policy`; filesystem, respaldo, restauración y borrado de huérfanos en `infrastructure/storage` + `borrar-archivos-huerfanos` | `features/editor` (uploaders); los fronts solo reenvían `/api/upload` y `/uploads` a la API | ✅ fuera del webroot desde 2026-10-06 |
+| RF-03 identidad | **ninguno**: `marca_versiones` se eliminó en la migración 020 sin haberse usado | ninguno propio: logo, menú y franja gov.co se editan en «Menú y pie» (`features/editor/navegation`); tipografías en `shared/lib/typography/fonts` (el panel y el acceso toman Poppins de ahí con `LetraDelPanel`), colores en `globals.css` | 🟡 |
 | RF-04 roles | `Role/Permission/RolePermission`, `use-cases/usuarios`, `shared/catalogo-permisos` | `features/admin-panel/auth` | ✅ |
 | RF-05/06 gobernanza | `policies/paginas`, `use-cases/paginas`, `domain-events/paginas` | cola en `admin/revision` | ✅ solo en el sitio; la intranet no tiene cola propia |
 | RF-07 historial | `ContentAuditLog` + `shared/auditoria-*`, escrito desde los controladores | `features/admin-panel/changelog-view` | ✅ |
 | RF-08 Power BI | tabla `tableros_bi`, **sin capa de aplicación**; URLs a mano en los bloques | `config/puck.config` (bloque contenedor) | ⏳ |
-| RF-09 CNO/CUOC | proxy a API externa (por construir) | `features/sitio-web/buscador-ocupaciones` | ⏳ |
+| RF-09 CNO/CUOC | proxy a API externa (por construir) | `shared/lib/buscador-ocupaciones` | ⏳ |
 | RF-10 buscador interno | `contenidos.busqueda` (tsvector + GIN) | ninguno todavía: `features/contenidos` solo listaba publicados, nadie lo usaba y se borró (2026-09-18) | 🟡 |
 | RF-11 navegación 3 clics | `secciones.nivel` con `CHECK BETWEEN 1 AND 3` | `shared/ui/organisms` (nav + breadcrumbs) | 🟡 el esquema lo garantiza; la navegación falta |
 | RF-12 descarga pública | `archivos` + comprobación de estado publicado | enlaces de descarga | 🟡 |

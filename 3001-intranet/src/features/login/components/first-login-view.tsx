@@ -12,7 +12,7 @@ import {
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { QuestionPicker, type CatalogQuestion } from './question-picker';
-import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import { MarcoAcceso } from './marco-acceso';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import {

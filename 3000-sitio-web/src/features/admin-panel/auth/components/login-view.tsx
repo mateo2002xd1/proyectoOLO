@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
-import { rutaDelPrimerIngreso } from '@/shared/lib/ruta-del-primer-ingreso';
+import { rutaDelPrimerIngreso } from '@/shared/lib/session/ruta-del-primer-ingreso';
 import {
   AuthGeneralError,
   AuthGeneralNotice,

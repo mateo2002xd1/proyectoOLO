@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PanelGeneralLayout } from '@/features/admin-panel/auth/components/panel-general';
 import { LetraDelPanel } from '@/features/admin-panel/auth/components/letra-del-panel';
-import { getAuthUserProfile, tieneConfiguracionPendiente } from '@/shared/lib/session';
+import { getAuthUserProfile, tieneConfiguracionPendiente } from '@/shared/lib/session/session';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { EstilosDeIdentidad, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 
@@ -16,7 +16,7 @@ export function generateMetadata(): Promise<Metadata> {
  * monta aquí para cubrir de una vez dashboard, usuarios, roles, revisión, auditoría,
  * respaldos, actualizaciones y mi-perfil. Quedan fuera, en otras ramas del árbol:
  * las pantallas de acceso (`app/(auth)/`: `/login`, `/login/first-login`, `/login/recovery`...,
- * sin panel), y el editor y la vista previa (`app/editor/`, `app/preview/`), que
+ * sin panel), y el editor y la vista previa (`app/edit/`, `app/preview/`), que
  * montan su propio vigilante.
  *
  * `LetraDelPanel` deja todo el panel en Poppins, igual que las pantallas de acceso: la

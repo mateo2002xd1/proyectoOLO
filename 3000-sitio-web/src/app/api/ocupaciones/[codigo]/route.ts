@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   obtenerDetalleOcupacion,
   respuestaDeErrorCno,
-} from '@/features/sitio-web/buscador-ocupaciones/lib/consulta-cno';
+} from '@/shared/lib/buscador-ocupaciones/lib/consulta-cno';
 
 /**
  * `GET /api/ocupaciones/<código>` — ficha de una ocupación CNO (4 dígitos) o

@@ -7,8 +7,8 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon
 } from '@heroicons/react/24/outline';
-import { poppins } from '@/shared/lib/fonts';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { poppins } from '@/shared/lib/typography/fonts';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 
 interface VisorDocumentoProps {
   titulo: React.ReactNode;

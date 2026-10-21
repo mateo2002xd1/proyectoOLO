@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** La API vista desde este servidor: la misma que `shared/lib/url-de-la-api.ts`. */
+/** La API vista desde este servidor: la misma que `shared/lib/api/url-de-la-api.ts`. */
 const URL_DE_LA_API = process.env.BACKEND_URL || 'http://localhost:4000';
 
 /** @type {import('next').NextConfig} */
@@ -145,7 +145,13 @@ const nextConfig = {
         // la intranet. Esto cubre marcadores, enlaces copiados y el `?redirect=` de un
         // login que se quedara a medias con la URL vieja.
         source: '/admin/editor/:path*',
-        destination: '/editor/:path*',
+        destination: '/edit/:path*',
+        permanent: false,
+      },
+      {
+        // El editor se llamó `/editor/...` hasta el 2026-10-21 (`app/editor/`).
+        source: '/editor/:path*',
+        destination: '/edit/:path*',
         permanent: false,
       },
       {

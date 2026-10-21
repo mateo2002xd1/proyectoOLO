@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
+import { conCabecerasDeCliente } from '@/shared/lib/api/reenviar-cliente';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 

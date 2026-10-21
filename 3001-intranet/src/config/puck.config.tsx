@@ -34,11 +34,12 @@ import {
   BotonPersonalizado,
   SeccionBotonesIcono,
   campoDestinoBoton,
+  crearCampoTextoRico,
 } from '@olo/blocks-renderer';
-import { Render, type Config, type Data } from '@puckeditor/core';
+import { Render, RichTextMenu, type Config, type Data } from '@puckeditor/core';
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
-import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
-import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
+import { ImageUploaderField } from '@/features/editor/edition/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/editor/edition/components/archivo-uploader-field';
 
 /** Props de un componente de Puck. `id` siempre viene inyectado y, al ser
  *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
@@ -56,17 +57,10 @@ const campoImagen = (label: string) =>
 });
 
 /**
- * Barra de formato de un texto corto: negrita, cursiva, subrayado, enlaces y saltos de
- * línea, sin encabezados, listas ni citas. La misma que el sitio-web usa en sus titulares.
+ * Todos los textos enriquecidos llevan la misma barra que en el sitio-web: H1–H6,
+ * viñetas, negrita, cursiva, subrayado y alineación (ver `crearCampoTextoRico`).
  */
-const OPCIONES_TEXTO_EN_LINEA = {
-  heading: false,
-  blockquote: false,
-  bulletList: false,
-  orderedList: false,
-  codeBlock: false,
-  horizontalRule: false,
-} as const;
+const campoTextoRico = crearCampoTextoRico(RichTextMenu);
 
 /**
  * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
@@ -331,7 +325,7 @@ const puckConfigBase: Config = {
     MatrizBanner: {
       label: 'Cabecera · Matriz',
       fields: {
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
@@ -348,7 +342,7 @@ const puckConfigBase: Config = {
       label: 'Cabecera · Encuesta',
       fields: {
         antetitulo: { type: 'text', label: 'Línea superior', contentEditable: true },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
         imagenDerecha: {
@@ -383,7 +377,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         mostrarSubtitulo: {
           type: 'radio',
           label: 'Mostrar subtítulo',
@@ -392,8 +386,8 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
-        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
+        subtitulo: campoTextoRico('Subtítulo'),
+        contenido: campoTextoRico('Contenido'),
         fondo: campoFondo,
         colorTitulo: campoColor('Color del título (opcional)'),
         colorContenido: campoColor('Color del contenido (opcional)'),
@@ -432,7 +426,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         mostrarSubtitulo: {
           type: 'radio',
           label: 'Mostrar subtítulo',
@@ -441,8 +435,8 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
-        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
+        subtitulo: campoTextoRico('Subtítulo'),
+        contenido: campoTextoRico('Contenido'),
         colorTitulo: campoColor('Color del título (opcional)'),
         colorContenido: campoColor('Color del contenido (opcional)'),
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
@@ -500,7 +494,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         colorTitulo: campoColor('Color del título (opcional)'),
         mostrarSubtitulo: {
           type: 'radio',
@@ -510,7 +504,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
+        subtitulo: campoTextoRico('Subtítulo'),
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -763,7 +757,7 @@ const puckConfigBase: Config = {
     SeccionCarrusel: {
       label: 'Carrusel de imágenes',
       fields: {
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         imagenes: {
           type: 'array',
           label: 'Imágenes',
@@ -853,7 +847,7 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Lista de videos',
       fields: {
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         videos: {
           type: 'array',
           label: 'Videos',
@@ -894,8 +888,8 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Tableros',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título', contentEditable: true },
-            descripcion: { type: 'richtext', label: 'Descripción', contentEditable: true },
+            titulo: campoTextoRico('Título'),
+            descripcion: campoTextoRico('Descripción'),
             urlPowerBi: { type: 'text', label: 'Enlace de Power BI (Publicar en la web)' },
           },
           getItemSummary: (item) => {
@@ -944,7 +938,7 @@ const puckConfigBase: Config = {
     DescargasConPresentacion: {
       label: 'Descargas con presentación',
       fields: {
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         enlaces: {
           type: 'array',
           label: 'Enlaces',
@@ -988,7 +982,7 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         fondo: campoColor('Color de fondo (opcional)'),
         movimiento: {
           type: 'radio',
@@ -1022,18 +1016,8 @@ const puckConfigBase: Config = {
             url: { type: 'text', label: 'Enlace de la flecha (/ruta o https://…; vacío: abre el PDF)' },
             // Siguen llamándose `mes` y `dia` porque así están en el JSON guardado: el mes
             // (línea pequeña) y el año (línea grande) de la insignia, con formato.
-            mes: {
-              type: 'richtext',
-              label: 'Mes (p. ej. ENE - MAR)',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_EN_LINEA,
-            },
-            dia: {
-              type: 'richtext',
-              label: 'Año (p. ej. 2026)',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_EN_LINEA,
-            },
+            mes: campoTextoRico('Mes (p. ej. ENE - MAR)'),
+            dia: campoTextoRico('Año (p. ej. 2026)'),
           },
           getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
             const titulo = typeof item.titulo === 'string' ? item.titulo.replace(/\s+/g, ' ').trim() : '';
@@ -1066,9 +1050,9 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Conceptos',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+            titulo: campoTextoRico('Título'),
             colorTitulo: campoColor('Color del título (opcional)'),
-            descripcion: { type: 'richtext', label: 'Descripción', contentEditable: true },
+            descripcion: campoTextoRico('Descripción'),
             colorDescripcion: campoColor('Color de la descripción / contenido (opcional)'),
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -1092,14 +1076,14 @@ const puckConfigBase: Config = {
     PreguntasFrecuentes: {
       label: 'Preguntas frecuentes',
       fields: {
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        titulo: campoTextoRico('Título'),
         tarjetas: {
           type: 'array',
           label: 'Tarjetas',
           arrayFields: {
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
-            texto: { type: 'richtext', label: 'Texto de la tarjeta', contentEditable: true },
+            texto: campoTextoRico('Texto de la tarjeta'),
             url: { type: 'text', label: 'Enlace (sin él, la tarjeta no es pulsable)' },
           },
           getItemSummary: (item) => {
@@ -1152,7 +1136,7 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Columnas',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título de la columna', contentEditable: true },
+            titulo: campoTextoRico('Título de la columna'),
             orientacionLineas: {
               type: 'radio',
               label: 'Orientación de las líneas',
@@ -1165,7 +1149,7 @@ const puckConfigBase: Config = {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'richtext', label: 'Texto (opcional si hay ícono)', contentEditable: true },
+                texto: campoTextoRico('Texto (opcional si hay ícono)'),
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
                 icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
@@ -1262,7 +1246,7 @@ export const puckConfig: Config = {
  * catálogo completo, que es lo razonable cuando no se sabe qué va a contener.
  *
  * `IntranetTopbar` e `IntranetFooter` NO están en ninguna sección: los pinta
- * `app/(paginas)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
+ * `app/(pages)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
  * aquí dejaría volver a tener una barra distinta por sección, que es justo el
  * problema que se acaba de quitar. Siguen registrados en `puckConfig` porque
  * puede quedar contenido guardado que los use.
@@ -1270,7 +1254,7 @@ export const puckConfig: Config = {
 /**
  * La sección que guarda la barra y el pie comunes.
  *
- * Espejo de `SLUG_PLANTILLA` en `features/paginas/menu-y-pie/menu-y-pie.ts`. No se
+ * Espejo de `SLUG_PLANTILLA` en `features/editor/navegation/menu-y-pie.ts`. No se
  * importa de allí para no atar el catálogo de bloques a una feature: aquí solo hace
  * falta el literal, y si algún día cambia, cambia en los dos sitios.
  */
@@ -1283,7 +1267,7 @@ const SLUG_DE_PLANTILLA = 'menu-y-pie';
  *
  * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien
  * visita la intranet. Los resuelve el Server Component del editor y llegan hasta
- * aquí por props — ver `app/editor/[slug]/page.tsx`.
+ * aquí por props — ver `app/edit/[slug]/page.tsx`.
  */
 export interface ContextoDeEdicion {
   /** Barra y pie publicados. Se usa al editar una sección normal. */

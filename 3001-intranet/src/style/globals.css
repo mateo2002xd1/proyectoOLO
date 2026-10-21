@@ -5447,6 +5447,37 @@ body:has(.fab-speed-dial) .olo-boton-subir {
   margin-bottom: 0.75rem;
 }
 
+/* Los seis niveles de la barra de formato (H1–H6). Sin esto el preflight de Tailwind
+   los deja del tamaño del texto y elegir uno no cambia nada. En `em`, para que crezcan
+   desde el tamaño del campo (un H1 en un titular se ve más grande que en un párrafo), y
+   con `:where` para no pesar más que el tamaño que ya da un bloque a los suyos. La
+   alineación de la barra llega como `style="text-align: …"`. */
+:where(.rich-text) :is(h1, h5, h6) {
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+:where(.rich-text) :is(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.2;
+}
+
+:where(.rich-text) h1 { font-size: 2em; }
+:where(.rich-text) h2 { font-size: 1.5em; }
+:where(.rich-text) h3 { font-size: 1.25em; }
+:where(.rich-text) h4 { font-size: 1.125em; }
+:where(.rich-text) h5 { font-size: 1em; }
+:where(.rich-text) h6 { font-size: 0.875em; }
+
+/* La barra de formato del editor pasa a otra línea cuando no cabe. Puck la deja en una
+   sola con desplazamiento horizontal y sin barra visible: en el panel lateral (unos
+   190 px) la alineación quedaba escondida a la derecha. `div[…]` para ganarle a la
+   clase de Puck sin depender del orden de las hojas. */
+div[data-puck-rte-menu] {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
 /* 4. Dashboards */
 .tasa-dashboards-section {
   width: 100%;

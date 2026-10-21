@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
+import { useUltimoValorAbierto } from '@/shared/lib/modals/use-cierre-animado';
 import { colorDeAccion, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
 import { comentariosDe, explicacionDeComentarios, type ComentariosDelRegistro } from '../lib/cambios';
 

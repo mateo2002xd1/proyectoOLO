@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { listarRespaldos } from '../services/respaldos.service';
 import type { RegistroRespaldo } from '../types';
 

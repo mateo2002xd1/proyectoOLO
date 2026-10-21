@@ -1,4 +1,4 @@
-import { BuscadorModal } from '@/features/admin-panel/buscador';
+import { BuscadorModal } from '@/features/admin-panel/search';
 
 /**
  * Buscador del panel, al que ya apuntaban la lupa de la barra superior y el enlace

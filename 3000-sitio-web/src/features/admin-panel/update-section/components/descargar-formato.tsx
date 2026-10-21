@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/20/solid';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { descargarFormatoDeCarga } from '../services/observatorio.service';
 import type { FormatoDeCarga } from '../types';
 

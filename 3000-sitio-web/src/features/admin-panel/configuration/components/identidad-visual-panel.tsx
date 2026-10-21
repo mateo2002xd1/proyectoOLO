@@ -6,7 +6,7 @@ import { ArrowUpTrayIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline
 import { Button } from '@/shared/ui/atoms/button';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification, type NotificationType } from '@/shared/ui/molecules/notification';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import {
   ACCIONES_DEL_PANEL,
   BOTONES_DEL_PANEL,

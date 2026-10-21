@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { proxyToBackend } from '@/shared/lib/backend-proxy';
+import { proxyToBackend } from '@/shared/lib/api/backend-proxy';
 
 export const dynamic = 'force-dynamic';
 

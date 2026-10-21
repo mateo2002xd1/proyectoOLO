@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
-import type { PaginaIndiceBusqueda, ResultadoBusqueda } from '@/features/paginas';
+import type { PaginaIndiceBusqueda, ResultadoBusqueda } from '@/features/editor';
 
 export interface BuscadorSitioProps {
   abierto: boolean;

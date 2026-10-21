@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
+import { AUTH_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 

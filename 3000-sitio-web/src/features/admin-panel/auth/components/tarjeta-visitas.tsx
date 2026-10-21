@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { type ResumenPaginasPublicadas } from '@/features/paginas';
+import { type ResumenPaginasPublicadas } from '@/features/editor';
 import { ModalDiagramaVisitas } from './modal-diagrama-visitas';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 

@@ -44,7 +44,7 @@ export function limpiarTextoHtml(valor: unknown): string {
 /**
  * Las carpetas de cada app: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
  *
- * Copia de `CARPETAS` en `features/paginas/model/rutas.ts` de cada app: las dos resuelven
+ * Copia de `CARPETAS` en `features/editor/model/rutas.ts` de cada app: las dos resuelven
  * cualquier URL con un comodín `[...puckPath]` que une los segmentos con guion, y esta es
  * la vuelta. Si el buscador no la conociera, enlazaría `/clasificacion-cno`, que el sitio
  * igual redirige, pero con un salto de más.

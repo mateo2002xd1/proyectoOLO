@@ -60,7 +60,20 @@ const ATRIBUTOS_PERMITIDOS = [
   'target', 'rel', 'width', 'height',
   'colspan', 'rowspan',
   'data-type', 'data-id',  // atributos de datos de Puck (internos, no peligrosos)
+  'style',  // solo `text-align`: lo demás lo quita el hook de `ALINEACION_PERMITIDA`
 ];
+
+/**
+ * El único `style` que se guarda: la alineación que pone la barra de formato de Puck
+ * (`style="text-align: center"` en un párrafo o encabezado). Cualquier otro `style` se
+ * borra entero, como antes de que existiera la barra: un `style` libre deja tapar la
+ * página con un bloque o pintar un texto invisible.
+ */
+const ALINEACION_PERMITIDA = /^\s*text-align:\s*(left|center|right|justify)\s*;?\s*$/i;
+
+purify.addHook('uponSanitizeAttribute', (_nodo, datos) => {
+  if (datos.attrName === 'style' && !ALINEACION_PERMITIDA.test(datos.attrValue)) datos.keepAttr = false;
+});
 
 /**
  * Qué puede ir en `href` y `src`: http(s), mailto y tel, o una ruta relativa. Es el

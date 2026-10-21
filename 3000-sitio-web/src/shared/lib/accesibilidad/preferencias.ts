@@ -12,7 +12,7 @@
  * Las dos que necesitan JavaScript, el lector en voz alta y la guía de lectura, no tienen
  * atributo: las monta `Accesibilidad` mientras están encendidas.
  *
- * Solo valen en el sitio público: los atributos se quitan al salir de `(paginas)/layout.tsx`
+ * Solo valen en el sitio público: los atributos se quitan al salir de `(pages)/layout.tsx`
  * hacia el panel o el editor (9-accesibilidad.md §0, el alcance es sitio-web).
  */
 

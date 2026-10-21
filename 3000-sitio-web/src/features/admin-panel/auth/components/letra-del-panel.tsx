@@ -1,11 +1,11 @@
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 
 /**
  * Pone Poppins en `<body>` mientras el panel o una pantalla de acceso están montados:
  * títulos y texto. La montan `app/admin/layout.tsx` y `app/(auth)/layout.tsx`.
  *
  * Poppins es la de siempre del panel. El 2026-10-09 se probó Inter, la de los mockups, y
- * el usuario la descartó: «Poppins es mejor». Se carga en `shared/lib/fonts.ts`, el único
+ * el usuario la descartó: «Poppins es mejor». Se carga en `shared/lib/typography/fonts.ts`, el único
  * punto donde se declara.
  *
  * - **En `<body>` y no en el contenedor del layout**, porque los modales y los avisos

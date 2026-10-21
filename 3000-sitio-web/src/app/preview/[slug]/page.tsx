@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
-import { ClientPuckRender } from '@/features/paginas';
-import { getAuthSessionSnapshot } from '@/shared/lib/session';
-import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
+import { ClientPuckRender } from '@/features/editor';
+import { getAuthSessionSnapshot } from '@/shared/lib/session/session';
+import { AUTH_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
 import { cookies } from 'next/headers';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 

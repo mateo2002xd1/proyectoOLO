@@ -3,7 +3,7 @@
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { FormaDeModal } from "@/shared/ui/atoms/button";
-import { useCierreAnimado, useUltimoValorAbierto } from "@/shared/lib/use-cierre-animado";
+import { useCierreAnimado, useUltimoValorAbierto } from "@/shared/lib/modals/use-cierre-animado";
 
 /**
  * Las medidas de los modales son las de las pantallas de acceso (`auth-ui.tsx`), que el

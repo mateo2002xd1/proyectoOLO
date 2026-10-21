@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from 'crypto';
 import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
-import { etiquetaDePagina } from '@/features/paginas';
+import { etiquetaDePagina } from '@/features/editor';
 
 /**
  * Tira de la caché el contenido publicado de una página.

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import {
   despublicarCorteTendencia,
   eliminarCargaTendencia,

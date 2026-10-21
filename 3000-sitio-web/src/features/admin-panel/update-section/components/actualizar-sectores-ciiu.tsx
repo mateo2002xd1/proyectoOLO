@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { ArrowUpTrayIcon } from '@heroicons/react/20/solid';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { actualizarSectoresCiiu } from '../services/observatorio.service';
 import type { ResultadoActualizarSectores } from '../types';
 

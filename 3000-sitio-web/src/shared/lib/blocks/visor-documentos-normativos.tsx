@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { TituloRico } from './titulo-rico';
 import { VisorDocumento } from '@/shared/ui/molecules/visor-documento';
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 
 export interface DocumentoNormativo {
   etiquetaTab?: ReactNode;

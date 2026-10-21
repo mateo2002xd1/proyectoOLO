@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { RevisionQueueView } from '@/features/paginas';
+import { RevisionQueueView } from '@/features/editor';
 
 export const metadata: Metadata = {
   title: 'Páginas en revisión',

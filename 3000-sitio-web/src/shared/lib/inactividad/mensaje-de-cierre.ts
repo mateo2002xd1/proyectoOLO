@@ -3,7 +3,7 @@ import {
   MOTIVO_INACTIVIDAD,
   MOTIVO_INACTIVIDAD_SIN_GUARDAR,
 } from '@olo/inactividad';
-import { MOTIVO_SESION_EXPIRADA, MOTIVO_SIN_PERMISOS } from '../auth-cookies';
+import { MOTIVO_SESION_EXPIRADA, MOTIVO_SIN_PERMISOS } from '../session/auth-cookies';
 
 /**
  * Qué decirle a quien acaba de llegar al login desde un cierre por inactividad o permisos.

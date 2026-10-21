@@ -8,10 +8,10 @@ import {
   obtenerIndiceBusqueda,
   type PaginaIndiceBusqueda,
   type ItemTextoBusqueda,
-} from '@/features/paginas/client';
+} from '@/features/editor/client';
 import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 import { NavegacionMobileIntranet } from '@/shared/lib/mobile';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 
 /** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */
 type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';

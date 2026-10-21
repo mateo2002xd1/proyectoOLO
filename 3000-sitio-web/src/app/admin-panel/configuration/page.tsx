@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { ConfiguracionView } from '@/features/admin-panel/configuration';
 import { obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
-import { getSessionPermissionsSnapshot } from '@/shared/lib/session';
+import { getSessionPermissionsSnapshot } from '@/shared/lib/session/session';
 
 export const metadata: Metadata = {
   title: 'Configuración - Observatorio Laboral y Ocupacional',
