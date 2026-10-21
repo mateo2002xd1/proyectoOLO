@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { obtenerSesion } from "@/shared/lib/sesion";
+import { obtenerSesion } from "@/shared/lib/session/sesion";
 
 /**
  * Página raíz de la intranet.

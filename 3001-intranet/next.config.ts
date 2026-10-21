@@ -143,6 +143,13 @@ const nextConfig: NextConfig = {
         destination: "/login/recovery/reset-success",
         permanent: false,
       },
+      {
+        // El editor se llamó `/editor/...` hasta el 2026-10-21 (`app/editor/`): cubre
+        // marcadores y el `?redirect=` de un login que se quedara con la URL vieja.
+        source: "/editor/:path*",
+        destination: "/edit/:path*",
+        permanent: false,
+      },
     ];
   },
   async rewrites() {

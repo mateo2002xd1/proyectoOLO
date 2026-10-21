@@ -2,7 +2,7 @@
  * Cómo se corresponden la URL de una sección y su slug, y a dónde vuelve el editor
  * cuando el usuario pulsa "Salir".
  *
- * **URL → slug.** El comodín `app/(paginas)/[...puckPath]` sirve cualquier
+ * **URL → slug.** El comodín `app/(pages)/[...puckPath]` sirve cualquier
  * profundidad, pero el slug nunca lleva barra: la API expone `/paginas/publica/:slug`
  * y un parámetro de Express no cruza una barra. Por eso los segmentos se unen con
  * `-`: `/encuestas/calidad-de-formacion` es `encuestas-calidad-de-formacion`, que es
@@ -52,7 +52,7 @@ export function esRutaInternaSegura(ruta: string | null | undefined): ruta is st
 
 /** Enlace al editor recordando desde dónde se abrió. */
 export function enlaceAlEditor(slug: string, volverA: string): string {
-  return `/editor/${slug}?${PARAM}=${encodeURIComponent(volverA)}`;
+  return `/edit/${slug}?${PARAM}=${encodeURIComponent(volverA)}`;
 }
 
 /**

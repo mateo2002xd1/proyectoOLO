@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verificarSesion } from "@/shared/lib/verificar-sesion";
+import { verificarSesion } from "@/shared/lib/session/verificar-sesion";
 
 /**
  * Pantallas de acceso: `app/(auth)/login/`. Desde el 2026-10-15 cuelgan de `/login`

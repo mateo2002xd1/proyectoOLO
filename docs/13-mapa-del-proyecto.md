@@ -15,12 +15,12 @@
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 50 | 2 | 47 | — | 33 |
-| `3001-intranet` | 31 | 2 | 14 | — | 27 |
+| `3001-intranet` | 36 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
 Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
-## Carpetas sin descripción (31)
+## Carpetas sin descripción (36)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
@@ -52,6 +52,11 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3001-intranet/src/features/editor/navegation/`
 - `3001-intranet/src/features/editor/publishing/`
 - `3001-intranet/src/features/editor/sections/`
+- `3001-intranet/src/shared/lib/api/`
+- `3001-intranet/src/shared/lib/layout/`
+- `3001-intranet/src/shared/lib/modals/`
+- `3001-intranet/src/shared/lib/session/`
+- `3001-intranet/src/shared/lib/typography/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
 - `auditorias/`
@@ -140,10 +145,15 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │       └── services/                      única capa que llama a la API
     ├── shared/                                lo transversal de la intranet
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
+    │   │   ├── api/                           ⚠ sin descripción
     │   │   ├── blocks/                        los bloques Puck de la intranet
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
+    │   │   ├── layout/                        ⚠ sin descripción
     │   │   ├── mobile/                        navegación mobile de la intranet, con el menú de la plantilla
-    │   │   └── pwa/                           manifiesto, íconos y registro del service worker
+    │   │   ├── modals/                        ⚠ sin descripción
+    │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
+    │   │   ├── session/                       ⚠ sin descripción
+    │   │   └── typography/                    ⚠ sin descripción
     │   └── ui/                                sistema de diseño propio de la intranet
     │       ├── atoms/                         piezas mínimas
     │       ├── molecules/                     campos de contraseña y enlace de vuelta al sitio

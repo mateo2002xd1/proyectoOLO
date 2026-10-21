@@ -24,7 +24,8 @@ export function RastreadorVisitas({ ambito = 'intranet' }: Props) {
       pathname.startsWith('/api') ||
       pathname.startsWith('/login') ||
       pathname.startsWith('/preview') ||
-      pathname.startsWith('/editor')
+      pathname === '/edit' ||
+      pathname.startsWith('/edit/')
     ) {
       return;
     }

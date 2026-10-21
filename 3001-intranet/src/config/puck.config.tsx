@@ -1246,7 +1246,7 @@ export const puckConfig: Config = {
  * catálogo completo, que es lo razonable cuando no se sabe qué va a contener.
  *
  * `IntranetTopbar` e `IntranetFooter` NO están en ninguna sección: los pinta
- * `app/(paginas)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
+ * `app/(pages)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
  * aquí dejaría volver a tener una barra distinta por sección, que es justo el
  * problema que se acaba de quitar. Siguen registrados en `puckConfig` porque
  * puede quedar contenido guardado que los use.
@@ -1267,7 +1267,7 @@ const SLUG_DE_PLANTILLA = 'menu-y-pie';
  *
  * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien
  * visita la intranet. Los resuelve el Server Component del editor y llegan hasta
- * aquí por props — ver `app/editor/[slug]/page.tsx`.
+ * aquí por props — ver `app/edit/[slug]/page.tsx`.
  */
 export interface ContextoDeEdicion {
   /** Barra y pie publicados. Se usa al editar una sección normal. */

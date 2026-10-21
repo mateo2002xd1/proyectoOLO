@@ -3,7 +3,7 @@
 import type { MouseEvent } from 'react';
 import Link from 'next/link';
 import { HomeIcon } from '@heroicons/react/20/solid';
-import { SITE_URL } from '@/shared/lib/constants';
+import { SITE_URL } from '@/shared/lib/api/constants';
 
 interface ReturnToSiteLinkProps {
   /**

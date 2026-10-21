@@ -1,7 +1,7 @@
 'use client';
 
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
-import { poppins } from '@/shared/lib/fonts';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
+import { poppins } from '@/shared/lib/typography/fonts';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 export interface ModalCerrarSesionProps {

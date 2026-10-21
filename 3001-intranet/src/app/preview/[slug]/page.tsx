@@ -6,9 +6,9 @@ import {
   obtenerVersionEditable,
   SLUG_PLANTILLA,
 } from '@/features/editor';
-import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
+import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/session/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
-import { SITE_URL } from '@/shared/lib/constants';
+import { SITE_URL } from '@/shared/lib/api/constants';
 
 export const metadata = {
   title: 'Previsualización | Intranet',
@@ -25,7 +25,7 @@ export const metadata = {
  * Se entra desde el botón «Ver» de la cola de revisión del panel. No hace falta
  * volver a identificarse: la sesión es la misma para las dos aplicaciones.
  *
- * Vive fuera de `app/(paginas)/` para poder elegir si lleva marco o no. Dentro
+ * Vive fuera de `app/(pages)/` para poder elegir si lleva marco o no. Dentro
  * del grupo lo llevaba siempre, y previsualizar la plantilla salía con el menú y
  * el pie duplicados: los publicados que ponía el layout, y dentro los del
  * borrador que se estaba revisando.
@@ -83,7 +83,7 @@ export default async function PreviewPage({
 
       {esPlantilla ? contenido : <MarcoSecciones>{contenido}</MarcoSecciones>}
 
-      {/* La vista previa cuelga fuera de `(paginas)`, así que no hereda su
+      {/* La vista previa cuelga fuera de `(pages)`, así que no hereda su
           vigilante. Sin `alExpirar`: aquí no hay nada que guardar, solo se mira. */}
       <VigilanteSesion />
     </div>

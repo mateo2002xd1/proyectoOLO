@@ -10,7 +10,7 @@
  *   GET    /me                    → las llaves de permiso de la sesión
  */
 
-import { apiClient } from "@/shared/lib/api-client";
+import { apiClient } from "@/shared/lib/api/api-client";
 
 export interface SeccionCreada {
   id: string;
@@ -96,7 +96,7 @@ export async function eliminarSeccion(
 /**
  * Las llaves de permiso de la sesión, pedidas desde el navegador.
  *
- * Es la versión de cliente de `permisosDeLaSesion` (`shared/lib/sesion.ts`), que lee
+ * Es la versión de cliente de `permisosDeLaSesion` (`shared/lib/session/sesion.ts`), que lee
  * las cookies y solo funciona en el servidor. El botón flotante la necesita en el
  * navegador porque vuelve a preguntar cada vez que la pestaña recupera el foco: así,
  * si a alguien le quitan un permiso, el botón deja de ofrecerlo sin recargar.

@@ -21,7 +21,7 @@ import {
   accesoEtiquetaClass,
   accesoEtiquetaEnBlancoClass,
 } from './acceso-ui';
-import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 export function RecoveryView() {

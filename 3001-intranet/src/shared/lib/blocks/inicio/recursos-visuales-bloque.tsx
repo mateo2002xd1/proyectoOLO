@@ -85,7 +85,7 @@ export function RecursosVisualesBloque({
   const enEdicion =
     esEdicion ??
     (typeof window !== 'undefined' &&
-      (window.location.pathname.includes('/editor') ||
+      (window.location.pathname.startsWith('/edit/') ||
         window.location.pathname.includes('/plantilla') ||
         window.location.pathname.includes('/admin/editor') ||
         window.location.pathname.includes('/admin/plantilla')));

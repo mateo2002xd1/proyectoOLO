@@ -20,7 +20,7 @@ import {
 } from "../services/edicion.service";
 import type { ContenidoPagina, EstadoPagina } from "../../model/pagina.types";
 import type { Rechazo } from "../components/aviso-rechazo";
-import { ApiError } from "@/shared/lib/api-client";
+import { ApiError } from "@/shared/lib/api/api-client";
 
 /**
  * Lo que la API explica del fallo. El validador de la ruta responde un `error`

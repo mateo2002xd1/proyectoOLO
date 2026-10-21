@@ -7,7 +7,7 @@ import {
 import {
   obtenerSesion,
   puedeEditarPaginas,
-} from '@/shared/lib/sesion';
+} from '@/shared/lib/session/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { BotonSubir } from '@/shared/ui/atoms/boton-subir';
 
@@ -21,7 +21,7 @@ import { BotonSubir } from '@/shared/ui/atoms/boton-subir';
  * guarda la página `plantilla` (ver `features/editor/navegation/menu-y-pie.ts`).
  *
  * El acceso, el editor y la vista previa quedan fuera a propósito: viven en
- * `app/(auth)/`, `app/editor/` y `app/preview/`, fuera de este grupo de rutas. Los
+ * `app/(auth)/`, `app/edit/` y `app/preview/`, fuera de este grupo de rutas. Los
  * dos primeros no deben llevar navegación; la vista previa sí, pero decide ella
  * cuándo —previsualizar la plantilla dentro del marco mostraría el menú y el pie
  * dos veces, el publicado fuera y el del borrador dentro.

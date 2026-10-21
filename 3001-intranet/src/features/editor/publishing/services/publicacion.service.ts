@@ -12,7 +12,7 @@
  *   POST /paginas/visitas/registrar   → cuenta una visita
  */
 
-import { apiClient, ApiError } from "@/shared/lib/api-client";
+import { apiClient, ApiError } from "@/shared/lib/api/api-client";
 import type { PaginaIndiceBusqueda, PaginaPublicada } from "../../model/pagina.types";
 
 /**

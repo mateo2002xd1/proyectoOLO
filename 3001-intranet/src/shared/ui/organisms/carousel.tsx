@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-import { useCuantosCaben } from '@/shared/lib/use-cuantos-caben';
+import { useCuantosCaben } from '@/shared/lib/layout/use-cuantos-caben';
 
 /** Ancho mínimo de una imagen y hueco entre ellas (el `gap` de `.matriz-carousel-track`). */
 const ANCHO_MINIMO = 200;

@@ -27,7 +27,7 @@ import {
 } from './acceso-ui';
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
-import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 const TOTAL_SETUP_QUESTIONS = 3;

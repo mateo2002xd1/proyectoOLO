@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 
 /**
  * Page order map — used to determine slide direction.

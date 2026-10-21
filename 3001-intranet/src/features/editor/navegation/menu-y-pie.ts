@@ -11,8 +11,8 @@
  * sobrescribía con un menú plano.
  *
  * Ahora existe una sola página, `plantilla`, que los guarda una vez, y
- * `app/(paginas)/layout.tsx` los pinta alrededor de todas las secciones.
- * Se edita como cualquier otra página —en `/editor/menu-y-pie`, con su borrador,
+ * `app/(pages)/layout.tsx` los pinta alrededor de todas las secciones.
+ * Se edita como cualquier otra página —en `/edit/menu-y-pie`, con su borrador,
  * su revisión y su aprobación—, y lo que se guarde ahí se ve en las cinco.
  */
 import type { ComponentProps } from 'react';

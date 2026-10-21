@@ -16,7 +16,7 @@
  * @see 3-seguridad-del-proyecto.md §S3  (API :4000 es la única fuente de JWT/auth)
  */
 
-import { apiClient, ApiError } from "@/shared/lib/api-client";
+import { apiClient, ApiError } from "@/shared/lib/api/api-client";
 import type { ContenidoPagina, EstadoPagina, VersionEditable } from "../../model/pagina.types";
 
 const EMPTY_CONTENIDO: ContenidoPagina = { content: [], root: {} };

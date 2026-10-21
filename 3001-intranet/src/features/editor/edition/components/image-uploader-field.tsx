@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import { registrarSubidaPendiente } from '../services/edicion.service';
 import { usePaginaEnEdicion, useRegistrarSubida } from '../lib/pagina-en-edicion';
 

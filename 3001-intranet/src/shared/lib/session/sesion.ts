@@ -15,7 +15,7 @@
 import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { decodeJwt } from 'jose';
-import { apiClient } from './api-client';
+import { apiClient } from '../api/api-client';
 import { permisosEditan, rolEdita } from './edicion';
 
 export interface Sesion {
