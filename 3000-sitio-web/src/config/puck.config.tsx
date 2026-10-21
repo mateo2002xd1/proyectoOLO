@@ -197,6 +197,31 @@ const CAMPOS_FRANJA_SUPERIOR = {
 } satisfies Record<string, CampoDeAcordeon>;
 
 /**
+ * La tarjeta «Separación del menú» de la cabecera (solo computador): mismo mecanismo
+ * que la franja, con las props sueltas `separacionLogoMenu` y `separacionMenuAcciones`.
+ */
+const CAMPOS_SEPARACION_MENU = {
+  separacionLogoMenu: {
+    type: 'number',
+    label: 'Logo ↔ menú',
+    min: 0,
+    max: 200,
+    sufijo: 'px',
+    placeholder: 'Automática',
+    ayuda: 'Espacio exacto entre el logo y el primer enlace. Vacío: se reparte solo según el ancho.',
+  },
+  separacionMenuAcciones: {
+    type: 'number',
+    label: 'Menú ↔ lupa e Intranet',
+    min: 0,
+    max: 200,
+    sufijo: 'px',
+    placeholder: 'Automática',
+    ayuda: 'Espacio mínimo entre el último enlace y la lupa: si sobra ancho, la lupa y el botón se quedan a la derecha. Con valores grandes revisa que el menú quepa a 1024 px.',
+  },
+} satisfies Record<string, CampoDeAcordeon>;
+
+/**
  * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
  */
 function CampoYoutubePreview({ value = '', onChange }: CustomFieldRender<string>) {
@@ -388,6 +413,12 @@ const puckConfigBase: Config = {
           { ...campoImagen('Logo principal'), ayuda: 'Opcional. Si no subes uno, se muestra el logo del SENA con el del OLO.' },
           { resumen: (src) => (src ? 'Propio' : 'Por defecto') }
         ),
+        grupoSeparacionMenu: campoGrupoEnUnAcordeon('Separación del menú', CAMPOS_SEPARACION_MENU, {
+          resumen: (grupo) =>
+            typeof grupo?.separacionLogoMenu === 'number' || typeof grupo?.separacionMenuAcciones === 'number'
+              ? 'Personalizada'
+              : 'Automática',
+        }),
         colorFondo: campoEnAcordeon({
           type: 'color',
           label: 'Color de fondo de la barra',
@@ -474,6 +505,8 @@ const puckConfigBase: Config = {
         govBannerMargenAbajo: '',
         alineacionFranjaGov: 'izquierda',
         separacionFranjaGov: '',
+        separacionLogoMenu: '',
+        separacionMenuAcciones: '',
         botonIntranet: { texto: '', colorFondo: '', colorTexto: '' },
       },
       // El texto del botón vivía en `intranetText`; ahora va en `botonIntranet.texto`.
@@ -486,7 +519,12 @@ const puckConfigBase: Config = {
         const conBoton = migrar
           ? { ...props, intranetText: '', botonIntranet: { ...boton, texto: props.intranetText } }
           : props;
-        return { props: resolverGruposDeProps(conBoton, { grupoFranjaGov: Object.keys(CAMPOS_FRANJA_SUPERIOR) }) };
+        return {
+          props: resolverGruposDeProps(conBoton, {
+            grupoFranjaGov: Object.keys(CAMPOS_FRANJA_SUPERIOR),
+            grupoSeparacionMenu: Object.keys(CAMPOS_SEPARACION_MENU),
+          }),
+        };
       },
       render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => (
         <Header {...props} block={{ id: props.id || 'header-preview' }} />

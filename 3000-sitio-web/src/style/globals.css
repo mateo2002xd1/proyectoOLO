@@ -1025,6 +1025,26 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 }
 
 
+/* «Separación del menú» (Cabecera / Menú). Solo con alguna guardada (`data-separacion`,
+   ver `separacionDelMenu` en header.tsx): se deja `space-between` y los huecos los
+   marcan los márgenes del menú. Lo que sobra de ancho se suma al hueco entre el menú y
+   la lupa (`margin-left: auto`), para que lupa e Intranet sigan pegadas al borde derecho:
+   por eso ese hueco es un mínimo y el del logo, exacto. */
+@media (width >= 64rem) {
+  .olo-header-inner[data-separacion] {
+    justify-content: flex-start;
+  }
+
+  .olo-header-inner[data-separacion] .olo-nav {
+    margin-left: var(--olo-sep-logo-menu, auto);
+    margin-right: var(--olo-sep-menu-acciones, 0px);
+  }
+
+  .olo-header-inner[data-separacion] .olo-nav-actions {
+    margin-left: auto;
+  }
+}
+
 @media (width < 64rem) {
   .olo-nav {
     display: none;

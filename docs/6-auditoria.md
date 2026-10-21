@@ -12626,3 +12626,10 @@ Se requirió integrar un componente Puck para la carga masiva de estadísticas l
 - Git: los `formatdata-*` siguen versionados y en disco ya no están; incluirlos en el commit como renombrados.
 - Reiniciar la API. Sin verificar en navegador.
 - El botón de descarga del formato de sectores pasa del enlace de texto junto a «Actualizar sectores» al encabezado de la tarjeta, como botón igual al de «Descargar formato»: «Descargar formato» (proyectos) y «Descargar formato CIIU». Una sola función `descargarFormato(cual)` en `carga-alertas-inversion.tsx`; se quitó el enlace de `actualizar-sectores-ciiu.tsx`. Sin verificar en navegador.
+
+## Sesión 21-10-2026: separación del menú en la cabecera (logo ↔ menú ↔ lupa e Intranet)
+
+- «Cabecera / Menú» tiene una tarjeta nueva, «Separación del menú», con dos campos en px (0–200): **Logo ↔ menú** (espacio exacto) y **Menú ↔ lupa e Intranet** (espacio mínimo). Vacíos, la cabecera se reparte como siempre.
+- Props sueltas `separacionLogoMenu` y `separacionMenuAcciones` (tarjeta `grupoSeparacionMenu`, mismo mecanismo que la franja GOV.CO vía `resolverGruposDeProps`). `header.tsx` las limita a 0–200 y, solo si hay alguna, pone `data-separacion` y las variables `--olo-sep-logo-menu` / `--olo-sep-menu-acciones` en `.olo-header-inner`; la regla vive en `globals.css` y solo aplica desde `lg` (en móvil el menú es otro).
+- Por qué el segundo es un mínimo: la lupa y el botón tienen que seguir pegados al borde derecho, así que el ancho que sobra se suma a ese hueco. El del logo sí es exacto.
+- Sin migración ni cambios en la API: el bloque guarda props libres. Comprobado con `tsc --noEmit`. Sin verificar en navegador (revisar a 1024 px con valores grandes y con el buscador abierto, que corre el menú hasta el logo).

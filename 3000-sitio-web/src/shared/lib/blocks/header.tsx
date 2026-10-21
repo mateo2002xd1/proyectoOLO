@@ -72,6 +72,10 @@ interface HeaderProps {
   alineacionFranjaGov?: string;
   /** Clave de `SEPARACIONES_FRANJA`: espacio entre la imagen y la fecha cuando la imagen va a la derecha. */
   separacionFranjaGov?: string;
+  /** Px entre el logo y el primer enlace del menú (solo computador); vacío = la que reparte el ancho. */
+  separacionLogoMenu?: number | '';
+  /** Px mínimos entre el último enlace del menú y la lupa (solo computador); vacío = la que reparte el ancho. */
+  separacionMenuAcciones?: number | '';
   /**
    * El botón «Intranet» (computador y menú del celular): texto y colores juntos
    * porque en el panel van en un solo acordeón. `texto` vacío cae en
@@ -93,6 +97,30 @@ function estiloDelBotonIntranet(boton?: BotonIntranet): CSSProperties | undefine
   if (boton?.colorFondo?.trim()) estilo['--olo-intranet-fondo'] = boton.colorFondo;
   if (boton?.colorTexto?.trim()) estilo['--olo-intranet-texto'] = boton.colorTexto;
   return Object.keys(estilo).length > 0 ? (estilo as CSSProperties) : undefined;
+}
+
+const SEPARACION_MENU_MAXIMA_PX = 200;
+
+/* Las dos separaciones del menú van en variables CSS sobre `.olo-header-inner`, y el
+   atributo `data-separacion` es lo que activa su regla: sin él (nada guardado) la
+   cabecera se reparte como siempre, con `space-between`. Un valor vacío o no numérico
+   no pone variable, y ese hueco sigue repartiéndose solo. */
+function separacionDelMenu(
+  logoMenu?: number | '',
+  menuAcciones?: number | '',
+): { 'data-separacion'?: true; style?: CSSProperties } {
+  const estilo: Record<string, string> = {};
+  const px = (valor: number | '' | undefined) =>
+    typeof valor === 'number' && Number.isFinite(valor)
+      ? `${Math.min(Math.max(valor, 0), SEPARACION_MENU_MAXIMA_PX)}px`
+      : undefined;
+  const logo = px(logoMenu);
+  const acciones = px(menuAcciones);
+  if (logo) estilo['--olo-sep-logo-menu'] = logo;
+  if (acciones) estilo['--olo-sep-menu-acciones'] = acciones;
+  return Object.keys(estilo).length > 0
+    ? { 'data-separacion': true, style: estilo as CSSProperties }
+    : {};
 }
 
 /* Sale siempre de la variable y nunca de lo guardado en «Menú y pie»: a dónde vive la
@@ -206,6 +234,8 @@ export function Header({
   govBannerMargenAbajo,
   alineacionFranjaGov,
   separacionFranjaGov,
+  separacionLogoMenu,
+  separacionMenuAcciones,
   botonIntranet,
 }: HeaderProps) {
   const textoIntranet: ReactNode = botonIntranet?.texto?.trim() || intranetText || 'Intranet';
@@ -466,7 +496,7 @@ export function Header({
         data-block-id={block.id}
         style={estiloDeLaCabecera(colorFondo, menuAnteBuscador.anchoPildora)}
       >
-        <div className="olo-header-inner">
+        <div className="olo-header-inner" {...separacionDelMenu(separacionLogoMenu, separacionMenuAcciones)}>
           <div className="olo-logo-group">
             <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (

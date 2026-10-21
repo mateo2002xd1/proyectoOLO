@@ -41,6 +41,8 @@ export interface CabeceraPorDefecto {
   govBannerMargenAbajo?: number | '';
   alineacionFranjaGov?: string;
   separacionFranjaGov?: string;
+  separacionLogoMenu?: number | '';
+  separacionMenuAcciones?: number | '';
   /** Texto y colores del botón «Intranet». Ver `BotonIntranet` en header.tsx. */
   botonIntranet?: { texto?: string; colorFondo?: string; colorTexto?: string };
 }
