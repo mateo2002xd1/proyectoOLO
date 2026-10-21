@@ -108,7 +108,7 @@ const SEPARACION_MENU_MAXIMA_PX = 200;
 function separacionDelMenu(
   logoMenu?: number | '',
   menuAcciones?: number | '',
-): { 'data-separacion'?: true; style?: CSSProperties } {
+): { 'data-separacion'?: true; 'data-separacion-logo'?: true; style?: CSSProperties } {
   const estilo: Record<string, string> = {};
   const px = (valor: number | '' | undefined) =>
     typeof valor === 'number' && Number.isFinite(valor)
@@ -119,7 +119,7 @@ function separacionDelMenu(
   if (logo) estilo['--olo-sep-logo-menu'] = logo;
   if (acciones) estilo['--olo-sep-menu-acciones'] = acciones;
   return Object.keys(estilo).length > 0
-    ? { 'data-separacion': true, style: estilo as CSSProperties }
+    ? { 'data-separacion': true, ...(logo && { 'data-separacion-logo': true as const }), style: estilo as CSSProperties }
     : {};
 }
 
@@ -238,6 +238,7 @@ export function Header({
   separacionMenuAcciones,
   botonIntranet,
 }: HeaderProps) {
+  const separacion = separacionDelMenu(separacionLogoMenu, separacionMenuAcciones);
   const textoIntranet: ReactNode = botonIntranet?.texto?.trim() || intranetText || 'Intranet';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -496,7 +497,7 @@ export function Header({
         data-block-id={block.id}
         style={estiloDeLaCabecera(colorFondo, menuAnteBuscador.anchoPildora)}
       >
-        <div className="olo-header-inner" {...separacionDelMenu(separacionLogoMenu, separacionMenuAcciones)}>
+        <div className="olo-header-inner" {...separacion}>
           <div className="olo-logo-group">
             <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (
@@ -521,6 +522,8 @@ export function Header({
               )}
             </a>
           </div>
+
+          {separacion['data-separacion'] && <span className="olo-header-separador olo-header-separador--logo" aria-hidden="true" />}
 
           <nav
             className="olo-nav"
@@ -606,6 +609,8 @@ export function Header({
               );
             })}
           </nav>
+
+          {separacion['data-separacion'] && <span className="olo-header-separador olo-header-separador--acciones" aria-hidden="true" />}
 
           <div className="olo-nav-actions">
             <BuscadorSitio

@@ -208,7 +208,7 @@ const CAMPOS_SEPARACION_MENU = {
     max: 200,
     sufijo: 'px',
     placeholder: 'Automática',
-    ayuda: 'Espacio exacto entre el logo y el primer enlace. Vacío: se reparte solo según el ancho.',
+    ayuda: 'Espacio entre el logo y el primer enlace, exacto mientras quepa; si no, se achica solo. Vacío: se reparte según el ancho.',
   },
   separacionMenuAcciones: {
     type: 'number',
@@ -217,7 +217,7 @@ const CAMPOS_SEPARACION_MENU = {
     max: 200,
     sufijo: 'px',
     placeholder: 'Automática',
-    ayuda: 'Espacio mínimo entre el último enlace y la lupa: si sobra ancho, la lupa y el botón se quedan a la derecha. Con valores grandes revisa que el menú quepa a 1024 px.',
+    ayuda: 'Espacio mínimo entre el último enlace y la lupa: si sobra ancho, la lupa y el botón se quedan a la derecha. Si el ancho no alcanza, los dos espacios se achican solos; el logo no se encoge.',
   },
 } satisfies Record<string, CampoDeAcordeon>;
 

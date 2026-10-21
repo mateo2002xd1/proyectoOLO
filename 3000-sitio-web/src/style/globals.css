@@ -1026,22 +1026,41 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 
 
 /* «Separación del menú» (Cabecera / Menú). Solo con alguna guardada (`data-separacion`,
-   ver `separacionDelMenu` en header.tsx): se deja `space-between` y los huecos los
-   marcan los márgenes del menú. Lo que sobra de ancho se suma al hueco entre el menú y
-   la lupa (`margin-left: auto`), para que lupa e Intranet sigan pegadas al borde derecho:
-   por eso ese hueco es un mínimo y el del logo, exacto. */
+   ver `separacionDelMenu` en header.tsx). Los huecos son dos separadores flexibles y no
+   márgenes: el logo, el menú y la lupa con el botón no se encogen nunca, y cuando el
+   ancho no alcanza se comprimen los separadores (hasta 0). Con márgenes, el flex le
+   quitaba el sobrante al logo y lo encogía. El del logo es exacto mientras quepa; el
+   de la lupa es un mínimo que además absorbe lo que sobra, para que lupa e Intranet
+   sigan pegadas al borde derecho. */
 @media (width >= 64rem) {
   .olo-header-inner[data-separacion] {
     justify-content: flex-start;
   }
 
-  .olo-header-inner[data-separacion] .olo-nav {
-    margin-left: var(--olo-sep-logo-menu, auto);
-    margin-right: var(--olo-sep-menu-acciones, 0px);
+  .olo-header-inner[data-separacion] .olo-logo-group,
+  .olo-header-inner[data-separacion] .olo-nav,
+  .olo-header-inner[data-separacion] .olo-nav-actions {
+    flex-shrink: 0;
   }
 
-  .olo-header-inner[data-separacion] .olo-nav-actions {
-    margin-left: auto;
+  .olo-header-separador {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* Sin valor para el logo, el sobrante se reparte a medias entre los dos separadores. */
+  .olo-header-inner[data-separacion-logo] .olo-header-separador--logo {
+    flex: 0 1 var(--olo-sep-logo-menu);
+  }
+
+  .olo-header-separador--acciones {
+    flex: 1 1 var(--olo-sep-menu-acciones, 0px);
+  }
+}
+
+@media (width < 64rem) {
+  .olo-header-separador {
+    display: none;
   }
 }
 
