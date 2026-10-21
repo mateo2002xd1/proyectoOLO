@@ -101,7 +101,7 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
   Garantizar la administración integral, gobernanza, disponibilidad operativa y seguridad técnica del sistema. Es el encargado de la gestión de usuarios, el control editorial de publicaciones, la importación masiva de datos y la fiscalización del sistema mediante la bitácora de auditoría.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión mediante credenciales corporativas obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás roles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet del OLO con plenas facultades de visualización y edición en línea.
+  Inicia sesión mediante credenciales corporativas obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin-panel`), entorno inaccesible para los demás roles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet del OLO con plenas facultades de visualización y edición en línea.
 
 * **Funciones y facultades principales:**
   * *Gestión integral de cuentas de usuario:* Registra nuevas cuentas de usuario en el OLO, asigna o revoca roles, activa o suspende cuentas y ejecuta el restablecimiento de contraseñas ante eventualidades o bloqueos (ver paso a paso en [Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)).
@@ -116,7 +116,7 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
   * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen (ver paso a paso en [Sección 3.4.2.6: Bitácora de Auditoría](#3426-auditoría-y-bitácora-de-eventos)).
 
 * **Límites operativos y restricciones de seguridad:**
-  * No puede modificar ni eliminar mediante el editor visual las rutas y vistas que no son gestionables desde el editor de páginas, tales como las interfaces de autenticación (inicio de sesión, recuperación de credenciales y preguntas de seguridad) y todas las rutas funcionales del Panel Administrativo (`/admin`), las cuales corresponden a la arquitectura fija de código del aplicativo.
+  * No puede modificar ni eliminar mediante el editor visual las rutas y vistas que no son gestionables desde el editor de páginas, tales como las interfaces de autenticación (inicio de sesión, recuperación de credenciales y preguntas de seguridad) y todas las rutas funcionales del Panel Administrativo (`/admin-panel`), las cuales corresponden a la arquitectura fija de código del aplicativo.
   * No puede crear roles dentro de las jerarquías de Administrador ni de Director; la creación de roles nuevos se encuentra restringida exclusivamente a roles hijos de editor.
   * No puede omitir ni alterar el registro de auditoría; todas las acciones administrativas quedan grabadas de forma obligatoria e irreversible en la base de datos.
 
@@ -136,7 +136,7 @@ Corresponde al rol técnico general facultado para la producción, maquetación 
   * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **«Guardar borrador»** sin alterar el portal público, y traslada los cambios terminados mediante **«Enviar a revisión»** hacia la sección **«Páginas en revisión»** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador (ver paso a paso en [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual)).
 
 * **Límites operativos y restricciones de seguridad:**
-  * No tiene acceso al Panel Administrativo (`/admin`).
+  * No tiene acceso al Panel Administrativo (`/admin-panel`).
   * No puede publicar directamente en los entornos productivos; requiere obligatoriamente la aprobación previa de un Administrador.
   * No puede intervenir ni eliminar las rutas fijas del aplicativo (como las interfaces de inicio de sesión o las rutas administrativas), ya que corresponden a la estructura de código del sistema y no a páginas gestionables desde el editor visual.
   * Si bien está facultado para eliminar páginas dinámicas creadas en el sistema, no puede borrarlas si se encuentran vinculadas a algún elemento del menú de navegación del portal o a otros enlaces del sistema; en dichos casos, el sistema bloquea la acción y le exige retirar previamente esos enlaces desde la edición del menú para evitar enlaces rotos.
@@ -161,7 +161,7 @@ Corresponden a roles editoriales especializados creados por el Administrador par
   * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente al Administrador, al rol padre Editor base y a su propio rol creador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo (ver [Sección 3.4.2.4.2: Submenú Roles y Permisos](#34242-submenú-roles-y-permisos)).
 
 * **Límites operativos y restricciones de seguridad:**
-  * No tienen acceso al Panel Administrativo (`/admin`).
+  * No tienen acceso al Panel Administrativo (`/admin-panel`).
   * No pueden publicar páginas directamente en producción sin la aprobación del Administrador.
   * No pueden intervenir ni editar páginas o secciones ajenas a las asignadas de forma explícita en su rol.
   * No pueden crear ni eliminar páginas a menos que cuenten con el permiso manual activado específicamente para ello.
@@ -183,7 +183,7 @@ Corresponde al rol directivo enfocado en el monitoreo gerencial, el análisis de
 
 * **Límites operativos y restricciones de seguridad:**
   * No tiene permisos para operar ni autenticarse en el Sitio Web Público (su ámbito exclusivo de trabajo autenticado es la Intranet).
-  * No tiene acceso al Panel Administrativo (`/admin`).
+  * No tiene acceso al Panel Administrativo (`/admin-panel`).
   * No posee facultades de edición ni maquetación; no se despliega el menú flotante de edición ni tiene acceso al editor visual.
   * No puede crear, modificar ni eliminar páginas, menús ni contenidos de la plataforma.
   * No administra cuentas de usuario, no crea roles ni configura permisos.
@@ -325,12 +325,12 @@ La plataforma del Observatorio Laboral y Ocupacional (OLO) articula su experienc
 
 El sistema se compone de tres portales complementarios, cada uno con propósitos y características de interfaz claramente definidos:
 
-1. **Panel Administrativo (`/admin`):**
+1. **Panel Administrativo (`/admin-panel`):**
    * **Propósito:** Entorno privado de gestión técnica, auditoría y control editorial de acceso exclusivo para el rol de Administrador.
    * **Estructura fija del aplicativo:** A diferencia de las páginas de contenido, el Panel Administrativo **no utiliza el editor visual para sus propias pantallas**. Todas sus vistas están programadas como páginas fijas para garantizar la estabilidad y la seguridad de sus funciones de control y gobierno.
    * **Elementos fijos estructurales:**
-     * *Menú lateral permanente (Sidebar):* Barra vertical izquierda que contiene el logo del OLO (retorno al sitio web público), accesos directos (*Dashboard*, *Páginas en revisión* con indicador numérico de alertas pendientes, *Accesos* para la administración de usuarios y roles, *Auditoría*, *Respaldos* y *Carga Masiva*), ícono de campanita de alertas y menú inferior de perfil (*Mi perfil*, *Configuración* y *Cerrar sesión*).
-     * *Vistas fijas programadas:* Tablero con tarjetas de métricas, formularios de configuración, tablas paginadas de bitácora y ventanas modales de confirmación con registro obligatorio de motivos.
+     * *Menú lateral permanente (Sidebar):* Barra vertical izquierda que contiene el logo del OLO (retorno al sitio web público), accesos directos (*Dashboard* `/admin-panel/dashboard`, *Páginas en revisión* `/admin-panel/review-section` con indicador numérico de alertas pendientes, *Accesos* para la administración de usuarios `/admin-panel/users` y roles `/admin-panel/roles-and-permissions`, *Auditoría* `/admin-panel/changelog-view`, *Respaldos* `/admin-panel/backup-section` y *Carga Masiva* `/admin-panel/update-section`), buscador integrado (`/admin-panel/search-section`), ícono de campanita de alertas y menú inferior de usuario (*Configuración* `/admin-panel/configuration` y *Cerrar sesión*).
+     * *Vistas fijas programadas:* Tablero con tarjetas de métricas, formularios de configuración, tablas paginadas con diseño modular y ventanas modales de confirmación con registro obligatorio de motivos.
 
 > **[Captura: Elementos Fijos Panel Administrativo]**
 > *Esquema general del Panel Administrativo mostrando los elementos fijos estructurales: el menú lateral permanente (sidebar con accesos de navegación y perfil) y el área central de trabajo.*
@@ -342,10 +342,10 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
    * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace hacia el entorno privado del observatorio.
    * **Controles y páginas fijas del sistema:**
      * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra superior del Estado donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal administrativo y editorial inicie sesión (`/login`) en el portal.
-     * *Buscador desplegable en la cabecera:* Control interactivo con ícono de lupa que al pulsarse despliega un campo blanco redondeado de búsqueda hacia la izquierda, corriendo suavemente los enlaces del menú hacia el logo y desplegando una lista de resultados en vivo debajo del campo con navegación por teclado y cierre por tecla Escape o clic exterior.
+     * *Buscador desplegable en la cabecera:* Control interactivo con ícono de lupa que al pulsarse despliega un campo redondeado de búsqueda hacia la izquierda, corriendo suavemente los enlaces del menú hacia el logo y desplegando una lista de resultados en vivo debajo del campo con navegación por teclado y cierre por tecla Escape o clic exterior.
      * *Migas de pan fijas (Breadcrumbs):* Franja de navegación jerárquica ubicada debajo de la cabecera que indica dinámicamente la ruta y página activa del usuario con base en la estructura del menú.
-     * *Pestaña fija del Panel de Accesibilidad:* Control interactivo fijado permanentemente en el borde lateral derecho (en color azul institucional) con el ícono universal de accesibilidad, permitiendo abrir el panel de preferencias inclusivas (tamaño de letra, contraste, daltonismo, dislexia, guía de lectura, lector de voz y cursor grande).
-     * *Botón flotante «Subir»:* Botón redondeado azul oscuro con flecha y texto blanco ubicado en la esquina inferior derecha, que aparece de forma automática al bajar más de 400 píxeles por la página para retornar al inicio con desplazamiento suave y trasladar el foco al contenedor principal (`<main>`).
+     * *Pestaña fija del Panel de Accesibilidad:* Control interactivo fijado permanentemente en el borde lateral derecho con el ícono universal de accesibilidad, permitiendo abrir el panel de preferencias inclusivas (tamaño de letra, contraste, daltonismo, dislexia, guía de lectura, lector de voz y cursor grande).
+     * *Botón flotante «Subir»:* Control interactivo redondeado con ícono de flecha y rótulo «Subir» ubicado en la esquina inferior derecha. Aparece de forma automática cuando el usuario se desplaza hacia abajo en páginas extensas y, al presionarlo, devuelve la pantalla de manera suave a la parte superior, permitiendo retomar la lectura o utilizar el menú principal cómodamente sin tener que subir manualmente con la rueda del ratón o la barra de desplazamiento.
      * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
      * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/login/recovery`) y pantallas de primer ingreso (`/login/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
@@ -362,7 +362,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
    * **Propósito:** Entorno privado y protegido orientado al seguimiento estratégico, consulta de tableros de indicadores y trabajo interno de directivos y funcionarios del SENA.
    * **Elementos y páginas fijas del sistema:**
      * *Pantalla de bloqueo y acceso obligatorio:* Página fija que intercepta cualquier navegación no autenticada, forzando el ingreso exclusivo con cuenta corporativa `@sena.edu.co`.
-     * *Botón flotante «Subir»:* Control interactivo en la esquina inferior derecha que aparece automáticamente al descender más de 400 píxeles para volver al inicio rápidamente con desplazamiento suave (adaptado por encima de la barra de navegación en teléfonos móviles).
+     * *Botón flotante «Subir»:* Control interactivo en la esquina inferior derecha que aparece automáticamente al desplazarse hacia abajo para regresar a la parte superior de la página con un movimiento suave (en teléfonos móviles se adapta ubicándose por encima de la barra de navegación inferior para facilitar la pulsación sin tapar otros controles).
      * *Control de salida:* Mecanismo seguro de cierre de sesión adaptado según el rol: visible en la barra superior de navegación para roles de solo consulta (como Director o Subdirector) o mediante el botón flotante inferior con ventana modal de confirmación para funcionarios con permisos de edición.
    * **Componentes ajustables de Cabecera y Pie internos:**
      * Al igual que en el sitio público, el marco superior e inferior de la Intranet está respaldado por componentes configurables que los editores pueden adaptar según las secciones internas del observatorio.
@@ -379,7 +379,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
 Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet es el **Botón Flotante de Edición (Menú de Edición)**. Aunque forma parte de la estructura visual de las páginas, **su visualización en pantalla es estrictamente condicional**: el sistema comprueba en tiempo real si el usuario ha iniciado sesión y cuáles permisos específicos tiene asignados antes de mostrarlo:
 
 * **Caso 1: Usuario no autenticado (Ciudadanía y visitantes anónimos):**
-  * El botón flotante de edición **no se muestra en pantalla** para los visitantes. La página pública se presenta completamente limpia, sin barras ni herramientas de edición, garantizando una lectura despejada y cómoda para la ciudadanía (únicamente se desplegará de forma automática el botón flotante «Subir» al descender más de 400 píxeles por el contenido).
+  * El botón flotante de edición **no se muestra en pantalla** para los visitantes. La página pública se presenta completamente limpia, sin barras ni herramientas de edición, garantizando una lectura despejada y cómoda para la ciudadanía (únicamente se desplegará de forma automática el botón flotante «Subir» al desplazarse hacia abajo por el contenido).
 
 > **[Captura: Vista Ciudadana sin Botón Flotante]**
 > *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla.*
@@ -491,7 +491,7 @@ Para ofrecer una navegación cómoda en teléfonos inteligentes y tabletas, las 
   * **Toque para desplegar información:** Al presionar o pulsar sobre cualquier parte de la fila, esta se expande hacia abajo y la flecha gira hacia arriba indicando su estado abierto. La tarjeta desplegada revela todos los datos secundarios asociados (como correo electrónico, rol, fecha y hora, estado de la cuenta, interruptor de activación o justificaciones).
   * **Botones de acción táctiles y visibles:** En lugar de los íconos pequeños con etiquetas flotantes utilizados en computador, la fila desplegada en el móvil incorpora botones táctiles grandes de ancho completo con títulos e íconos explícitos (como botones con título **"Editar"**, **"Eliminar"** o **"Ver detalle"**), diseñados con un tamaño apropiado para pulsar cómodamente con el dedo.
   * **Toque para replegar:** Al presionar nuevamente sobre la fila, esta se cierra regresando a su formato compacto. El usuario puede mantener abiertas varias filas de manera simultánea si necesita comparar datos entre registros.
-  * **Paginador integrado en la base:** En la parte inferior de la lista se conservan el indicador de registros visibles (por ejemplo, *«Mostrando 1–7 de 7 usuarios»*) y el selector de filas por página, garantizando una navegación ordenada en cualquier tamaño de pantalla.
+  * **Paginación en la base de la tabla:** Cada tabla cuenta en su parte inferior con controles de navegación para avanzar o retroceder entre páginas, saltar a una página específica mediante el campo **«Ir a la página»** y elegir cuántos registros visualizar al mismo tiempo a través del selector **«Filas por página»** (15, 30, 60 o 100 registros). En dispositivos móviles, estos controles se organizan de forma compacta para facilitar su uso táctil.
 * **Secciones del panel que funcionan en formato acordeón:**
   * **Usuarios** (detallado en la [Sección 3.4.2.4.1](#34241-submenú-usuarios))
   * **Roles y Permisos** (detallado en la [Sección 3.4.2.4.2](#34242-submenú-roles-y-permisos))
@@ -978,17 +978,19 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde el Panel Administrativo
 
-El Panel Administrativo mantiene su mecanismo centralizado de salida a través del menú de perfil del usuario:
+El Panel Administrativo centraliza la salida segura mediante el menú de usuario de la plataforma:
 
-1. **Acceso al menú desplegable de perfil:** En el entorno de escritorio, se hace clic sobre el bloque interactivo con el nombre y correo del funcionario ubicado en la base inferior del menú lateral izquierdo (acompañado de un ícono de flecha hacia arriba). Si se navega desde un dispositivo móvil, se presiona el bloque interactivo con el nombre del usuario ubicado en la barra superior de navegación.
+1. **Acceso al menú desplegable de usuario:**
+   * **En computadores de escritorio:** Se hace clic sobre el bloque interactivo con el nombre y correo del funcionario ubicado en la base inferior del menú lateral izquierdo (acompañado de un ícono de flecha hacia arriba). Este menú despliega las opciones de acceso a **«Configuración»** y **«Cerrar sesión»** de forma directa.
+   * **En celulares o tabletas:** Se pulsa sobre el nombre del usuario en la barra de navegación superior (junto a la flecha hacia abajo), desplegando de inmediato el menú contextual con la acción de **«Cerrar sesión»** (la sección de *Configuración* se accede mediante el botón *«Más»* en la barra de navegación inferior).
 
-> **[Captura: Menú de perfil en Panel Admin]**
-> *Menú desplegable de perfil en el menú lateral del Panel Administrativo.*
+> **[Captura: Menú de usuario en Panel Admin]**
+> *Menú desplegable de usuario en la base del menú lateral del Panel Administrativo.*
 >
-> **[Captura: Menú de perfil en Panel Admin (Móvil)]**
-> *Menú desplegable de perfil en la barra superior del Panel Administrativo. (Móvil).*
+> **[Captura: Menú de usuario en Panel Admin (Móvil)]**
+> *Menú desplegable de usuario en la barra superior del Panel Administrativo. (Móvil).*
 
-2. **Ejecución y cierre del sistema:** En el submenú contextual que se despliega en pantalla, se selecciona la opción **"Cerrar sesión"** (identificada con el ícono de puerta y flecha de salida). El sistema finaliza la sesión de inmediato de forma segura y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
+2. **Ejecución y cierre del sistema:** Al hacer clic o presionar sobre **"Cerrar sesión"** (identificada con el ícono de puerta y flecha de salida), el sistema finaliza la sesión de inmediato de forma segura, revoca la sesión activa en el servidor y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
 
 > **[Captura: Opción de cerrar sesión en Panel Admin]**
 > *Opción explícita de 'Cerrar sesión' en escritorio.*
@@ -1064,9 +1066,9 @@ La Intranet adapta el mecanismo de salida según los permisos del rol asignado:
 
 ### 3.4.2. Panel Administrativo
 
-El Panel Administrativo (`/admin`) constituye el centro de gobierno y control integral del Observatorio Laboral y Ocupacional (OLO), de acceso exclusivo para el rol **Administrador**. A continuación se detalla su estructura visual y se consolidan en una única secuencia operativa todos los procedimientos de gestión de usuarios, roles, aprobación editorial, seguridad, auditoría, respaldos y actualizaciones masivas de la plataforma.
+El Panel Administrativo (`/admin-panel`) constituye el centro de gobierno y control integral del Observatorio Laboral y Ocupacional (OLO), de acceso exclusivo para el rol **Administrador**. A continuación se detalla su estructura visual y se consolidan en una única secuencia operativa todos los procedimientos de gestión de usuarios, roles, aprobación editorial, seguridad, auditoría, respaldos y actualizaciones masivas de la plataforma.
 
-#### 3.4.2.1. Estructura Visual, Navegación y Menú de Perfil
+#### 3.4.2.1. Estructura Visual, Navegación y Menú de Usuario
 
 *(Nota: Para consultar las posibles situaciones de error, incidencias de visualización en la barra lateral o móvil, persistencia de temas y alertas de interfaz asociadas a este entorno con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.5: Validaciones y Solución de Problemas en la Estructura Visual, Navegación y Menú de Perfil](#3515-validaciones-y-solución-de-problemas-en-la-estructura-visual-navegación-y-menú-de-perfil)).*
 
@@ -1075,8 +1077,14 @@ El entorno del Panel Administrativo está diseñado para facilitar la gestión e
 1. **Barra Lateral de Navegación Fija (Entorno Escritorio):**
    En computadores de escritorio, el menú de navegación principal se ancla de forma permanente en el lateral izquierdo de la pantalla. Este menú concentra las herramientas globales:
    * **Logo y Retorno al Sitio Web:** En la parte superior, el logotipo del Observatorio Laboral y Ocupacional (OLO) está siempre visible. Al hacer clic sobre este ícono y título, actúa como un enlace directo que lleva al usuario de regreso a la página principal del sitio web público.
-   * **Navegación Modular:** Presenta una lista de accesos directos a los módulos del sistema. El módulo activo en el que se encuentra el usuario se resalta visualmente (con un borde activo de selección y texto resaltado, como se aprecia en el Dashboard). Los accesos incluyen el **Dashboard**, el grupo colapsable **Accesos** (identificado por una flecha desplegable que contiene submenús), **Páginas en revisión**, **Auditoría**, **Respaldos** y **Actualizaciones**.
-   * **Buscador Integrado:** En la parte inferior de la barra lateral se ubica un campo fijo interactivo de **Buscar** (identificado con un ícono de lupa y un acceso rápido con símbolo "+"). Este buscador global permite localizar funciones o secciones específicas de manera ágil.
+   * **Navegación Modular:** Presenta una lista de accesos directos a los módulos del sistema bajo sus rutas canónicas correspondientes:
+     * **Dashboard** (`/admin-panel/dashboard`): Tablero principal de métricas, árbol de páginas y actividad reciente.
+     * **Accesos** (grupo colapsable con animación de acordeón): Contiene los submenús **Usuarios** (`/admin-panel/users`) y **Roles y Permisos** (`/admin-panel/roles-and-permissions`).
+     * **Páginas en revisión** (`/admin-panel/review-section`): Bandeja de aprobación de borradores remitidos por editores.
+     * **Auditoría** (`/admin-panel/changelog-view`): Bitácora inmutable de eventos, trazabilidad y depuración anual con respaldo CSV.
+     * **Respaldos** (`/admin-panel/backup-section`): Control de versiones anteriores despublicadas y restauración segura.
+     * **Actualizaciones** (`/admin-panel/update-section`): Carga masiva y procesamiento de archivos Excel `.xlsx` para programas sobresalientes, alertas de inversión y tendencia ocupacional.
+   * **Buscador Integrado (`/admin-panel/search-section`):** En la parte inferior de la barra lateral se ubica un campo fijo interactivo de **Buscar** (identificado con un ícono de lupa y un acceso rápido con símbolo "+"). Este buscador global permite localizar funciones o secciones específicas de manera ágil.
 
 > **[Captura: Barra Lateral de Navegación]**
 > *Barra lateral izquierda mostrando el logotipo de retorno, la navegación modular con el módulo activo resaltado, el menú desplegable y el campo fijo de búsqueda.*
@@ -1087,21 +1095,23 @@ El entorno del Panel Administrativo está diseñado para facilitar la gestión e
 > **[Captura: Indicador Numérico de Revisiones]**
 > *Detalle de la opción "Páginas en revisión" en la barra de navegación, exhibiendo el contador numérico de borradores pendientes de revisión.*
 
-3. **Menú de Perfil, Notificaciones y Salida Segura:**
+3. **Menú de Usuario, Notificaciones y Salida Segura:**
    Los controles de la cuenta de usuario y notificaciones están siempre accesibles:
-   * **Bloque de Perfil:** Ubicado en la base inferior de la barra lateral (en escritorio). Muestra el nombre, el correo del usuario en sesión y un ícono de flecha indicadora. Al hacer clic sobre el nombre de usuario, se despliega un **Menú contextual** para ingresar a **"Mi perfil"** o ejecutar la acción de **"Cerrar sesión"** de forma segura.
-   * **Campana de Notificaciones:** Junto al bloque de perfil se ubica permanentemente el ícono de una campana, diseñada para alertar y desplegar las novedades del sistema:
+   * **Bloque de Usuario:** Ubicado en la base inferior de la barra lateral (en escritorio). Muestra el nombre, el correo corporativo del usuario en sesión y un ícono de flecha indicadora hacia arriba. Al hacer clic sobre este bloque, se despliega un menú contextual con dos opciones:
+     * **Configuración (`/admin-panel/configuration`):** Conduce a la personalización de la identidad visual del panel (logos claro y oscuro, ícono de pestaña), selector de colores institucionales y preferencias de sonido de las alertas.
+     * **Cerrar sesión:** Finaliza la sesión de inmediato y conduce a la pantalla de acceso principal.
+   * **Campana de Notificaciones:** Junto al bloque de usuario se ubica permanentemente el ícono de una campana, diseñada para alertar y desplegar las novedades del sistema:
      * *Aviso sonoro y alerta emergente:* Al producirse una novedad (como el envío de una página a revisión), la plataforma reproduce un suave aviso sonoro y presenta una notificación temporal en la esquina superior de la pantalla para advertir la llegada del evento en tiempo real.
      * *Listado descriptivo y gestión de alertas:* Al hacer clic en la campana, se despliega el panel de notificaciones, donde cada elemento describe mediante una frase clara la acción o solicitud pendiente. Cada fila dispone de un botón con el **ícono de cerrar** para marcar la alerta como solucionada, además del botón unificado de cierre en la cabecera del panel.
      * *Navegación directa interactiva:* Al presionar sobre cualquier notificación de la lista, el sistema traslada al usuario de forma automática y directa hacia el módulo correspondiente para gestionar la novedad (si corresponde a una página en revisión, conduce a **Páginas en revisión**; si corresponde a una solicitud de cuenta, conduce a **Usuarios**).
 
-> **[Captura: Menú de Perfil y Notificaciones]**
+> **[Captura: Menú de Usuario y Notificaciones]**
 > *Vista de la base de la barra lateral, mostrando la información del usuario, el menú desplegable y la campana de notificaciones.*
 
 4. **Adaptabilidad Estructural en Dispositivos Móviles:**
    Al ingresar desde un celular o tablet, la arquitectura visual del panel cambia automáticamente mediante un diseño responsivo para optimizar el espacio en pantallas táctiles, dividiendo los controles en dos barras fijas:
-   * **Barra Superior:** Traslada a la cabecera de la pantalla el nombre del usuario y el menú desplegable de perfil (representado con un ícono de flecha hacia abajo), junto con íconos de acceso rápido para la campana de notificaciones, el buscador global (lupa) y un **alternador de tema visual** (ícono de sol o luna para cambiar entre modo claro y oscuro).
-   * **Barra de Navegación Inferior:** Oculta la barra lateral y ubica en la base inferior de la pantalla un menú horizontal persistente. Este menú integra accesos rápidos: *Accesos* (ícono de usuario), *Revisión* (ícono de documento), un botón central destacado del *Dashboard* (representado por el isotipo del OLO), *Auditoría* (escudo) y un botón *Más* (tres puntos) para expandir los módulos restantes.
+   * **Barra Superior:** Traslada a la cabecera de la pantalla el nombre del usuario y el menú desplegable de sesión (representado con un ícono de flecha hacia abajo con la opción directa de *Cerrar sesión*), junto con íconos de acceso rápido para la campana de notificaciones, el buscador global (lupa) y un **alternador de tema visual** (ícono de sol o luna para cambiar entre modo claro y oscuro).
+   * **Barra de Navegación Inferior:** Oculta la barra lateral y ubica en la base inferior de la pantalla un menú horizontal persistente. Este menú integra accesos rápidos: *Accesos* (ícono de usuario, que despliega *Usuarios* y *Roles y Permisos*), *Revisión* (ícono de documento), un botón central destacado del *Dashboard* (representado por el isotipo del OLO), *Auditoría* (escudo) y un botón *Más* (tres puntos) que despliega los módulos de *Actualizaciones*, *Respaldos* y *Configuración*.
 
 > **[Captura: Interfaz Adaptativa en Dispositivos Móviles]**
 > *Distribución móvil con la barra superior (perfil, notificaciones, buscador y tema) y la barra de navegación inferior con el isotipo del Dashboard destacado en el centro. (Móvil).*
@@ -1233,21 +1243,22 @@ En este apartado se gestionan las cuentas individuales de los funcionarios que i
 > **[Captura: Paso 1 (Móvil)]**
 > *Acceso al submenú Usuarios en el menú lateral. (Móvil).*
 
-2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el listado completo de los funcionarios registrados. En la parte superior se dispone de un campo de búsqueda interactivo (**"Buscar usuarios..."**) para filtrar resultados en tiempo real por nombre, apellidos, correo corporativo o rol asignado, así como controles de paginación en la parte inferior para recorrer los registros de manera ágil sin saturar la pantalla.
+2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el listado completo de los funcionarios registrados. En la parte superior se encuentra el campo de búsqueda **"Buscar usuarios..."** para filtrar resultados en tiempo real por nombre, apellidos, correo corporativo o rol. En la base de la tabla se encuentran los controles de paginación para recorrer los registros y ajustar las filas por página (ver [Sección 3.3.2.3](#3323-diseño-adaptable-de-tablas-formato-acordeón-y-paginación-móvil)).
+   
    La tabla expone las siguientes columnas de información:
    * **Nombre:** Nombres y apellidos completos del funcionario.
    * **Correo:** Cuenta corporativa vinculada (`@sena.edu.co`).
    * **Rol:** El rol de acceso asignado en el sistema (ej. Administrador, Editor, o rol derivado).
-   * **Estado:** Un interruptor visual que indica si la cuenta está Activa o Inactiva/Suspendida.
-   * **Bloqueo:** Indicador de seguridad que señala si la cuenta se encuentra temporalmente bloqueada por exceso de intentos fallidos y el tiempo restante de bloqueo.
-   * **Acciones:** Herramientas operativas individuales para interactuar con cada fila. En computadores de escritorio son botones de solo ícono que despliegan su función mediante tooltip al posar el cursor o enfocarlos con el teclado:
-     * **Ícono de lápiz (tooltip «Editar usuario»):** Abre la ventana modal para modificar datos del usuario, reasignar rol, gestionar fecha de caducidad y opciones de restablecimiento de contraseña o preguntas de seguridad.
-     * **Ícono de basurero (tooltip «Eliminar»):** Despliega la ventana modal de confirmación para eliminar de forma definitiva la cuenta del sistema.
+   * **Estado:** Un interruptor que indica si la cuenta está Activa o Inactiva.
+   * **Bloqueo:** Indicador que señala si la cuenta se encuentra temporalmente bloqueada por exceso de intentos fallidos y el tiempo restante de bloqueo.
+   * **Acciones:** Herramientas individuales para cada usuario:
+     * **Editar usuario (ícono de lápiz):** Abre la ventana para modificar datos del usuario, reasignar su rol, gestionar fecha de caducidad, restablecer credenciales o actualizar la contraseña de la propia cuenta.
+     * **Eliminar (ícono de basurero):** Abre la confirmación para retirar la cuenta del sistema.
 
-   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila muestra el nombre del funcionario y, al desplegarla, se accede a sus datos (correo, rol, estado y bloqueo) junto con los botones táctiles con texto visible **"Editar"** y **"Eliminar"**.
+   En dispositivos móviles, la tabla se adapta en formato de tarjetas desplegables para consultar la información y acceder a los botones de acción con comodidad.
 
 > **[Captura: Tabla General de Usuarios]**
-> *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior.*
+> *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior del panel.*
 >
 > **[Captura: Tabla General de Usuarios (Móvil)]**
 > *Lista de usuarios en formato acordeón en dispositivos móviles, mostrando las filas compactas con flecha indicadora, el detalle desplegado y el paginador inferior.*
@@ -1280,18 +1291,21 @@ En este apartado se gestionan las cuentas individuales de los funcionarios que i
 > **[Captura: Credenciales Generadas (Móvil)]**
 > *Recuadro con la contraseña temporal generada con indicador de vigencia. (Móvil).*
 
-4. **Edición y Restablecimiento de Cuentas (Ícono de lápiz):**
-   Al hacer clic en el ícono de lápiz ubicado en la fila de un usuario, se abre el modal de edición. Desde aquí, el Administrador tiene acceso a dos procesos:
-   * **Actualización de datos del usuario:** Permite modificar la información base, incluyendo el nombre, apellidos, el rol asignado (nivel de privilegios) o establecer/quitar la fecha de caducidad de la cuenta. 
-   * **Opciones de restablecimiento:** En la base del formulario, se encuentran botones críticos para brindar soporte técnico al funcionario:
-     * **Restablecer la contraseña:** Genera una nueva clave temporal (con un nuevo ciclo de validez de 72 horas) y fuerza el flujo de primer ingreso. *(Nota: Esta acción también funciona como un mecanismo de **desbloqueo manual**, eliminando de forma inmediata cualquier bloqueo temporal por intentos fallidos).*
-     * **Restablecer las preguntas de seguridad:** Borra las preguntas previamente configuradas por el usuario, obligándolo a elegir y responder un nuevo par de preguntas de seguridad en su próximo inicio de sesión.
-
-> **[Captura: Modal Edición de Usuario]**
-> *Modal de edición mostrando los campos del usuario y las opciones de restablecimiento.*
->
-> **[Captura: Modal Edición de Usuario (Móvil)]**
-> *Modal de edición mostrando los campos del usuario y las opciones de restablecimiento. (Móvil).*
+4. **Edición de Cuentas, Restablecimiento y Cambio de Contraseña Propia (Ícono de lápiz):**
+   Al pulsar el ícono de lápiz en la fila de un usuario, se abre la ventana «Editar usuario»:
+   * **Actualización de datos:** Permite modificar el nombre, los apellidos, el rol asignado y la fecha de caducidad de la cuenta.
+   * **Al gestionar la cuenta de OTRO funcionario:**
+     * En la parte inferior de la ventana se ofrecen dos herramientas de soporte:
+       * **Restablecer la contraseña:** Genera una clave provisional de 72 horas para que el funcionario configure nuevamente su acceso (sirve también para desbloquear la cuenta si fue bloqueada por intentos fallidos).
+       * **Restablecer las preguntas de seguridad:** Borra las respuestas registradas para que el funcionario las defina de nuevo al iniciar sesión.
+   * **Al gestionar la PROPIA cuenta:**
+     * La ventana incluye la sección desplegable **«Cambiar contraseña»** (ubicada debajo de *«Restablecer preguntas de seguridad»*):
+       * **Contraseña nueva:** Campo para escribir la nueva clave, acompañado de un ícono de ojo para ver u ocultar los caracteres y una lista interactiva de condiciones de seguridad (mínimo 8 caracteres, combinación de mayúsculas, minúsculas, números o símbolos, y sin emojis).
+       * **Repetir contraseña nueva:** Campo para confirmar la clave digitada.
+       * **Requisitos:** Solo se solicita ingresar la nueva clave y su confirmación.
+       * **Validación:** Si se intenta utilizar una clave reciente o la misma que ya tiene la cuenta, el sistema muestra un mensaje de advertencia bajo el campo y no permite guardar hasta ingresar una diferente.
+       * Si se dejan ambos campos de contraseña en blanco, la clave actual se mantiene sin cambios y únicamente se guardan las modificaciones en los datos del funcionario.
+   * *(Nota para otros roles: Los funcionarios que no tienen acceso a la gestión de usuarios actualizan o recuperan su clave mediante las preguntas de seguridad desde la pantalla de inicio de sesión en `/login/recovery`).*
 
 5. **Suspender y Activar Cuentas (Interruptor de Estado):**
    La columna "Estado" permite gestionar el acceso de los funcionarios mediante un interruptor:
@@ -1327,7 +1341,7 @@ En este apartado se gestionan los roles del sistema y se configuran roles a la m
 
 Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberadamente los roles fijos administrativos o gerenciales (`Administrador` y `Director/Subdirector`), puesto que sus facultades son estáticas y están protegidas por el sistema. En este módulo únicamente se visualizan y gestionan el rol base **Editor** y los roles derivados personalizados (hijos de Editor).
 
-1. **Acceso al módulo:** En el menú lateral (o barra inferior de navegación en móviles), bajo "Accesos", hacer clic en **"Roles"** (o "Roles y Permisos").
+1. **Acceso al módulo:** En el menú lateral (o barra inferior de navegación en móviles), desplegar "Accesos" y hacer clic en **"Roles"** (conduce a la ruta canónica `/admin-panel/roles-and-permissions`).
 
 > **[Captura: Paso 1]**
 > *Acceso al submenú Roles en el menú lateral.*
@@ -1335,14 +1349,14 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
 > **[Captura: Paso 1 (Móvil)]**
 > *Acceso al submenú Roles en el menú lateral. (Móvil).*
 
-2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el catálogo de roles gestionables. En la parte superior se dispone de un campo de búsqueda interactivo (**"Buscar roles..."**) para filtrar resultados en tiempo real por nombre o descripción, así como controles de paginación en la parte inferior para recorrer la lista de manera organizada.
+2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el catálogo de roles gestionables. En la parte superior se dispone de un campo de búsqueda interactivo (**"Buscar roles..."**) para filtrar resultados en tiempo real por nombre o descripción. En la parte inferior de la tabla se encuentran los controles de paginación para navegar entre los registros y ajustar las filas por página.
    La tabla expone las siguientes columnas de información:
    * **Rol:** Nombre oficial asignado (el rol base predefinido `Editor`, o bien los roles derivados que incorporan el prefijo obligatorio `Editor [Nombre]`).
    * **Descripción:** Detalle textual que resume el alcance, objetivo o dependencia asignada a dicho rol. Si no se especificó un texto al crearlo, el sistema muestra la indicación *"Sin descripción"*.
-   * **Permisos:** Etiqueta visual (cápsula interactiva) que contabiliza numéricamente la cantidad exacta de permisos activos asignados al rol (ej. *«14 permisos»*).
+   * **Permisos:** Etiqueta visual que contabiliza numéricamente la cantidad exacta de permisos activos asignados al rol (ej. *«14 permisos»*).
    * **Acciones:** Herramientas operativas individuales para interactuar con cada fila. En computadores de escritorio son botones de solo ícono que despliegan su función mediante tooltip:
      * **Ícono de deslizadores (tooltip «Editar rol»):** Abre la ventana modal para modificar la denominación, descripción y los permisos asignados al rol.
-     * **Ícono de basurero (tooltip «Eliminar»):** Permite suprimir roles personalizados derivados (deshabilitado en el rol base **"Editor"**).
+     * **Ícono de basurero (tooltip «Eliminar»):** Permite eliminar roles personalizados derivados (deshabilitado en el rol base **"Editor"**).
 
    En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila muestra el nombre del rol y, al desplegarla, se accede a su descripción, número de permisos y los botones táctiles con texto visible **"Editar rol"** y **"Eliminar rol"** (deshabilitado en el rol base *Editor*).
 
@@ -1447,7 +1461,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
 #### 3.4.2.5. Aprobación y Publicación de Contenidos: Páginas en Revisión
 *(Nota: Para consultar las posibles situaciones de validación, modales bloqueados, límites de caracteres y solución de problemas en este flujo con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.10: Validaciones y Solución de Problemas en la Aprobación y Publicación de Contenidos (Páginas en Revisión)](#35110-validaciones-y-solución-de-problemas-en-la-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).*
 
-Módulo vital para el flujo de publicación, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Páginas en Revisión"**.
+Módulo vital para el flujo de publicación, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Páginas en Revisión"** (conduce a la ruta canónica `/admin-panel/review-section`).
 
 1. **Acceso a la bandeja:** Se debe hacer clic en el ítem **"Páginas en Revisión"** en el menú lateral o en la barra inferior móvil.
 
@@ -1469,6 +1483,8 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
      * **Descartar (ícono de papelera):** Botón con ícono de papelera (tooltip *«Eliminar»*). Abre la ventana modal para anular definitivamente el borrador, requiriendo el registro obligatorio del motivo para auditoría.
 
    En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el envío (*«[Autor] envió la versión [N] de [Título]»*) y, al desplegarla, muestra la ruta, el comentario de cambios y los cuatro botones de acción con su ícono y nombre visible (*"Visualizar"*, *"Publicar"*, *"Rechazar"* y *"Eliminar"*).
+
+   En la base de la tabla se disponen los controles de paginación para recorrer las solicitudes pendientes y elegir la cantidad de filas visibles.
 
 > **[Captura: Paso 2]**
 > *Tabla de borradores pendientes mostrando título, cambios y editor.*
@@ -1535,14 +1551,14 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 #### 3.4.2.6. Auditoría y Bitácora de Eventos
 *(Nota: Para consultar las posibles situaciones de validación, reglas de conservación del último año, descarga obligatoria de respaldos CSV y la tabla de referencia de acciones de la bitácora, remitirse a la [Sección 3.5.1.11: Validaciones y Solución de Problemas en la Bitácora de Auditoría](#35111-validaciones-y-solución-de-problemas-en-la-bitácora-de-auditoría)).*
 
-Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Auditoría"**. Su propósito es registrar de forma transparente e inmutable las acciones ejecutadas en la plataforma: ciclo editorial de páginas, administración de usuarios, roles, permisos y seguridad.
+Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Auditoría"** (conduce a la ruta canónica `/admin-panel/changelog-view`). Su propósito es registrar de forma transparente e inmutable las acciones ejecutadas en la plataforma: ciclo editorial de páginas, administración de usuarios, roles, permisos y seguridad.
 
 1. **Barra de Filtros de Búsqueda:** En la parte superior de la vista se dispone de una barra de controles para acotar la consulta en tiempo real (los resultados se actualizan automáticamente al seleccionar cada valor):
    * **Categoría (filtro principal):** Clasifica los eventos según el ámbito operativo del sistema:
      * *Todas:* Muestra la totalidad de los movimientos sin distinción de área.
      * *Contenido editorial:* Agrupa las operaciones realizadas en el editor visual (creación de páginas, ediciones, guardado de borradores, autoguardados y envíos a revisión).
      * *Administración:* Agrupa las decisiones tomadas sobre los borradores (publicaciones, rechazos y archivados).
-     * *Seguridad:* Agrupa el control de accesos, cuentas y permisos (autenticaciones, modificaciones de usuario o rol, expiración de vigencias, inactivaciones, bloqueos de cuenta, respuestas a preguntas de seguridad, cambios de contraseña y eliminaciones).
+     * *Seguridad:* Agrupa el control de accesos, cuentas y permisos (autenticaciones, modificaciones de usuario o rol, expiración de vigencias, inactivaciones, bloqueos de cuenta, respuestas a preguntas de seguridad, cambio de contraseña por restablecimiento o voluntario `cambio-voluntario`, y eliminaciones).
    * **Desde:** Selector de fecha inicial con calendario interactivo. Bloquea automáticamente la selección de fechas posteriores a la indicada en el campo *Hasta*.
    * **Hasta:** Selector de fecha final con calendario interactivo. Bloquea automáticamente la selección de fechas anteriores a la indicada en el campo *Desde*.
    * **Usuario:** Menú desplegable para filtrar por el funcionario responsable de la acción (*"Todos"* o el nombre específico del funcionario).
@@ -1565,7 +1581,7 @@ Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el
 
    En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el evento mediante una frase explicativa (*«El usuario [Nombre] hizo la acción de...»*, o *«El sistema hizo la acción de...»*) y, al pulsar sobre ella para desplegarla, presenta la fecha exacta, el resumen de lo modificado y el botón **"Ver detalle"** con su ícono y texto visible.
 
-   En la parte inferior de la tabla se ubica el **Paginador**, el cual permite alternar entre páginas de registros y ajustar el número de filas mostradas por pantalla (15, 25, 50 o 100 registros).
+   En la parte inferior de la tabla se ubican los controles de paginación para explorar los eventos registrados y ajustar la cantidad de filas por página.
 
 > **[Captura: Tabla de Auditoría]**
 > *Tabla de registros de auditoría mostrando fecha y hora con segundos, usuario, etiqueta de acción, resumen de cambios y botón de detalle.*
@@ -1755,9 +1771,9 @@ Este módulo gestiona los datos de los programas y egresados destacados del SENA
 2. **Columnas de trazabilidad:**
    * **Fecha:** Día y hora exacta en que se procesó el archivo.
    * **Estado:** Etiqueta visual de estado con contraste accesible:
-     * *Completado:* Fondo verde suave con texto verde oscuro.
-     * *Procesando:* Fondo azul con texto azul y punto animado con el porcentaje en curso.
-     * *Error:* Fondo rojo con texto rojo por fallas de estructura en el archivo.
+     * *Completado:* Indicador de estado satisfactorio que confirma el procesamiento exitoso de los datos.
+     * *Procesando:* Indicador de progreso con animación y porcentaje en curso.
+     * *Error:* Indicador de advertencia por fallas de estructura en el archivo que impiden su procesamiento.
    * **Filas:** Cantidad total de registros ingresados al sistema con separador de miles.
    * **Mensaje:** Resumen descriptivo de la operación o explicación de la causa técnica si ocurrió un error.
 3. **Eliminación de un registro de auditoría:**
@@ -1829,7 +1845,7 @@ Este apartado reúne las herramientas para registrar y administrar los proyectos
    * **Fecha del anuncio:** Indicar el día en el calendario interactivo.
    * **Enlace de la fuente:** Pegar la dirección web (iniciando con `http://` o `https://`).
 3. **Diligenciar campos opcionales:** Indicar clase CIIU (4 dígitos), ciudad/municipio, medio de comunicación, inversión estimada en COP o vacantes estimadas.
-4. **Validación y guardado:** Al presionar **«Guardar»**, si falta algún dato requerido el campo se resalta con borde rojo y aviso explicativo. Con los datos correctos, la ventana se cierra y el proyecto se incorpora de inmediato al catálogo y al historial.
+4. **Validación y guardado:** Al presionar **«Guardar»**, si falta algún dato requerido el campo se resalta con borde de advertencia y aviso explicativo. Con los datos correctos, la ventana se cierra y el proyecto se incorpora de inmediato al catálogo y al historial.
 
 > **[Captura: Formulario de Registro Manual de Inversión]**
 > *Ventana modal «Agregar proyecto de inversión» mostrando la selección de tipo, campos obligatorios, selectores de sector y departamento, y avisos de validación.*
@@ -1905,7 +1921,7 @@ Este apartado permite cargar y publicar los datos de demanda laboral (inscritos 
 ###### Selección de Año, Periodo y Autodetección Inteligente
 
 1. **Definir corte:** Seleccionar el año y el periodo en el menú desplegable (Trimestres `T1`–`T4`, Semestres `S1`–`S2`, o corte `ANUAL`). Si un periodo ya tiene datos cargados o en curso, el selector lo indica directamente (*«ya cargado»* o *«en curso»*).
-2. **Autodetección por nombre de archivo:** Al elegir el archivo `.xlsx`, si su nombre contiene el año y periodo (por ejemplo, `percentiles_2025_T1.xlsx`), el sistema los detecta y asigna automáticamente. Si se modifican a un valor diferente, se muestra un texto preventivo en color ámbar.
+2. **Autodetección por nombre de archivo:** Al elegir el archivo `.xlsx`, si su nombre contiene el año y periodo (por ejemplo, `percentiles_2025_T1.xlsx`), el sistema los detecta y asigna automáticamente. Si se modifican a un valor diferente, se muestra un mensaje preventivo de advertencia.
 
 > **[Captura: Selección de Año, Periodo y Autodetección Inteligente]**
 > *Formulario de corte mostrando los selectores de año y periodo, marcas de estado en el desplegable y mensaje de autodetección por nombre de archivo.*
@@ -1943,9 +1959,9 @@ Este apartado permite cargar y publicar los datos de demanda laboral (inscritos 
 
 ###### Estado Borrador, Reporte de Hallazgos y Publicación
 
-1. **Nacimiento en estado Borrador:** Toda carga exitosa inicia en estado **Borrador («Sin publicar»)** en color ámbar, resguardando los datos sin alterar los tableros públicos.
+1. **Nacimiento en estado Borrador:** Toda carga exitosa inicia en estado **Borrador («Sin publicar»)**, resguardando los datos sin alterar los tableros públicos.
 2. **Reporte de validación:** El botón **«Reporte»** detalla las observaciones analíticas indicando hoja, fila de Excel, ocupación y valores calculados.
-3. **Publicación en el sitio:** En la bandeja **«Pendientes de publicar»**, hacer clic en **«Publicar»** (corte individual) o **«Publicar todos»** para pasar a estado verde **«Publicado»** y exhibir los datos en el portal.
+3. **Publicación en el sitio:** En la bandeja **«Pendientes de publicar»**, hacer clic en **«Publicar»** (corte individual) o **«Publicar todos»** para pasar a estado **«Publicado»** y exhibir los datos en el portal.
 
 > **[Captura: Bandeja de Pendientes de Publicar y Reporte de Validación]**
 > *Bandeja superior de cortes pendientes en borrador «Sin publicar», botón «Publicar todos», recuadro de resultado y desglose del reporte de hallazgos.*
@@ -1971,41 +1987,15 @@ Este apartado permite cargar y publicar los datos de demanda laboral (inscritos 
 
 ---
 
-#### 3.4.2.9. Perfil de Usuario ("Mi perfil" y "Configuración")
+#### 3.4.2.9. Configuración del Panel Administrativo
 
-Esta sección permite consultar los datos personales, cambiar la contraseña y ajustar las preferencias del panel administrativo:
-
-* **En computador:** Ambas opciones se abren haciendo clic sobre el nombre de usuario, al final del menú lateral izquierdo.
-* **En celular o tableta:** **"Mi perfil"** se abre tocando el nombre de usuario en la barra superior, y **"Configuración"** pulsando el botón **«Más»** en la barra inferior.
-
-##### 3.4.2.9.1. Sección "Mi Perfil"
-
-*(Nota: Para consultar las posibles situaciones de validación, errores de contraseña actual, discrepancias de confirmación y soporte de campos en solo lectura, remitirse a la [Sección 3.5.1.13: Validaciones y Solución de Problemas en Mi Perfil](#35113-validaciones-y-solución-de-problemas-en-mi-perfil)).*
-
-Disponible en la ruta `/admin/mi-perfil` (accesible desde el menú de usuario en la barra lateral en escritorio o tocando el nombre de usuario en la barra superior móvil), reúne la consulta de la cuenta y la actualización de la contraseña:
-
-1. **Datos del usuario (solo lectura):** Presenta el **Nombre**, **Apellidos** y **Correo Electrónico** (`@sena.edu.co`) asociados a la cuenta. Estos campos son de solo lectura en esta vista; para modificar el nombre, los apellidos o el correo de cualquier funcionario, el cambio se realiza desde el módulo **Accesos > Usuarios** (`/admin-panel/users`), editando el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
-
-2. **Cambio de contraseña:** Para actualizar la clave de acceso, el usuario sigue estos pasos:
-   * **Contraseña actual:** Se digita la clave vigente en la primera casilla (incluye botón con ícono de ojo para ver u ocultar los caracteres).
-   * **Nueva contraseña:** Se ingresa la nueva clave (con botón para ver u ocultar), guiándose por el panel en vivo que evalúa los requisitos de seguridad (al menos 12 caracteres, máximo 72 caracteres, combinación de mayúsculas, minúsculas, números o símbolos, y sin emojis). Si la clave propuesta coincide con la contraseña actual, con la inmediatamente anterior o no supera la política de seguridad, el formulario despliega directamente bajo la casilla el aviso preventivo: *«Esta contraseña no es válida por seguridad, elige otra.»*.
-   * **Confirmar contraseña:** Se vuelve a escribir la nueva clave para asegurar que ambas coincidan.
-   * **Guardar cambios:** Se hace clic en el botón **"Cambiar Contraseña"** (mostrará el estado *«Guardando...»* mientras se procesa la solicitud). Al completarse, el sistema confirma la operación con el mensaje *«Contraseña actualizada exitosamente»*, limpia las casillas del formulario y registra el evento en la bitácora de auditoría.
-
-> **[Captura: Mi Perfil]**
-> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los datos de cuenta en solo lectura y el formulario de cambio de contraseña.*
->
-> **[Captura: Mi Perfil (Móvil)]**
-> *Vista del módulo "Mi Perfil" en dispositivo móvil adaptada a una sola columna. (Móvil).*
-
-##### 3.4.2.9.2. Sección "Configuración"
+Disponible en la ruta `/admin-panel/configuration` (accesible en computadores de escritorio desde el menú de usuario en la base de la barra lateral izquierda seleccionando **«Configuración»**, o en dispositivos móviles pulsando el botón **«Más»** en la barra inferior), este módulo permite personalizar la identidad visual del panel, adaptar los colores institucionales y ajustar las preferencias de sonido de las alertas.
 
 *(Nota: Para consultar las posibles situaciones de validación, restricciones de formato y peso de imagen, alertas de contraste y persistencia local de sonidos, remitirse a la [Sección 3.5.1.14: Validaciones y Solución de Problemas en Configuración](#35114-validaciones-y-solución-de-problemas-en-configuración)).*
 
-Disponible en la ruta `/admin-panel/configuration` (accesible desde el menú de usuario en la base de la barra lateral izquierda en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite personalizar la identidad visual del panel y ajustar las preferencias de sonido:
+##### 3.4.2.9.1. Identidad Visual del Panel (Logotipo, Ícono de Pestaña y Modo Oscuro)
 
-1. **Identidad visual (Logotipo, ícono de pestaña y tema oscuro):**
-   Permite personalizar los distintivos gráficos de la plataforma en tiempo real:
+Permite personalizar los distintivos gráficos de la plataforma en tiempo real:
    * **Logo de la barra lateral:** Se carga haciendo clic o arrastrando una imagen PNG horizontal (hasta 1 MB, recomendada con fondo transparente). El sistema la guarda de forma inmediata y ofrece previsualizaciones en vivo en modo claro y oscuro, además del botón **«Volver al de fábrica»** para restaurar el diseño original.
    * **Ícono de la pestaña (Favicon):** Se carga arrastrando o seleccionando un PNG cuadrado (hasta 512 KB, mínimo 64 × 64 px) para la pestaña del navegador y la barra móvil, incluyendo su botón para restablecer el de fábrica.
    * **Pasar a blanco en modo oscuro:** Interruptor para fijar en blanco logos o íconos oscuros con fondo transparente cuando se usa el tema oscuro. Debe mantenerse apagado si la imagen tiene fondo propio.
@@ -2147,20 +2137,34 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
      * *Plegado del panel lateral:* Botón con ícono para ocultar o desplegar el panel izquierdo de bloques y capas según se requiera mayor espacio de trabajo en el lienzo.
      * *Bandera de la página (Ruta y estado de versión):* Recuadro informativo que presenta la ruta de la página (por ejemplo: `/inicio`) y la etiqueta con el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
      * *Aviso de observaciones de rechazo:* Si la versión fue devuelta previamente por el Administrador, se ubica una alerta interactiva junto a la bandera que permite consultar las correcciones solicitadas sin salir del editor.
-   * **Sector derecho (Herramientas, historial y acciones editoriales):**
+
+> **[Captura: Barra Superior - Sector Izquierdo (Identificación y Estado)]**
+> *Sector izquierdo de la cabecera mostrando el botón de plegado del panel lateral, la bandera con la ruta de la página y el estado de la versión.*
+>
+> **[Captura: Barra Superior - Sector Izquierdo (Móvil)]**
+> *Sector izquierdo de la barra superior adaptado a pantallas móviles con la ruta y estado vigente. (Móvil).*
+
+   * **Sector derecho (Herramientas, historial y autoguardado):**
      * *Historial de edición:* Botones con íconos de flecha curva para **Deshacer** y **Rehacer** modificaciones efectuadas durante la sesión activa en el navegador.
      * *Avisos de accesibilidad y concurrencia:* Mensajes de advertencia contextuales si faltan textos alternativos obligatorios en imágenes antes de remitir a revisión, o si otro funcionario tomó el control de la página.
      * *Indicador de autoguardado:* Notificación en tiempo real que señala el estado del respaldo automático en segundo plano (*«Guardando…»*, *«Sin guardar»* cuando existen cambios recientes o *«Guardado a las [hora]»*).
-     * *Botonera de acciones editoriales:*
-       * **Botón Salir** (Ícono de detener, con texto de ayuda *«Salir sin publicar»*): Cierra el editor y devuelve al usuario al portal. Si existen cambios pendientes de almacenar, despliega la ventana modal de confirmación (*«¿Salir del editor?»*) para evitar pérdidas involuntarias de trabajo.
-       * **Botón Guardar borrador** (Ícono de disquete, con texto de ayuda *«Guardar borrador»*): Almacena manualmente el estado actual del borrador en el servidor sin publicarlo ni remitirlo a revisión.
-       * **Botón Enviar a revisión** (Ícono de envío, con texto de ayuda *«Enviar a revisión»*): Disponible para los editores tanto en el Sitio Web como en la Intranet. Despliega la ventana modal para ingresar el comentario descriptivo de cambios obligatorio y traslada la versión a la cola de revisión del Administrador. El editor nunca publica directamente; toda versión requiere obligatoriamente la aprobación y publicación por parte del Administrador desde el Panel Administrativo.
 
-> **[Captura: Barra de Herramientas Superior del Editor]**
-> *Barra superior del editor mostrando la bandera de ruta y estado a la izquierda, y el historial, estado de autoguardado y botones de acción a la derecha.*
+> **[Captura: Barra Superior - Historial y Autoguardado]**
+> *Detalle del sector derecho mostrando los controles de Deshacer, Rehacer y el indicador de autoguardado en tiempo real.*
 >
-> **[Captura: Barra de Herramientas Superior del Editor (Móvil)]**
-> *Barra superior de herramientas adaptada a interfaz móvil. (Móvil).*
+> **[Captura: Barra Superior - Historial y Autoguardado (Móvil)]**
+> *Controles de historial y autoguardado adaptados a pantallas móviles. (Móvil).*
+
+   * **Botonera de acciones editoriales:**
+     * **Botón Salir** (Ícono de detener, con texto de ayuda *«Salir sin publicar»*): Cierra el editor y devuelve al usuario al portal. Si existen cambios pendientes de almacenar, despliega la ventana modal de confirmación (*«¿Salir del editor?»*) para evitar pérdidas involuntarias de trabajo.
+     * **Botón Guardar borrador** (Ícono de disquete, con texto de ayuda *«Guardar borrador»*): Almacena manualmente el estado actual del borrador en el servidor sin publicarlo ni remitirlo a revisión.
+     * **Botón Enviar a revisión** (Ícono de envío, con texto de ayuda *«Enviar a revisión»*): Disponible para los editores tanto en el Sitio Web como en la Intranet. Despliega la ventana modal para ingresar el comentario descriptivo de cambios obligatorio y traslada la versión a la cola de revisión del Administrador. El editor nunca publica directamente; toda versión requiere obligatoriamente la aprobación y publicación por parte del Administrador desde el Panel Administrativo.
+
+> **[Captura: Barra Superior - Botonera de Acciones Editoriales]**
+> *Botonera de acciones editoriales en la cabecera con los botones de Salir, Guardar borrador y Enviar a revisión.*
+>
+> **[Captura: Barra Superior - Botonera de Acciones Editoriales (Móvil)]**
+> *Botonera de acciones editoriales en cabecera adaptada a interfaz móvil. (Móvil).*
 
 3. **Lienzo central de trabajo (Área visual de edición):**
    Espacio principal donde se construye la página y se visualiza en tiempo real tal como la verá el usuario al publicarse. Cada bloque incorporado exhibe sus colores, tipografías y estructura definitiva de forma inmediata, permitiendo maquetar con total fidelidad visual sin requerir ventanas intermedias ni recargas.
@@ -2182,28 +2186,43 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
 
 ##### 3.4.3.3.2. Barra de Herramientas Contextual del Bloque (Controles de Acción en el Lienzo)
 
-Al hacer clic o situar el cursor sobre cualquier bloque en el lienzo, el componente queda delimitado por un marco de selección y despliega en su parte superior una barra flotante de herramientas con controles de acción directa:
+Al situar el cursor o hacer clic sobre cualquier bloque dentro del lienzo, el componente queda delimitado por un marco perimetral que lo resalta como elemento activo y despliega en su borde superior una barra flotante con herramientas y controles de acción directa:
 
-1. **Agarradera de arrastre (Ícono de seis puntos):**
-   Permite mantener presionado el botón del ratón sobre el bloque para moverlo y reubicarlo verticalmente a lo largo de la página. Durante el movimiento, el editor traza una línea guía indicadora que señala la posición exacta donde se insertará el bloque al soltar el cursor.
-
-> **[Captura: Agarradera de Arrastre de Bloque]**
-> *Uso de la agarradera de arrastre de seis puntos para desplazar libremente un bloque en el lienzo.*
+> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado]**
+> *Marco perimetral resaltando el bloque activo en el lienzo junto con su barra flotante superior de herramientas contextuales.*
 >
-> **[Captura: Agarradera de Arrastre de Bloque (Móvil)]**
-> *Control de arrastre para mover bloques en pantalla móvil. (Móvil).*
+> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado (Móvil)]**
+> *Visualización del marco de selección y barra flotante adaptada a pantalla táctil móvil. (Móvil).*
 
-2. **Controles de desplazamiento vertical (Flechas Arriba y Abajo):**
-   Permiten subir o bajar el bloque una posición con un solo clic. Esta opción facilita reorganizar el orden de los elementos con total precisión sin necesidad de arrastrar el componente.
+1. **Identificador del bloque (Etiqueta de nombre):**
+   Muestra en texto el nombre del componente seleccionado (por ejemplo: *«Carrusel de imágenes»*, *«Servicios»*, *«Video embebido»*, *«Mapa del sitio»*, entre otros). Permite identificar con total certeza el tipo de bloque antes de realizar ajustes sobre sus propiedades o su contenido.
 
-> **[Captura: Botones de Desplazamiento Vertical de Bloque]**
-> *Controles de flechas en la barra contextual para subir o bajar el bloque una posición.*
+> **[Captura: Etiqueta de Identificación del Bloque]**
+> *Detalle de la etiqueta textual con el nombre del bloque activo en el extremo izquierdo de la barra contextual.*
 >
-> **[Captura: Botones de Desplazamiento Vertical de Bloque (Móvil)]**
-> *Botones de desplazamiento vertical en dispositivo móvil. (Móvil).*
+> **[Captura: Etiqueta de Identificación del Bloque (Móvil)]**
+> *Etiqueta identificadora del bloque adaptada a pantalla móvil. (Móvil).*
 
-3. **Botón Duplicar (Ícono de páginas superpuestas):**
-   Genera una copia idéntica del bloque seleccionado, duplicando todos sus textos, imágenes, enlaces y opciones de estilo, e insertándolo inmediatamente debajo del original. Resulta de gran utilidad para crear secuencias repetitivas de contenido rápidamente.
+2. **Seleccionar contenedor superior (Ícono de flecha hacia arriba):**
+   En aquellos bloques que forman parte de una estructura compuesta o agrupada (como columnas, tarjetas o franjas de contenido anidadas), se habilita este control para seleccionar de forma directa el contenedor principal que los engloba, facilitando editar las propiedades globales del grupo sin perder la selección.
+
+> **[Captura: Botón Seleccionar Contenedor Superior]**
+> *Ícono de flecha hacia arriba en la barra contextual para ascender en la jerarquía y enfocar el contenedor padre.*
+>
+> **[Captura: Botón Seleccionar Contenedor Superior (Móvil)]**
+> *Control para seleccionar contenedor padre en interfaz móvil. (Móvil).*
+
+3. **Herramientas de formato de texto en línea:**
+   En los bloques que admiten redacción directa sobre el propio lienzo, al situar el cursor dentro de un campo de texto, la barra contextual integra de inmediato accesos rápidos de estilo tipográfico para aplicar negrita, cursiva, subrayado o vincular enlaces sin necesidad de recurrir al panel lateral.
+
+> **[Captura: Controles de Formato de Texto en Línea]**
+> *Barra de herramientas con opciones rápidas de formato tipográfico (negrita, cursiva, enlaces) sobre el texto en edición.*
+>
+> **[Captura: Controles de Formato de Texto en Línea (Móvil)]**
+> *Accesos rápidos de formato de texto en línea en pantalla táctil móvil. (Móvil).*
+
+4. **Botón Duplicar (Ícono de páginas superpuestas):**
+   Genera una copia idéntica del bloque seleccionado con todos sus textos, recursos multimedia, enlaces y opciones de estilo previamente configurados, ubicándola de inmediato justo debajo del bloque original. Esta función agiliza la construcción de secciones repetitivas sin tener que configurar cada bloque desde cero.
 
 > **[Captura: Botón Duplicar Bloque]**
 > *Acción de duplicar para clonar un bloque seleccionado conservando todas sus configuraciones.*
@@ -2211,8 +2230,8 @@ Al hacer clic o situar el cursor sobre cualquier bloque en el lienzo, el compone
 > **[Captura: Botón Duplicar Bloque (Móvil)]**
 > *Botón de duplicación de bloque en vista móvil. (Móvil).*
 
-4. **Botón Eliminar (Ícono de papelera):**
-   Retira de inmediato el bloque seleccionado del lienzo. El espacio liberado es reacomodado automáticamente por los componentes adyacentes. En caso de supresión accidental, la acción se puede revertir inmediatamente desde el botón **Deshacer** de la barra superior de herramientas.
+5. **Botón Eliminar (Ícono de papelera):**
+   Retira de forma instantánea el bloque seleccionado del lienzo. El espacio liberado se reorganiza automáticamente y la acción puede ser revertida en cualquier momento mediante el botón **Deshacer** ubicado en la barra superior de herramientas.
 
 > **[Captura: Botón Eliminar Bloque]**
 > *Ícono de papelera en la barra flotante para retirar el componente del lienzo.*
@@ -2220,48 +2239,103 @@ Al hacer clic o situar el cursor sobre cualquier bloque en el lienzo, el compone
 > **[Captura: Botón Eliminar Bloque (Móvil)]**
 > *Botón de eliminación de bloque en interfaz móvil. (Móvil).*
 
+6. **Reorganización y movimiento mediante arrastre directo sobre el lienzo:**
+   Para cambiar la posición o el orden vertical de cualquier elemento en la página, no se requieren agarraderas externas ni botones de flechas:
+   * **Arrastre directo:** Haz clic sostenido con el ratón sobre cualquier punto del bloque (o mantén pulsado con el dedo en pantallas táctiles) y deslízalo verticalmente hacia arriba o hacia abajo a lo largo del lienzo.
+   * **Apertura de espacio dinámica:** A medida que te desplazas, los bloques circundantes se apartan con fluidez abriendo el espacio exacto donde se insertará el elemento.
+   * **Fijación al soltar:** Al soltar el botón del ratón o levantar el dedo de la pantalla, el bloque se asienta en su nueva ubicación y la página reacomoda todo el contenido de manera automática.
+
+> **[Captura: Reubicación de Bloque por Arrastre Directo]**
+> *Desplazamiento interactivo de un bloque sobre el lienzo con apertura dinámica de espacio entre secciones.*
+>
+> **[Captura: Reubicación de Bloque por Arrastre Directo (Móvil)]**
+> *Reorganización de bloques mediante arrastre táctil en dispositivo móvil. (Móvil).*
+
+7. **Navegación e inspección desde el panel de Capas:**
+   En páginas extensas o con múltiples secciones apiladas, la pestaña **Capas** del panel lateral izquierdo ofrece una lista secuencial completa de todos los componentes presentes en la página. Al pulsar sobre cualquier elemento de la lista, el editor se desplaza automáticamente por el lienzo y enfoca el bloque correspondiente para seleccionarlo y configurarlo de inmediato.
+
+> **[Captura: Navegación y Enfoque de Bloque desde Capas]**
+> *Selección de un bloque en la lista de Capas del panel lateral con desplazamiento y enfoque automático en el lienzo.*
+>
+> **[Captura: Navegación y Enfoque de Bloque desde Capas (Móvil)]**
+> *Exploración de la jerarquía de capas y selección de bloques en pantalla móvil. (Móvil).*
+
 ##### 3.4.3.3.3. Opciones de Edición y Configuración de Bloques (Menú Lateral)
 
-Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la lista de capas, el menú lateral de configuración despliega el formulario de propiedades correspondiente al elemento activo. Las opciones varían según el tipo de bloque seleccionado, permitiendo personalizar aspectos como la información visual, la estructura, los contenidos y los recursos adjuntos:
+Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la lista de capas, el panel lateral derecho (Inspector de propiedades) despliega de manera automática el formulario de configuración correspondiente al elemento activo. Si no hay ningún bloque seleccionado, el panel muestra los datos generales de la página (título, descripción y metadatos).
 
-1. **Visibilidad de elementos (Mostrar u ocultar títulos y secciones):**
-   * **Conmutadores de visibilidad:** Casillas o botones de selección (*«Sí»* / *«No»*) para definir si el bloque debe exhibir u ocultar su título principal, subtítulos, fechas de actualización o franjas informativas.
-   * **Adaptabilidad de presentación:** Permite mantener una estructura limpia y compacta cuando se requiere presentar solo el contenido esencial, o desplegar encabezados completos para guiar al lector en secciones más extensas.
+Los controles de configuración se organizan en categorías generales según el tipo de información que gestiona cada bloque:
 
-2. **Personalización visual y colores de fondo:**
-   * **Esquemas y tonalidades de fondo:** Selectores para escoger el estilo de fondo del bloque (como fondo claro, fondo neutro atenuado o tono institucional destacado), facilitando la separación visual ordenada entre las distintas secciones de la página.
-   * **Alineación y espaciado:** Opciones para definir la orientación de los contenidos (alineación a la izquierda, centrada o justificada) y regular la separación superior e inferior mediante controles de «Espaciado y Ancho» configurados directamente en píxeles (`px`) y colores de fondo que cubren el ancho completo de la sección.
+> **[Captura: Menú Lateral - Formulario General de Propiedades]**
+> *Panel lateral derecho desplegando los campos de configuración contextuales del bloque seleccionado.*
+>
+> **[Captura: Menú Lateral - Formulario General de Propiedades (Móvil)]**
+> *Formulario de propiedades del bloque adaptado a vista móvil. (Móvil).*
 
-3. **Redacción de textos y edición enriquecida:**
-   * **Campos de texto directo:** Casillas para escribir títulos, subtítulos, nombres de tarjetas y etiquetas breves.
-   * **Editor de texto enriquecido:** En bloques descriptivos o de contenido informativo extenso, el menú integra una barra de herramientas de redacción que permite estructurar el texto con formato:
-     * Aplicar **negrita**, *cursiva* y destacados.
-     * Crear listas con viñetas o listas numeradas ordenadas paso a paso.
-     * Insertar citas textuales o párrafos destacados.
-     * Vincular palabras clave con enlaces hacia otras secciones del portal o portales externos.
+1. **Edición y redacción de textos:**
+   * **Campos de texto directo:** Casillas sencillas para ingresar títulos, subtítulos, nombres de tarjetas y etiquetas breves.
+   * **Editor de texto enriquecido:** En áreas con párrafos o información descriptiva extensa, se dispone de una barra de redacción para aplicar formatos tipográficos (**negrita**, *cursiva*, subrayado), estructurar listas con viñetas o numeradas, insertar citas y enlazar palabras clave hacia otros contenidos.
 
-4. **Carga y subida de archivos multimedia:**
-   * **Subir imágenes desde el equipo:** Botón de carga directa para incorporar fotografías, gráficos, logotipos o infografías almacenados en el computador del usuario.
-   * **Texto alternativo obligatorio:** Para cumplir las normas de accesibilidad y permitir que personas con discapacidad visual o lectores de pantalla comprendan la imagen, el sistema exige ingresar una descripción textual breve en la casilla *«Texto alternativo»*.
-   * **Subir documentos adjuntos:** Selector para cargar y asociar archivos descargables en formato PDF o planillas oficiales a los bloques de recursos o boletines.
-   * **Enlaces de videos externos («Video embebido»):** Casilla para registrar videos oficiales de YouTube mediante su identificador único (ID) o enlace validado por la plataforma. Permite asociar una imagen de portada o miniatura propia personalizada y utiliza reproducción diferida al presionar reproducir para optimizar la velocidad de carga de la página.
+> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida]**
+> *Campos de redacción en el panel lateral con herramientas de texto enriquecido y opciones de formato.*
+>
+> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida (Móvil)]**
+> *Edición de textos y redacción enriquecida en dispositivo móvil. (Móvil).*
+
+2. **Subida de archivos y administración de medios:**
+   * **Carga de imágenes:** Botón selector que permite subir fotografías, gráficos o infografías directamente desde el equipo del usuario.
+   * **Texto alternativo obligatorio:** Campo de descripción textual exigido para cumplir los estándares de accesibilidad, permitiendo que personas con discapacidad visual o tecnologías de asistencia comprendan el contenido de la imagen.
+   * **Documentos adjuntos y medios externos:** Controles para asociar archivos descargables (como documentos PDF o planillas) o vincular recursos multimedia externos mediante enlaces oficiales.
+
+> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos]**
+> *Selector de carga de archivos en el panel lateral con campo de texto alternativo obligatorio para accesibilidad.*
+>
+> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos (Móvil)]**
+> *Controles de carga de archivos multimedia en pantalla móvil. (Móvil).*
+
+3. **Ajustes de espaciado, alineación y presentación visual:**
+   * **Control de espaciados:** Selectores numéricos para regular la separación superior e inferior de la sección directamente en píxeles (`px`), facilitando una distribución proporcionada y ordenada a lo largo de la página.
+   * **Alineación de contenidos:** Opciones para orientar los textos y elementos del bloque (a la izquierda, centrados o a la derecha).
+   * **Esquemas y tonalidades de fondo:** Menús desplegables para seleccionar estilos de contraste visual (fondos claros, neutros o destacados), generando una separación estética clara entre las distintas franjas de la página.
+
+> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos]**
+> *Controles para ajustar márgenes en píxeles, alineación de contenido y esquemas de color de fondo.*
+>
+> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos (Móvil)]**
+> *Ajustes de espaciado, alineación y tonalidades de fondo en vista móvil. (Móvil).*
+
+4. **Visibilidad de elementos y secciones:**
+   * **Conmutadores de visualización:** Botones de alternancia (*«Sí»* / *«No»*) para activar u ocultar elementos complementarios del bloque, tales como títulos principales, subtítulos, fechas o franjas informativas de apoyo.
+   * **Adaptabilidad de diseño:** Permite simplificar la estructura del componente cuando se requiere presentar únicamente el dato esencial, o expandirla para guiar al lector en secciones más amplias.
+
+> **[Captura: Menú Lateral - Conmutadores de Visibilidad]**
+> *Casillas y controles de alternancia para mostrar u ocultar títulos, subtítulos y secciones de apoyo.*
+>
+> **[Captura: Menú Lateral - Conmutadores de Visibilidad (Móvil)]**
+> *Controles de visibilidad de secciones adaptados a pantalla táctil móvil. (Móvil).*
 
 5. **Configuración de enlaces y botones de destino:**
-   * **Texto del botón:** Campo para escribir la frase o llamado a la acción visible para el usuario (por ejemplo: *«Consultar catálogo»*, *«Descargar reporte»*).
-   * **Dirección de destino:** Casilla para registrar la ruta interna del portal (como `/contacto`) o una dirección web externa protegida.
-   * **Estilo y presentación del botón:** Selección del aspecto visual (botón de acción principal con fondo resaltado, botón secundario delineado o botón acompañado de un ícono representativo).
+   * **Texto de acción:** Campo para redactar la frase visible que invita a la interacción (por ejemplo: *«Consultar información»*, *«Descargar documento»*).
+   * **Ruta o dirección de destino:** Casilla para especificar la ubicación de destino, ya sea una ruta interna del portal (como `/clasificacion` o `/contacto`) o una dirección web externa protegida.
+   * **Estilo y presentación visual:** Selección del formato gráfico del botón (acción principal destacada, botón secundario delineado o botón acompañado de un ícono ilustrativo).
+
+> **[Captura: Menú Lateral - Configuración de Botones y Enlaces]**
+> *Campos para definir el texto de llamada a la acción, la dirección de destino y el estilo del botón.*
+>
+> **[Captura: Menú Lateral - Configuración de Botones y Enlaces (Móvil)]**
+> *Configuración de enlaces y botones de acción en interfaz móvil. (Móvil).*
 
 6. **Administración de colecciones y listas de elementos:**
-   * En componentes estructurados con múltiples elementos repetitivos (como acordeones de preguntas frecuentes, carruseles de imágenes, tarjetas de publicaciones, enlaces o infografías), el panel lateral organiza los ítems dentro de **acordeones desplegables con bordes visuales y textos de ayuda**, incluyendo controles para:
-     * **Añadir nuevos elementos:** Botón con ícono de suma (*«Añadir elemento»*) para agregar una nueva tarjeta o fila a la colección.
-     * **Reordenar la lista:** Controles para desplazar los ítems hacia arriba o hacia abajo y modificar su orden de presentación en pantalla.
-     * **Eliminar elementos individuales:** Botón de papelera para retirar un ítem específico de la colección sin alterar el resto del bloque.
+   * En bloques que agrupan secuencias repetitivas de información (como tarjetas informativas, filas de datos, carruseles o enlaces múltiples), los ítems se organizan dentro de secciones plegables tipo acordeón:
+     * **Añadir nuevos elementos:** Botón con ícono de suma (*«Añadir elemento»*) para insertar una nueva tarjeta o fila a la colección.
+     * **Reordenar la secuencia:** Controles para desplazar los elementos hacia arriba o hacia abajo y modificar su orden de presentación en pantalla.
+     * **Eliminar elementos individuales:** Botón con ícono de papelera para retirar un ítem particular sin afectar los demás elementos de la colección.
 
-> **[Captura: Opciones de Edición y Configuración de Bloque]**
-> *Menú lateral desplegando los campos para editar textos, visibilidad de títulos, colores, carga de imágenes y enlaces.*
+> **[Captura: Menú Lateral - Gestión de Colecciones y Listas]**
+> *Organización de elementos repetitivos en acordeones con opciones para añadir, reordenar y eliminar ítems individuales.*
 >
-> **[Captura: Opciones de Edición y Configuración de Bloque (Móvil)]**
-> *Opciones de configuración del bloque adaptadas a pantalla móvil. (Móvil).*
+> **[Captura: Menú Lateral - Gestión de Colecciones y Listas (Móvil)]**
+> *Administración de colecciones de elementos y listas en pantalla móvil. (Móvil).*
 
 ##### 3.4.3.3.4. Funcionalidades y Operación en el Editor
 
@@ -2410,11 +2484,50 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 > **[Captura: Confirmación de Eliminación de Página (Móvil)]**
 > *Notificación de eliminación segura en dispositivo móvil. (Móvil).*
 
-#### 3.4.3.6. Catálogo de Componentes del Sitio Web Público
+#### 3.4.3.6. Componentes del Sitio Web Público en el Editor Visual
 
-Este apartado reúne la documentación, especificaciones técnicas, campos configurables y directrices de uso de los componentes visuales prediseñados exclusivos para el Sitio Web Público del Observatorio Laboral y Ocupacional (OLO).
+Este apartado describe los bloques de contenido prediseñados disponibles para maquetar y estructurar las páginas del Sitio Web Público del Observatorio Laboral y Ocupacional (OLO):
 
-*(Esta sección se encuentra reservada para la incorporación detallada de los componentes del Sitio Web Público).*
+##### 3.4.3.6.1. Bloque «Buscador de Ocupaciones»
+Permite integrar la herramienta de consulta de clasificaciones laborales CNO y CUOC en cualquier página del portal (como `/clasificacion`):
+* **Ubicación en el editor:** Se encuentra en el panel lateral de bloques, dentro de la categoría *Sitio Web*, bajo el nombre **«Buscador de Ocupaciones»**.
+* **Opciones configurables:**
+  * **Texto de ayuda:** Permite personalizar el mensaje explicativo que se muestra debajo de la barra de búsqueda (por ejemplo: *«Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.»*). Si se deja en blanco, la franja de ayuda se oculta automáticamente.
+* **Comportamiento en la página:** Despliega la barra de búsqueda por código (4 o 5 dígitos) o por palabra clave, el listado de resultados y la ventana con la ficha completa del perfil ocupacional y sus ocupaciones equivalentes.
+
+> **[Captura: Bloque Buscador de Ocupaciones en el Editor Visual]**
+> *Configuración del bloque Buscador de Ocupaciones en el editor visual mostrando el campo de texto de ayuda en el panel lateral.*
+
+##### 3.4.3.6.2. Bloque «Alertas de Inversión»
+Permite presentar y explorar los proyectos de inversión empresarial registrados en el país, alimentándose automáticamente de la información cargada en el sistema:
+* **Ubicación en el editor:** Disponible en el panel lateral de bloques como **«Alertas de Inversión»**.
+* **Opciones configurables:**
+  * **Título:** Texto principal del encabezado de la sección (por ejemplo: *«Alertas de inversión»*).
+  * **Descripción:** Breve texto explicativo para contextualizar el reporte (por ejemplo: *«Proyectos de inversión, nuevos o de expansión, anunciados en Colombia — agrupados por sector económico.»*).
+* **Comportamiento en la página:** Muestra de forma automática los filtros por año y sector económico, el gráfico interactivo de proyectos y la lista de iniciativas con sus datos de avance e impacto laboral.
+
+> **[Captura: Bloque Alertas de Inversión en el Editor Visual]**
+> *Configuración del bloque Alertas de Inversión en el editor visual con opciones de título y descripción.*
+
+##### 3.4.3.6.3. Bloque «Video Embebido»
+Permite reproducir videos institucionales desde el canal oficial del SENA en YouTube, con opciones para ambientar visualmente la sección:
+* **Opciones configurables en el panel lateral:**
+  * **Enlace del video:** Dirección web del video en YouTube que se desea reproducir.
+  * **Imagen de fondo:** Permite seleccionar una imagen decorativa para ambientar el fondo de la sección.
+  * **Transparencia de la imagen:** Control deslizable de 0% a 100% para regular la intensidad de la imagen y lograr una integración armónica con el color de la página.
+  * **Modalidad de fondo:** Permite elegir si la imagen se adapta a toda la sección o si se repite en patrón continuo (mosaico decorativo).
+* **Legibilidad garantizada:** El sistema ubica la imagen decorativa por detrás del contenido, asegurando que los títulos, descripciones y el reproductor de video se lean con total claridad.
+
+> **[Captura: Bloque Video Embebido con Imagen de Fondo]**
+> *Panel lateral del editor visual mostrando las opciones de enlace, transparencia e imagen de fondo para el bloque de video.*
+
+##### 3.4.3.6.4. Bloque «Dato OLO de la Semana»
+Componente interactivo diseñado para destacar cifras clave, boletines e infografías del mercado de trabajo:
+* **Fondo visual independiente:** Permite asignar una imagen temática de fondo a cada una de las infografías publicadas.
+* **Transición fluida:** Al cambiar entre infografías, la imagen y los colores de fondo cambian suavemente para ofrecer una experiencia visual moderna y atractiva para la ciudadanía.
+
+> **[Captura: Bloque Dato OLO de la Semana]**
+> *Presentación del bloque Dato OLO de la semana en el editor visual con infografías y transiciones visuales.*
 
 #### 3.4.3.7. Catálogo de Componentes de la Intranet
 
@@ -2433,7 +2546,7 @@ Esta sección describe los procedimientos para la localización de contenidos en
 ##### 3.4.4.1.1. Uso del Buscador Global Desplegable
 El sistema cuenta con un motor de búsqueda global accesible directamente desde la cabecera superior del portal público. El proceso para realizar una consulta es el siguiente:
 
-1. **Despliegue del buscador:** En la barra superior de navegación, el usuario debe hacer clic sobre el botón con ícono de lupa. Al interactuar con él, el campo de búsqueda se despliega de manera fluida hacia la izquierda con bordes redondeados y fondo blanco, corriendo armónicamente los enlaces del menú principal hacia el logotipo institucional para no tapar los textos de navegación.
+1. **Despliegue del buscador:** En la barra superior de navegación, el usuario debe hacer clic sobre el botón con ícono de lupa. Al interactuar con él, el campo de búsqueda se despliega de manera fluida hacia la izquierda con bordes redondeados, corriendo armónicamente los enlaces del menú principal hacia el logotipo institucional para no tapar los textos de navegación.
 
 > **[Captura: Paso 1]**
 > *Despliegue interactivo del buscador en la cabecera desde el ícono de lupa.*
@@ -2493,6 +2606,67 @@ Para consultas específicas en catálogos y listados, el sistema ofrece herramie
 >
 > **[Captura: Paso 4 (Móvil)]**
 > *Botón de descarga o exportación dentro de la ficha de información. (Móvil).*
+
+##### 3.4.4.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
+El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible a través de la ruta canónica `/clasificacion` (servida de forma dinámica mediante el bloque de diseño `BuscadorOcupaciones`), así como en las secciones dedicadas `/clasificacion/cno` y `/clasificacion/cuoc`.
+
+El buscador opera conectado directamente a la API pública oficial de consulta mediante un intermediario seguro en el servidor (mediante un intermediario seguro en el servidor), el cual gestiona de manera transparente las credenciales institucionales (`CNO_API_KEY`) y administra una memoria caché optimizada de una hora (máximo 500 registros) para garantizar respuestas instantáneas y preservar el cupo compartido de peticiones por minuto.
+
+El procedimiento paso a paso para la consulta ciudadana y exploración ocupacional es el siguiente:
+
+1. **Ingreso de términos de búsqueda o código oficial:**
+   * En la interfaz del buscador, el usuario dispone de un campo de búsqueda centralizado donde puede consultar de dos formas distintas:
+     * **Por palabras clave, oficios o habilidades:** Ingresar términos representativos de la profesión, labor o funciones requeridas (por ejemplo, *«desarrollador de software»*, *«soldador»*, *«enfermería»*). El sistema admite hasta un máximo de 120 caracteres de consulta.
+     * **Por código ocupacional oficial:** Ingresar directamente el código numérico asignado a la ocupación. Si se consulta en la CNO, debe digitarse un código exacto de **4 dígitos numéricos** (ej. `2173`); si se consulta en la CUOC, debe digitarse un código exacto de **5 dígitos numéricos** (ej. `25120`). La plataforma valida la estructura del código antes de enviar la solicitud, rechazando patrones incorrectos para evitar llamadas innecesarias al servicio central.
+   * Para iniciar la consulta, presionar la tecla *Enter* o pulsar el botón con ícono de lupa o rótulo **«Buscar»**. El sistema realiza la búsqueda exclusivamente tras la confirmación del usuario, evitando disparos repetitivos por pulsación de teclado y optimizando el consumo de red.
+
+> **[Captura: Buscador de Ocupaciones - Ingreso de Criterios]**
+> *Campo de búsqueda interactivo del catálogo ocupacional con opciones de consulta por denominación o código numérico.*
+>
+> **[Captura: Buscador de Ocupaciones - Ingreso de Criterios (Móvil)]**
+> *Formulario de búsqueda de ocupaciones adaptado a la pantalla de dispositivos móviles. (Móvil).*
+
+2. **Exploración de la lista de ocupaciones coincidentes:**
+   * El sistema consulta el catálogo oficial y despliega las tarjetas de resultados coincidentes. Cada elemento de la lista presenta:
+     * **Código ocupacional y Denominación oficial:** Título normalizado de la ocupación en la clasificación correspondiente.
+     * **Insignia identificadora de catálogo:** Distintivo visual que especifica si la ocupación listada pertenece a la clasificación **CNO** o **CUOC**.
+     * **Denominaciones y sinónimos coincidentes:** Cuando la búsqueda coincide con términos o cargos equivalentes dentro de la ocupación, la tarjeta resalta las denominaciones específicas encontradas, aplicando una normalización insensible a tildes o acentos ortográficos.
+     * **Paginación integrada:** Si la búsqueda arroja un volumen elevado de coincidencias, la lista incorpora controles de paginación que permiten recorrer cómodamente las distintas páginas de resultados.
+
+> **[Captura: Resultados del Catálogo de Ocupaciones]**
+> *Listado de ocupaciones encontradas con código, título oficial, etiqueta identificadora CNO/CUOC y términos coincidentes.*
+>
+> **[Captura: Resultados del Catálogo de Ocupaciones (Móvil)]**
+> *Visualización de tarjetas de resultados del catálogo ocupacional en pantalla móvil. (Móvil).*
+
+3. **Apertura de la Ficha Técnica Ocupacional a pantalla completa:**
+   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema despliega una ventana modal interactiva a pantalla completa diseñada con la presentación visual distintiva del módulo.
+   * La ficha técnica proporciona el desglose integral del perfil ocupacional oficial:
+     * **Encabezado y Código:** Título formal, código de clasificación e indicador de tipo (`CNO` o `CUOC`).
+     * **Descripción general:** Resumen contextual de la ocupación, su propósito en el mercado laboral y el nivel de cualificación correspondiente.
+     * **Funciones principales:** Catálogo exhaustivo de las actividades, labores y responsabilidades desempeñadas en el ejercicio de la ocupación.
+     * **Habilidades y destrezas:** Competencias técnicas, destrezas motoras e interpersonales requeridas para el desempeño laboral idóneo.
+     * **Conocimientos asociados:** Saberes teóricos, normativos y procedimentales exigidos en el campo de acción.
+     * **Ocupaciones relacionadas y denominaciones alternas:** Listado de nombres alternativos y cargos afines utilizados en el sector productivo.
+
+> **[Captura: Ficha Técnica Ocupacional Ampliada]**
+> *Modal a pantalla completa con el detalle ocupacional completo: descripción, funciones, habilidades y conocimientos.*
+>
+> **[Captura: Ficha Técnica Ocupacional Ampliada (Móvil)]**
+> *Ficha técnica ocupacional desplegada en dispositivo móvil con navegación vertical optimizada. (Móvil).*
+
+4. **Navegación por Correlativas Cruzadas (CNO ↔ CUOC):**
+   * En la parte complementaria de la ficha técnica, el sistema renderiza dinámicamente la sección de homologación bidireccional entre sistemas clasificatorios:
+     * **Al consultar una ocupación CNO (código de 4 dígitos):** Se presenta el bloque **«Correlativa CUOC»**, el cual lista los códigos numéricos de 5 dígitos y nombres de las ocupaciones equivalentes según la Clasificación Única de Ocupaciones para Colombia.
+     * **Al consultar una ocupación CUOC (código de 5 dígitos):** El bloque se titula automáticamente **«Correlativa CNO»**, mostrando las ocupaciones equivalentes de 4 dígitos en la Clasificación Nacional de Ocupaciones.
+   * **Navegación interactiva:** Cada ocupación listada en las correlativas funciona como un enlace directo interactivo; al pulsarlo, el visor actualiza inmediatamente la ficha en pantalla para presentar en detalle la ocupación correlativa seleccionada, permitiendo al usuario transitar fluidamente entre ambos catálogos sin reiniciar la búsqueda.
+   * Para cerrar la ficha técnica y regresar al listado de resultados, hacer clic en el botón de cierre (ícono «X») situado en la esquina superior del diálogo modal o presionar la tecla *Escape*.
+
+> **[Captura: Sección de Correlativas Cruzadas CNO y CUOC]**
+> *Bloque de homologación bidireccional con enlaces directos entre la ocupación CNO y sus equivalentes en la CUOC.*
+>
+> **[Captura: Sección de Correlativas Cruzadas CNO y CUOC (Móvil)]**
+> *Visualización de las ocupaciones correlativas adaptada a pantallas táctiles móviles. (Móvil).*
 
 ---
 
@@ -2834,7 +3008,7 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 > *Redirección errónea hacia la pantalla de acceso de la Intranet por presionar el botón incorrecto en la cabecera. (Móvil).*
 
 2. **Presentación de la interfaz de autenticación (Acceso directo a rutas protegidas):**
-   * *Situación anómala y control:* Si el usuario intenta acceder directamente a una ruta interna administrativa (`/admin`) sin una sesión activa previa, el sistema intercepta la navegación y lo conduce a este formulario de inicio de sesión.
+   * *Situación anómala y control:* Si el usuario intenta acceder directamente a una ruta interna administrativa (`/admin-panel/...`) sin una sesión activa previa, el sistema intercepta la navegación y lo conduce a este formulario de inicio de sesión.
    * *Acción de corrección:* Proceder al diligenciamiento regular de las credenciales corporativas autorizadas para ingresar al entorno administrativo.
 
 3. **Ingreso con credenciales definitivas (Validaciones de campos de entrada):**
@@ -3156,22 +3330,24 @@ Durante la interacción cotidiana con el entorno del Panel Administrativo (cuyo 
 > **[Captura: Visualización de Interfaz Adaptativa y Menú Lateral]**
 > *Comportamiento de la barra lateral izquierda al restablecer el nivel de zoom estándar en computadores de escritorio.*
 
-##### 2. El menú contextual de perfil no se despliega o se oculta inmediatamente
-* **Situación:** Al hacer clic sobre el bloque con el nombre y correo del funcionario en la base de la barra lateral (en escritorio) o sobre el nombre del usuario en la barra superior (en móvil), el menú emergente con las opciones *"Mi perfil"* y *"Cerrar sesión"* no se abre o desaparece de manera instantánea.
+##### 2. El menú contextual de usuario no se despliega o se oculta inmediatamente
+* **Situación:** Al hacer clic sobre el bloque interactivo con el nombre y correo del funcionario en la base de la barra lateral (en escritorio) o sobre el botón de usuario en la barra superior (en móvil), las opciones de *"Configuración"* y *"Cerrar sesión"* no se despliegan o desaparecen de manera instantánea.
 * **Causa técnica y operativa:** 
   1. Pulsación rápida de doble clic involuntario que abre y cierra el menú contextual consecutivamente.
   2. Conflicto con extensiones de bloqueo de secuencias de comandos o complementos de terceros instalados en el navegador.
-  3. Expiración de la sesión en segundo plano que inhabilita temporalmente los componentes interactivos antes de ejecutar la redirección.
+  3. En dispositivos móviles, buscar la opción de «Configuración» en el encabezado superior (donde únicamente reside el botón directo de «Cerrar sesión»), en lugar de pulsar la pestaña «Más» (ícono de tres puntos) en la barra de navegación inferior (*Bottom Navigation*).
+  4. Expiración de la sesión en segundo plano que inhabilita temporalmente los componentes interactivos antes de ejecutar la redirección al inicio de sesión.
 * **Acción correctiva:**
-  1. Realizar un único clic pausado sobre la tarjeta de usuario en la base del menú lateral.
-  2. Recargar la página mediante la tecla `F5` para reiniciar el estado de los componentes interactivos.
-  3. En caso de persistencia, desactivar extensiones invasivas del navegador o verificar en una ventana limpia si la sesión sigue activa.
+  1. Realizar un único clic pausado sobre la tarjeta de usuario en la base del menú lateral (en escritorio).
+  2. En dispositivos móviles, para acceder a «Configuración», pulsar la pestaña «Más» de la barra inferior fija; para cerrar la sesión, utilizar el botón directo situado en el extremo de la barra superior.
+  3. Recargar la página mediante la tecla `F5` para reiniciar el estado de los componentes interactivos.
+  4. En caso de persistencia, desactivar extensiones invasivas del navegador o verificar en una ventana limpia si la sesión sigue activa.
 
-> **[Captura: Menú Contextual de Perfil y Opciones de Sesión]**
-> *Menú contextual emergente desplegado correctamente en la base del menú lateral.*
+> **[Captura: Menú Contextual de Usuario y Opciones de Sesión]**
+> *Menú contextual emergente desplegado correctamente en la base del menú lateral con las opciones de Configuración y Cerrar sesión.*
 >
-> **[Captura: Menú Contextual de Perfil y Opciones de Sesión (Móvil)]**
-> *Menú contextual de usuario desplegado desde la barra superior en dispositivos móviles. (Móvil).*
+> **[Captura: Menú Contextual de Usuario y Opciones de Sesión (Móvil)]**
+> *Distribución móvil con el botón de cierre de sesión en la barra superior y acceso a Configuración desde la barra inferior. (Móvil).*
 
 ##### 3. El alternador de tema (Modo claro / Modo oscuro) no conserva la preferencia seleccionada
 * **Situación:** El funcionario activa el Modo Oscuro (o Modo Claro), pero al navegar hacia otro módulo administrativo o recargar la página, la apariencia regresa automáticamente al tema anterior.
@@ -3309,6 +3485,25 @@ La administración de cuentas en el sistema (detallada operativamente en la [Sec
 > **[Captura: Aviso de Configuración Pendiente en el Panel (Móvil)]**
 > *Tarjeta de advertencia con el mensaje 'Tu cuenta tiene la configuración pendiente' y el botón interactivo 'Terminar configuración' en el Panel Administrativo. (Móvil).*
 
+##### 7. Incidencias durante el cambio voluntario de la propia contraseña en la ventana «Editar usuario»
+* **Situación:** El Administrador abre la ventana «Editar usuario» pulsando el ícono de lápiz en su **propia fila** en `/admin-panel/users`, despliega la sección **«Cambiar contraseña»** e intenta actualizar su clave, pero el sistema no efectúa el cambio o resalta un mensaje de error.
+* **Causas y validaciones:**
+  1. **Contraseña ya utilizada:** Se ingresó una contraseña idéntica a la actual o recientemente utilizada en la cuenta.
+  2. **Discrepancia entre casillas:** El texto ingresado en «Contraseña nueva» no coincide exactamente con el escrito en «Repetir contraseña nueva».
+  3. **Requisitos de seguridad pendientes:** La clave no cumple con las condiciones exigidas (mínimo 12 caracteres, mayúsculas, minúsculas, números o símbolos, sin espacios al inicio o final ni emojis).
+  4. **Protección de guardado:** Si la contraseña no es válida, el sistema mantiene la ventana abierta señalando el error y no guarda cambios en los datos de la cuenta hasta corregir la clave.
+  5. **Disponibilidad de la opción:** La sección «Cambiar contraseña» solo aparece al editar la propia cuenta del usuario en sesión. En las cuentas de los demás funcionarios se muestra la opción «Restablecer la contraseña» (generación de credencial provisional de 72 horas).
+* **Acción correctiva:**
+  1. Si aparece el aviso de clave repetida o no válida, ingresar una contraseña diferente que no haya sido utilizada antes.
+  2. Descubrir los caracteres mediante el ícono de ojo en ambos campos y verificar que todas las condiciones de la lista de requisitos aparezcan aprobadas.
+  3. Si solo se desea actualizar el nombre o teléfono sin modificar la clave, dejar **ambos campos de contraseña vacíos**; el sistema guardará los datos personales sin alterar la clave actual.
+
+> **[Captura: Modal Editar Usuario - Acordeón Cambiar Contraseña]**
+> *Acordeón desplegable 'Cambiar contraseña' con los campos 'Contraseña nueva' y 'Repetir contraseña nueva' con etiquetas finas y lista de validación de requisitos.*
+>
+> **[Captura: Modal Editar Usuario - Acordeón Cambiar Contraseña (Móvil)]**
+> *Visualización del acordeón de cambio de contraseña propia en el modal de edición adaptado a dispositivos móviles. (Móvil).*
+
 
 #### 3.5.1.9. Validaciones y Solución de Problemas en la Gestión de Roles y Permisos
 
@@ -3345,9 +3540,9 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 > *Visualización del campo de nombre de rol bloqueado y en modo de solo lectura en dispositivo móvil. (Móvil).*
 
 ##### 3. Ícono de Basurero Bloqueado en el Rol Base "Editor"
-* **Situación:** En la fila correspondiente al rol *"Editor"*, el botón con ícono de basurero aparece deshabilitado (*cursor-not-allowed*) y no responde al clic.
+* **Situación:** En la fila correspondiente al rol *"Editor"*, el botón con ícono de basurero aparece deshabilitado y no responde al clic.
 * **Causa técnica y operativa:** El rol base `Editor` es el perfil matriz del cual heredan todos los roles derivados de la plataforma. Su existencia es obligatoria para la infraestructura del editor visual y se encuentra protegido por la configuración base de la plataforma, por lo que su eliminación está inhabilitada de forma permanente.
-* **Acción correctiva:** El rol base Editor no debe ni puede ser suprimido. Si se necesita limitar las facultades de un usuario que posee este rol, se le debe editar desde el módulo de Usuarios para asignarle un rol derivado con permisos restringidos, o bien suspender su acceso apagando su interruptor de Estado.
+* **Acción correctiva:** El rol base Editor no debe ni puede ser eliminado. Si se necesita limitar las facultades de un usuario que posee este rol, se le debe editar desde el módulo de Usuarios para asignarle un rol derivado con permisos restringidos, o bien suspender su acceso apagando su interruptor de Estado.
 
 > **[Captura: Rol Base Editor con Borrado Bloqueado]**
 > *Fila del rol base Editor en la tabla mostrando el ícono de basurero deshabilitado permanentemente.*
@@ -3543,60 +3738,61 @@ El módulo de Respaldos ([Sección 3.4.2.7](#3427-respaldos-y-restauración-de-p
 
 ---
 
-#### 3.5.1.13. Validaciones y Solución de Problemas en Mi Perfil
+#### 3.5.1.13. Validaciones y Solución de Problemas en el Cambio de Contraseña y Datos de Cuenta
 
-El módulo de Mi Perfil ([Sección 3.4.2.9.1](#34291-sección-mi-perfil)) gestiona la información de identificación de la cuenta y el cambio voluntario de credenciales bajo estrictas reglas de seguridad y trazabilidad. A continuación se detallan las principales situaciones de soporte, sus causas y las acciones correctivas aplicables:
+La gestión de credenciales y la actualización de datos de la propia cuenta operan bajo dos mecanismos claramente diferenciados:
 
-##### 1. Campos de Identificación Bloqueados (Modo Solo Lectura)
-* **Situación:** El funcionario intenta hacer clic o escribir en las casillas de **Nombre**, **Apellidos** o **Correo Electrónico**, pero el cursor muestra el símbolo de bloqueo o no permitido, el fondo aparece en gris atenuado y el sistema no permite editar los textos.
-* **Causa:** Regla de integridad de datos maestros. La pantalla de "Mi Perfil" opera en modalidad de solo lectura para los datos personales; la actualización de nombres, apellidos y cuentas de usuario `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para resguardar la trazabilidad de seguridad y evitar modificaciones no supervisadas.
-* **Acción correctiva:** Si el funcionario requiere corregir o actualizar sus datos de identidad, debe solicitar el ajuste a un usuario con rol de Administrador. Si el funcionario cuenta con el permiso de gestión de usuarios, debe ingresar a la ruta `/admin-panel/users` (**Accesos > Usuarios**) y editar el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
+1. **Para usuarios con permisos de administración (Administradores):** Se gestiona directamente desde la tabla de usuarios en `/admin-panel/users` ([Sección 3.4.2.4.1](#34241-submenú-usuarios)), abriendo el modal **«Editar usuario»** sobre la fila de su propia cuenta, donde se despliega la sección **«Cambiar contraseña»**.
+2. **Para funcionarios con otros roles operativos (Editores, Revisores, Directores):** Dado que no tienen acceso al módulo de administración de usuarios, la actualización y recuperación de contraseña se efectúa a través del mecanismo de auto-recuperación con preguntas de seguridad en `/login/recovery` ([Sección 3.4.1.3](#3413-procedimiento-de-recuperación-de-contraseña)).
 
-> **[Captura: Mi Perfil - Datos en Solo Lectura]**
-> *Campos de Nombre, Apellidos y Correo Electrónico en modo solo lectura con cursor deshabilitado y texto explicativo.*
->
-> **[Captura: Mi Perfil - Datos en Solo Lectura (Móvil)]**
-> *Visualización de datos de identificación en solo lectura adaptada a pantallas móviles. (Móvil).*
+A continuación se detallan las principales situaciones de soporte, reglas de validación y acciones correctivas aplicables:
 
-##### 2. Error "Contraseña actual incorrecta"
-* **Situación:** Al enviar el formulario presionando el botón **"Cambiar Contraseña"**, la interfaz despliega un recuadro de notificación de error con el mensaje: *«Contraseña actual incorrecta»*.
-* **Causa:** La clave ingresada en la casilla *Contraseña Actual* no coincide con la contraseña cifrada almacenada actualmente en la base de datos para la cuenta en sesión.
+##### 1. Actualización de Datos Personales de Identidad (Nombre, Apellidos y Correo)
+* **Situación:** Un funcionario desea actualizar su nombre, apellidos, cargo institucional o número de teléfono, pero no encuentra una sección de perfil personal editable.
+* **Causa:** Política de integridad de datos maestros. La administración de identidades institucionales y cuentas `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para asegurar la debida trazabilidad y evitar cambios no supervisados en las cuentas del Estado.
 * **Acción correctiva:**
-  1. Hacer clic en el botón con ícono de ojo situado al extremo derecho del campo para revisar visualmente los caracteres escritos y confirmar que la tecla Bloq Mayús (Caps Lock) no se encuentre activada de forma inadvertida.
-  2. En caso de no recordar la clave vigente, el funcionario debe cerrar la sesión activa y dirigirse al enlace *«¿Olvidaste tu contraseña?»* en la pantalla de inicio de sesión (`/login`), completando el flujo de auto-recuperación mediante la validación de las tres preguntas de seguridad (ver [Sección 3.4.1.3: Flujo de Recuperación de Contraseña Olvidada](#3413-flujo-de-recuperación-de-contraseña-olvidada)).
+  * Si el funcionario cuenta con rol de Administrador (o permiso de gestión de usuarios), debe dirigirse a `/admin-panel/users`, localizar su propio registro y modificar sus datos en el modal «Editar usuario».
+  * Si el funcionario desempeña un rol de Editor, Revisor o Directivo, debe elevar la solicitud formal de actualización de datos a un usuario con rol de Administrador para que realice el ajuste desde dicho módulo centralizado.
 
-> **[Captura: Error Contraseña Actual Incorrecta]**
-> *Notificación de error informando que la contraseña actual ingresada es incorrecta.*
+> **[Captura: Datos de Identidad en Modal Editar Usuario]**
+> *Campos de Nombre, Apellidos, Correo institucional y Teléfono editables centralizadamente en el modal de usuario.*
 >
-> **[Captura: Error Contraseña Actual Incorrecta (Móvil)]**
-> *Notificación de error de contraseña actual incorrecta en dispositivo móvil. (Móvil).*
+> **[Captura: Datos de Identidad en Modal Editar Usuario (Móvil)]**
+> *Formulario de edición de datos de usuario adaptado a dispositivos móviles. (Móvil).*
+
+##### 2. Cambio Voluntario de Contraseña sin Requisito de Contraseña Actual
+* **Situación:** Un funcionario con privilegios administrativos observa que al desplegar la sección «Cambiar contraseña» dentro del modal «Editar usuario», el sistema únicamente solicita los campos «Contraseña nueva» y «Repetir contraseña nueva», sin solicitar la contraseña actual que se encuentra en uso.
+* **Causa operativa:** Al encontrarse dentro de una sesión ya autenticada en el panel, el sistema solicita únicamente la nueva clave y su confirmación. La contraseña anterior solo es obligatoria durante el primer ingreso con clave provisional. Por seguridad, la acción queda registrada en la bitácora de auditoría.
+* **Advertencia de seguridad y acción operativa:** Dado que no se exige la contraseña actual para efectuar el cambio voluntario, es imperativo que los funcionarios nunca dejen estaciones de trabajo desatendidas con la sesión del Panel Administrativo abierta. Se recomienda aplicar bloqueo de pantalla en el sistema operativo (`Win + L` o equivalente) al apartarse del computador.
 
 ##### 3. Discrepancia entre la Nueva Contraseña y su Confirmación
-* **Situación:** Al intentar guardar el cambio de contraseña, el sistema no efectúa el envío y presenta la advertencia: *«Las contraseñas nuevas no coinciden»*.
-* **Causa:** El contenido de la casilla *Nueva Contraseña* difiere en uno o varios caracteres del texto ingresado en la casilla *Confirmar Contraseña*.
-* **Acción correctiva:** Hacer clic en los íconos de ojo en ambos campos para descubrir los caracteres y comparar su contenido, asegurando que ambas casillas contengan exactamente los mismos caracteres, respetando mayúsculas, minúsculas, números y símbolos.
+* **Situación:** Al hacer clic en el botón «Guardar» del modal «Editar usuario» con el acordeón de contraseña desplegado, el sistema interrumpe el guardado, mantiene el acordeón abierto y resalta el aviso de advertencia: *«Las contraseñas no coinciden»*.
+* **Causa:** El contenido digitado en la casilla *Contraseña nueva* difiere en uno o varios caracteres del texto ingresado en *Repetir contraseña nueva*.
+* **Acción correctiva:** Hacer clic en el ícono de ojo ubicado a la derecha de ambos campos para descubrir los caracteres y cotejar que coincidan exactamente, verificando mayúsculas, minúsculas, números y caracteres especiales.
 
-> **[Captura: Error Contraseñas No Coinciden]**
-> *Alerta en el formulario de Mi Perfil indicando la discrepancia entre la nueva contraseña y su confirmación.*
+> **[Captura: Error Contraseñas No Coinciden en Modal]**
+> *Alerta de discrepancia entre la contraseña nueva y su confirmación dentro del acordeón en el modal Editar usuario.*
 >
-> **[Captura: Error Contraseñas No Coinciden (Móvil)]**
-> *Alerta de discrepancia de contraseñas adaptada a dispositivo móvil. (Móvil).*
+> **[Captura: Error Contraseñas No Coinciden en Modal (Móvil)]**
+> *Validación de coincidencia de contraseñas adaptada a dispositivos móviles. (Móvil).*
 
-##### 4. Incumplimiento de la Política de Complejidad de Contraseña
-* **Situación:** Durante la digitación de la nueva clave, el panel inferior de verificación mantiene una o más condiciones pendientes o con marca de advertencia, y al intentar enviar el formulario se emite el mensaje específico del requisito no satisfecho (por ejemplo: *«La contraseña debe tener al menos 12 caracteres»*, *«Debe combinar mayúsculas, minúsculas y números o símbolos»* o *«No se permiten emojis»*).
-* **Causa:** La contraseña propuesta no cumple los lineamientos obligatorios de la política de seguridad.
-* **Acción correctiva:** Ajustar la clave ingresada guiándose en tiempo real por el panel interactivo de requisitos hasta que todos los puntos se transformen en marcas de verificación aprobadas antes de hacer clic en **"Cambiar Contraseña"**.
+##### 4. Incumplimiento de los Requisitos de Complejidad de Contraseña
+* **Situación:** Durante la digitación de la clave en «Contraseña nueva», la lista interactiva de condiciones mantiene requisitos pendientes de cumplimiento, y al enviar el formulario se emite el mensaje específico del requisito insatisfecho (por ejemplo: *«La contraseña debe tener al menos 12 caracteres»*, *«Debe combinar mayúsculas, minúsculas, números o caracteres especiales»* o *«No se permiten emojis»*).
+* **Causa:** La contraseña digitada no cumple los estándares de seguridad obligatorios de la institución.
+* **Acción correctiva:** Ajustar la clave ingresada guiándose en tiempo real por el listado dinámico de requisitos hasta que cada una de las condiciones aparezca con la marca de verificación aprobada antes de pulsar «Guardar».
 
-> **[Captura: Panel de Validación de Contraseña en Vivo]**
-> *Panel dinámico de requisitos de seguridad en Mi Perfil mostrando la validación en tiempo real de longitud y composición.*
+> **[Captura: Lista Interactiva de Requisitos de Contraseña]**
+> *Panel dinámico de requisitos con etiquetas finas mostrando la validación en tiempo real de longitud y composición.*
 >
-> **[Captura: Panel de Validación de Contraseña en Vivo (Móvil)]**
-> *Panel de requisitos de contraseña adaptado a pantallas táctiles móviles. (Móvil).*
+> **[Captura: Lista Interactiva de Requisitos de Contraseña (Móvil)]**
+> *Lista de requisitos de contraseña adaptada a pantallas táctiles móviles. (Móvil).*
 
-##### 5. Rechazo por Contraseña Repetida o No Permitida
-* **Situación:** Al ingresar la nueva contraseña, aparece directamente bajo la casilla el mensaje de validación: *«Esta contraseña no es válida por seguridad, elige otra.»*.
-* **Causa:** Política de no repetición de contraseñas. El sistema prohíbe reutilizar la contraseña actual o contraseñas anteriores inmediatas.
-* **Acción correctiva:** Proponer una contraseña completamente nueva que no haya sido utilizada previamente en la cuenta y que cumpla con los requisitos de longitud y combinación de caracteres.
+##### 5. Rechazo por Contraseña Repetida
+* **Situación:** Al enviar el formulario, el modal no se cierra y se presenta una notificación de error directamente bajo el campo «Contraseña nueva»: *«Esta contraseña ya ha sido utilizada recientemente. Elige una diferente.»*, y los demás datos editados del perfil no se actualizaron.
+* **Causa operativa:**
+  1. **Política de no reutilización:** El sistema impide que la nueva clave coincida con la contraseña actual o contraseñas anteriores inmediatas de la cuenta.
+  2. **Prioridad de seguridad en el guardado:** Por diseño de seguridad, al presionar «Guardar», el aplicativo procesa en primer lugar la validación de la contraseña. Si el sistema rechaza la credencial, el proceso se detiene de inmediato y no se aplican modificaciones parciales a los datos del funcionario, garantizando que la operación sea completa y consistente.
+* **Acción correctiva:** Ingresar una contraseña enteramente distinta que no haya sido utilizada previamente en la cuenta y presionar «Guardar» nuevamente. Una vez aceptada la contraseña, el sistema guardará simultáneamente la clave y las modificaciones de los campos de usuario.
 
 ---
 
@@ -3728,4 +3924,32 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 1. Aguardar breves instantes y presionar directamente el botón **«Reintentar»** incorporado en el recuadro de aviso. El sistema reanudará la consulta de datos de inmediato sin necesidad de recargar la página web ni abandonar la sección de trabajo.
 2. Al reanudarse la comunicación con éxito, el mensaje se retira automáticamente y la pantalla recupera de inmediato sus controles habituales (botones de acción, buscadores, filtros y registros).
 3. Si tras varios intentos la situación persiste, verificar la conectividad de red de la estación de trabajo o comunicarse con el equipo técnico de soporte.
+
+#### 3.5.2.7. Ajuste de transparencia y repetición en imágenes de fondo de bloques en el Editor Visual
+**Situación:** En componentes del editor visual que disponen de capas decorativas de fondo (como *Video Embebido* y *Dato OLO de la Semana*), la imagen de fondo se superpone con demasiada intensidad sobre los textos impidiendo su lectura, o la imagen se repite en mosaico de forma inadecuada.
+**Causa:** Configuración descalibrada de los parámetros de la capa de imagen de fondo del bloque. La plataforma proporciona controles dedicados en el panel lateral del editor visual para regular tanto la opacidad de la imagen (de 0% a 100% en incrementos del 5%) como la modalidad de repetición (`no-repeat`, `repeat`, `repeat-x`, `repeat-y`).
+**Acción:** 
+1. Seleccionar el bloque dentro del editor visual para abrir su panel lateral de configuración.
+2. Localizar el selector de **«Opacidad del fondo»** (o *Transparencia*) y ajustarlo a un valor moderado (recomendado entre 10% y 25%) para conservar un contraste óptimo con el texto y cumplir las pautas de accesibilidad WCAG AA.
+3. En el selector de **«Repetición de imagen»**, elegir `no-repeat` si se trata de una fotografía o ilustración temática única, o `repeat` si se utiliza un patrón geométrico o textura de trama sutil.
+4. Guardar los cambios en el editor y previsualizar la página en modos claro y oscuro antes de enviar a revisión.
+
+#### 3.5.2.8. Mensajes de estado y contingencias en el Buscador de Ocupaciones CNO/CUOC
+**Situación:** Al consultar ocupaciones en `/clasificacion`, el usuario visualiza mensajes como *«No se encontró la ocupación»*, *«No se pudo consultar el catálogo de ocupaciones»* o una demora temporal con alerta de reintento.
+**Posibles causas y reglas técnicas de la plataforma:**
+1. **Código con longitud incorrecta:** Si se ingresa un código que no corresponde a 4 dígitos numéricos (CNO) o 5 dígitos numéricos (CUOC), el intermediario del servidor valida la cadena y devuelve 404 de inmediato sin consumir peticiones de red externas.
+2. **Límite de peticiones por minuto (*Rate Limiting* - Código 429):** La API pública oficial CNO/CUOC impone una cuota compartida de 300 peticiones por minuto por llave institucional. Para mitigar saturaciones, el servidor del OLO almacena en memoria caché las fichas técnicas durante 1 hora (hasta 500 registros). Si se sobrepasa la cuota en ráfagas de alta demanda, el servidor devuelve 429 respetando la cabecera `Retry-After`.
+3. **Indisponibilidad del servicio central o error de llave (Códigos 502/503):** Si la API central presenta interrupciones o la variable de entorno `CNO_API_KEY` no se encuentra configurada en el servidor, el aplicativo oculta los detalles técnicos de infraestructura al visitante y despliega el mensaje amigable : *«No se pudo consultar el catálogo de ocupaciones»*.
+**Acción:** 
+* Si la búsqueda fue por código, verificar que contenga exactamente 4 dígitos para CNO o 5 para CUOC.
+* Si el mensaje corresponde a congestión temporal (429), esperar breves segundos y pulsar nuevamente en «Buscar».
+* Si la indisponibilidad persiste, verificar la conectividad a Internet o reportarlo al equipo técnico para la validación de las credenciales de servicio en el contenedor del portal.
+
+#### 3.5.2.9. Subida de archivos y descargas binarias bajo el proxy de seguridad del servidor
+**Situación:** Un funcionario tiene dudas sobre si las cargas de plantillas masivas de Excel o los logotipos en el panel administrativo sufren alteraciones de datos, o si los archivos descargados conservan su formato original.
+**Aclaración y arquitectura de seguridad:**
+* **Canalización por Proxy Endurecido:** Todas las comunicaciones entre el navegador web y los microservicios backend pasan a través de canales seguros del servidor, evitando exponer la dirección IP o puertos internos del sistema.
+* **Transmisión Streaming Multipart:** Para archivos pesados (como matrices de actualización de Excel `.xlsx` en `/admin-panel/update-section` o imágenes `.png` en `/admin-panel/configuration`), el servidor canaliza los flujos de datos en formato binario continuo (*streaming*) sin decodificación intermedia, evitando corrupciones de archivo o desbordamientos de memoria en el servidor.
+* **Descargas Binarias Protegidas:** Las plantillas oficiales de Excel y los reportes generados se descargan directamente con sus cabeceras HTTP de tipo MIME intactas (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`), garantizando compatibilidad absoluta con Microsoft Excel, LibreOffice y visores en línea.
+
 

@@ -250,17 +250,17 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga masiva de programas destacados, gestión de alertas de inversión masivas/manuales y actualización de sectores CIIU |
-| **Resultado Esperado:** | Descarga de plantillas oficiales `.xlsx`, barra de progreso con etapas reales, impacto directo en portal, alta manual de proyectos vía modal, actualización de actividades económicas CIIU y gestión en tablas de proyectos e historial. |
+| **Resultado Esperado:** | Descarga de plantillas oficiales `.xlsx`, barra de progreso con etapas de procesamiento, actualización directa en portal sin borrado de datos preexistentes, registro manual de proyectos vía ventana modal, actualización de actividades económicas CIIU y gestión en tablas de proyectos e historial. |
 | **Precondición:** | Funcionario autenticado en `/admin-panel/update-section`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** `formato-programas-sobresalientes.xlsx`, `formato-alertas-inversion.xlsx`, `formato-actualizar-ciiu.xlsx`<br>**Formulario manual:** Título, entidad promotora, sector económico, monto de inversión, vigencia y descripción |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
 | **1.** Desplegar acordeón "Programa + Sobresalientes" y descargar formato | Descarga archivo oficial `.xlsx` estructurado con columnas y tipos de datos normalizados |
-| **2.** Cargar archivo `.xlsx` de programas sobresalientes | Muestra barra de progreso en vivo indicando porcentaje y fase (*«Leyendo el archivo»* < 60% y *«Guardando en la base de datos»* >= 60%), publicando directamente en el portal al alcanzar el 100% |
-| **3.** Consultar y gestionar historial de cargas de programas | Lista las cargas previas con fecha, nombre de archivo, registros procesados y estado (*Completado*, *Procesando*, *Error*), permitiendo eliminar una carga para revertirla |
+| **2.** Cargar archivo `.xlsx` de programas sobresalientes | Muestra barra de progreso indicando porcentaje y fase (*«Leyendo el archivo»* < 60% y *«Guardando en la base de datos»* >= 60%), publicando directamente en el portal al alcanzar el 100% |
+| **3.** Consultar y gestionar historial de cargas de programas | Lista las cargas con fecha, nombre de archivo, registros procesados y estado (*Completado*, *Procesando*, *Error*), permitiendo eliminar una carga para revertirla |
 | **4.** Desplegar acordeón "Alertas de inversión" y descargar formatos oficiales | Descarga `formato-alertas-inversion.xlsx` y `formato-actualizar-ciiu.xlsx` |
-| **5.** Cargar archivo masivo de alertas de inversión | Muestra barra interactiva (50% lectura / 50% escritura en base de datos) y actualiza automáticamente el listado de proyectos registrados |
+| **5.** Cargar archivo masivo de alertas de inversión | Muestra barra interactiva de avance y actualiza automáticamente el listado de proyectos registrados de forma acumulativa |
 | **6.** Probar botón "Agregar manualmente" en Alertas de inversión | Abre ventana modal con formulario completo; permite registrar un proyecto individual digitando título, entidad, sector, monto, vigencia y descripción sin requerir archivo Excel |
 | **7.** Probar botón "Actualizar sectores CIIU" | Permite cargar la actualización de la tabla maestra de actividades económicas mediante archivo Excel |
 | **8.** Gestionar tabla de proyectos registrados | Permite consultar las iniciativas vigentes, eliminar un proyecto individual o limpiar el listado completo mediante diálogo de confirmación |
@@ -272,16 +272,16 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga de percentiles por año/periodo, regla de celda libre, validación en 4 fases y ciclo de publicación de borradores |
-| **Resultado Esperado:** | Autodetección de año y periodo por nombre de archivo, bloqueo de sobreescritura si la celda está ocupada, barra de avance en 4 fases reales, retención inicial en estado Borrador («Sin publicar») y publicación controlada hacia el sitio web público. |
+| **Resultado Esperado:** | Autodetección de año y periodo por nombre de archivo, bloqueo de sobreescritura si la celda está ocupada, barra de avance en 4 fases, retención inicial en estado Borrador («Sin publicar») y publicación controlada hacia el sitio web público. |
 | **Precondición:** | Funcionario autenticado en `/admin-panel/update-section` con el acordeón "Criterios de clasificación de resultados" abierto. |
-| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Archivo `.xlsx` con hojas obligatorias *«percentiles nacional»* y *«percentiles departamental»* (ej. `percentiles_2025_T1.xlsx`)<br>**Selectores:** Año (`YearPicker`) y Periodo (`CustomSelect`) |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Archivo `.xlsx` con hojas obligatorias *«percentiles nacional»* y *«percentiles departamental»* (ej. `percentiles_2025_T1.xlsx`)<br>**Selectores:** Año y Periodo |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
 | **1.** Descargar formato oficial de Tendencia Ocupacional | Descarga plantilla `.xlsx` obligatoria conteniendo las hojas predefinidas *«percentiles nacional»* y *«percentiles departamental»* |
-| **2.** Seleccionar archivo con año y periodo en el nombre (ej. `percentiles_2025_T1.xlsx`) | El sistema identifica automáticamente el nombre y precompleta los campos de Año (`YearPicker`) y Periodo (`CustomSelect`) |
-| **3.** Intentar cargar en un año y periodo que ya cuenta con datos cargados | Activa la etiqueta de advertencia de celda ocupada y bloquea el botón "Cargar", indicando eliminar la carga previa en el historial si se desea reemplazar |
-| **4.** Ejecutar carga en celda libre con validación en 4 fases | Barra de progreso interactiva avanza por 4 fases reales: *«Leyendo el archivo»* (0% - 39%), *«Preparando las filas»* (40% - 59%), *«Validando (V1–V9)»* (60% - 84%) y *«Guardando en la base de datos»* (85% - 100%) |
+| **2.** Seleccionar archivo con año y periodo en el nombre (ej. `percentiles_2025_T1.xlsx`) | El sistema identifica automáticamente el nombre y precompleta los selectores de Año y Periodo |
+| **3.** Intentar cargar en un año y periodo que ya cuenta con datos cargados | Activa la advertencia de celda ocupada y bloquea el botón "Cargar", indicando eliminar la carga previa en el historial si se desea reemplazar |
+| **4.** Ejecutar carga en celda libre con validación en 4 fases | Barra de progreso interactiva avanza por 4 fases: *«Leyendo el archivo»* (0% - 39%), *«Preparando las filas»* (40% - 59%), *«Validando (V1–V9)»* (60% - 84%) y *«Guardando en la base de datos»* (85% - 100%) |
 | **5.** Verificar estado inicial tras carga exitosa | Los percentiles quedan almacenados en estado **Borrador («Sin publicar»)** con resumen de filas procesadas y botón de reporte de validaciones; la información aún no se muestra en el portal público |
 | **6.** Publicar corte desde "Pendientes de publicar" o desde el historial | Pulsar botón "Publicar" (o "Publicar todos"); el estado cambia a **Publicado** y los percentiles se proyectan inmediatamente en los bloques de Tendencia Ocupacional del sitio web |
 | **7.** Despublicar corte desde la tabla de historial | Vuelve el corte a estado **Borrador** retirándolo de la vista de los usuarios del portal |
@@ -289,25 +289,29 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-## MÓDULO 9: Cuenta Personal y Configuración del Panel
+## MÓDULO 9: Gestión de Cuenta y Configuración del Panel
 
-### Escenario 14: Perfil de Usuario y Cambio de Contraseña (`/admin/mi-perfil`)
+### Escenario 14: Gestión de Cuenta y Cambio Voluntario de Contraseña (`/admin-panel/users`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Consulta de datos de cuenta en solo lectura y actualización segura de contraseña |
-| **Resultado Esperado:** | Visualización de datos de identidad en solo lectura con indicación explícita de gestión desde Usuarios, y actualización exitosa de contraseña con comprobación en vivo de requisitos de seguridad y trazabilidad en auditoría. |
-| **Precondición:** | Usuario autenticado en el Panel Administrativo en `/admin/mi-perfil`. |
-| **Datos de entrada** | **Usuario:** Funcionario autenticado (`admin@sena.edu.co` o `editor@sena.edu.co`)<br>**Contraseña actual:** Clave vigente<br>**Nueva contraseña:** Clave con mín. 12 caracteres, mayúsculas, minúsculas, números o símbolos, sin emojis |
+| **Escenario:** | Actualización de datos de identidad y cambio voluntario de contraseña en la propia cuenta |
+| **Resultado Esperado:** | Apertura de ventana de edición desde la propia fila del usuario en Usuarios, actualización de datos personales, despliegue de sección «Cambiar contraseña» sin exigencia de clave anterior, validación en tiempo real de condiciones de seguridad y registro del evento en la bitácora de auditoría. |
+| **Precondición:** | Funcionario autenticado con rol Administrador en el submódulo `/admin-panel/users`. |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co`<br>**Nueva contraseña:** Clave con mín. 8 caracteres, mayúsculas, minúsculas, números o símbolos, sin emojis<br>**Confirmación:** Clave coincidente |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Acceder a "Mi Perfil" en escritorio y dispositivo móvil | En escritorio se abre desde el menú de usuario al final de la barra lateral izquierda; en móvil tocando el nombre de usuario en la barra superior |
-| **2.** Consultar datos de cuenta en solo lectura | Muestra Nombre, Apellidos y Correo institucional (`@sena.edu.co`) en campos no editables, con aviso indicando que cualquier modificación se realiza desde *Accesos > Usuarios* (`/admin-panel/users`) |
-| **3.** Digitar contraseña actual y probar botón de visualización | El botón con ícono de ojo conmuta la visibilidad de los caracteres entre texto plano y puntos ocultos |
-| **4.** Digitar nueva contraseña sin cumplir política de seguridad | Panel interactivo en vivo marca en rojo los requisitos no alcanzados (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números o símbolos, sin emojis) y mantiene bloqueado el envío |
-| **5.** Probar discrepancia en confirmación de contraseña | Ingresar confirmación no coincidente; despliega alerta visual de discrepancia e impide pulsar el botón |
-| **6.** Confirmar contraseña idéntica y pulsar "Cambiar Contraseña" | Muestra estado *«Guardando...»*, presenta notificación de éxito *«Contraseña actualizada exitosamente»*, limpia los campos del formulario y asienta el evento en auditoría |
+| **1.** Localizar la propia cuenta en la tabla de usuarios | La fila del usuario autenticado se visualiza en la tabla con sus datos de nombre, correo, rol y estado |
+| **2.** Hacer clic en el botón con ícono de lápiz («Editar usuario») | Abre la ventana modal «Editar usuario» mostrando los datos de la cuenta y, de forma exclusiva para la propia cuenta, la sección desplegable **«Cambiar contraseña»** |
+| **3.** Modificar datos de nombre, apellidos o vigencia de la cuenta | Permite editar directamente los campos de texto y la fecha de caducidad |
+| **4.** Desplegar la sección «Cambiar contraseña» | Al presionar sobre el encabezado, se revelan los campos «Contraseña nueva» y «Repetir contraseña nueva» junto con la lista interactiva de requisitos de seguridad |
+| **5.** Probar botón de visibilidad de contraseña | El botón con ícono de ojo conmuta la visualización de los caracteres entre texto visible y oculto en ambos campos |
+| **6.** Probar digitación de clave sin cumplir requisitos de seguridad | La lista interactiva mantiene advertencias sobre las condiciones insatisfechas y el sistema no permite guardar |
+| **7.** Probar discrepancia entre la nueva contraseña y su confirmación | Al ingresar textos diferentes y pulsar «Guardar», el sistema interrumpe el guardado, mantiene la sección abierta y resalta el aviso *«Las contraseñas no coinciden»* |
+| **8.** Probar contraseña repetida | Al ingresar una clave igual a la actual o recientemente utilizada y pulsar «Guardar», el sistema muestra el aviso de advertencia y no aplica modificaciones parciales a los datos del funcionario |
+| **9.** Confirmar nueva contraseña válida y presionar «Guardar» | Guarda simultáneamente la nueva contraseña y los cambios de datos de la cuenta, cierra la ventana modal y registra el evento en la bitácora de auditoría |
+| **10.** Probar edición de datos personales con campos de contraseña vacíos | Dejar ambos campos de contraseña en blanco y pulsar «Guardar»; el sistema actualiza los datos personales conservando la contraseña activa sin alteraciones |
 
 ---
 
@@ -316,7 +320,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga de logotipo/ícono, modo oscuro, contraste accesible y sonido de avisos |
-| **Resultado Esperado:** | Carga de logo e ícono PNG por clic o arrastre directo con guardado inmediato, previsualizaciones en tema claro y oscuro, inversión a blanco en modo oscuro, personalización de colores con validador WCAG (4,5:1) y control de sonido de notificaciones en el navegador. |
+| **Resultado Esperado:** | Carga de logo e ícono PNG por clic o arrastre directo con guardado inmediato, previsualizaciones en tema claro y oscuro, ajuste para modo oscuro, personalización de colores con validador accesible y control de sonido de notificaciones en el navegador. |
 | **Precondición:** | Funcionario autenticado en la ruta `/admin-panel/configuration`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Imagen PNG horizontal (hasta 1 MB) para logotipo y PNG cuadrado (hasta 512 KB, mín. 64x64 px) para favicon<br>**Colores:** Selección de colores para fondo y letra de etiquetas y botones |
 
@@ -326,38 +330,41 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **2.** Cargar logotipo de barra lateral mediante clic o arrastre directo | Sube y guarda automáticamente el archivo PNG (hasta 1 MB), actualizando en vivo las previsualizaciones en tema claro y oscuro |
 | **3.** Cargar ícono de pestaña (Favicon) cuadrado | Actualiza el ícono en la pestaña del navegador y en la barra superior móvil |
 | **4.** Probar botón "Volver al de fábrica" en logo e ícono | Restablece los distintivos gráficos predeterminados originales del sistema |
-| **5.** Alternar interruptor "Pasar a blanco en modo oscuro" | Aplica filtro de alto contraste a gráficos oscuros transparentes al pasar a tema oscuro para preservar su legibilidad |
-| **6.** Personalizar colores en acordeones de etiquetas y botones | Acordeones interactivos (*«En el panel»* / *«En el editor»* para etiquetas, y *«En las pantallas»* / *«En los modales»* para botones) permiten seleccionar color de Fondo y Letra con muestra previa en vivo |
-| **7.** Evaluar validador de contraste accesible en tiempo real | Si el contraste es >= 4,5:1 marca *«Se lee bien»*; si es menor, emite advertencia de *«Poco contraste»* y ofrece botones asistidos (*«Usar letra blanca»* o *«Usar letra azul oscuro»*) para corregirlo con un toque |
+| **5.** Alternar interruptor "Pasar a blanco en modo oscuro" | Aplica ajuste de alto contraste a gráficos oscuros con fondo transparente al pasar a tema oscuro para preservar su legibilidad |
+| **6.** Personalizar colores en acordeones de etiquetas y botones | Acordeones interactivos (*«En el panel»* / *«En el editor»* para etiquetas, y *«En las pantallas»* / *«En los modales»* para botones) permiten seleccionar combinaciones de fondo y texto con muestra previa en vivo |
+| **7.** Evaluar validador de contraste accesible en tiempo real | Si el contraste cumple el estándar mínimo marca *«Se lee bien»*; si no lo alcanza, emite advertencia de *«Poco contraste»* y ofrece opciones asistidas para corregirlo con un toque |
 | **8.** Guardar colores o probar botones "Descartar cambios" y "Volver a los de fábrica" | Confirma los nuevos colores en el panel o revierte a los valores guardados / originales de fábrica |
-| **9.** Alternar interruptor de "Sonido de los avisos" y probar botones de muestra | Activa o silencia el timbre de notificaciones guardado localmente en el navegador y reproduce las muestras sonoras interactivas de *Éxito*, *Advertencia* y *Error* |
+| **9.** Alternar interruptor de "Sonido de los avisos" y probar botones de muestra | Activa o silencia el aviso sonoro de notificaciones guardado localmente en el navegador y reproduce las muestras sonoras de *Éxito*, *Advertencia* y *Error* |
 
 ---
 
-## MÓDULO 10: Composición Visual y Gestión Editorial — Editor Puck
+## MÓDULO 10: Composición Visual y Gestión Editorial — Editor Visual
 
 ### Escenario 16: Maquetación, Bloques y Flujo de Revisión en el Editor Visual (`/editor/[slug]`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Despliegue de Speed-Dial, maquetación de bloques, accesibilidad, autoguardado y envío con comentario |
-| **Resultado Esperado:** | Despliegue fluido del menú flotante, arrastre y configuración de bloques, autoguardado periódico, bloqueo de envío si faltan textos alternativos de accesibilidad y envío a revisión con comentario obligatorio. |
+| **Escenario:** | Despliegue de opciones flotantes, maquetación de bloques temáticos, accesibilidad, autoguardado y envío con comentario |
+| **Resultado Esperado:** | Despliegue fluido del menú flotante, arrastre y configuración de bloques (incluyendo Buscador de Ocupaciones, Alertas de Inversión, Video Embebido con fondo decorativo y Dato OLO de la Semana), autoguardado periódico, comprobación de accesibilidad y envío a revisión con comentario obligatorio. |
 | **Precondición:** | Usuario autenticado navegando en una página con modo edición habilitado. |
-| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` o `editor@sena.edu.co`<br>**Contraseña:** Contraseña definitiva activa<br>**Bloques:** Tarjetas, columnas, banners, imágenes, títulos<br>**Comentario de revisión:** Texto explicativo de cambios (entre 10 y 100 caracteres) |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` o `editor@sena.edu.co`<br>**Contraseña:** Contraseña definitiva activa<br>**Bloques:** Tarjetas, columnas, títulos, Buscador de Ocupaciones, Alertas de Inversión, Video Embebido, Dato OLO de la Semana<br>**Comentario de revisión:** Texto explicativo de cambios (entre 10 y 100 caracteres) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Hacer clic en el botón circular flotante de lápiz | El botón rota a una cruz (**X**) y despliega el menú Speed-Dial (*Editar página*, *Menú y pie*, *Nueva página*, *Eliminar página*, *Salir de modo edición*) |
-| **2.** Seleccionar "Editar página" | Abre el Editor Visual Puck con catálogo izquierdo, lienzo central, inspector derecho y bandera de estado con ruta (`/{slug}`) |
-| **3.** Arrastrar nuevo bloque desde el catálogo al lienzo central | Inserta el componente en la posición vertical seleccionada reorganizando automáticamente los demás bloques |
-| **4.** Modificar propiedades en el panel derecho (textos, colores, enlaces, imágenes) | Refleja las modificaciones en tiempo real en la vista previa del lienzo interactivo |
-| **5.** Reordenar bloques con la agarradera y eliminar con ícono de papelera | Desplaza verticalmente el bloque seleccionado o lo retira inmediatamente del lienzo |
-| **6.** Probar botones de Deshacer y Rehacer en la barra superior | Revierte y reaplica cambios durante la sesión activa sin alterar el borrador guardado en servidor |
-| **7.** Verificar autoguardado inteligente y botón de guardado manual | La barra superior exhibe avisos dinámicos (*«Guardando…»*, *«Sin guardar»*, *«Guardado a las [hora]»*) y permite guardar manualmente mediante el botón de disquete |
-| **8.** Intentar enviar a revisión con una imagen sin texto alternativo (`alt`) o marco sin título | El sistema efectúa una comprobación automática de accesibilidad obligatoria, bloquea el envío y despliega alerta exigiendo la descripción accesible |
-| **9.** Pulsar "Enviar a revisión" con accesibilidad aprobada | Abre ventana modal exigiendo comentario de cambios obligatorio (10 a 100 caracteres); al confirmar, remite la página a la bandeja de revisión y libera la edición |
-| **10.** Probar botón "Salir sin publicar" (ícono de detención rojo) | Advierte sobre cambios pendientes sin guardar y libera la reserva de edición de la página |
-| **11.** Probar opción "Salir de modo edición" desde el menú Speed-Dial público | Cierra la sesión local del editor y recarga la página para visualizarla exactamente como un visitante ciudadano |
+| **1.** Hacer clic en el botón circular flotante de lápiz | El botón rota a una cruz (**X**) y despliega el menú de acciones (*Editar página*, *Menú y pie*, *Nueva página*, *Eliminar página*, *Salir de modo edición*) |
+| **2.** Seleccionar "Editar página" | Abre el Editor Visual con panel lateral de bloques, lienzo central de trabajo, panel de opciones y barra superior con ruta (`/{slug}`) |
+| **3.** Arrastrar nuevo bloque desde el catálogo al lienzo central | Inserta el componente en la posición seleccionada reorganizando fluidamente los demás bloques |
+| **4.** Probar bloque «Buscador de Ocupaciones» | Inserta el bloque en la página y permite personalizar el texto orientativo de ayuda en el panel lateral; despliega la barra interactiva de consulta de clasificaciones CNO y CUOC |
+| **5.** Probar bloque «Alertas de Inversión» | Inserta el bloque en el lienzo, permite configurar título y descripción en el panel de opciones y presenta de forma automática los filtros temáticos y la lista de iniciativas de inversión |
+| **6.** Probar bloque «Video Embebido» con fondo decorativo | Permite ingresar el enlace de YouTube, seleccionar una imagen decorativa de fondo, regular el control de transparencia de 0% a 100% y seleccionar la modalidad de fondo (pantalla completa o repetición en mosaico), garantizando que los textos y el reproductor permanezcan completamente legibles |
+| **7.** Probar bloque «Dato OLO de la Semana» | Permite configurar infografías destacadas con imágenes de fondo independientes y transiciones fluidas al alternar entre contenidos |
+| **8.** Reordenar bloques con la agarradera y eliminar con ícono de papelera | Desplaza verticalmente el bloque seleccionado o lo retira inmediatamente del lienzo |
+| **9.** Probar botones de Deshacer y Rehacer en la barra superior | Revierte y reaplica modificaciones durante la sesión activa sin alterar el borrador guardado en el servidor |
+| **10.** Verificar autoguardado y botón de guardado manual | La barra superior exhibe avisos informativos (*«Guardando…»*, *«Sin guardar»*, *«Guardado a las [hora]»*) y permite guardar manualmente mediante el botón correspondiente |
+| **11.** Intentar enviar a revisión con una imagen sin texto alternativo descriptivo | El sistema efectúa una comprobación automática de accesibilidad obligatoria, bloquea el envío y despliega alerta exigiendo la descripción para personas con discapacidad visual |
+| **12.** Pulsar "Enviar a revisión" con accesibilidad aprobada | Abre ventana modal exigiendo comentario de cambios obligatorio (10 a 100 caracteres); al confirmar, remite la página a la bandeja de revisión y libera la edición |
+| **13.** Probar botón "Salir sin publicar" (ícono de detención) | Advierte sobre cambios pendientes sin guardar y libera la reserva de edición de la página |
+| **14.** Probar opción "Salir de modo edición" desde el menú flotante público | Cierra la sesión local del editor y recarga la página para visualizarla exactamente como un visitante ciudadano |
 
 ---
 
@@ -365,44 +372,44 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Edición de cabecera/pie global, creación con slug automático y eliminación con análisis de dependencias |
-| **Resultado Esperado:** | Propagación universal de cabecera y pie, creación de página con slug en tiempo real, bloqueo de eliminación ante enlaces activos entrantes y confirmación por digitación idéntica del título. |
+| **Escenario:** | Edición de cabecera/pie global, creación con ruta automática y eliminación con análisis de dependencias |
+| **Resultado Esperado:** | Propagación universal de cabecera y pie, creación de página con ruta en tiempo real, bloqueo de eliminación ante enlaces activos dependientes y confirmación por digitación idéntica del título. |
 | **Precondición:** | Usuario autenticado con facultades editoriales en el portal público. |
-| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Nueva página:** Nombre de la página (*«Bolsa de empleo»*)<br>**Eliminación:** Nombre exacto de la página a suprimir |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Nueva página:** Nombre de la página (*«Bolsa de empleo»*)<br>**Eliminación:** Nombre exacto de la página a retirar |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Seleccionar "Menú y pie" en el menú flotante de edición (`/editor/menu-y-pie`) | Abre el editor visual enfocado en los componentes globales de cabecera y pie de página |
+| **1.** Seleccionar "Menú y pie" en el menú flotante de edición (`/editor/menu-y-pie`) | Abre el Editor Visual enfocado en los componentes globales de cabecera y pie de página |
 | **2.** Modificar enlaces o textos en cabecera/pie, guardar borrador y enviar a revisión | Tras su aprobación, las modificaciones se propagan de manera uniforme e inmediata a todas las páginas del portal |
-| **3.** Seleccionar "Nueva página" en el botón flotante | Despliega modal solicitando *«¿Cómo se llama?»*; genera la ruta (`/{slug}`) automáticamente en tiempo real a partir del nombre digitado |
+| **3.** Seleccionar "Nueva página" en el botón flotante | Despliega ventana modal solicitando *«¿Cómo se llama?»*; genera la ruta (`/{slug}`) automáticamente en tiempo real a partir del nombre digitado |
 | **4.** Pulsar "Crear y editar" en el modal de nueva página | Crea la página vacía en estado de borrador y redirige de inmediato a su lienzo en el Editor Visual |
-| **5.** Intentar eliminar página que tiene enlaces entrantes activos (en menú o dentro de páginas) | El sistema escanea en tiempo real todo el portal, bloquea el borrado y lista las páginas que contienen enlaces dependientes a retirar primero |
-| **6.** Desvincular enlaces dependientes y volver a seleccionar "Eliminar página" | El análisis confirma 0 dependencias y habilita la modal de confirmación con el resumen de ruta y el conteo de versiones a borrar |
-| **7.** Digitar idénticamente el título de la página en la casilla de confirmación | Escribir el nombre exacto en *«Escribe [Nombre] para confirmar»* para desbloquear el botón de peligro "Eliminar" |
-| **8.** Confirmar eliminación definitiva | Elimina la página y sus versiones, redirige automáticamente a `/inicio` y registra el evento inmutable en la bitácora de auditoría |
+| **5.** Intentar eliminar página que tiene enlaces entrantes activos (en menú o dentro de páginas) | El sistema analiza en tiempo real todo el portal, bloquea el borrado y lista las páginas que contienen enlaces dependientes a retirar primero |
+| **6.** Desvincular enlaces dependientes y volver a seleccionar "Eliminar página" | El análisis confirma 0 dependencias y habilita la ventana de confirmación con el resumen de ruta y el conteo de versiones a borrar |
+| **7.** Digitar idénticamente el título de la página en la casilla de confirmación | Escribir el nombre exacto en *«Escribe [Nombre] para confirmar»* para desbloquear el botón de confirmación "Eliminar" |
+| **8.** Confirmar eliminación definitiva | Retira la página y sus versiones, redirige automáticamente a `/inicio` y registra el evento en la bitácora de auditoría |
 
 ---
 
 ## MÓDULO 11: Portal Ciudadano, Búsquedas y Visualizadores Públicos
 
-### Escenario 18: Buscador Global del Portal y Catálogo Ocupacional CNO / CUOC
+### Escenario 18: Buscador Global del Portal y Catálogo Ocupacional CNO / CUOC (`/clasificacion`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Búsqueda global rápida, consulta ocupacional, correlación CNO/CUOC y filtrado avanzado |
-| **Resultado Esperado:** | Búsqueda ágil en cabecera por relevancia, filtrado interactivo en catálogo ocupacional por área y cualificación, despliegue de ficha técnica con funciones y opciones de exportación/descarga. |
+| **Escenario:** | Búsqueda global en cabecera, consulta ocupacional CNO y CUOC por código o palabra clave y ficha técnica con correlativas cruzadas |
+| **Resultado Esperado:** | Despliegue fluido del buscador en cabecera con navegación por teclado, validación de código numérico (4 dígitos CNO / 5 dígitos CUOC), despliegue de ficha ocupacional a pantalla completa con funciones y correlativas cruzadas CNO ↔ CUOC, y opciones de descarga oficial. |
 | **Precondición:** | Usuario ciudadano o funcionario navegando en el Sitio Web Público. |
-| **Datos de entrada** | **Términos de búsqueda:** Palabras clave en cabecera o catálogo ocupacional (ej. "desarrollador", "enfermería")<br>**Filtros:** Área de desempeño o nivel de cualificación en panel de filtros avanzados |
+| **Datos de entrada** | **Términos de búsqueda:** Palabras clave en cabecera o catálogo ocupacional (ej. "sistemas", "enfermería")<br>**Códigos ocupacionales:** Códigos numéricos de 4 dígitos (CNO) o 5 dígitos (CUOC) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Localizar y utilizar el buscador global rápido en la cabecera del portal | Ingresar término clave en la casilla con ícono de lupa y presionar Enter o hacer clic en la lupa; despliega la página de resultados organizados por relevancia |
-| **2.** Acceder al catálogo ocupacional (`/ocupaciones`) y desplegar panel de Filtros Avanzados | Abre el panel lateral en escritorio (o menú desplegable en móvil) con selectores por categorías y niveles |
-| **3.** Aplicar filtros por área ocupacional o nivel de cualificación | El listado de resultados se actualiza dinámicamente en tiempo real sin recargar la página |
-| **4.** Escribir denominación o código ocupacional en la barra predictiva | Despliega coincidencias inmediatas vinculando la denominación oficial, código CNO y correlación CUOC |
-| **5.** Abrir la ficha técnica de una ocupación seleccionada | Despliega la vista en detalle con descripción de funciones, habilidades requeridas, ocupaciones afines y datos del observatorio |
-| **6.** Probar botón "Descargar Documento" / "Exportar PDF" en la ficha informativa | Genera y descarga el archivo oficial con la ficha técnica completa en el computador o dispositivo móvil |
-| **7.** Probar búsqueda con términos sin coincidencias | Presenta mensaje amigable de sin resultados con recomendaciones y botón para restablecer filtros |
+| **1.** Utilizar el buscador global desplegable en la cabecera del portal | Hacer clic sobre el ícono de lupa; el campo de búsqueda se despliega fluidamente hacia la izquierda; digitar términos y presionar Enter para visualizar resultados organizados por relevancia |
+| **2.** Acceder a la sección de clasificación ocupacional (`/clasificacion`) | Despliega la interfaz oficial de consulta ocupacional con acceso a los catálogos CNO y CUOC |
+| **3.** Consultar por código numérico oficial (4 dígitos para CNO o 5 dígitos para CUOC) | Valida la estructura del código y despliega inmediatamente la ocupación correspondiente sin peticiones innecesarias |
+| **4.** Consultar por denominaciones o palabras clave | Muestra el listado de ocupaciones coincidentes con su denominación oficial y código de clasificación |
+| **5.** Abrir la ficha técnica detallada de una ocupación | Despliega la ventana a pantalla completa con descripción de funciones, conocimientos, habilidades y la tabla de equivalencias correlativas cruzadas CNO ↔ CUOC |
+| **6.** Probar respuesta ante código inválido o sin coincidencias | Presenta mensaje de orientación amigable indicando verificar el código o término de búsqueda |
+| **7.** Descargar o exportar información oficial | Permite generar y descargar la ficha técnica completa en el computador o dispositivo móvil |
 
 ---
 
@@ -438,10 +445,10 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
 | **1.** Acceder a la página principal de la Intranet con rol directivo | Presenta la cabecera privada, navegación interna y contenedores de tableros analíticos |
-| **2.** Cargar tablero de Power BI integrado | Renderiza el componente embebido con indicadores analíticos de empleabilidad sin requerir inicio de sesión adicional |
+| **2.** Cargar tablero de Power BI integrado | Muestra el componente integrado con indicadores analíticos de empleabilidad sin requerir inicio de sesión adicional |
 | **3.** Interactuar con segmentadores de periodo, región y sector en el tablero | Actualiza dinámicamente las gráficas y tablas de indicadores en tiempo real sin recargar la página |
 | **4.** Activar botón de pantalla completa en el visor del tablero | Expande la visualización a monitor completo y retorna a la vista normal con botón de salir o tecla Escape |
-| **5.** Verificar entorno de solo lectura gerencial | Comprueba que la interfaz privada no muestre botones flotantes de edición Puck ni accesos al Panel Administrativo |
+| **5.** Verificar entorno de solo lectura gerencial | Comprueba que la interfaz privada no muestre botones flotantes de edición ni accesos al Panel Administrativo |
 
 ---
 
@@ -491,24 +498,22 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Verificación funcional del Panel de Accesibilidad («Personaliza tu experiencia»), controles de inclusión, persistencia y botón «Subir» |
-| **Resultado Esperado:** | Despliegue interactivo desde la pestaña lateral derecha azul institucional, ajuste dinámico de los 8 controles principales (lector de pantalla, tamaño de texto en 4 niveles, alto contraste, saturación en 4 niveles, pausar animación, fuente dislexia, interlineado e interletrado), selector de daltonismo (protanopía, deuteranopía, tritanopía), opciones avanzadas con interruptores, restablecimiento a valores base, conservación de preferencias en el navegador y retorno al inicio con el botón flotante «Subir». |
+| **Resultado Esperado:** | Despliegue interactivo desde la pestaña lateral flotante, ajuste dinámico de los 8 controles principales (lector de pantalla, tamaño de texto en 4 niveles, alto contraste, saturación en 4 niveles, pausar animación, fuente dislexia, interlineado e interletrado), selector de daltonismo (protanopía, deuteranopía, tritanopía), opciones avanzadas con interruptores, restablecimiento a valores base, conservación de preferencias en el navegador y retorno al inicio con el botón flotante «Subir». |
 | **Precondición:** | Portal público cargado en el navegador (`/` o cualquier página pública) sin requerir inicio de sesión. |
-| **Datos de entrada** | **Interacción:** Clic en pestaña flotante lateral azul institucional o tecla `Enter`/`Espacio`, pulsación de tarjetas de ajuste, alternancia de interruptores (*switches*), botón "Restablecer configuración" y desplazamiento vertical |
+| **Datos de entrada** | **Interacción:** Clic en pestaña flotante lateral de accesibilidad o tecla `Enter`/`Espacio`, pulsación de tarjetas de ajuste, alternancia de interruptores, botón "Restablecer configuración" y desplazamiento vertical |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Desplegar el panel desde la pestaña lateral flotante con ratón y teclado | Abre el panel lateral manteniendo la página visible detrás, traslada el foco automáticamente a la cabecera del panel y permite cerrar con tecla `Escape`, botón `X` o clic fuera |
+| **1.** Desplegar el panel desde la pestaña lateral flotante con ratón y teclado | Abre el panel lateral manteniendo la página visible detrás, traslada el foco automáticamente a la cabecera del panel y permite cerrar con tecla `Escape`, botón de cierre o clic exterior |
 | **2.** Probar botón "Lector de pantalla" | Activa la síntesis de voz del navegador emitiendo confirmación hablada; si el navegador no lo soporta, muestra la tarjeta inhabilitada con mensaje explicativo |
 | **3.** Probar tarjeta "Tamaño del texto" (AA) en sus 4 niveles | Cicla sucesivamente entre Normal (1 barra), Grande (2 barras), Más grande (3 barras) y Máximo (4 barras), escalando las fuentes tipográficas en vivo sin romper la maquetación |
-| **4.** Activar "Alto contraste" | Invierte la interfaz a fondo negro con textos en blanco y acentos amarillos de máxima luminosidad |
+| **4.** Activar "Alto contraste" | Invierte la interfaz con esquema de máxima luminosidad y contraste para facilitar la lectura |
 | **5.** Probar tarjeta "Saturación" en sus 4 niveles | Cicla entre Normal (0 barras), Baja (1 barra), Alta (2 barras) y Sin color / Monocromático (3 barras), alterando la intensidad de color de imágenes y bloques |
-| **6.** Activar "Pausar animación" | Detiene instantáneamente las animaciones CSS y la marcha automática de carruseles de imágenes y cintas de publicaciones |
-| **7.** Activar "Fuente dislexia" | Sustituye la fuente institucional por la tipografía *OpenDyslexic* en todos los títulos y textos de la página |
+| **6.** Activar "Pausar animación" | Detiene instantáneamente las animaciones y el desplazamiento automático de carruseles de imágenes y cintas de publicaciones |
+| **7.** Activar "Fuente dislexia" | Sustituye la fuente institucional por una tipografía adaptada en todos los títulos y textos de la página |
 | **8.** Probar niveles de "Interlineado" e "Interletrado" | Incrementa el espaciado vertical entre renglones y la separación horizontal entre caracteres según el nivel seleccionado |
-| **9.** Activar interruptor de "Daltonismo" y probar opciones | Despliega los botones radiales para Protanopía, Deuteranopía y Tritanopía, aplicando el filtro SVG correspondiente en todo el portal; al apagar el interruptor, repliega la sección |
-| **10.** Probar interruptores de "Opciones avanzadas" | Resalta títulos con contorno, resalta enlaces con fondo/subrayado, convierte textos a negrita (*bold*), activa regla de guía de lectura que sigue el cursor y agranda el puntero del ratón |
+| **9.** Activar interruptor de "Daltonismo" y probar opciones | Despliega los botones de selección para Protanopía, Deuteranopía y Tritanopía, aplicando el filtro visual correspondiente en todo el portal; al apagar el interruptor, repliega la sección |
+| **10.** Probar interruptores de "Opciones avanzadas" | Resalta títulos con contorno, resalta enlaces con subrayado, convierte textos a negrita, activa regla de guía de lectura que sigue el cursor y agranda el puntero del ratón |
 | **11.** Probar botón "Restablecer configuración" | Revierte inmediatamente todos los cambios visuales y auditivos a los valores predeterminados originales |
 | **12.** Verificar persistencia en el navegador | Recargar la página (`F5`) o navegar a otra sección pública y comprobar que las preferencias seleccionadas se mantienen activas automáticamente sin parpadeos |
-| **13.** Probar botón flotante «Subir» | Al bajar más de 400 px, aparece la píldora azul abajo a la derecha; al hacer clic, desplaza suavemente la página al inicio y sitúa el foco accesible en `<main>` |
-
-
+| **13.** Probar botón flotante «Subir» | Al desplazarse hacia abajo en la página, se despliega el botón flotante en la esquina inferior; al pulsarlo, desplaza suavemente la pantalla hacia el inicio de la página |
