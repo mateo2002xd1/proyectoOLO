@@ -395,9 +395,9 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | POST | `/api/paginas/:slug/descartar-edicion` | requireAuth, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion() | PaginaController.descartarEdicion |
 | GET | `/api/paginas/:slug/bloqueo` | requireAuth, requierePermisoPagina('puedeEditar') | PaginaController.consultarBloqueo |
 | PATCH | `/api/paginas/:slug/enviar-revision` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion(), validarCuerpo(enviarARevisionSchema) | PaginaController.enviarARevision |
-| DELETE | `/api/paginas/:slug/versiones/:versionId` | requireAuth, requierePermisoPagina('puedePublicar') | PaginaController.eliminarVersion |
+| DELETE | `/api/paginas/:slug/versiones/:versionId` | requireAuth, requierePermisoPagina('puedePublicar'), validarCuerpo(motivoDeDecisionSchema) | PaginaController.eliminarVersion |
 | PATCH | `/api/paginas/:slug/aprobar` | requireAuth, requierePermisoPagina('puedePublicar') | PaginaController.aprobar |
-| PATCH | `/api/paginas/:slug/rechazar` | requireAuth, requierePermisoPagina('puedeRechazar') | PaginaController.rechazar |
+| PATCH | `/api/paginas/:slug/rechazar` | requireAuth, requierePermisoPagina('puedeRechazar'), validarCuerpo(motivoDeDecisionSchema) | PaginaController.rechazar |
 | GET | `/api/paginas/en-revision` | requireAuth, requierePermisoPagina('puedePublicar') | PaginaController.listarEnRevision |
 | GET | `/api/paginas/respaldos` | requireAuth, requireAuth | PaginaController.listarRespaldos |
 | GET | `/api/paginas/respaldos/analizar-depuracion` | requireAuth, requireAuth | PaginaController.analizarDepuracion |
@@ -426,8 +426,8 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/roles/:id` | requireAuth, administraOEsSuRol | RoleController.getById |
 | GET | `/api/roles` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.getAll |
-| POST | `/api/roles` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.create |
-| PATCH | `/api/roles/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.update |
+| POST | `/api/roles` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos'), validarCuerpo(crearRolSchema) | RoleController.create |
+| PATCH | `/api/roles/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos'), validarCuerpo(actualizarRolSchema) | RoleController.update |
 | DELETE | `/api/roles/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.delete |
 
 ### `routes/security-question.routes.ts`

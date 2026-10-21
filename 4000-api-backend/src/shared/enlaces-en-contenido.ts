@@ -15,8 +15,12 @@
  * alguien añada un bloque con enlaces — y se quedaría corta **en silencio**, que en una
  * comprobación de seguridad es lo peor que puede pasar.
  *
- * Recorriendo todo el JSON y recogiendo cualquier `href` o `url`, un bloque nuevo queda
- * cubierto el día que se cree, sin tocar este archivo.
+ * Recorriendo todo el JSON, un bloque nuevo queda cubierto el día que se cree **si** sus
+ * enlaces se guardan en alguno de los campos de `CLAVES_DE_ENLACE` (`href`, `url`,
+ * `urlEnlace`, `enlaceBoton`…). Lo que no se puede adivinar es el nombre del campo: un
+ * bloque que guarde su enlace con otro nombre no se vería aquí, y borrar la página a la
+ * que apunta dejaría un enlace roto sin aviso. Al crear un bloque con enlaces, usar uno
+ * de esos nombres o añadir el suyo a la lista.
  */
 
 /** Un enlace encontrado, con lo suficiente para que una persona lo localice. */
@@ -55,7 +59,6 @@ const CLAVES_DE_ENLACE = [
   'govBannerEnlace',
   'link',
   'urlDestino',
-  'enlaceUrl',
 ];
 
 /**

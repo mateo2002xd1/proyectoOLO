@@ -11,6 +11,7 @@ import {
   eliminarSeccionSchema,
   enviarARevisionSchema,
   guardarBorradorSchema,
+  motivoDeDecisionSchema,
   registrarSubidaSchema,
 } from '../validators/paginas.validators';
 import {
@@ -603,6 +604,15 @@ router.patch(
  *         required: true
  *         schema: { type: string, format: uuid }
  *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               motivo: { type: string, minLength: 1, maxLength: 100, description: Queda en la bitácora. }
+ *             required: [motivo]
  *     responses:
  *       200:
  *         description: Versión eliminada.
@@ -620,6 +630,7 @@ router.patch(
 router.delete(
   '/:slug/versiones/:versionId',
   requierePermisoPagina('puedePublicar'),
+  validarCuerpo(motivoDeDecisionSchema),
   PaginaController.eliminarVersion
 );
 
@@ -664,13 +675,14 @@ router.patch('/:slug/aprobar', requierePermisoPagina('puedePublicar'), PaginaCon
  *       - $ref: '#/components/parameters/SlugEnRuta'
  *       - $ref: '#/components/parameters/Ambito'
  *     requestBody:
- *       required: false
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               motivo: { type: string, description: Se muestra a quien propuso el cambio. }
+ *               motivo: { type: string, minLength: 1, maxLength: 100, description: Se muestra a quien propuso el cambio. }
+ *             required: [motivo]
  *     responses:
  *       200:
  *         description: Versión rechazada.
@@ -681,7 +693,12 @@ router.patch('/:slug/aprobar', requierePermisoPagina('puedePublicar'), PaginaCon
  *       403: { $ref: '#/components/responses/SinPermiso' }
  *       404: { $ref: '#/components/responses/NoEncontrado' }
  */
-router.patch('/:slug/rechazar', requierePermisoPagina('puedeRechazar'), PaginaController.rechazar);
+router.patch(
+  '/:slug/rechazar',
+  requierePermisoPagina('puedeRechazar'),
+  validarCuerpo(motivoDeDecisionSchema),
+  PaginaController.rechazar
+);
 
 /**
  * @openapi

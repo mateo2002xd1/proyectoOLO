@@ -1,4 +1,13 @@
 /* ================================================================
+   NOTA DE USO (añadida el 2026-10-21)
+   Esto es una FOTO del esquema de Neon tomada con una consulta de solo lectura
+   el 2026-10-21. No se mantiene a mano y se desactualiza con cada migración.
+   Si se contradice con otro documento, mandan: 1) las migraciones de
+   4000-api-backend/src/infrastructure/db/migrations, 2) 11-base-de-datos.md
+   (reglas e invariantes) y 3) 12-diccionario-de-datos.md (significado de cada
+   columna). Para actualizarla, volver a correr la consulta y reemplazar el archivo.
+   ================================================================ */
+/* ================================================================
    INVENTARIO TÉCNICO DE BASE DE DATOS - RESULTADOS
    Motor: PostgreSQL
    ================================================================ */

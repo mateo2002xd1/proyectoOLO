@@ -80,3 +80,42 @@ export const actualizarUsuarioSchema = z
   .refine((datos) => Object.keys(datos).length > 0, {
     message: 'No se envió ningún campo para actualizar',
   });
+
+/**
+ * Nombre de un rol que se crea o renombra desde el panel: siempre «Editor [Nombre]».
+ *
+ * El panel ya le antepone «Editor » al texto que se escribe, pero eso solo ordena la
+ * pantalla: la API aceptaba cualquier nombre a quien tuviera `usuarios.permisos`, así que
+ * una llamada directa podía crear un rol llamado «Administrador 2» o «Director». Los roles
+ * base (Superadmin, Administrador, Editor, Director/Subdirector) los siembra
+ * `sembrar-permisos-roles.ts`; desde aquí solo nacen roles hijos de Editor.
+ */
+const nombreDeRolHijo = z
+  .string()
+  .trim()
+  .max(100)
+  .regex(
+    /^Editor\s+\S/,
+    'El nombre del rol debe empezar por «Editor» y seguir con un nombre, por ejemplo «Editor Prensa». Solo se pueden crear roles de editor.'
+  );
+
+const descripcionDeRol = z.string().trim().max(500).nullable().optional();
+
+/** Alta de rol. Lista cerrada: sin `es_sistema` ni ninguna otra columna del modelo. */
+export const crearRolSchema = z
+  .object({
+    name: nombreDeRolHijo,
+    description: descripcionDeRol,
+  })
+  .strict();
+
+/** Edición de rol (PATCH parcial): el nombre, si viene, sigue la misma regla. */
+export const actualizarRolSchema = z
+  .object({
+    name: nombreDeRolHijo.optional(),
+    description: descripcionDeRol,
+  })
+  .strict()
+  .refine((datos) => Object.keys(datos).length > 0, {
+    message: 'No se envió ningún campo para actualizar',
+  });

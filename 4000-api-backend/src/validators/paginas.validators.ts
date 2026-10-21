@@ -117,7 +117,7 @@ export const crearSeccionSchema = z
  */
 export const eliminarSeccionSchema = z
   .object({
-    confirmacion: z.string().trim().min(1, 'Escribe el nombre de la sección para confirmar.').max(120),
+    confirmacion: z.string().trim().min(1, 'Escribe el nombre de la página para confirmar.').max(120),
   })
   .strict();
 
@@ -146,5 +146,19 @@ const RUTA_SUBIDA_RE =
 export const registrarSubidaSchema = z
   .object({
     ruta: z.string().regex(RUTA_SUBIDA_RE, 'Ruta de subida inválida.'),
+  })
+  .strict();
+
+/**
+ * Rechazar o descartar una versión en revisión: el motivo es obligatorio.
+ *
+ * La pantalla ya bloqueaba el botón sin motivo, pero eso es comodidad y no una garantía:
+ * una llamada directa a la API lo dejaba vacío, y la bitácora guarda el motivo como la única
+ * explicación de por qué una versión volvió a borrador o se destruyó. El largo máximo es el
+ * mismo del comentario de cambios y del contador de la pantalla (100).
+ */
+export const motivoDeDecisionSchema = z
+  .object({
+    motivo: z.string().trim().min(1, 'Escribe el motivo.').max(100, 'El motivo admite hasta 100 caracteres.'),
   })
   .strict();

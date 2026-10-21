@@ -5,6 +5,8 @@ import { requierePermisoUsuario } from '../middlewares/permisos.middleware';
 import { requirePermission } from '../middlewares/require-permission.middleware';
 import { usuariosPolicies } from '../policies/usuarios.policies';
 import { esDueno, marcarGuardia } from '../shared/autorizacion';
+import { validarCuerpo } from '../middlewares/validar.middleware';
+import { actualizarRolSchema, crearRolSchema } from '../validators/usuarios.validators';
 
 const router = Router();
 router.use(requireAuth);
@@ -112,9 +114,9 @@ router.get('/', RoleController.getAll);
  *           schema:
  *             type: object
  *             properties:
- *               nombre: { type: string, example: Editor }
- *               descripcion: { type: string }
- *             required: [nombre]
+ *               name: { type: string, example: Editor Prensa, description: Siempre empieza por «Editor» y sigue con un nombre. }
+ *               description: { type: string }
+ *             required: [name]
  *     responses:
  *       201:
  *         description: Rol creado.
@@ -125,7 +127,7 @@ router.get('/', RoleController.getAll);
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
  */
-router.post('/', RoleController.create);
+router.post('/', validarCuerpo(crearRolSchema), RoleController.create);
 
 /**
  * @openapi
@@ -142,8 +144,8 @@ router.post('/', RoleController.create);
  *           schema:
  *             type: object
  *             properties:
- *               nombre: { type: string }
- *               descripcion: { type: string }
+ *               name: { type: string, description: Si viene, empieza por «Editor» y sigue con un nombre. }
+ *               description: { type: string }
  *     responses:
  *       200:
  *         description: Rol actualizado.
@@ -154,7 +156,7 @@ router.post('/', RoleController.create);
  *       403: { $ref: '#/components/responses/SinPermiso' }
  *       404: { $ref: '#/components/responses/NoEncontrado' }
  */
-router.patch('/:id', RoleController.update);
+router.patch('/:id', validarCuerpo(actualizarRolSchema), RoleController.update);
 
 /**
  * @openapi
