@@ -1231,7 +1231,7 @@ En la barra lateral (escritorio) o barra inferior (móvil), el grupo **"Accesos"
 
 ##### 3.4.2.4.1. Submenú: Usuarios
 
-*(Nota: Para consultar la guía de solución de obstáculos comunes durante estos procesos, como alertas de dominio incorrecto, fechas caducadas o ventanas bloqueadas, remitirse a la [Sección 3.5.1.8: Validaciones y Solución de Problemas en la Gestión de Usuarios](#3518-validaciones-y-solución-de-problemas-en-la-gestión-de-usuarios)).*
+*(Nota: Para consultar la guía de solución de obstáculos comunes durante estos procesos, como alertas de dominio incorrecto, fechas caducadas, ventanas bloqueadas o incidencias al actualizar datos y contraseña, remitirse a la [Sección 3.5.1.8: Validaciones y Solución de Problemas en la Gestión de Usuarios](#3518-validaciones-y-solución-de-problemas-en-la-gestión-de-usuarios)).*
 
 En este apartado se gestionan las cuentas individuales de los funcionarios que interactúan con la plataforma del OLO. La interfaz está compuesta por una cabecera con el botón de creación (**"Crear Usuario"**), una barra de búsqueda en tiempo real, una tabla central de datos y un paginador en la base:
 
@@ -1722,6 +1722,8 @@ Disponible en la ruta `/admin-panel/update-section` (accesible desde el menú la
 
 ##### 3.4.2.8.1. Apartado «Programa + Sobresalientes»
 
+*(Nota: Para consultar las posibles situaciones de validación, errores de estructura en la hoja «Superan el margen», inconsistencias en códigos o tasas y solución de fallas en la carga, remitirse a la [Sección 3.5.1.13: Validaciones y Solución de Problemas en el Apartado «Programa + Sobresalientes»](#35113-validaciones-y-solución-de-problemas-en-el-apartado-programa--sobresalientes)).*
+
 Este módulo gestiona los datos de los programas y egresados destacados del SENA que alimentan el bloque **«Programas Sobresalientes»** en el editor de páginas. Funciona bajo una regla de reemplazo total: cada nueva carga exitosa reemplaza por completo los datos anteriores, actualizando de inmediato la información que muestra este bloque en el portal público.
 
 ###### Descarga y Preparación de la Plantilla Estructurada
@@ -1790,6 +1792,8 @@ Este módulo gestiona los datos de los programas y egresados destacados del SENA
 ---
 
 ##### 3.4.2.8.2. Apartado «Alertas de Inversión»
+
+*(Nota: Para consultar las posibles situaciones de validación en la carga masiva, omisión por URLs duplicadas, resolución de códigos CIIU y validaciones del registro manual, remitirse a la [Sección 3.5.1.14: Validaciones y Solución de Problemas en el Apartado «Alertas de Inversión»](#35114-validaciones-y-solución-de-problemas-en-el-apartado-alertas-de-inversión)).*
 
 Este apartado reúne las herramientas para registrar y administrar los proyectos e iniciativas de inversión empresarial que alimentan el bloque **«Fuentes futuras de empleo»** en el editor de páginas. Funciona de manera acumulativa: las cargas por archivo de Excel y los registros manuales agregan nuevos proyectos o actualizan los existentes sin borrar la información registrada anteriormente.
 
@@ -1893,6 +1897,8 @@ Este apartado reúne las herramientas para registrar y administrar los proyectos
 
 ##### 3.4.2.8.3. Apartado «Criterios de Clasificación de Resultados» (Tendencia Ocupacional)
 
+*(Nota: Para consultar las posibles situaciones de validación, bloqueo de periodos ocupados, fallas bloqueantes V1–V5, advertencias de calidad V6–V9 y contingencias de publicación, remitirse a la [Sección 3.5.1.15: Validaciones y Solución de Problemas en el Apartado «Criterios de Clasificación de Resultados» (Tendencia Ocupacional)](#35115-validaciones-y-solución-de-problemas-en-el-apartado-criterios-de-clasificación-de-resultados-tendencia-ocupacional)).*
+
 Este apartado permite cargar y publicar los datos de demanda laboral (inscritos frente a vacantes) que alimentan el bloque **«Tendencia Ocupacional»** en el editor de páginas. Funciona mediante un control de cortes por año y periodo, donde cada carga exitosa se guarda inicialmente en borrador hasta su publicación definitiva.
 
 ###### Descarga y Estructura de la Plantilla de Percentiles
@@ -1991,7 +1997,7 @@ Este apartado permite cargar y publicar los datos de demanda laboral (inscritos 
 
 Disponible en la ruta `/admin-panel/configuration` (accesible en computadores de escritorio desde el menú de usuario en la base de la barra lateral izquierda seleccionando **«Configuración»**, o en dispositivos móviles pulsando el botón **«Más»** en la barra inferior), este módulo permite personalizar la identidad visual del panel, adaptar los colores institucionales y ajustar las preferencias de sonido de las alertas.
 
-*(Nota: Para consultar las posibles situaciones de validación, restricciones de formato y peso de imagen, alertas de contraste y persistencia local de sonidos, remitirse a la [Sección 3.5.1.14: Validaciones y Solución de Problemas en Configuración](#35114-validaciones-y-solución-de-problemas-en-configuración)).*
+*(Nota: Para consultar las posibles situaciones de validación, restricciones de formato y peso de imagen, alertas de contraste y persistencia local de sonidos, remitirse a la [Sección 3.5.1.16: Validaciones y Solución de Problemas en Configuración](#35116-validaciones-y-solución-de-problemas-en-configuración)).*
 
 ##### 3.4.2.9.1. Identidad Visual del Panel (Logotipo, Ícono de Pestaña y Modo Oscuro)
 
@@ -2103,40 +2109,22 @@ En la plataforma, una pantalla se divide visualmente en dos componentes fundamen
 
 El Editor Visual es un entorno interactivo que permite maquetar en vivo los contenidos mediante bloques modulares prediseñados, combinando sencillez de uso con flexibilidad gráfica.
 
-##### 3.4.3.3.1. Estructura y Paneles del Editor
+##### 3.4.3.3.1. Contexto e Interfaz General del Editor Visual
 
-Al ingresar a la edición de una página o del menú y pie, la pantalla se organiza en cuatro zonas de trabajo principales:
+El Editor Visual es un entorno de maquetación interactiva que permite construir y estructurar páginas web en tiempo real mediante bloques modulares prediseñados, combinando sencillez de uso con alta fidelidad gráfica. Al ingresar a la edición de una página dinámica o de la cabecera y pie de navegación, la interfaz se despliega organizada en cuatro zonas principales de trabajo:
 
 > **[Captura: Interfaz General del Editor Visual]**
-> *Vista panorámica del Editor Visual mostrando el panel izquierdo (bloques y capas), la barra superior de herramientas, el lienzo interactivo central y el inspector de propiedades derecho.*
+> *Vista panorámica del Editor Visual mostrando la barra superior de herramientas, el panel lateral izquierdo, el lienzo interactivo central y el inspector de propiedades derecho.*
 >
 > **[Captura: Interfaz General del Editor Visual (Móvil)]**
 > *Vista general del Editor Visual adaptada a pantallas móviles. (Móvil).*
 
-1. **Panel lateral izquierdo (Selector de modos: Catálogo de Bloques y Explorador de Capas):**
-   Ubicado en el costado izquierdo de la pantalla, dispone de un selector superior con dos pestañas para alternar entre dos vistas de trabajo esenciales:
-   * **Modo «Bloques» (Ícono de cuadrícula):** Despliega el catálogo de componentes prediseñados organizados por categorías temáticas (textos, llamadas a la acción, multimedia, indicadores, etc.), listos para arrastrar y soltar hacia el lienzo de trabajo.
-
-> **[Captura: Panel Izquierdo - Catálogo de Bloques]**
-> *Panel lateral izquierdo desplegando el catálogo de componentes disponibles clasificados por categorías temáticas.*
->
-> **[Captura: Panel Izquierdo - Catálogo de Bloques (Móvil)]**
-> *Catálogo de componentes en el panel lateral adaptado a dispositivo móvil. (Móvil).*
-
-   * **Modo «Capas» (Ícono de lista jerárquica):** Despliega el árbol ordenado de todos los bloques presentes actualmente en la página; al hacer clic sobre una capa, el bloque correspondiente se resalta de inmediato en el lienzo y abre sus propiedades en el inspector derecho, permitiendo seleccionar cualquier elemento sin tener que desplazarse verticalmente por la página.
-
-> **[Captura: Panel Izquierdo - Explorador de Capas]**
-> *Panel lateral izquierdo mostrando el esquema jerárquico de bloques y capas ordenados según su posición en la página.*
->
-> **[Captura: Panel Izquierdo - Explorador de Capas (Móvil)]**
-> *Explorador jerárquico de capas en el panel lateral adaptado a dispositivo móvil. (Móvil).*
-
-2. **Barra de herramientas superior (Cabecera editorial y controles de sesión):**
-   Franja horizontal fija en la parte superior del editor que organiza la información de contexto y los controles operativos:
-   * **Sector izquierdo (Identificación y estado de la página):**
-     * *Plegado del panel lateral:* Botón con ícono para ocultar o desplegar el panel izquierdo de bloques y capas según se requiera mayor espacio de trabajo en el lienzo.
-     * *Bandera de la página (Ruta y estado de versión):* Recuadro informativo que presenta la ruta de la página (por ejemplo: `/inicio`) y la etiqueta con el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
-     * *Aviso de observaciones de rechazo:* Si la versión fue devuelta previamente por el Administrador, se ubica una alerta interactiva junto a la bandera que permite consultar las correcciones solicitadas sin salir del editor.
+1. **Barra de herramientas superior (Cabecera editorial y controles de contexto):**
+   Franja horizontal fija en la parte superior que ofrece orientación editorial e información de estado al funcionario:
+   * **Identificación de la página (Ruta y versión):** Recuadro visible que indica la ruta URL activa (por ejemplo: `/inicio` o `/clasificacion`) y una etiqueta con el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
+   * **Plegado del panel lateral:** Botón interactivo para ocultar o desplegar el panel izquierdo cuando se requiera mayor amplitud visual sobre el lienzo.
+   * **Aviso de observaciones de rechazo:** Si la versión fue devuelta previamente por el Administrador con requerimientos de ajuste, se despliega una alerta contextual junto a la bandera que permite consultar las indicaciones y comentarios sin abandonar el editor.
+   * **Avisos de accesibilidad y concurrencia:** Notificaciones preventivas que advierten en tiempo real si falta algún requisito obligatorio o si otro funcionario se encuentra editando la misma página.
 
 > **[Captura: Barra Superior - Sector Izquierdo (Identificación y Estado)]**
 > *Sector izquierdo de la cabecera mostrando el botón de plegado del panel lateral, la bandera con la ruta de la página y el estado de la versión.*
@@ -2144,30 +2132,25 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
 > **[Captura: Barra Superior - Sector Izquierdo (Móvil)]**
 > *Sector izquierdo de la barra superior adaptado a pantallas móviles con la ruta y estado vigente. (Móvil).*
 
-   * **Sector derecho (Herramientas, historial y autoguardado):**
-     * *Historial de edición:* Botones con íconos de flecha curva para **Deshacer** y **Rehacer** modificaciones efectuadas durante la sesión activa en el navegador.
-     * *Avisos de accesibilidad y concurrencia:* Mensajes de advertencia contextuales si faltan textos alternativos obligatorios en imágenes antes de remitir a revisión, o si otro funcionario tomó el control de la página.
-     * *Indicador de autoguardado:* Notificación en tiempo real que señala el estado del respaldo automático en segundo plano (*«Guardando…»*, *«Sin guardar»* cuando existen cambios recientes o *«Guardado a las [hora]»*).
+2. **Panel lateral izquierdo (Selector de modos: Catálogo de Bloques y Explorador de Capas):**
+   Ubicado en el costado izquierdo de la pantalla, dispone de un selector superior con dos pestañas de trabajo:
+   * **Modo «Bloques» (Ícono de cuadrícula):** Despliega el catálogo de componentes prediseñados organizados por categorías temáticas (textos, llamadas a la acción, multimedia, indicadores, etc.), listos para ser incorporados al lienzo mediante arrastre.
+   * **Modo «Capas» (Ícono de árbol jerárquico):** Presenta la lista secuencial ordenada de todos los bloques que integran la página de arriba hacia abajo; al hacer clic sobre una capa, el editor enfoca y selecciona de inmediato el componente en el lienzo abriendo sus propiedades correspondientes.
 
-> **[Captura: Barra Superior - Historial y Autoguardado]**
-> *Detalle del sector derecho mostrando los controles de Deshacer, Rehacer y el indicador de autoguardado en tiempo real.*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques]**
+> *Panel lateral izquierdo desplegando el catálogo de componentes disponibles clasificados por categorías temáticas.*
 >
-> **[Captura: Barra Superior - Historial y Autoguardado (Móvil)]**
-> *Controles de historial y autoguardado adaptados a pantallas móviles. (Móvil).*
-
-   * **Botonera de acciones editoriales:**
-     * **Botón Salir** (Ícono de detener, con texto de ayuda *«Salir sin publicar»*): Cierra el editor y devuelve al usuario al portal. Si existen cambios pendientes de almacenar, despliega la ventana modal de confirmación (*«¿Salir del editor?»*) para evitar pérdidas involuntarias de trabajo.
-     * **Botón Guardar borrador** (Ícono de disquete, con texto de ayuda *«Guardar borrador»*): Almacena manualmente el estado actual del borrador en el servidor sin publicarlo ni remitirlo a revisión.
-     * **Botón Enviar a revisión** (Ícono de envío, con texto de ayuda *«Enviar a revisión»*): Disponible para los editores tanto en el Sitio Web como en la Intranet. Despliega la ventana modal para ingresar el comentario descriptivo de cambios obligatorio y traslada la versión a la cola de revisión del Administrador. El editor nunca publica directamente; toda versión requiere obligatoriamente la aprobación y publicación por parte del Administrador desde el Panel Administrativo.
-
-> **[Captura: Barra Superior - Botonera de Acciones Editoriales]**
-> *Botonera de acciones editoriales en la cabecera con los botones de Salir, Guardar borrador y Enviar a revisión.*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques (Móvil)]**
+> *Catálogo de componentes en el panel lateral adaptado a dispositivo móvil. (Móvil).*
 >
-> **[Captura: Barra Superior - Botonera de Acciones Editoriales (Móvil)]**
-> *Botonera de acciones editoriales en cabecera adaptada a interfaz móvil. (Móvil).*
+> **[Captura: Panel Izquierdo - Explorador de Capas]**
+> *Panel lateral izquierdo mostrando el esquema jerárquico de bloques y capas ordenados según su posición en la página.*
+>
+> **[Captura: Panel Izquierdo - Explorador de Capas (Móvil)]**
+> *Explorador jerárquico de capas en el panel lateral adaptado a dispositivo móvil. (Móvil).*
 
-3. **Lienzo central de trabajo (Área visual de edición):**
-   Espacio principal donde se construye la página y se visualiza en tiempo real tal como la verá el usuario al publicarse. Cada bloque incorporado exhibe sus colores, tipografías y estructura definitiva de forma inmediata, permitiendo maquetar con total fidelidad visual sin requerir ventanas intermedias ni recargas.
+3. **Lienzo central de trabajo (Área visual interactiva de maquetación):**
+   Es el área principal donde se construye la página. En esta zona ves la página exactamente como la verán los visitantes en el portal, mostrando los mismos colores, tipos de letra e imágenes sin necesidad de abrir una vista previa aparte.
 
 > **[Captura: Lienzo Central de Trabajo]**
 > *Área central del editor donde se visualiza y construye la página en tiempo real.*
@@ -2176,7 +2159,7 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
 > *Lienzo central de trabajo adaptado a pantalla móvil. (Móvil).*
 
 4. **Inspector de propiedades (Panel lateral derecho de configuración):**
-   Formulario dinámico y contextual que se habilita al seleccionar cualquier bloque del lienzo o del árbol de capas. Presenta los campos para personalizar contenidos, títulos, textos, tipografías, alineación, colores de fondo, márgenes, enlaces de destino y selectores de medios (con carga de imágenes o documentos adjuntos). Si no hay ningún bloque seleccionado, muestra las propiedades generales de la página (título, descripción y metadatos).
+   Formulario contextual y dinámico que se activa automáticamente al seleccionar cualquier bloque del lienzo o de la lista de capas. Permite personalizar textos, imágenes, enlaces, márgenes, estilos visuales y colecciones de elementos. Si no hay ningún bloque seleccionado, el panel exhibe los datos generales de la página (título, descripción y metadatos).
 
 > **[Captura: Panel Derecho - Inspector de Propiedades]**
 > *Panel lateral derecho para configurar contenidos, medios, enlaces y estilos del bloque seleccionado.*
@@ -2184,167 +2167,16 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
 > **[Captura: Panel Derecho - Inspector de Propiedades (Móvil)]**
 > *Inspector de propiedades adaptado a pantalla móvil. (Móvil).*
 
-##### 3.4.3.3.2. Barra de Herramientas Contextual del Bloque (Controles de Acción en el Lienzo)
+##### 3.4.3.3.2. Edición, Manipulación y Configuración de Bloques
 
-Al situar el cursor o hacer clic sobre cualquier bloque dentro del lienzo, el componente queda delimitado por un marco perimetral que lo resalta como elemento activo y despliega en su borde superior una barra flotante con herramientas y controles de acción directa:
+La maquetación dentro del Editor Visual se realiza de manera modular e interactiva a través de los siguientes procedimientos y herramientas:
 
-> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado]**
-> *Marco perimetral resaltando el bloque activo en el lienzo junto con su barra flotante superior de herramientas contextuales.*
->
-> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado (Móvil)]**
-> *Visualización del marco de selección y barra flotante adaptada a pantalla táctil móvil. (Móvil).*
+###### 1. Cómo Agregar Nuevos Bloques a la Página (Inserción mediante Arrastre)
 
-1. **Identificador del bloque (Etiqueta de nombre):**
-   Muestra en texto el nombre del componente seleccionado (por ejemplo: *«Carrusel de imágenes»*, *«Servicios»*, *«Video embebido»*, *«Mapa del sitio»*, entre otros). Permite identificar con total certeza el tipo de bloque antes de realizar ajustes sobre sus propiedades o su contenido.
-
-> **[Captura: Etiqueta de Identificación del Bloque]**
-> *Detalle de la etiqueta textual con el nombre del bloque activo en el extremo izquierdo de la barra contextual.*
->
-> **[Captura: Etiqueta de Identificación del Bloque (Móvil)]**
-> *Etiqueta identificadora del bloque adaptada a pantalla móvil. (Móvil).*
-
-2. **Seleccionar contenedor superior (Ícono de flecha hacia arriba):**
-   En aquellos bloques que forman parte de una estructura compuesta o agrupada (como columnas, tarjetas o franjas de contenido anidadas), se habilita este control para seleccionar de forma directa el contenedor principal que los engloba, facilitando editar las propiedades globales del grupo sin perder la selección.
-
-> **[Captura: Botón Seleccionar Contenedor Superior]**
-> *Ícono de flecha hacia arriba en la barra contextual para ascender en la jerarquía y enfocar el contenedor padre.*
->
-> **[Captura: Botón Seleccionar Contenedor Superior (Móvil)]**
-> *Control para seleccionar contenedor padre en interfaz móvil. (Móvil).*
-
-3. **Herramientas de formato de texto en línea:**
-   En los bloques que admiten redacción directa sobre el propio lienzo, al situar el cursor dentro de un campo de texto, la barra contextual integra de inmediato accesos rápidos de estilo tipográfico para aplicar negrita, cursiva, subrayado o vincular enlaces sin necesidad de recurrir al panel lateral.
-
-> **[Captura: Controles de Formato de Texto en Línea]**
-> *Barra de herramientas con opciones rápidas de formato tipográfico (negrita, cursiva, enlaces) sobre el texto en edición.*
->
-> **[Captura: Controles de Formato de Texto en Línea (Móvil)]**
-> *Accesos rápidos de formato de texto en línea en pantalla táctil móvil. (Móvil).*
-
-4. **Botón Duplicar (Ícono de páginas superpuestas):**
-   Genera una copia idéntica del bloque seleccionado con todos sus textos, recursos multimedia, enlaces y opciones de estilo previamente configurados, ubicándola de inmediato justo debajo del bloque original. Esta función agiliza la construcción de secciones repetitivas sin tener que configurar cada bloque desde cero.
-
-> **[Captura: Botón Duplicar Bloque]**
-> *Acción de duplicar para clonar un bloque seleccionado conservando todas sus configuraciones.*
->
-> **[Captura: Botón Duplicar Bloque (Móvil)]**
-> *Botón de duplicación de bloque en vista móvil. (Móvil).*
-
-5. **Botón Eliminar (Ícono de papelera):**
-   Retira de forma instantánea el bloque seleccionado del lienzo. El espacio liberado se reorganiza automáticamente y la acción puede ser revertida en cualquier momento mediante el botón **Deshacer** ubicado en la barra superior de herramientas.
-
-> **[Captura: Botón Eliminar Bloque]**
-> *Ícono de papelera en la barra flotante para retirar el componente del lienzo.*
->
-> **[Captura: Botón Eliminar Bloque (Móvil)]**
-> *Botón de eliminación de bloque en interfaz móvil. (Móvil).*
-
-6. **Reorganización y movimiento mediante arrastre directo sobre el lienzo:**
-   Para cambiar la posición o el orden vertical de cualquier elemento en la página, no se requieren agarraderas externas ni botones de flechas:
-   * **Arrastre directo:** Haz clic sostenido con el ratón sobre cualquier punto del bloque (o mantén pulsado con el dedo en pantallas táctiles) y deslízalo verticalmente hacia arriba o hacia abajo a lo largo del lienzo.
-   * **Apertura de espacio dinámica:** A medida que te desplazas, los bloques circundantes se apartan con fluidez abriendo el espacio exacto donde se insertará el elemento.
-   * **Fijación al soltar:** Al soltar el botón del ratón o levantar el dedo de la pantalla, el bloque se asienta en su nueva ubicación y la página reacomoda todo el contenido de manera automática.
-
-> **[Captura: Reubicación de Bloque por Arrastre Directo]**
-> *Desplazamiento interactivo de un bloque sobre el lienzo con apertura dinámica de espacio entre secciones.*
->
-> **[Captura: Reubicación de Bloque por Arrastre Directo (Móvil)]**
-> *Reorganización de bloques mediante arrastre táctil en dispositivo móvil. (Móvil).*
-
-7. **Navegación e inspección desde el panel de Capas:**
-   En páginas extensas o con múltiples secciones apiladas, la pestaña **Capas** del panel lateral izquierdo ofrece una lista secuencial completa de todos los componentes presentes en la página. Al pulsar sobre cualquier elemento de la lista, el editor se desplaza automáticamente por el lienzo y enfoca el bloque correspondiente para seleccionarlo y configurarlo de inmediato.
-
-> **[Captura: Navegación y Enfoque de Bloque desde Capas]**
-> *Selección de un bloque en la lista de Capas del panel lateral con desplazamiento y enfoque automático en el lienzo.*
->
-> **[Captura: Navegación y Enfoque de Bloque desde Capas (Móvil)]**
-> *Exploración de la jerarquía de capas y selección de bloques en pantalla móvil. (Móvil).*
-
-##### 3.4.3.3.3. Opciones de Edición y Configuración de Bloques (Menú Lateral)
-
-Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la lista de capas, el panel lateral derecho (Inspector de propiedades) despliega de manera automática el formulario de configuración correspondiente al elemento activo. Si no hay ningún bloque seleccionado, el panel muestra los datos generales de la página (título, descripción y metadatos).
-
-Los controles de configuración se organizan en categorías generales según el tipo de información que gestiona cada bloque:
-
-> **[Captura: Menú Lateral - Formulario General de Propiedades]**
-> *Panel lateral derecho desplegando los campos de configuración contextuales del bloque seleccionado.*
->
-> **[Captura: Menú Lateral - Formulario General de Propiedades (Móvil)]**
-> *Formulario de propiedades del bloque adaptado a vista móvil. (Móvil).*
-
-1. **Edición y redacción de textos:**
-   * **Campos de texto directo:** Casillas sencillas para ingresar títulos, subtítulos, nombres de tarjetas y etiquetas breves.
-   * **Editor de texto enriquecido:** En áreas con párrafos o información descriptiva extensa, se dispone de una barra de redacción para aplicar formatos tipográficos (**negrita**, *cursiva*, subrayado), estructurar listas con viñetas o numeradas, insertar citas y enlazar palabras clave hacia otros contenidos.
-
-> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida]**
-> *Campos de redacción en el panel lateral con herramientas de texto enriquecido y opciones de formato.*
->
-> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida (Móvil)]**
-> *Edición de textos y redacción enriquecida en dispositivo móvil. (Móvil).*
-
-2. **Subida de archivos y administración de medios:**
-   * **Carga de imágenes:** Botón selector que permite subir fotografías, gráficos o infografías directamente desde el equipo del usuario.
-   * **Texto alternativo obligatorio:** Campo de descripción textual exigido para cumplir los estándares de accesibilidad, permitiendo que personas con discapacidad visual o tecnologías de asistencia comprendan el contenido de la imagen.
-   * **Documentos adjuntos y medios externos:** Controles para asociar archivos descargables (como documentos PDF o planillas) o vincular recursos multimedia externos mediante enlaces oficiales.
-
-> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos]**
-> *Selector de carga de archivos en el panel lateral con campo de texto alternativo obligatorio para accesibilidad.*
->
-> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos (Móvil)]**
-> *Controles de carga de archivos multimedia en pantalla móvil. (Móvil).*
-
-3. **Ajustes de espaciado, alineación y presentación visual:**
-   * **Control de espaciados:** Selectores numéricos para regular la separación superior e inferior de la sección directamente en píxeles (`px`), facilitando una distribución proporcionada y ordenada a lo largo de la página.
-   * **Alineación de contenidos:** Opciones para orientar los textos y elementos del bloque (a la izquierda, centrados o a la derecha).
-   * **Esquemas y tonalidades de fondo:** Menús desplegables para seleccionar estilos de contraste visual (fondos claros, neutros o destacados), generando una separación estética clara entre las distintas franjas de la página.
-
-> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos]**
-> *Controles para ajustar márgenes en píxeles, alineación de contenido y esquemas de color de fondo.*
->
-> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos (Móvil)]**
-> *Ajustes de espaciado, alineación y tonalidades de fondo en vista móvil. (Móvil).*
-
-4. **Visibilidad de elementos y secciones:**
-   * **Conmutadores de visualización:** Botones de alternancia (*«Sí»* / *«No»*) para activar u ocultar elementos complementarios del bloque, tales como títulos principales, subtítulos, fechas o franjas informativas de apoyo.
-   * **Adaptabilidad de diseño:** Permite simplificar la estructura del componente cuando se requiere presentar únicamente el dato esencial, o expandirla para guiar al lector en secciones más amplias.
-
-> **[Captura: Menú Lateral - Conmutadores de Visibilidad]**
-> *Casillas y controles de alternancia para mostrar u ocultar títulos, subtítulos y secciones de apoyo.*
->
-> **[Captura: Menú Lateral - Conmutadores de Visibilidad (Móvil)]**
-> *Controles de visibilidad de secciones adaptados a pantalla táctil móvil. (Móvil).*
-
-5. **Configuración de enlaces y botones de destino:**
-   * **Texto de acción:** Campo para redactar la frase visible que invita a la interacción (por ejemplo: *«Consultar información»*, *«Descargar documento»*).
-   * **Ruta o dirección de destino:** Casilla para especificar la ubicación de destino, ya sea una ruta interna del portal (como `/clasificacion` o `/contacto`) o una dirección web externa protegida.
-   * **Estilo y presentación visual:** Selección del formato gráfico del botón (acción principal destacada, botón secundario delineado o botón acompañado de un ícono ilustrativo).
-
-> **[Captura: Menú Lateral - Configuración de Botones y Enlaces]**
-> *Campos para definir el texto de llamada a la acción, la dirección de destino y el estilo del botón.*
->
-> **[Captura: Menú Lateral - Configuración de Botones y Enlaces (Móvil)]**
-> *Configuración de enlaces y botones de acción en interfaz móvil. (Móvil).*
-
-6. **Administración de colecciones y listas de elementos:**
-   * En bloques que agrupan secuencias repetitivas de información (como tarjetas informativas, filas de datos, carruseles o enlaces múltiples), los ítems se organizan dentro de secciones plegables tipo acordeón:
-     * **Añadir nuevos elementos:** Botón con ícono de suma (*«Añadir elemento»*) para insertar una nueva tarjeta o fila a la colección.
-     * **Reordenar la secuencia:** Controles para desplazar los elementos hacia arriba o hacia abajo y modificar su orden de presentación en pantalla.
-     * **Eliminar elementos individuales:** Botón con ícono de papelera para retirar un ítem particular sin afectar los demás elementos de la colección.
-
-> **[Captura: Menú Lateral - Gestión de Colecciones y Listas]**
-> *Organización de elementos repetitivos en acordeones con opciones para añadir, reordenar y eliminar ítems individuales.*
->
-> **[Captura: Menú Lateral - Gestión de Colecciones y Listas (Móvil)]**
-> *Administración de colecciones de elementos y listas en pantalla móvil. (Móvil).*
-
-##### 3.4.3.3.4. Funcionalidades y Operación en el Editor
-
-El editor proporciona un conjunto de herramientas y flujos automáticos diseñados para una maquetación fluida y segura:
-
-1. **Inserción y fijación de bloques en el lienzo:**
-   * En el panel lateral izquierdo, seleccionar la categoría deseada en el catálogo de bloques.
-   * Mantener presionado el botón del ratón sobre el bloque elegido, arrastrarlo hacia el lienzo central y soltarlo en la posición vertical requerida.
-   * Al soltar el clic, el componente queda fijado en el lienzo de trabajo y reorganiza automáticamente los bloques adyacentes.
+1. En el panel lateral izquierdo, asegurar que se encuentre activa la pestaña **«Bloques»** y explorar las categorías temáticas disponibles.
+2. Hacer clic sostenido sobre el componente elegido (o mantener pulsado en pantallas táctiles) y arrastrarlo hacia el lienzo central.
+3. A medida que el cursor se desplaza sobre la página, los bloques existentes se separan suavemente abriendo una franja indicadora que señala la posición exacta donde quedará insertado el nuevo componente.
+4. Soltar el botón del ratón o levantar el dedo de la pantalla: el bloque se fijará de inmediato en el lienzo, reacomodará automáticamente las secciones circundantes y abrirá su formulario de propiedades en el inspector lateral derecho.
 
 > **[Captura: Inserción de Bloques al Lienzo]**
 > *Acción de arrastrar un bloque desde el catálogo izquierdo y soltarlo en la posición deseada del lienzo interactivo.*
@@ -2352,49 +2184,195 @@ El editor proporciona un conjunto de herramientas y flujos automáticos diseñad
 > **[Captura: Inserción de Bloques al Lienzo (Móvil)]**
 > *Inserción de bloque en el lienzo interactivo en dispositivo móvil. (Móvil).*
 
-2. **Configuración de propiedades y edición en vivo:**
-   * Hacer clic sobre cualquier bloque en el lienzo o en el árbol de capas para seleccionarlo.
-   * En el panel derecho (Inspector de propiedades), ingresar los textos requeridos o seleccionar archivos multimedia mediante el botón de carga.
-   * Cada modificación digitada o seleccionada se actualiza en tiempo real en la vista previa del lienzo central sin demoras ni recargas.
+###### 2. Manipulación Directa y Barra Contextual del Bloque en el Lienzo
 
+Al hacer clic sobre cualquier bloque dentro del lienzo, el componente queda delimitado por un marco perimetral de selección activa y despliega en su borde superior una barra flotante de herramientas contextuales:
+
+> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado]**
+> *Marco perimetral resaltando el bloque activo en el lienzo junto con su barra flotante superior de herramientas contextuales.*
+>
+> **[Captura: Marco Perimetral y Barra Flotante de Bloque Seleccionado (Móvil)]**
+> *Visualización del marco de selección y barra flotante adaptada a pantalla táctil móvil. (Móvil).*
+
+* **Identificador del bloque (Etiqueta de nombre):** Muestra en texto claro el nombre oficial del componente (por ejemplo: *«Carrusel de imágenes»*, *«Llamada a la acción»*, *«Servicios»*, *«Video embebido»*), permitiendo identificar con total certeza el tipo de bloque antes de modificarlo.
+
+> **[Captura: Etiqueta de Identificación del Bloque]**
+> *Detalle de la etiqueta textual con el nombre del bloque activo en el extremo izquierdo de la barra contextual.*
+>
+> **[Captura: Etiqueta de Identificación del Bloque (Móvil)]**
+> *Etiqueta identificadora del bloque adaptada a pantalla móvil. (Móvil).*
+
+* **Seleccionar contenedor superior (Ícono de flecha hacia arriba):** En bloques agrupados o estructuras anidadas (como columnas múltiples o tarjetas interiores), este botón permite ascender en la jerarquía y seleccionar directamente la sección contenedora padre sin perder el foco.
+
+> **[Captura: Botón Seleccionar Contenedor Superior]**
+> *Ícono de flecha hacia arriba en la barra contextual para ascender en la jerarquía y enfocar el contenedor padre.*
+>
+> **[Captura: Botón Seleccionar Contenedor Superior (Móvil)]**
+> *Control para seleccionar contenedor padre en interfaz móvil. (Móvil).*
+
+* **Herramientas de formato de texto en línea:** Al hacer clic sobre textos editables directamente en el lienzo, la barra contextual ofrece accesos directos para aplicar **negrita**, *cursiva*, subrayado o hipervínculos sin necesidad de acudir al panel lateral.
+
+> **[Captura: Controles de Formato de Texto en Línea]**
+> *Barra de herramientas con opciones rápidas de formato tipográfico (negrita, cursiva, enlaces) sobre el texto en edición.*
+>
+> **[Captura: Controles de Formato de Texto en Línea (Móvil)]**
+> *Accesos rápidos de formato de texto en línea en pantalla táctil móvil. (Móvil).*
+
+* **Botón Duplicar (Ícono de páginas superpuestas):** Genera una copia exacta del bloque seleccionado (incluyendo textos, imágenes cargadas, estilos y enlaces), situándola justo debajo del original para agilizar la maquetación de secciones homogéneas.
+
+> **[Captura: Botón Duplicar Bloque]**
+> *Acción de duplicar para clonar un bloque seleccionado conservando todas sus configuraciones.*
+>
+> **[Captura: Botón Duplicar Bloque (Móvil)]**
+> *Botón de duplicación de bloque en vista móvil. (Móvil).*
+
+* **Botón Eliminar (Ícono de papelera):** Suprime el bloque del lienzo de forma instantánea. El espacio se reajusta automáticamente y la eliminación puede revertirse en cualquier momento mediante el botón **Deshacer**.
+
+> **[Captura: Botón Eliminar Bloque]**
+> *Ícono de papelera en la barra flotante para retirar el componente del lienzo.*
+>
+> **[Captura: Botón Eliminar Bloque (Móvil)]**
+> *Botón de eliminación de bloque en interfaz móvil. (Móvil).*
+
+* **Reorganización y movimiento mediante arrastre directo:** Para cambiar la posición vertical de cualquier elemento en la página, basta con hacer clic sostenido sobre cualquier punto del bloque y deslizarlo hacia arriba o hacia abajo. Los bloques circundantes se apartan dinámicamente y el elemento se asienta de manera definitiva al soltar el ratón o el dedo.
+
+> **[Captura: Reubicación de Bloque por Arrastre Directo]**
+> *Desplazamiento interactivo de un bloque sobre el lienzo con apertura dinámica de espacio entre secciones.*
+>
+> **[Captura: Reubicación de Bloque por Arrastre Directo (Móvil)]**
+> *Reorganización de bloques mediante arrastre táctil en dispositivo móvil. (Móvil).*
+
+* **Navegación e inspección desde el panel de Capas:** En páginas con múltiples secciones, la pestaña **Capas** permite hacer clic sobre cualquier ítem de la lista para que el editor se desplace de forma automática por el lienzo y enfoque el bloque seleccionado.
+
+> **[Captura: Navegación y Enfoque de Bloque desde Capas]**
+> *Selección de un bloque en la lista de Capas del panel lateral con desplazamiento y enfoque automático en el lienzo.*
+>
+> **[Captura: Navegación y Enfoque de Bloque desde Capas (Móvil)]**
+> *Exploración de la jerarquía de capas y selección de bloques en pantalla móvil. (Móvil).*
+
+###### 3. Configuración en el Inspector de Propiedades (Panel Lateral Derecho)
+
+Al seleccionar cualquier bloque, el panel lateral derecho despliega los controles específicos organizados en grupos funcionales:
+
+> **[Captura: Menú Lateral - Formulario General de Propiedades]**
+> *Panel lateral derecho desplegando los campos de configuración contextuales del bloque seleccionado.*
+>
+> **[Captura: Menú Lateral - Formulario General de Propiedades (Móvil)]**
+> *Formulario de propiedades del bloque adaptado a vista móvil. (Móvil).*
+
+* **Edición y redacción de textos:** Casillas para títulos y subtítulos directos, acompañadas de editores enriquecidos para párrafos largos con soporte de listas con viñetas o numeradas, citas y enlaces.
+* **Subida de archivos y administración de medios:** Botón para cargar imágenes desde el equipo, campo de **texto alternativo obligatorio** para garantizar la accesibilidad a personas con discapacidad visual, y selectores para vincular documentos PDF o videos externos.
+* **Ajustes de espaciado, alineación y fondos:** Selectores numéricos de márgenes superior e inferior en píxeles (`px`), botones para alinear contenido (izquierda, centrado, derecha) y menús para escoger estilos o tonalidades de fondo (claros, neutros o destacados).
+* **Conmutadores de visibilidad:** Interruptores (*«Sí»* / *«No»*) para activar u ocultar elementos opcionales como subtítulos, fechas o franjas informativas de apoyo.
+* **Configuración de enlaces y botones de destino:** Campos para definir el texto de la llamada a la acción, la dirección URL de destino (ruta interna del portal o enlace externo protegido) y el estilo gráfico del botón.
+* **Administración de colecciones y listas de elementos:** En bloques que agrupan conjuntos repetitivos (como tarjetas o filas de acordeón), se habilitan herramientas para **añadir nuevos elementos**, **reordenar la secuencia** mediante flechas y **eliminar elementos individuales** mediante el ícono de papelera.
+
+> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida]**
+> *Campos de redacción en el panel lateral con herramientas de texto enriquecido y opciones de formato.*
+>
+> **[Captura: Menú Lateral - Edición de Textos y Redacción Enriquecida (Móvil)]**
+> *Edición de textos y redacción enriquecida en dispositivo móvil. (Móvil).*
+>
+> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos]**
+> *Selector de carga de archivos en el panel lateral con campo de texto alternativo obligatorio para accesibilidad.*
+>
+> **[Captura: Menú Lateral - Carga de Imágenes y Documentos Adjuntos (Móvil)]**
+> *Controles de carga de archivos multimedia en pantalla móvil. (Móvil).*
+>
+> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos]**
+> *Controles para ajustar márgenes en píxeles, alineación de contenido y esquemas de color de fondo.*
+>
+> **[Captura: Menú Lateral - Espaciados, Alineación y Fondos (Móvil)]**
+> *Ajustes de espaciado, alineación y tonalidades de fondo en vista móvil. (Móvil).*
+>
+> **[Captura: Menú Lateral - Conmutadores de Visibilidad]**
+> *Casillas y controles de alternancia para mostrar u ocultar títulos, subtítulos y secciones de apoyo.*
+>
+> **[Captura: Menú Lateral - Conmutadores de Visibilidad (Móvil)]**
+> *Controles de visibilidad de secciones adaptados a pantalla táctil móvil. (Móvil).*
+>
+> **[Captura: Menú Lateral - Configuración de Botones y Enlaces]**
+> *Campos para definir el texto de llamada a la acción, la dirección de destino y el estilo del botón.*
+>
+> **[Captura: Menú Lateral - Configuración de Botones y Enlaces (Móvil)]**
+> *Configuración de enlaces y botones de acción en interfaz móvil. (Móvil).*
+>
+> **[Captura: Menú Lateral - Gestión de Colecciones y Listas]**
+> *Organización de elementos repetitivos en acordeones con opciones para añadir, reordenar y eliminar ítems individuales.*
+>
+> **[Captura: Menú Lateral - Gestión de Colecciones y Listas (Móvil)]**
+> *Administración de colecciones de elementos y listas en pantalla móvil. (Móvil).*
+>
 > **[Captura: Edición de Propiedades en Vivo]**
 > *Modificación de textos y enlaces en el inspector derecho con previsualización en vivo en el lienzo.*
 >
 > **[Captura: Edición de Propiedades en Vivo (Móvil)]**
 > *Edición de propiedades del bloque en pantalla móvil. (Móvil).*
 
-3. **Historial de cambios (Deshacer y Rehacer):**
-   * **Botón Deshacer:** Revierte la última acción efectuada en el lienzo (inserción, desplazamiento, cambio de texto o borrado de un bloque).
-   * **Botón Rehacer:** Vuelve a aplicar la acción que había sido deshecha previamente.
-   *(Nota: El historial opera de manera local durante la sesión activa en el navegador. Al salir del editor o refrescar la página, el historial local se reinicia).*
+###### 4. Historial de Cambios y Autoguardado
 
+* **Controles Deshacer y Rehacer:** Ubicados en la barra superior, permiten revertir (**Deshacer**) o volver a aplicar (**Rehacer**) cualquier cambio realizado mientras estás en el editor. *(Nota: Si recargas la página o sales del editor, el historial de deshacer vuelve a comenzar).*
+* **Autoguardado automático:** Cada vez que haces un cambio, el aviso en la barra superior te indica el estado en tiempo real: *«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*.
+
+> **[Captura: Barra Superior - Historial y Autoguardado]**
+> *Detalle del sector derecho mostrando los controles de Deshacer, Rehacer y el indicador de autoguardado en tiempo real.*
+>
+> **[Captura: Barra Superior - Historial y Autoguardado (Móvil)]**
+> *Controles de historial y autoguardado adaptados a pantallas móviles. (Móvil).*
+>
 > **[Captura: Controles de Historial Deshacer Rehacer]**
 > *Botones de deshacer y rehacer ubicados en la barra superior de herramientas del editor.*
 >
 > **[Captura: Controles de Historial Deshacer Rehacer (Móvil)]**
 > *Botones de deshacer y rehacer en barra superior móvil. (Móvil).*
 
-4. **Autoguardado inteligente y guardado manual de borradores:**
-   * **Autoguardado en segundo plano:** El editor detecta las modificaciones y efectúa guardados automáticos de borrador periódicamente, mostrando avisos dinámicos en la barra superior (*«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*).
-   * **Guardar borrador:** Botón con ícono de disquete que permite almacenar manualmente el estado vigente del borrador en el servidor en cualquier instante sin alterar la versión pública en producción.
+##### 3.4.3.3.3. Botones de Acción (Guardar Borrador, Salir y Enviar a Revisión)
+
+En la esquina superior derecha de la barra de herramientas se encuentran los tres botones principales para gestionar el trabajo en la página:
+
+> **[Captura: Barra Superior - Botonera de Acciones Editoriales]**
+> *Botonera en la esquina superior derecha con los botones de Guardar borrador, Salir y Enviar a revisión.*
+>
+> **[Captura: Barra Superior - Botonera de Acciones Editoriales (Móvil)]**
+> *Botones de acción en la barra superior adaptados a pantalla móvil. (Móvil).*
+
+###### 1. Botón «Guardar borrador»
+* **Para qué sirve:** Guarda los cambios realizados en la página para no perder tu trabajo.
+* **Cómo funciona:** Permite guardar el avance sin publicar la página en el portal y sin enviarla a revisión. Puedes pausar tu trabajo, cerrar la ventana y retomarlo cuando quieras.
+* **Qué ves en pantalla:** Al hacer clic en el botón **«Guardar borrador»** (ícono de disquete), el aviso de estado en la barra superior muestra brevemente el texto *«Guardando…»* y luego cambia a *«Guardado a las [hora]»*, confirmando la hora exacta en la que se guardó.
 
 > **[Captura: Guardado Manual de Borrador]**
-> *Acción de clic sobre el botón «Guardar borrador» y confirmación de almacenamiento exitoso.*
+> *Clic en el botón «Guardar borrador» y aviso en pantalla confirmando el guardado con la hora.*
 >
 > **[Captura: Guardado Manual de Borrador (Móvil)]**
-> *Guardado de borrador en interfaz móvil. (Móvil).*
+> *Aviso de guardado de borrador en pantalla móvil. (Móvil).*
 
-5. **Envío a revisión del contenido:**
-   * **Validación automática de accesibilidad:** Al pulsar el botón **«Enviar a revisión»** (disponible tanto en el Sitio Web como en la Intranet), el sistema ejecuta una comprobación preventiva asegurando la presencia de textos alternativos obligatorios en imágenes y títulos en recursos incrustados.
-   * **Comentario obligatorio de versión:** Si supera las comprobaciones, el sistema despliega una ventana modal donde es obligatorio redactar un **comentario de cambios** descriptivo (entre 10 y 100 caracteres) que resuma los ajustes efectuados para la bitácora de versiones.
-   * **Transferencia de versión a la cola administrativa:** Al confirmar el envío, la versión adquiere el estado *En revisión* y se traslada a la bandeja de **«Páginas en revisión»** del Administrador, quien es la única persona que puede evaluarla, aprobarla y publicarla definitivamente en producción (ver procedimiento de aprobación en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).
-   * **Aviso de observaciones de rechazo:** Si una versión anterior fue devuelta por el Administrador, el editor exhibe un panel superior de alerta detallando los motivos del rechazo para guiar las correcciones requeridas.
+###### 2. Botón «Salir»
+* **Para qué sirve:** Cierra el editor y te regresa a la vista de la página en el portal (Sitio Web o Intranet).
+* **Aviso en pantalla si hay cambios sin guardar:** Si tienes cambios recientes y no has presionado «Guardar borrador», el editor muestra la siguiente ventana de confirmación:
+  *«¿Salir del editor? Hay cambios sin guardar que se perderán si sales ahora.»*.
+  En esta ventana puedes elegir entre dos opciones:
+  * **«Salir sin guardar»:** Cierra el editor y descarta los cambios no guardados.
+  * **«Continuar editando»:** Cierra el aviso y te mantiene en el editor para que puedas presionar **«Guardar borrador»**.
+* **Qué sucede con la página:** Al salir del editor, la página queda libre para que otros compañeros puedan ingresar a editarla sin advertencias de bloqueo.
+
+> **[Captura: Modal de Confirmación al Salir del Editor]**
+> *Ventana de advertencia en pantalla preguntando si deseas salir sin guardar los cambios recientes.*
+>
+> **[Captura: Modal de Confirmación al Salir del Editor (Móvil)]**
+> *Ventana de confirmación de salida en pantalla móvil. (Móvil).*
+
+###### 3. Botón «Enviar a revisión»
+* **Para qué sirve:** Envía la página terminada al Administrador para que la revise y la publique en el portal.
+* **Aviso de imágenes sin descripción:** Si alguna imagen no tiene escrita su descripción (texto alternativo), aparece un aviso en pantalla indicando qué imagen debes completar antes de enviar.
+* **Ventana para escribir el comentario de cambios:** Una vez verificadas las imágenes, se abre en pantalla la ventana **«Enviar a revisión»** con una casilla donde debes escribir un comentario breve (entre 10 y 100 caracteres) explicando qué cambiaste o agregaste en la página.
+* **Confirmación del envío:** Al pulsar el botón **«Enviar a revisión»** dentro de esa ventana, la etiqueta de estado en la barra superior cambia a **«En revisión»**, indicando que la página está a la espera de que el Administrador revise los cambios y los publique.
 
 > **[Captura: Envío a Revisión y Comentario de Versión]**
-> *Ventana modal para el ingreso obligatorio del comentario de cambios antes de remitir la página a revisión.*
+> *Ventana en pantalla con la casilla para ingresar el comentario de cambios antes de enviar a revisión.*
 >
 > **[Captura: Envío a Revisión y Comentario de Versión (Móvil)]**
-> *Ventana modal de envío a revisión adaptada a dispositivo móvil. (Móvil).*
+> *Ventana de envío a revisión con casilla de comentario en pantalla móvil. (Móvil).*
 
 #### 3.4.3.4. Creación de Nuevas Páginas (Paso a Paso)
 
@@ -3440,7 +3418,7 @@ El Tablero Principal (Dashboard) recopila métricas y registros consolidados del
 
 #### 3.5.1.8. Validaciones y Solución de Problemas en la Gestión de Usuarios
 
-La administración de cuentas en el sistema (detallada operativamente en la [Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)) está protegida por múltiples reglas lógicas para garantizar la seguridad e integridad de la plataforma. Al gestionar funcionarios pueden surgir las siguientes situaciones:
+La administración de cuentas en el sistema (detallada operativamente en la [Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)) está protegida por múltiples reglas lógicas para garantizar la seguridad e integridad de la plataforma. Al gestionar funcionarios y actualizar credenciales o datos de cuenta pueden surgir las siguientes situaciones:
 
 ##### 1. Error de Dominio al Crear Usuario
 * **Situación:** Al dar clic en "Guardar" en el formulario de Nuevo Usuario, el sistema arroja una alerta de error y rechaza la creación.
@@ -3485,24 +3463,58 @@ La administración de cuentas en el sistema (detallada operativamente en la [Sec
 > **[Captura: Aviso de Configuración Pendiente en el Panel (Móvil)]**
 > *Tarjeta de advertencia con el mensaje 'Tu cuenta tiene la configuración pendiente' y el botón interactivo 'Terminar configuración' en el Panel Administrativo. (Móvil).*
 
-##### 7. Incidencias durante el cambio voluntario de la propia contraseña en la ventana «Editar usuario»
-* **Situación:** El Administrador abre la ventana «Editar usuario» pulsando el ícono de lápiz en su **propia fila** en `/admin-panel/users`, despliega la sección **«Cambiar contraseña»** e intenta actualizar su clave, pero el sistema no efectúa el cambio o resalta un mensaje de error.
-* **Causas y validaciones:**
-  1. **Contraseña ya utilizada:** Se ingresó una contraseña idéntica a la actual o recientemente utilizada en la cuenta.
-  2. **Discrepancia entre casillas:** El texto ingresado en «Contraseña nueva» no coincide exactamente con el escrito en «Repetir contraseña nueva».
-  3. **Requisitos de seguridad pendientes:** La clave no cumple con las condiciones exigidas (mínimo 12 caracteres, mayúsculas, minúsculas, números o símbolos, sin espacios al inicio o final ni emojis).
-  4. **Protección de guardado:** Si la contraseña no es válida, el sistema mantiene la ventana abierta señalando el error y no guarda cambios en los datos de la cuenta hasta corregir la clave.
-  5. **Disponibilidad de la opción:** La sección «Cambiar contraseña» solo aparece al editar la propia cuenta del usuario en sesión. En las cuentas de los demás funcionarios se muestra la opción «Restablecer la contraseña» (generación de credencial provisional de 72 horas).
+##### 7. Actualización de Datos Personales de Identidad (Nombre, Apellidos, Correo y Teléfono)
+* **Situación:** Un funcionario desea actualizar su nombre, apellidos, cargo institucional o número de teléfono, pero no encuentra una sección de perfil personal editable independiente.
+* **Causa y diferenciación de roles:** Por política de integridad de datos maestros, la administración de identidades institucionales y cuentas `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para asegurar la trazabilidad y evitar modificaciones no supervisadas en las cuentas del Estado:
+  1. **Para usuarios con rol de Administrador:** Gestionan sus propios datos directamente en la tabla de `/admin-panel/users` ([Sección 3.4.2.4.1](#34241-submenú-usuarios)), abriendo el modal **«Editar usuario»** sobre la fila de su propia cuenta.
+  2. **Para funcionarios con otros roles operativos (Editores, Revisores, Directores):** Dado que no disponen de acceso al Panel Administrativo ni cuentan con una pantalla de configuración de perfil editable aislada, no pueden modificar directamente estos campos. Asimismo, su gestión y recuperación de credenciales opera exclusivamente a través del mecanismo de auto-recuperación con preguntas de seguridad en `/login/recovery` ([Sección 3.4.1.3](#3413-procedimiento-de-recuperación-de-contraseña)).
 * **Acción correctiva:**
-  1. Si aparece el aviso de clave repetida o no válida, ingresar una contraseña diferente que no haya sido utilizada antes.
-  2. Descubrir los caracteres mediante el ícono de ojo en ambos campos y verificar que todas las condiciones de la lista de requisitos aparezcan aprobadas.
-  3. Si solo se desea actualizar el nombre o teléfono sin modificar la clave, dejar **ambos campos de contraseña vacíos**; el sistema guardará los datos personales sin alterar la clave actual.
+  * Si el usuario es Administrador: acceder a `/admin-panel/users`, hacer clic en el ícono de lápiz de su propio registro y modificar sus datos en el modal «Editar usuario».
+  * Si el funcionario desempeña un rol operativo (Editor, Revisor o Directivo): debe elevar la solicitud formal de actualización de datos a un Administrador para que aplique el ajuste desde dicho módulo centralizado.
+
+> **[Captura: Datos de Identidad en Modal Editar Usuario]**
+> *Campos de Nombre, Apellidos, Correo institucional y Teléfono editables centralizadamente en el modal de usuario.*
+>
+> **[Captura: Datos de Identidad en Modal Editar Usuario (Móvil)]**
+> *Formulario de edición de datos de usuario adaptado a dispositivos móviles. (Móvil).*
+
+##### 8. Cambio Voluntario de Contraseña Propia sin Requisito de Contraseña Actual
+* **Situación:** Un Administrador abre la ventana **«Editar usuario»** pulsando el ícono de lápiz en su **propia fila** en `/admin-panel/users`, despliega la sección **«Cambiar contraseña»** y observa que el sistema únicamente solicita los campos «Contraseña nueva» y «Repetir contraseña nueva», sin solicitar la contraseña actual en uso.
+* **Causa operativa:** Al encontrarse dentro de una sesión ya autenticada en el panel, el aplicativo solicita únicamente la nueva clave y su confirmación (la contraseña anterior solo es obligatoria durante el primer ingreso con clave provisional). La sección «Cambiar contraseña» se muestra de forma exclusiva al editar la propia cuenta del usuario en sesión; en las filas de los demás funcionarios se presenta el botón **«Restablecer la contraseña»** (generación de credencial temporal de 72 horas). Por auditoría, todo cambio queda asentado en la bitácora de eventos.
+* **Advertencia de seguridad y acción operativa:**
+  1. Dado que no se exige la contraseña actual para el cambio voluntario, es imperativo que los funcionarios nunca dejen estaciones de trabajo desatendidas con la sesión del Panel Administrativo abierta. Se recomienda aplicar bloqueo de pantalla en el sistema operativo (`Win + L` o equivalente) al apartarse del computador.
+  2. Si el Administrador únicamente desea actualizar sus datos personales (nombre, apellidos o teléfono) sin alterar su clave, debe dejar **ambos campos de contraseña vacíos**; el sistema guardará las modificaciones de perfil manteniendo intacta la contraseña actual.
+
+##### 9. Validaciones, Discrepancia y Rechazo en el Cambio Voluntario de Contraseña
+* **Situación:** Al hacer clic en «Guardar» dentro del modal «Editar usuario» con el acordeón «Cambiar contraseña» desplegado, el sistema no efectúa el cambio, mantiene el acordeón abierto y resalta una advertencia o error.
+* **Causas y reglas de validación:**
+  1. **Discrepancia entre casillas (*«Las contraseñas no coinciden»*):** El texto ingresado en «Contraseña nueva» difiere en uno o varios caracteres del ingresado en «Repetir contraseña nueva».
+  2. **Incumplimiento de requisitos de complejidad:** La contraseña ingresada no satisface los estándares institucionales (mínimo 12 caracteres, mayúsculas, minúsculas, números o caracteres especiales, sin espacios al inicio ni al final y sin emojis). La lista dinámica de requisitos mantiene marcas pendientes de aprobación.
+  3. **Rechazo por contraseña repetida (*«Esta contraseña ya ha sido utilizada recientemente. Elige una diferente.»*):** Política estricta de no reutilización de credenciales actuales o anteriores de la cuenta.
+  4. **Prioridad de seguridad en el guardado:** Por diseño de seguridad, al presionar «Guardar», el aplicativo procesa en primer lugar la validación de la contraseña. Si el sistema detecta alguna falla en la credencial, el proceso se interrumpe de inmediato y no se aplican modificaciones parciales a los datos del funcionario, garantizando una operación atómica y consistente.
+* **Acción correctiva:**
+  1. Presionar el ícono de ojo ubicado a la derecha de ambos campos para descubrir los caracteres y verificar que coincidan de manera exacta.
+  2. Guiarse en tiempo real por el listado dinámico de requisitos interactivo hasta que cada una de las condiciones exhiba la marca de verificación aprobada antes de guardar.
+  3. Ingresar una contraseña enteramente diferente que no haya sido utilizada con anterioridad en la cuenta.
+  4. Pulsar el botón **«Guardar»**; una vez validada y admitida la contraseña, el sistema guardará simultáneamente la clave y los datos del usuario.
 
 > **[Captura: Modal Editar Usuario - Acordeón Cambiar Contraseña]**
 > *Acordeón desplegable 'Cambiar contraseña' con los campos 'Contraseña nueva' y 'Repetir contraseña nueva' con etiquetas finas y lista de validación de requisitos.*
 >
 > **[Captura: Modal Editar Usuario - Acordeón Cambiar Contraseña (Móvil)]**
 > *Visualización del acordeón de cambio de contraseña propia en el modal de edición adaptado a dispositivos móviles. (Móvil).*
+>
+> **[Captura: Error Contraseñas No Coinciden en Modal]**
+> *Alerta de discrepancia entre la contraseña nueva y su confirmación dentro del acordeón en el modal Editar usuario.*
+>
+> **[Captura: Error Contraseñas No Coinciden en Modal (Móvil)]**
+> *Validación de coincidencia de contraseñas adaptada a dispositivos móviles. (Móvil).*
+>
+> **[Captura: Lista Interactiva de Requisitos de Contraseña]**
+> *Panel dinámico de requisitos con etiquetas finas mostrando la validación en tiempo real de longitud y composición.*
+>
+> **[Captura: Lista Interactiva de Requisitos de Contraseña (Móvil)]**
+> *Lista de requisitos de contraseña adaptada a pantallas táctiles móviles. (Móvil).*
 
 
 #### 3.5.1.9. Validaciones y Solución de Problemas en la Gestión de Roles y Permisos
@@ -3738,65 +3750,230 @@ El módulo de Respaldos ([Sección 3.4.2.7](#3427-respaldos-y-restauración-de-p
 
 ---
 
-#### 3.5.1.13. Validaciones y Solución de Problemas en el Cambio de Contraseña y Datos de Cuenta
+#### 3.5.1.13. Validaciones y Solución de Problemas en el Apartado «Programa + Sobresalientes»
 
-La gestión de credenciales y la actualización de datos de la propia cuenta operan bajo dos mecanismos claramente diferenciados:
+El módulo de Programas Sobresalientes ([Sección 3.4.2.8.1](#34281-apartado-programa--sobresalientes)) procesa la matriz de egresados destacados y su vinculación laboral en los centros de formación para alimentar el bloque «Programas Sobresalientes». Opera bajo una regla técnica de **reemplazo completo atómico**: cada importación exitosa reemplaza en su totalidad los registros anteriores dentro de una única transacción en base de datos. A continuación se presentan las principales contingencias técnicas, validaciones y acciones correctivas aplicables:
 
-1. **Para usuarios con permisos de administración (Administradores):** Se gestiona directamente desde la tabla de usuarios en `/admin-panel/users` ([Sección 3.4.2.4.1](#34241-submenú-usuarios)), abriendo el modal **«Editar usuario»** sobre la fila de su propia cuenta, donde se despliega la sección **«Cambiar contraseña»**.
-2. **Para funcionarios con otros roles operativos (Editores, Revisores, Directores):** Dado que no tienen acceso al módulo de administración de usuarios, la actualización y recuperación de contraseña se efectúa a través del mecanismo de auto-recuperación con preguntas de seguridad en `/login/recovery` ([Sección 3.4.1.3](#3413-procedimiento-de-recuperación-de-contraseña)).
-
-A continuación se detallan las principales situaciones de soporte, reglas de validación y acciones correctivas aplicables:
-
-##### 1. Actualización de Datos Personales de Identidad (Nombre, Apellidos y Correo)
-* **Situación:** Un funcionario desea actualizar su nombre, apellidos, cargo institucional o número de teléfono, pero no encuentra una sección de perfil personal editable.
-* **Causa:** Política de integridad de datos maestros. La administración de identidades institucionales y cuentas `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para asegurar la debida trazabilidad y evitar cambios no supervisados en las cuentas del Estado.
+##### 1. Rechazo por Ausencia o Nombre Incorrecto de la Hoja («No se encontró la hoja "Superan el margen"»)
+* **Situación:** Al presionar **«Cargar»** y seleccionar el archivo Excel, el sistema interrumpe el procesamiento en la etapa inicial («Leyendo el archivo» - 0%) y emite la alerta de error: *«No se encontró la hoja "Superan el margen" en el archivo.»*.
+* **Causa técnica y operativa:** El libro de Excel tiene la pestaña renombrada (por ejemplo: `Hoja1`, `Sobresalientes` o `Margen`), contiene errores tipográficos o se seleccionó un archivo de cálculo intermedio. El sistema exige estrictamente que la hoja activa se denomine **`Superan el margen`**, ignorando hojas secundarias de cálculo crudo o segmentadas por departamento.
 * **Acción correctiva:**
-  * Si el funcionario cuenta con rol de Administrador (o permiso de gestión de usuarios), debe dirigirse a `/admin-panel/users`, localizar su propio registro y modificar sus datos en el modal «Editar usuario».
-  * Si el funcionario desempeña un rol de Editor, Revisor o Directivo, debe elevar la solicitud formal de actualización de datos a un usuario con rol de Administrador para que realice el ajuste desde dicho módulo centralizado.
+  1. Abrir el archivo en Microsoft Excel.
+  2. Hacer doble clic sobre la pestaña inferior y verificar que su nombre sea exactamente **`Superan el margen`** (respetando los espacios sencillos y la tilde).
+  3. Si el archivo original se encuentra desestructurado, presionar el botón **«Descargar formato»** en el panel para obtener la plantilla oficial limpia y trasladar allí los datos.
+  4. Guardar los cambios en formato `.xlsx` y repetir la carga en la plataforma.
 
-> **[Captura: Datos de Identidad en Modal Editar Usuario]**
-> *Campos de Nombre, Apellidos, Correo institucional y Teléfono editables centralizadamente en el modal de usuario.*
+> **[Captura: Alerta Hoja No Encontrada en Sobresalientes]**
+> *Mensaje emergente de error indicando la ausencia de la hoja 'Superan el margen' en el archivo Excel cargado.*
 >
-> **[Captura: Datos de Identidad en Modal Editar Usuario (Móvil)]**
-> *Formulario de edición de datos de usuario adaptado a dispositivos móviles. (Móvil).*
+> **[Captura: Alerta Hoja No Encontrada en Sobresalientes (Móvil)]**
+> *Notificación de error de nombre de hoja en dispositivo móvil. (Móvil).*
 
-##### 2. Cambio Voluntario de Contraseña sin Requisito de Contraseña Actual
-* **Situación:** Un funcionario con privilegios administrativos observa que al desplegar la sección «Cambiar contraseña» dentro del modal «Editar usuario», el sistema únicamente solicita los campos «Contraseña nueva» y «Repetir contraseña nueva», sin solicitar la contraseña actual que se encuentra en uso.
-* **Causa operativa:** Al encontrarse dentro de una sesión ya autenticada en el panel, el sistema solicita únicamente la nueva clave y su confirmación. La contraseña anterior solo es obligatoria durante el primer ingreso con clave provisional. Por seguridad, la acción queda registrada en la bitácora de auditoría.
-* **Advertencia de seguridad y acción operativa:** Dado que no se exige la contraseña actual para efectuar el cambio voluntario, es imperativo que los funcionarios nunca dejen estaciones de trabajo desatendidas con la sesión del Panel Administrativo abierta. Se recomienda aplicar bloqueo de pantalla en el sistema operativo (`Win + L` o equivalente) al apartarse del computador.
+##### 2. Error por Columnas Faltantes o Encabezados Modificados
+* **Situación:** La barra de progreso se detiene y la tabla de historial marca el estado **Error**, informando el mensaje: *«Falta la columna "[Nombre de Columna]" en la hoja "Superan el margen"»*.
+* **Causa:** Se suprimió o modificó el texto de alguna de las 13 columnas obligatorias en la primera fila de la hoja (`Cod. Regional`, `Regional`, `Cod. Centro`, `Centro`, `Cod. Nivel de formación`, `Nivel de Formación`, `Cod. Programa`, `Programa`, `Sexo`, `Certificados`, `Vinculados`, `Tasa de vinculación` o `Salario promedio`).
+* **Acción correctiva:**
+  1. Cotejar la fila 1 del archivo contra los nombres exactos de columnas exigidos por la plataforma.
+  2. Asegurarse de que no existan columnas vacías intercaladas ni celdas combinadas en el encabezado.
+  3. Corregir los nombres de las columnas que presenten discrepancias y volver a ejecutar la subida.
 
-##### 3. Discrepancia entre la Nueva Contraseña y su Confirmación
-* **Situación:** Al hacer clic en el botón «Guardar» del modal «Editar usuario» con el acordeón de contraseña desplegado, el sistema interrumpe el guardado, mantiene el acordeón abierto y resalta el aviso de advertencia: *«Las contraseñas no coinciden»*.
-* **Causa:** El contenido digitado en la casilla *Contraseña nueva* difiere en uno o varios caracteres del texto ingresado en *Repetir contraseña nueva*.
-* **Acción correctiva:** Hacer clic en el ícono de ojo ubicado a la derecha de ambos campos para descubrir los caracteres y cotejar que coincidan exactamente, verificando mayúsculas, minúsculas, números y caracteres especiales.
-
-> **[Captura: Error Contraseñas No Coinciden en Modal]**
-> *Alerta de discrepancia entre la contraseña nueva y su confirmación dentro del acordeón en el modal Editar usuario.*
+> **[Captura: Error Columnas Faltantes en Sobresalientes]**
+> *Registro en el historial de carga detallando la columna faltante en la estructura del Excel.*
 >
-> **[Captura: Error Contraseñas No Coinciden en Modal (Móvil)]**
-> *Validación de coincidencia de contraseñas adaptada a dispositivos móviles. (Móvil).*
+> **[Captura: Error Columnas Faltantes en Sobresalientes (Móvil)]**
+> *Visualización de error por columna faltante en pantalla móvil. (Móvil).*
 
-##### 4. Incumplimiento de los Requisitos de Complejidad de Contraseña
-* **Situación:** Durante la digitación de la clave en «Contraseña nueva», la lista interactiva de condiciones mantiene requisitos pendientes de cumplimiento, y al enviar el formulario se emite el mensaje específico del requisito insatisfecho (por ejemplo: *«La contraseña debe tener al menos 12 caracteres»*, *«Debe combinar mayúsculas, minúsculas, números o caracteres especiales»* o *«No se permiten emojis»*).
-* **Causa:** La contraseña digitada no cumple los estándares de seguridad obligatorios de la institución.
-* **Acción correctiva:** Ajustar la clave ingresada guiándose en tiempo real por el listado dinámico de requisitos hasta que cada una de las condiciones aparezca con la marca de verificación aprobada antes de pulsar «Guardar».
+##### 3. Inconsistencia de Coherencia: Vinculados Superiores a Certificados
+* **Situación:** La carga se cancela durante la fase de lectura y el sistema arroja la alerta específica: *«Fila [N]: "Vinculados" ([X]) no puede superar a "Certificados" ([Y])»*.
+* **Causa:** Regla de consistencia estadística institucional. La cantidad de aprendices graduados insertados en el mercado laboral (`Vinculados`) no puede exceder numéricamente al total de egresados titulados en ese mismo programa y centro (`Certificados`).
+* **Acción correctiva:**
+  1. Abrir el archivo Excel y localizar el número de fila reportado por la alerta.
+  2. Verificar los registros de egresados para corregir la cifra digitada erróneamente en las casillas de `Certificados` o `Vinculados`.
+  3. Asegurarse de que la relación matemática `Vinculados <= Certificados` se cumpla en todas las filas antes de cargar nuevamente.
 
-> **[Captura: Lista Interactiva de Requisitos de Contraseña]**
-> *Panel dinámico de requisitos con etiquetas finas mostrando la validación en tiempo real de longitud y composición.*
+> **[Captura: Error Vinculados Superan Certificados en Sobresalientes]**
+> *Detalle del error de validación matemática en fila específica informando la inconsistencia entre vinculados y certificados.*
 >
-> **[Captura: Lista Interactiva de Requisitos de Contraseña (Móvil)]**
-> *Lista de requisitos de contraseña adaptada a pantallas táctiles móviles. (Móvil).*
+> **[Captura: Error Vinculados Superan Certificados en Sobresalientes (Móvil)]**
+> *Alerta de inconsistencia de vinculados frente a certificados en vista móvil. (Móvil).*
 
-##### 5. Rechazo por Contraseña Repetida
-* **Situación:** Al enviar el formulario, el modal no se cierra y se presenta una notificación de error directamente bajo el campo «Contraseña nueva»: *«Esta contraseña ya ha sido utilizada recientemente. Elige una diferente.»*, y los demás datos editados del perfil no se actualizaron.
-* **Causa operativa:**
-  1. **Política de no reutilización:** El sistema impide que la nueva clave coincida con la contraseña actual o contraseñas anteriores inmediatas de la cuenta.
-  2. **Prioridad de seguridad en el guardado:** Por diseño de seguridad, al presionar «Guardar», el aplicativo procesa en primer lugar la validación de la contraseña. Si el sistema rechaza la credencial, el proceso se detiene de inmediato y no se aplican modificaciones parciales a los datos del funcionario, garantizando que la operación sea completa y consistente.
-* **Acción correctiva:** Ingresar una contraseña enteramente distinta que no haya sido utilizada previamente en la cuenta y presionar «Guardar» nuevamente. Una vez aceptada la contraseña, el sistema guardará simultáneamente la clave y las modificaciones de los campos de usuario.
+##### 4. Inconsistencia en Códigos DANE o Nombres de Regionales no Reconocidos
+* **Situación:** El sistema cancela la importación y notifica: *«Fila [N]: "[Regional]" llega con el código [X], pero en la fila [Y] con [Z]»* o *«No se pudo asociar la regional con ningún departamento oficial»*.
+* **Causa:** El sistema homologa las regionales contra el catálogo cerrado de los 33 departamentos oficiales de Colombia mediante su código DANE. Si una misma regional presenta códigos numéricos contradictorios en distintas filas, o si el nombre de la regional no coincide con la división territorial oficial, la transacción se aborta para evitar registros huérfanos en los mapas interactivos.
+* **Acción correctiva:**
+  1. Revisar la columna `Cod. Regional` y estandarizar el código DANE asignado a cada departamento (ej. `05` para Antioquia, `11` para Bogotá D.C., `25` para Cundinamarca).
+  2. Verificar que los nombres de las regionales correspondan a los nombres oficiales sin abreviaturas arbitrarias.
+  3. Guardar el archivo corregido y reintentar la subida.
+
+> **[Captura: Error de Correspondencia DANE en Regionales]**
+> *Notificación de inconsistencia entre el nombre de la regional y el código DANE detectado en el archivo.*
+>
+> **[Captura: Error de Correspondencia DANE en Regionales (Móvil)]**
+> *Aviso de discordancia de código regional adaptado a pantalla móvil. (Móvil).*
+
+##### 5. Pérdida Aparente de Datos Previos tras Nueva Carga (Reemplazo Total)
+* **Situación:** El Administrador sube un archivo que contiene únicamente los programas sobresalientes de una regional o centro específico, y observa que los datos previamente visibles de las demás regionales desaparecieron del bloque público «Programas Sobresalientes».
+* **Causa operativa:** El módulo opera bajo la política técnica de **reemplazo completo**: cada nueva carga exitosa vacía la tabla anterior y asienta exclusivamente lo contenido en el nuevo archivo, garantizando que no queden datos obsoletos ni duplicados.
+* **Acción correctiva:**
+  1. Toda actualización debe realizarse sobre un archivo maestro consolidado que reúna la totalidad de programas y centros del país que deban exhibirse en el observatorio.
+  2. Si se requiere agregar nuevos programas, estos deben incorporarse como nuevas filas dentro de la base de datos general de Excel antes de ejecutar el proceso de carga.
+
+> **[Captura: Aviso de Reemplazo Total en Historial de Sobresalientes]**
+> *Tabla del historial mostrando la nueva carga activa como única fuente vigente del bloque público.*
+>
+> **[Captura: Aviso de Reemplazo Total en Historial de Sobresalientes (Móvil)]**
+> *Historial de carga activa consolidada en dispositivo móvil. (Móvil).*
 
 ---
 
-#### 3.5.1.14. Validaciones y Solución de Problemas en Configuración
+#### 3.5.1.14. Validaciones y Solución de Problemas en el Apartado «Alertas de Inversión»
+
+El módulo de Alertas de Inversión ([Sección 3.4.2.8.2](#34282-apartado-alertas-de-inversión)) administra las iniciativas de inversión empresarial que alimentan el bloque público «Fuentes futuras de empleo». A diferencia de otros módulos, opera de manera **acumulativa**: los proyectos cargados mediante Excel o agregados manualmente se anexan al catálogo existente sin eliminar la información previa. A continuación se detallan las principales contingencias operativas y sus soluciones:
+
+##### 1. Filas Omitidas por Enlace de Fuente Duplicado
+* **Situación:** Tras completar la importación de un archivo Excel, el resumen de resultados indica: *«[N] filas cargadas, [M] filas omitidas por duplicado»*, sin que el sistema genere ninguna alerta de error.
+* **Causa operativa:** Regla estricta de no duplicidad de noticias. Cada iniciativa de inversión está vinculada de manera única a la URL de su noticia o anuncio oficial (`Fuente`). Si un archivo incluye enlaces que ya fueron registrados previamente en la base de datos, el sistema omite de forma transparente esas filas para evitar duplicar proyectos en los mapas y consultas del observatorio.
+* **Acción correctiva:** No constituye un fallo del aplicativo. Si se pretendía actualizar los datos de un proyecto ya existente (por ejemplo, su monto de inversión o empleos proyectados), el Administrador debe localizar el proyecto en la tabla inferior, eliminarlo con el ícono de papelera y subir nuevamente la versión actualizada.
+
+> **[Captura: Resumen de Carga con Filas Omitidas por Duplicado]**
+> *Recuadro de balance de importación detallando proyectos creados y filas descartadas por URL duplicada.*
+>
+> **[Captura: Resumen de Carga con Filas Omitidas por Duplicado (Móvil)]**
+> *Balance de proyectos importados y omitidos en pantalla móvil. (Móvil).*
+
+##### 2. Rechazo por Enlace de Fuente Inválido (Ausencia de Protocolo HTTP/HTTPS)
+* **Situación:** La importación de Excel se cancela y se visualiza en el mensaje: *«Fila [N]: la columna "Fuente" debe ser una URL (llegó "[Texto]")»*, o en el formulario de registro manual el campo *Enlace de la fuente* se resalta en rojo con el aviso: *«La fuente debe ser una URL http(s).»*.
+* **Causa técnica:** Todo proyecto de inversión exige una fuente digital verificable. El valor ingresado no cumple con el estándar de enlace web o carece del prefijo de protocolo obligatorio (`http://` o `https://`).
+* **Acción correctiva:**
+  1. En el archivo Excel o formulario modal, verificar que el enlace inicie expresamente con `https://` o `http://` (ejemplo: `https://www.larepublica.co/economia/nuevo-proyecto-12345`).
+  2. Eliminar espacios en blanco accidentales al inicio o final de la celda antes de repetir la operación.
+
+> **[Captura: Validación de URL en Fuente de Inversión]**
+> *Campo de fuente resaltado en rojo con la advertencia de protocolo web obligatorio.*
+>
+> **[Captura: Validación de URL en Fuente de Inversión (Móvil)]**
+> *Validación de URL obligatoria adaptada a dispositivo móvil. (Móvil).*
+
+##### 3. Incapacidad de Identificar el Sector Económico CIIU
+* **Situación:** La carga de Excel se interrumpe y la tabla de historial reporta: *«Fila [N]: no se pudo identificar el sector CIIU con "Código"="[X]" y "Actividad"="[Y]". Use un código CIIU numérico (grupo o clase), una letra de sección (A–U) o el nombre exacto del sector.»*.
+* **Causa técnica:** La plataforma resuelve los sectores productivos en cuatro niveles de búsqueda: letra de sección (A a la U), código de clase de 4 dígitos, división numérica de 2 dígitos o coincidencia exacta del nombre con el catálogo maestro de secciones CIIU. Si ninguno de estos criterios coincide, la fila es rechazada para prevenir clasificaciones erróneas.
+* **Acción correctiva:**
+  1. Revisar la actividad económica en el archivo de referencia `formato-actualizar-ciiu.xlsx`.
+  2. Ajustar la columna `Código` especificando la letra de la sección (ej. `C` para manufactura) o un código numérico de clase formal de 4 dígitos.
+  3. Si la empresa pertenece a una actividad económica recién incorporada que aún no figura en el observatorio, presionar previamente el botón **«Actualizar sectores (CIIU)»** y cargar el archivo maestro correspondiente.
+
+> **[Captura: Error Identificación Sector CIIU en Alertas]**
+> *Mensaje de error en historial por código o nombre de actividad económica no reconocido en el catálogo CIIU.*
+>
+> **[Captura: Error Identificación Sector CIIU en Alertas (Móvil)]**
+> *Alerta de sector CIIU no identificado en pantalla móvil. (Móvil).*
+
+##### 4. Campos Obligatorios Incompletos en el Formulario Manual
+* **Situación:** Al hacer clic en «Guardar» dentro del modal «Agregar proyecto de inversión», la ventana permanece abierta y varios campos se destacan con contorno de advertencia impidiendo el envío.
+* **Causa:** Omisión de datos estructurales indispensables. Son obligatorios: *Tipo de proyecto* («Nuevo» o «Expansión»), *Empresa*, *Descripción*, *Sección CIIU*, *Departamento*, *Fecha del anuncio* y *Enlace de la fuente*.
+* **Acción correctiva:** Diligenciar cada uno de los campos marcados como requeridos. Recordar que *Clase CIIU*, *Ciudad*, *Medio*, *Inversión estimada* y *Empleos estimados* son datos opcionales que pueden dejarse en blanco si no se dispone de ellos.
+
+> **[Captura: Campos Obligatorios Incompletos en Registro Manual]**
+> *Formulario modal de registro manual exhibiendo los campos obligatorios pendientes de diligenciar.*
+>
+> **[Captura: Campos Obligatorios Incompletos en Registro Manual (Móvil)]**
+> *Validación de campos obligatorios en formulario móvil. (Móvil).*
+
+##### 5. Eliminación Masiva Accidental Mediante el Botón «Limpiar todo»
+* **Situación:** Un funcionario hace clic sobre el botón **«Limpiar todo»** ubicado en la cabecera del listado de proyectos y el sistema despliega una advertencia preventiva de alto impacto.
+* **Causa y advertencia operativa:** La función «Limpiar todo» está diseñada exclusivamente para labores extraordinarias de reseteo analítico o reinicio completo de ciclo anual. Su confirmación elimina en cascada la totalidad de los proyectos registrados en el catálogo público del observatorio.
+* **Acción correctiva y buenas prácticas:**
+  1. Si solo se desea corregir o retirar un proyecto específico, presionar **«Cancelar»** en la ventana modal.
+  2. Para suprimir proyectos individuales desactualizados, cancelados o duplicados, utilizar el ícono de papelera ubicado al final de su fila correspondiente en la tabla de proyectos.
+
+> **[Captura: Advertencia de Modal Limpiar Todo]**
+> *Ventana modal de confirmación crítica advirtiendo el borrado de todos los proyectos de inversión del observatorio.*
+>
+> **[Captura: Advertencia de Modal Limpiar Todo (Móvil)]**
+> *Diálogo modal de confirmación crítica en dispositivo móvil. (Móvil).*
+
+---
+
+#### 3.5.1.15. Validaciones y Solución de Problemas en el Apartado «Criterios de Clasificación de Resultados» (Tendencia Ocupacional)
+
+El módulo de Criterios de Clasificación de Resultados ([Sección 3.4.2.8.3](#34283-apartado-criterios-de-clasificación-de-resultados-tendencia-ocupacional)) gestiona la demanda laboral por ocupación (relación entre buscadores inscritos y vacantes empresariales) que alimenta el bloque «Tendencia Ocupacional». Su operación se basa en un control estricto de **cortes temporales por año y periodo** y en un motor de auditoría automatizado en cuatro fases con validaciones matemáticas (V1 a V9). A continuación se exponen las situaciones operativas más frecuentes y sus soluciones:
+
+##### 1. Bloqueo de Carga por Celda Ocupada («Ya tiene datos: para cambiarlos, elimine su carga»)
+* **Situación:** Al elegir un año y un periodo en el formulario de carga (por ejemplo, *2025 - T1*), el botón **«Cargar»** se desactiva y se despliega el aviso: *«Ya tiene datos: para cambiarlos, elimine su carga.»* acompañado del enlace interactivo **«Ver en el historial»**.
+* **Causa técnica y operativa:** Regla de celda libre. La plataforma prohíbe sobreescrituras en caliente para garantizar la inmutabilidad de los datos analíticos y prevenir discrepancias con los boletines publicados. Cada combinación de año y periodo admite un único corte de datos activo (sea en estado *Borrador* o *Publicado*).
+* **Acción correctiva:**
+  1. Hacer clic directamente en el enlace **«Ver en el historial»**; el sistema desplazará la vista a la tabla inferior y filtrará de forma automática el registro de ese año y periodo.
+  2. Si la carga previa debe ser reemplazada por una versión corregida, presionar el ícono de papelera sobre dicha fila para eliminarla (si estaba publicada, retirará su visibilidad en el portal; si estaba en borrador, eliminará el archivo del servidor).
+  3. Una vez eliminada, la celda quedará libre y el botón **«Cargar»** se habilitará nuevamente de inmediato.
+
+> **[Captura: Bloqueo de Celda Ocupada con Enlace al Historial]**
+> *Formulario de corte con botón «Cargar» deshabilitado, mensaje preventivo de celda ocupada y enlace interactivo.*
+>
+> **[Captura: Bloqueo de Celda Ocupada con Enlace al Historial (Móvil)]**
+> *Aviso preventivo de celda ocupada y enlace de historial en pantalla móvil. (Móvil).*
+
+##### 2. Interrupción por Validaciones Bloqueantes (V1 a V5)
+* **Situación:** La barra de avance se detiene durante la fase 3 («Validando (V1–V9)» entre 60% y 84%), el sistema marca estado **Error** en el historial y el botón **«Reporte»** expone hallazgos críticos de tipo V1, V2, V3, V4 o V5:
+  * **V1 (Departamentos no reconocidos):** Filas de la hoja departamental cuyo nombre no calza con los 33 departamentos oficiales.
+  * **V2 (Inconsistencia de Nivel de Cualificación):** El código `N.C.` no coincide con el dígito correspondiente derivado del código ocupacional a 4 dígitos.
+  * **V3 (Nombres discordantes de ocupación):** Un mismo código de ocupación aparece asignado con diferentes descripciones textuales en distintas hojas o filas.
+  * **V4 (Registros duplicados):** La misma ocupación se encuentra repetida dentro de un mismo departamento o en el consolidado nacional.
+  * **V5 (Descuadre Nacional frente a Departamental):** La suma de inscritos o vacantes desglosada por departamento no coincide con el total registrado en la hoja nacional para esa ocupación.
+* **Causa técnica:** Las reglas V1 a V5 detectan inconsistencias estructurales o numéricas graves que distorsionarían los cálculos de percentiles y la matriz de cuadrantes del observatorio. Ante cualquier fallo bloqueante, el sistema ejecuta un rollback total y no persiste ningún dato en la base.
+* **Acción correctiva:**
+  1. Pulsar el botón **«Reporte»** en la fila fallida del historial para abrir el desglose de observaciones técnicas, donde se indican las hojas, filas de Excel y códigos implicados.
+  2. Corregir los datos en el libro de Excel asegurando la coherencia entre ambas hojas (`percentiles nacional` y `percentiles departamental`).
+  3. Eliminar la carga con error del historial para liberar la celda y proceder a una nueva subida.
+
+> **[Captura: Reporte de Fallas Bloqueantes V1-V5]**
+> *Ventana modal del reporte de validación detallando la lista de hallazgos bloqueantes V1 a V5 con números de fila y causa.*
+>
+> **[Captura: Reporte de Fallas Bloqueantes V1-V5 (Móvil)]**
+> *Visualización del reporte de fallas de validación ocupacional en pantalla móvil. (Móvil).*
+
+##### 3. Presencia de Advertencias de Calidad Analítica (V6 a V9)
+* **Situación:** La importación concluye con éxito al 100%, el corte se registra en estado **Borrador («Sin publicar»)**, pero el botón **«Reporte»** exhibe un indicador visual amarillo advirtiendo observaciones de tipo V6, V7, V8 o V9.
+* **Causa analítica:** Las reglas V6 a V9 no interrumpen la importación; corresponden a advertencias metodológicas (por ejemplo, la regla V6 detecta diferencias entre los percentiles calculados de forma automatizada por el sistema y los valores consignados en las columnas del archivo Excel).
+* **Acción correctiva:** No impide la publicación. El equipo técnico puede examinar las observaciones en el reporte para validar si la discrepancia responde a particularidades metodológicas del analista. Si el resultado es conforme a los lineamientos del OLO, el Administrador puede proceder a publicar el corte sin inconvenientes.
+
+> **[Captura: Reporte de Advertencias Analíticas V6-V9]**
+> *Desglose del reporte de hallazgos informando advertencias de cálculo sin impedir la publicación del corte.*
+>
+> **[Captura: Reporte de Advertencias Analíticas V6-V9 (Móvil)]**
+> *Avisos analíticos en el reporte de validación en vista móvil. (Móvil).*
+
+##### 4. Datos Cargados no Visibles en el Sitio Público (Estado Borrador)
+* **Situación:** La carga del archivo finalizó de manera satisfactoria, pero al ingresar al Sitio Web público y consultar el bloque «Tendencia Ocupacional», el año y periodo recién subidos no aparecen disponibles en los filtros ni en el mapa.
+* **Causa operativa:** Control de publicación editorial. Toda carga exitosa ingresa inicialmente en estado **Borrador («Sin publicar»)** y se ubica en la bandeja superior **«Pendientes de publicar»**. La información permanece protegida y no se proyecta a los ciudadanos hasta contar con la autorización final del Administrador.
+* **Acción correctiva:**
+  1. En el módulo de Criterios de Clasificación de Resultados, dirigirse a la bandeja superior **«Pendientes de publicar»**.
+  2. Presionar el botón verde **«Publicar»** ubicado junto al corte deseado (o pulsar **«Publicar todos»** para autorizar varios periodos en simultáneo).
+  3. Tras la confirmación, el estado cambiará a **Publicado** y los datos se desplegarán inmediatamente en los visores públicos.
+
+> **[Captura: Bandeja de Publicación de Cortes en Borrador]**
+> *Bandeja superior de cortes ocupacionales en borrador con botones 'Publicar' y 'Publicar todos'.*
+>
+> **[Captura: Bandeja de Publicación de Cortes en Borrador (Móvil)]**
+> *Control de publicación de cortes pendientes en dispositivo móvil. (Móvil).*
+
+##### 5. Despublicación Preventiva de un Periodo ante Inconsistencias
+* **Situación:** Tras haber publicado un corte, se detecta que las cifras requieren ajustes o aclaraciones institucionales, por lo que se debe retirar de la consulta ciudadana de manera inmediata sin perder la auditoría del archivo.
+* **Causa y mecanismo:** El sistema permite alternar la visibilidad de los datos sin destruirlos.
+* **Acción correctiva:**
+  1. En la tabla de historial, ubicar el corte que se encuentra en estado **Publicado**.
+  2. Hacer clic en el botón **«Despublicar»**.
+  3. En la ventana modal de confirmación (*«¿Despublicar [Año · Periodo]? El sitio deja de mostrarlo. Los datos quedan en borrador y se pueden volver a publicar.»*), confirmar la operación.
+  4. El corte retornará de inmediato a la bandeja de pendientes en estado **Borrador**, ocultándose del portal público mientras se define su permanencia o actualización.
+
+> **[Captura: Modal de Despublicación de Corte Ocupacional]**
+> *Ventana modal de confirmación de despublicación para devolver un corte ocupacional al estado de borrador.*
+>
+> **[Captura: Modal de Despublicación de Corte Ocupacional (Móvil)]**
+> *Confirmación de despublicación de corte en pantalla móvil. (Móvil).*
+
+---
+
+#### 3.5.1.16. Validaciones y Solución de Problemas en Configuración
 
 El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuración)) permite personalizar la identidad visual del panel administrativo y gestionar las preferencias auditivas del entorno de trabajo. A continuación se presentan las validaciones técnicas, reglas de accesibilidad y acciones correctivas para cada escenario operativo:
 
