@@ -5,6 +5,64 @@
 
 ---
 
+## sesión 20-10-2026 (7.ª parte): «Eliminar página» dice en qué bloque, en qué lista y en qué parte del portal está el enlace que lo impide
+
+**Qué pasó:** al eliminar «Mapa del sitio» el diálogo decía «está enlazada en el menú principal», y el usuario no la tenía en el menú. La comprobación acertaba: el `menu-y-pie` publicado (versión 35) tiene en el **pie** `enlacesFila3[0] = { texto: 'Mapa del sitio', url: '/mapa-del-sitio' }`, y el sitio en vivo lo pinta. Lo que fallaba era el aviso, que decía siempre «menú principal» y no decía dónde buscar. El usuario pidió dejar la lógica como está y mejorar el paso a paso, y que el paso 3 diga siempre si el enlace está en el pie o en el menú.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `4000-api-backend/src/shared/enlaces-en-contenido.ts` | Cada `EnlaceEncontrado` trae `bloque` (el `type` del bloque de Puck que lo contiene, también dentro de un slot o de `zones`) y `campo` (la prop del bloque). Encuentra los mismos enlaces que antes |
+| API | `use-cases/paginas/eliminar-seccion.usecase.ts` | `ReferenciaAEnlace` lleva `bloque` y `campo` a `/api/paginas/:slug/eliminable` |
+| Sitio | `features/paginas/secciones/services/secciones.service.ts` | Los dos campos nuevos, opcionales |
+| Sitio | `features/paginas/secciones/components/modal-eliminar-seccion.tsx` | Traduce `bloque` y `campo` con las etiquetas de `puckConfig` («Pie de página» › «Enlaces inferiores · fila 3»), sin copiarlas. La advertencia nombra el sitio real (`Header` → «el menú de navegación», `Footer` → «el pie de página», otra página → «otras páginas»). Cuatro pasos: ir a «Editar Menú y pie» (o a la página); pulsar el bloque y abrir la lista en el panel de la derecha; buscar el enlace **en el pie de página / el menú de navegación / la página «X»** y eliminarlo o cambiarle el hipervínculo; pulsar «Enviar a revisión», porque la comprobación mira lo publicado. Con varios enlaces en la misma lista, se juntan en una sola línea |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y la API, `eslint` del diálogo | Sin errores |
+| `buscarEnlacesA` con el `menu-y-pie` publicado (Neon, solo lectura) | `{ texto: 'Mapa del sitio', bloque: 'Footer', campo: 'enlacesFila3' }` |
+| `buscarEnlacesA` con casos sueltos | `root.props.url` (sin bloque), `href` directo en las props de un bloque, un `Header` dentro de un slot con submenú, un `Footer` en `zones`; `https://otro/x` no cuenta |
+| Diálogo en una ruta temporal (ya borrada) del `next dev`, con la respuesta de la API simulada desde Chrome | Un enlace (el caso real) y tres en el pie, el menú e Inicio: textos y pasos correctos |
+| Diálogo real con sesión | **No se vio** |
+
+> La intranet tiene su propia copia del diálogo y no se tocó: sigue con el texto de antes, y con la API nueva funciona igual (los dos campos sobran).
+
+**Pendiente al cierre:** reiniciar la API (no recarga sola); hasta entonces el diálogo dice «el bloque que tiene el enlace» y «el menú y pie». Decidir si el diálogo de la intranet recibe el mismo paso a paso.
+
+---
+
+## sesión 20-10-2026 (6.ª parte): una sola barra de texto enriquecido (H1–H6, viñetas, negrita, cursiva, subrayado y alineación) y el bloque «Buscador de ocupaciones» con sus textos en una tarjeta
+
+**Qué pidió el usuario:** en el bloque «Buscador de Ocupaciones (Banner)», llamarlo «Buscador de ocupaciones» y juntar «Titular», «Descripción» y «Texto del recuadro» en una sola tarjeta. Y en ese bloque y en **todos** los campos de texto enriquecido, la barra de Puck con H1 a H6, viñetas, negrita, cursiva, subrayado y alineación a la izquierda, al centro y a la derecha.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Paquete | `packages/blocks-renderer/src/primitives/campo-texto-rico.tsx` (nuevo) | `crearCampoTextoRico(RichTextMenu)` devuelve `campoTextoRico(label, extra?)`: un `richtext` con `renderMenu` y `renderInlineMenu` propios (`HeadingSelect`, `BulletList`, `Bold`, `Italic`, `Underline`, `AlignSelect` con izquierda/centro/derecha). `RichTextMenu` llega como parámetro porque el paquete no depende de `@puckeditor/core`. Copiado a `node_modules/@olo/blocks-renderer/src` de las dos apps |
+| Config | `3000-sitio-web/src/config/puck.config.tsx` y `3001-intranet/src/config/puck.config.tsx` | Los 20 campos `richtext` del sitio y los 24 de la intranet pasan a `campoTextoRico(...)`. Fuera `OPCIONES_TEXTO_EN_LINEA` (las dos apps) y `OPCIONES_TEXTO_DEL_CARRUSEL`. El texto de las tarjetas de portales conserva `{ link: false }` (la tarjeta ya es un enlace) |
+| Bloque | `Hero` del sitio (`puck.config.tsx`) | Etiqueta «Buscador de ocupaciones». Los tres textos en `textos` (`campoObjetoEnAcordeon('Textos', …)`, abierta). `resolveData` mueve los sueltos de una portada guardada a `textos` al abrir el editor; hasta que se vuelva a publicar, el render los pinta sueltos con `htmlGuardado` (en `.rich-text`, como Puck). La clave `Hero` no cambia |
+| Respaldo | `features/paginas/model/home-fallback-data.ts` | El `Hero` de respaldo con `textos` |
+| Render | `portada-buscador-ocupaciones.tsx` y `shared/lib/blocks/video-embebido.tsx` | El titular de la portada y el título del video pasan de `<h2>` a `TituloRico` (`role="heading"`): con encabezados permitidos, un `<h1>` dentro de un `<h2>` partiría el HTML |
+| CSS | `src/style/globals.css` de las dos apps | `.rich-text` gana H1, H5 y H6 (antes solo H2–H4 tenían estilo) y tamaños en `em` (2 / 1,5 / 1,25 / 1,125 / 1 / 0,875) dentro de `:where(.rich-text)`, para no ganarle al tamaño que un bloque ya da a los suyos (el carrusel). `div[data-puck-rte-menu]` con `flex-wrap: wrap` (pedido después): en el panel lateral la barra mide 224 px y caben 187, y Puck la deja en una línea con desplazamiento horizontal sin barra visible, así que la alineación quedaba escondida a la derecha |
+| API | `4000-api-backend/src/shared/sanitizar-contenido.ts` | `style` entra en los atributos permitidos, pero un hook de DOMPurify lo borra entero salvo que sea solo `text-align: left|center|right|justify`. Sin esto la alineación se perdía al guardar (también la del carrusel, que ya tenía el botón) |
+
+Decisiones:
+- **Lo que no tiene botón se quita de la barra, no de las extensiones.** Puck vuelve a leer el HTML guardado con las extensiones del campo al pintar la página pública (`RichTextRender` → `generateJSON`): apagar listas numeradas, citas o tachado borraría ese formato de textos ya publicados. Por eso `OPCIONES_TEXTO_RICO` solo fija los niveles y las alineaciones.
+- **Barra propia y no la de Puck:** la de Puck trae «justificado» y su selector de listas ofrece «Numbered list» aunque la extensión esté apagada.
+- **Dos bloques casi con el mismo nombre:** «Buscador de ocupaciones» (`Hero`, la portada) y «Buscador de Ocupaciones» (`BuscadorOcupaciones`, el de `/clasificacion`) salen juntos en el catálogo. No se renombró el segundo porque no se pidió.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de sitio web, intranet y API | Sin errores |
+| `eslint` de los archivos tocados | Los mismos 6 `no-explicit-any` que ya tenía `puck.config.tsx` del sitio; ninguno nuevo |
+| Saneador con 8 casos (ts-node) | `text-align` en `p` y `h3` se conserva; `color:red`, `text-align` + `position: fixed` y `url(javascript:…)` pierden el `style` entero; `onerror` sigue saliendo y `htmlPeligrosoEn` sigue avisando de `onclick` |
+| `Render` de Puck con `react-dom/static` y un `richtext` dentro de un `object` | `<h1 style="text-align: center;">`, `<p style="text-align: right;">`, `<u>`, `<ol>` y `<ul>` salen intactos |
+| Portada en el `next dev` del usuario (Chrome sin ventana) | El CSS servido trae las reglas nuevas; H1–H6 dentro de los tres textos del banner: 80 → 35 px en el titular (base 40) y 44 → 19,25 px en descripción y recuadro (base 22), todos en 700 |
+| Editor de Puck con `configDeEdicion('inicio')` en una ruta temporal sin sesión (ya borrada), con un `Hero` de props sueltas | `resolveData` las pasa a «Textos»; con la barra del panel, Titular → H1 (80 px en el lienzo) y Descripción → H3 (27,5 px) y «Center» (`style="text-align: center;"`); la barra baja a dos líneas y deja ver la alineación (Left / Center / Right) |
+| Editor real con sesión | **No se vio** |
+
+**Pendiente al cierre:** recargar el editor de «inicio» sin caché, publicar para que la portada guarde `textos`, y reiniciar la API (no recarga sola) para que la alineación sobreviva al guardar.
+
+---
+
 ## sesión 20-10-2026 (5.ª parte): el pie de las tablas del panel sin «Mostrando X-Y de Z», con las páginas a la izquierda y «Ir a la página» con «Filas por página» a la derecha
 
 **Qué pidió el usuario:** quitar «Mostrando 1-30 de 100 registros» y dejar anterior, números y siguiente a la izquierda, e «Ir a la página» con «Filas por página» a la derecha (primero se pidió «Ir a la página» al centro; en la misma sesión pasó a la derecha).
