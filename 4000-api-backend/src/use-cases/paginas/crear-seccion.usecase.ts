@@ -74,7 +74,7 @@ export const crearSeccion = async (
   tx?: Transaction
 ): Promise<SeccionCreada> => {
   const nombre = (titulo ?? '').trim();
-  if (!nombre) throw fallo('La sección necesita un nombre.', 400);
+  if (!nombre) throw fallo('La página necesita un nombre.', 400);
 
   // El slug se calcula **aquí** aunque el diálogo ya lo enseñe: lo que llega del
   // navegador es una vista previa, no la autoridad. Los dos usan `@olo/slug-policy`,
@@ -91,7 +91,7 @@ export const crearSeccion = async (
     // ámbito: el sitio y la intranet pueden tener cada uno su «Bolsa de empleo».
     const yaExiste = await Pagina.findOne({ where: { slug, ambito }, transaction });
     if (yaExiste) {
-      throw fallo(`Ya existe una sección en la ruta /${slug}. Elige otro nombre.`, 409);
+      throw fallo(`Ya existe una página en la ruta /${slug}. Elige otro nombre.`, 409);
     }
 
     const pagina = await Pagina.create(

@@ -197,8 +197,8 @@ Por este motivo, **los únicos roles cuyos permisos son personalizables y editab
 
 1. **Acceso:** Controla las puertas de entrada a los dos entornos del sistema (el Sitio Web Público y la Intranet del OLO). Sin estos permisos activos, la cuenta no podrá autenticarse ni visualizar el contenido del portal correspondiente.
 2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
-3. **Secciones del sitio web:** Define de forma detallada, página por página, el acceso de edición sobre los contenidos del portal público (tales como Inicio, Política de Privacidad y cada una de las páginas dinámicas creadas en el sitio).
-4. **Secciones de la intranet:** Controla individualmente la facultad de maquetar y actualizar las páginas y módulos analíticos internos de la Intranet del OLO (Inicio, Tasa de vinculación, Matriz de tendencias, Encuestas y páginas dinámicas internas).
+3. **Páginas del sitio web:** Define de forma detallada, página por página, el acceso de edición sobre los contenidos del portal público (tales como Inicio, Política de Privacidad y cada una de las páginas dinámicas creadas en el sitio).
+4. **Páginas de la intranet:** Controla individualmente la facultad de maquetar y actualizar las páginas y módulos analíticos internos de la Intranet del OLO (Inicio, Tasa de vinculación, Matriz de tendencias, Encuestas y páginas dinámicas internas).
 5. **Qué puede hacer dentro del editor:** Determina las capacidades de acción estructural que el usuario puede ejercer dentro del lienzo de trabajo interactivo, tales como la creación de nuevas páginas o la eliminación definitiva de páginas dinámicas existentes.
 
 *(Nota: En la [Sección 3.4.2.4.2: Submenú Roles y Permisos](#34242-submenú-roles-y-permisos) se describe detalladamente cada permiso individual y se ilustra el procedimiento operativo paso a paso para activarlos o desactivarlos mediante interruptores en el Panel Administrativo al crear o editar roles derivados).*
@@ -273,7 +273,7 @@ La Intranet es una plataforma privada e independiente orientada al seguimiento g
 
 #### 3.2.3.3. Procedimiento de Recuperación de Contraseña (Preguntas de Seguridad)
 El sistema del Observatorio Laboral y Ocupacional cuenta con un mecanismo autónomo de restablecimiento de contraseña ante olvidos o bloqueos, unificado para todos los funcionarios tanto en el Sitio Web como en la Intranet:
-* **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o códigos a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** configuradas obligatoriamente durante el primer ingreso al sistema. Esto previene bloqueos por filtros de spam o falta de disponibilidad de servidores de correo externos.
+* **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o códigos a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** configuradas obligatoriamente durante el primer ingreso al sistema. Esto previene bloqueos por filtros de spam o falta de disponibilidad del servicio de correo electrónico.
 * **Cuenta única y sincronización de clave:** Al tratarse de un usuario único y compartido entre ambas plataformas, recuperar o actualizar la contraseña desde cualquiera de los dos portales sincroniza de forma automática e inmediata el acceso en ambos.
 * **Política de seguridad:** Una vez validadas con éxito las respuestas correspondientes, el usuario puede establecer de inmediato una nueva contraseña que satisfaga los lineamientos de seguridad de la plataforma (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
 * **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 3.4.1.3: Procedimiento de Recuperación de Contraseña](#3413-procedimiento-de-recuperación-de-contraseña)**.
@@ -865,7 +865,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > *Mensaje informativo en pantalla confirmando el acceso o con alerta de falta de permiso de acceso. (Móvil).*
 
 6. **Despliegue de los módulos y herramientas según rol:** La interfaz se abre mostrando los contenidos correspondientes a cada rol:
-   * **Administradores:** Visualizan todas las secciones de la Intranet con libertad de navegación y herramientas de supervisión activas.
+   * **Administradores:** Visualizan todas las páginas de la Intranet con libertad de navegación y herramientas de supervisión activas.
    * **Editores de Contenido:** Acceden a las páginas internas autorizadas, visualizando el **botón flotante de edición** para maquetar bloques de contenido.
    * **Directores y Subdirectores:** Ingresan directamente a la **pantalla principal de la Intranet** (`/inicio`), visualizando en pantalla los **tableros interactivos de Power BI**, indicadores del mercado laboral y botones de descarga de reportes en modalidad de **solo lectura** (sin botones de edición ni accesos administrativos).
 
@@ -990,7 +990,7 @@ El Panel Administrativo centraliza la salida segura mediante el menú de usuario
 > **[Captura: Menú de usuario en Panel Admin (Móvil)]**
 > *Menú desplegable de usuario en la barra superior del Panel Administrativo. (Móvil).*
 
-2. **Ejecución y cierre del sistema:** Al hacer clic o presionar sobre **"Cerrar sesión"** (identificada con el ícono de puerta y flecha de salida), el sistema finaliza la sesión de inmediato de forma segura, revoca la sesión activa en el servidor y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
+2. **Ejecución y cierre del sistema:** Al hacer clic o presionar sobre **"Cerrar sesión"** (identificada con el ícono de puerta y flecha de salida), el sistema finaliza la sesión de inmediato de forma segura y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
 
 > **[Captura: Opción de cerrar sesión en Panel Admin]**
 > *Opción explícita de 'Cerrar sesión' en escritorio.*
@@ -1222,7 +1222,7 @@ Al ingresar al Panel Administrativo (`/admin-panel/dashboard`), el Administrador
 > **[Captura: Lista de Actividad Reciente (Móvil)]**
 > *Vista general de la lista de Actividad Reciente, con una frase por evento. (Móvil).*
 
-4. **Comportamiento ante incidencias de comunicación:** En caso de que se presente una interrupción en la comunicación con el servidor al cargar el panel principal, las tarjetas de métricas permanecen limpias mostrando un guion («—») en lugar de datos incompletos o alertas dispersas en cada tarjeta. La advertencia sobre la imposibilidad de consultar las métricas se concentra en una única notificación superior que incorpora el botón **«Reintentar»**, permitiendo al usuario reanudar la carga de datos de manera inmediata sin recargar toda la ventana del navegador.
+4. **Comportamiento ante incidencias de comunicación:** En caso de que se presente una interrupción en la comunicación al cargar el panel principal, las tarjetas de métricas permanecen limpias mostrando un guion («—») en lugar de datos incompletos o alertas dispersas en cada tarjeta. La advertencia sobre la imposibilidad de consultar las métricas se concentra en una única notificación superior que incorpora el botón **«Reintentar»**, permitiendo al usuario reanudar la carga de datos de manera inmediata sin recargar toda la ventana del navegador.
 
 ---
 
@@ -1401,8 +1401,8 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
    * **Estructura de las 5 secciones de control:** Cada sección cuenta con su encabezado y un contador numérico de permisos concedidos respecto al total del bloque (ej. *«2/3»*):
      1. **Acceso:** Controla las puertas de entrada a los entornos del sistema (el Sitio Web Público y la Intranet del OLO).
      2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
-     3. **Secciones del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
-     4. **Secciones de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
+     3. **Páginas del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
+     4. **Páginas de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
      5. **Qué puede hacer dentro del editor:** Facultades de acción estructural dentro del lienzo de trabajo interactivo (crear nuevas páginas o eliminar páginas dinámicas creadas).
    * **Interruptores deslizantes e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
      * **«se añade»:** Indica que el permiso está siendo incorporado al rol.
@@ -1418,7 +1418,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
    En la parte inferior de la ventana modal se ubican los controles de guardado y confirmación:
    * **Resumen de modificaciones en tiempo real:** En la base de la ventana modal se describe en vivo el balance exacto de cambios detectados (ej. *«Descripción actualizada · 2 permisos añadidos · 1 quitado»* o *«Sin cambios que guardar.»* si no se han realizado variaciones).
    * **Cancelar:** Descarta cualquier modificación pendiente y cierra la ventana modal sin aplicar cambios.
-   * **Guardar permisos:** Se activa únicamente si existen modificaciones pendientes. Al pulsarlo, el botón cambia su etiqueta a *«Guardando…»* mientras se transmiten los cambios al servidor.
+   * **Guardar permisos:** Se activa únicamente si existen modificaciones pendientes. Al pulsarlo, el botón cambia su etiqueta a *«Guardando…»* mientras se guardan los cambios en el sistema.
 
 > **[Captura: Resumen de Cambios en Pie de Modal]**
 > *Barra inferior de la ventana modal reflejando en tiempo real las modificaciones realizadas antes de guardar.*
@@ -1780,7 +1780,7 @@ Este módulo gestiona los datos de los programas y egresados destacados del SENA
    * **Mensaje:** Resumen descriptivo de la operación o explicación de la causa técnica si ocurrió un error.
 3. **Eliminación de un registro de auditoría:**
    * Al final de la fila de cada carga, hacer clic en el botón con ícono de papelera.
-   * Se abre una ventana modal de confirmación con la advertencia: *«Se borra del historial y, si ningún otro registro usa el mismo archivo, también el Excel guardado en el servidor. Los datos que ya quedaron en el mapa de formación no se tocan — esto solo borra la auditoría de la carga.»*.
+   * Se abre una ventana modal de confirmación con la advertencia: *«Se borra del historial y el archivo Excel cargado. Los datos que ya quedaron en el mapa de formación no se tocan — esto solo borra la auditoría de la carga.»*.
    * Para confirmar la acción, hacer clic en el botón **«Eliminar»** (o **«Cancelar»** para desistir sin alterar el registro).
 
 > **[Captura: Historial de Cargas de Sobresalientes]**
@@ -1981,7 +1981,7 @@ Este apartado permite cargar y publicar los datos de demanda laboral (inscritos 
 2. **Columnas de trazabilidad:** Año y periodo, archivo `.xlsx`, cargado por (con fecha y hora exacta), estado visual (*Publicado*, *Borrador*, *En curso*, *Inactiva*, *Error*), resumen de filas y botón de reporte.
 3. **Despublicación:** En cualquier corte *Publicado*, hacer clic en **«Despublicar»** y confirmar en la ventana modal (*«¿Despublicar [Año · Periodo]? El sitio deja de mostrarlo. Los datos quedan en borrador y se pueden volver a publicar.»*). El periodo vuelve a borrador sin borrar los datos del sistema.
 4. **Eliminación:** Hacer clic en el ícono de papelera y confirmar en la ventana modal según su estado:
-   * *En borrador:* Borra la carga, su reporte y el archivo Excel del servidor.
+   * *En borrador:* Borra la carga, su reporte y el archivo Excel cargado.
    * *Publicado:* Deja de mostrar la información en los visores del portal público.
    * *Con error:* Retira el registro fallido y libera la celda para una nueva subida.
 
@@ -2045,6 +2045,8 @@ Todo lo explicado en este numeral aplica de la misma forma tanto para el **Sitio
 
 #### 3.4.3.1. Acceso a las Opciones de Edición (Botón Flotante)
 
+*(Nota: Para consultar las posibles situaciones de validación, permisos requeridos, opciones no visibles o contingencias con el botón flotante y el cierre de sesión, remitirse a la [Sección 3.5.1.17: Validaciones y Solución de Problemas en el Acceso a las Opciones de Edición (Botón Flotante)](#35117-validaciones-y-solución-de-problemas-en-el-acceso-a-las-opciones-de-edición-botón-flotante)).*
+
 El botón flotante permite a los usuarios con facultades editoriales gestionar contenidos directamente mientras navegan por el portal. Las opciones que se despliegan en este botón responden de manera dinámica a los permisos asignados a cada usuario; si cuenta con los permisos correspondientes para la página en la que se encuentra posicionado, podrá acceder a: **Editar página** (para maquetar la página actual), **Menú y pie** (para modificar la cabecera y el pie de página globales), **Nueva página** (para crear una nueva página) y **Eliminar página** (para retirar la página actual), además de disponer de un botón directo para **salir del modo de edición** (para cerrar sesion).
 
 1. **Visibilidad y estructura del botón flotante:**
@@ -2062,7 +2064,7 @@ El botón flotante permite a los usuarios con facultades editoriales gestionar c
 2. **Despliegue del menú de acciones editoriales:**
    Al hacer clic sobre el disparador principal de lápiz, el ícono rota 90° y se transforma en un ícono de equis, la etiqueta cambia a *«Cerrar opciones»*, y el submenú de herramientas se despliega verticalmente hacia arriba con animación fluida. Las opciones disponibles operan bajo la misma interfaz e interactividad en ambos entornos, evaluándose según los permisos concedidos al usuario:
    * **Editar página (Ícono de lápiz sobre documento):** Abre de inmediato la página actual en el Editor Visual para modificar sus textos, imágenes y estructura de bloques. Se muestra si el usuario tiene asignado el permiso para editar esa página específica o si cuenta con el rol de Administrador.
-   * **Menú y pie (Ícono de capas):** Permite ingresar al editor para estructurar los elementos globales que comparten todas las páginas del portal (barra superior, menú de navegación principal e información del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
+   * **Menú y pie (Ícono de capas):** Abre el Editor Visual para estructurar los elementos globales que comparten todas las páginas del portal (barra superior, menú de navegación principal e información del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
    * **Nueva página (Ícono de suma "+"):** Despliega la ventana modal de creación, solicitando el nombre deseado y generando automáticamente su dirección web de acceso. Requiere el permiso de creación correspondiente o el rol de Administrador.
    * **Eliminar página (Ícono de papelera):** Ubicado en la parte superior del menú desplegado con estilo de advertencia. Inicia el procedimiento de retiro seguro y comprobación previa de enlaces activos. Solo aparece en páginas dinámicas creadas por editores y requiere el permiso para eliminar páginas o el rol de Administrador.
 
@@ -2076,6 +2078,8 @@ El botón flotante permite a los usuarios con facultades editoriales gestionar c
    El submenú se cierra si el usuario hace clic nuevamente sobre el botón con ícono de equis o si pulsa en cualquier área de la pantalla fuera del menú flotante.
 
 #### 3.4.3.2. Edición de Contenidos: Páginas y «Menú y pie de página»
+
+*(Nota: Para consultar las posibles situaciones de validación, diferencias de alcance entre edición de páginas y elementos globales, y solución de bloqueos en menú y pie, remitirse a la [Sección 3.5.1.18: Validaciones y Solución de Problemas en la Edición de Contenidos: Páginas y «Menú y pie de página»](#35118-validaciones-y-solución-de-problemas-en-la-edición-de-contenidos-páginas-y-menú-y-pie-de-página)).*
 
 En la plataforma, una pantalla se divide visualmente en dos componentes fundamentales: el **cuerpo central de contenido** (exclusivo de cada página) y la **envoltura global de navegación** (la cabecera y el pie de página compartidos por todo el portal). Según la zona que se requiera intervenir, el usuario accede a dos modalidades de edición independientes:
 
@@ -2106,6 +2110,8 @@ En la plataforma, una pantalla se divide visualmente en dos componentes fundamen
 > *Acceso a la edición global de menú y pie en dispositivo móvil. (Móvil).*
 
 #### 3.4.3.3. Estructura y Funcionalidades del Editor Visual
+
+*(Nota: Para consultar las posibles situaciones de validación, concurrencia de edición, observaciones de rechazo, accesibilidad obligatoria y solución de problemas en el Editor Visual, remitirse a la [Sección 3.5.1.19: Validaciones y Solución de Problemas en la Estructura y Funcionalidades del Editor Visual](#35119-validaciones-y-solución-de-problemas-en-la-estructura-y-funcionalidades-del-editor-visual)).*
 
 El Editor Visual es un entorno interactivo que permite maquetar en vivo los contenidos mediante bloques modulares prediseñados, combinando sencillez de uso con flexibilidad gráfica.
 
@@ -2210,13 +2216,18 @@ Al hacer clic sobre cualquier bloque dentro del lienzo, el componente queda deli
 > **[Captura: Botón Seleccionar Contenedor Superior (Móvil)]**
 > *Control para seleccionar contenedor padre en interfaz móvil. (Móvil).*
 
-* **Herramientas de formato de texto en línea:** Al hacer clic sobre textos editables directamente en el lienzo, la barra contextual ofrece accesos directos para aplicar **negrita**, *cursiva*, subrayado o hipervínculos sin necesidad de acudir al panel lateral.
+* **Barra de formato y texto enriquecido en línea:** Al hacer clic sobre cualquier texto editable directamente en el lienzo o en los campos de redacción del panel lateral, se despliega la barra unificada de herramientas tipográficas con los siguientes controles:
+  * **Selector de encabezados:** Permite seleccionar la jerarquía de títulos y subtítulos desde **H1** hasta **H6**.
+  * **Estilos tipográficos:** Botones directos para aplicar **negrita** (`B`), *cursiva* (`I`) y <u>subrayado</u> (`U`).
+  * **Listas con viñetas:** Botón para estructurar listas de viñetas.
+  * **Alineación de texto:** Selector para **alinear a la izquierda**, **centrar** o **alinear a la derecha** el texto.
+  * **Hipervínculos:** Botón para añadir o editar enlaces sobre fragmentos seleccionados.
 
 > **[Captura: Controles de Formato de Texto en Línea]**
-> *Barra de herramientas con opciones rápidas de formato tipográfico (negrita, cursiva, enlaces) sobre el texto en edición.*
+> *Barra de herramientas de texto enriquecido con selector H1-H6, viñetas, negrita, cursiva, subrayado y opciones de alineación.*
 >
 > **[Captura: Controles de Formato de Texto en Línea (Móvil)]**
-> *Accesos rápidos de formato de texto en línea en pantalla táctil móvil. (Móvil).*
+> *Barra de herramientas de texto enriquecido adaptada a pantalla táctil móvil. (Móvil).*
 
 * **Botón Duplicar (Ícono de páginas superpuestas):** Genera una copia exacta del bloque seleccionado (incluyendo textos, imágenes cargadas, estilos y enlaces), situándola justo debajo del original para agilizar la maquetación de secciones homogéneas.
 
@@ -2260,7 +2271,7 @@ Al seleccionar cualquier bloque, el panel lateral derecho despliega los controle
 > **[Captura: Menú Lateral - Formulario General de Propiedades (Móvil)]**
 > *Formulario de propiedades del bloque adaptado a vista móvil. (Móvil).*
 
-* **Edición y redacción de textos:** Casillas para títulos y subtítulos directos, acompañadas de editores enriquecidos para párrafos largos con soporte de listas con viñetas o numeradas, citas y enlaces.
+* **Edición y redacción de textos:** Casillas para textos directos y campos de texto enriquecido con la barra de formato completa (H1–H6, viñetas, negrita, cursiva, subrayado y alineación). En bloques principales como el *«Buscador de ocupaciones»* de la portada, los campos de redacción (Titular, Descripción y Texto del recuadro) se organizan en una sección desplegable unificada llamada **«Textos»** para facilitar su ajuste simultáneo.
 * **Subida de archivos y administración de medios:** Botón para cargar imágenes desde el equipo, campo de **texto alternativo obligatorio** para garantizar la accesibilidad a personas con discapacidad visual, y selectores para vincular documentos PDF o videos externos.
 * **Ajustes de espaciado, alineación y fondos:** Selectores numéricos de márgenes superior e inferior en píxeles (`px`), botones para alinear contenido (izquierda, centrado, derecha) y menús para escoger estilos o tonalidades de fondo (claros, neutros o destacados).
 * **Conmutadores de visibilidad:** Interruptores (*«Sí»* / *«No»*) para activar u ocultar elementos opcionales como subtítulos, fechas o franjas informativas de apoyo.
@@ -2376,10 +2387,13 @@ En la esquina superior derecha de la barra de herramientas se encuentran los tre
 
 #### 3.4.3.4. Creación de Nuevas Páginas (Paso a Paso)
 
+*(Nota: Para consultar las validaciones en tiempo real del título, reglas de generación de direcciones web y solución de problemas en la creación, remitirse a la [Sección 3.5.1.20: Validaciones y Solución de Problemas en la Creación de Nuevas Páginas](#35120-validaciones-y-solución-de-problemas-en-la-creación-de-nuevas-páginas)).*
+
 El procedimiento para crear una nueva página dinámica en el portal se realiza de forma directa desde la navegación:
 
 1. **Activación de la acción de creación:**
    Navegar a cualquier página del portal, hacer clic sobre el botón flotante de edición en la esquina inferior derecha y seleccionar la opción **«Nueva página»** (ícono de suma "+").
+   *(Nota: Esta opción se encuentra visible para usuarios con rol de Administrador o usuarios con el permiso asignado para crear páginas).*
 
 > **[Captura: Menú Flotante Opción Nueva Página]**
 > *Selección de la opción «Nueva página» en el menú flotante de acciones editoriales.*
@@ -2387,28 +2401,33 @@ El procedimiento para crear una nueva página dinámica en el portal se realiza 
 > **[Captura: Menú Flotante Opción Nueva Página (Móvil)]**
 > *Opción «Nueva página» seleccionada en menú flotante móvil. (Móvil).*
 
-2. **Diligenciamiento del título y generación automática de dirección:**
-   Se despliega la ventana modal **«Nueva página»**:
-   * **Nombre:** Digitar el título descriptivo en la casilla *«¿Cómo se llama?»* (por ejemplo: *Observatorio Ocupacional Regional*).
-   * **Generación automática del enlace web permanente:** En tiempo real, el sistema genera la dirección web de acceso permanente a partir del título digitado (por ejemplo: `/observatorio-ocupacional-regional`), garantizando una nomenclatura normalizada y libre de caracteres especiales.
+2. **Diligenciamiento del nombre y generación automática de la dirección web:**
+   Se despliega en pantalla la ventana modal titulada **«Crear nueva página»**:
+   * **Campo «Nombre de la página»:** Digitar el nombre descriptivo deseado para la nueva página (con un límite máximo de hasta 120 caracteres).
+   * **Generación automática de la dirección web:** A medida que se escribe el nombre, el sistema genera debajo en tiempo real la dirección web de acceso limpia (por ejemplo: *«Su dirección será /[nombre]»*).
+   * **Comprobación inmediata:** La ventana valida que el texto sea válido, que no repita una ruta existente ni coincida con una ruta reservada, y muestra un aviso recordando que la página se creará inicialmente en estado borrador.
 
 > **[Captura: Formulario de Nueva Página]**
-> *Ventana modal con el campo de título y la dirección web permanente generada automáticamente en tiempo real.*
+> *Ventana modal «Crear nueva página» con el campo de nombre, vista previa de la dirección web generada y aviso de estado borrador.*
 >
 > **[Captura: Formulario de Nueva Página (Móvil)]**
 > *Formulario de creación de nueva página adaptado a pantalla móvil. (Móvil).*
 
-3. **Confirmación y asignación automática de permisos:**
-   Hacer clic en el botón **«Crear y editar»**:
-   * El sistema registra la nueva página en estado inicial de *Borrador*.
-   * **Asignación inmediata de permisos:** El sistema concede automáticamente los permisos de edición sobre la nueva página al Administrador, al rol Editor base y a la cuenta del editor que efectuó la creación.
-   * **Redirección al Editor Visual:** La aplicación redirige de forma automática al usuario al entorno de maquetación interactiva con un lienzo en limpio, listo para comenzar a arrastrar y configurar bloques.
+3. **Confirmación y entrada al Editor Visual:**
+   * En la base de la ventana se disponen dos opciones:
+     * **«Cancelar»:** Cierra la ventana sin crear ninguna página.
+     * **«Crear y editar»:** Inicia el registro de la página. Mientras se procesa la solicitud, el botón muestra el texto *«Creando…»*.
+   * **Asignación inmediata de permisos:** La página se registra en estado inicial de *Borrador* y el sistema concede automáticamente los permisos de edición sobre ella al Administrador, al rol Editor y al rol del usuario creador.
+   * **Entrada al editor con barra de aviso de página nueva:** La pantalla conduce de inmediato al Editor Visual con el lienzo listo para agregar bloques. En la parte superior del editor se muestra una franja informativa con:
+     * El mensaje: *«Página creada. Su dirección es /[nombre]»*.
+     * El botón interactivo **«Copiar enlace»**: Al pulsarlo, copia la dirección web al portapapeles y cambia brevemente al texto *«Copiado»*, facilitando su vinculación en el menú o pie de página.
+     * La nota de orientación: *«Pega esa dirección en el campo «URL» de un enlace del menú para que se pueda llegar a ella. Todavía no muestra nada: llénala y mándala a revisión.»*.
 
 > **[Captura: Redirección al Editor con Página Creada]**
-> *Lienzo del Editor Visual listo para maquetar tras la confirmación de creación de la nueva página.*
+> *Lienzo del Editor Visual listo para maquetar con la barra superior informando la dirección asignada y el botón para copiar enlace.*
 >
 > **[Captura: Redirección al Editor con Página Creada (Móvil)]**
-> *Lienzo en limpio de nueva página en dispositivo móvil. (Móvil).*
+> *Lienzo de nueva página en dispositivo móvil con aviso de dirección creada. (Móvil).*
 
 #### 3.4.3.5. Eliminación de Páginas (Procedimiento Seguro)
 
@@ -2425,12 +2444,14 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 
 2. **Análisis automático de enlaces activos y guía paso a paso para desvincular:**
    Antes de permitir la confirmación, el sistema realiza una comprobación automática e integral en todo el portal:
-   * Si la página se encuentra enlazada en el menú principal o dentro de otras páginas, la eliminación se bloquea preventivamente y se presenta el mensaje de advertencia: **«Página en uso en la navegación»** (o **«Página en uso en el portal»** si el enlace proviene de otras páginas), explicando: *«Esta página está enlazada en el menú principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.»* (o el aviso correspondiente si está enlazada desde otras secciones).
-   * **Paso a paso estructurado:** La ventana modal presenta la secuencia exacta de acciones para retirar la vinculación:
-     1. *Ve al botón de «Editar Menú y pie»* (o a la página específica identificada por su nombre).
-     2. *Busca el componente que tiene el botón [Nombre del enlace] en el editor* (o los componentes correspondientes si son múltiples).
-     3. *Borra el enlace asignado en la configuración del componente*.
-   * Al pie de los pasos, la ventana indica: *«Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.»*.
+   * **Identificación exacta de la ubicación del enlace:** Si la página se encuentra enlazada en el menú principal, en el pie de página o dentro de otra página, la eliminación se bloquea preventivamente mostrando el aviso de advertencia:
+     **«Página en uso en la navegación»** (o **«Página en uso en el portal»** si el enlace proviene de otras páginas), explicando de forma precisa: *«Esta página está enlazada en [el pie de página / el menú de navegación / otras páginas], quita ese enlace antes de eliminarla para evitar enlaces rotos.»*.
+   * **Guía paso a paso de 4 puntos:** La ventana modal presenta las instrucciones estructuradas con los nombres exactos del editor:
+     1. **Ir a la sección:** Hacer clic en el botón de **«Editar Menú y pie»** (o navegar a la página correspondiente indicada donde se encuentra el enlace).
+     2. **Ubicar el bloque y la lista:** En el editor, hacer clic en el bloque señalado (por ejemplo: **«Pie de página»**) y, en el panel lateral derecho, abrir la lista o campo indicado (por ejemplo: **«Enlaces inferiores · fila 3»**).
+     3. **Quitar o modificar el enlace:** Localizar el enlace (identificado con su texto exacto, ej.: *«Mapa del sitio»*) en el pie de página, menú o página, y eliminarlo con el ícono de papelera, o cambiarle la dirección web a otra página.
+     4. **Enviar a revisión:** Pulsar el botón **«Enviar a revisión»** en la esquina superior derecha del editor, ya que el enlace continúa activo en el portal público hasta que la modificación sea aprobada y publicada por el Administrador.
+   * **Aviso de continuidad:** Al pie de los pasos, la ventana indica: *«Cuando el cambio esté publicado, vuelve a abrir este diálogo para continuar.»*.
 
 > **[Captura: Alerta Enlaces Rotos Bloqueo]**
 > *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados en la plataforma con su guía paso a paso.*
@@ -2588,7 +2609,7 @@ Para consultas específicas en catálogos y listados, el sistema ofrece herramie
 ##### 3.4.4.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
 El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible a través de la ruta canónica `/clasificacion` (servida de forma dinámica mediante el bloque de diseño `BuscadorOcupaciones`), así como en las secciones dedicadas `/clasificacion/cno` y `/clasificacion/cuoc`.
 
-El buscador opera conectado directamente a la API pública oficial de consulta mediante un intermediario seguro en el servidor (mediante un intermediario seguro en el servidor), el cual gestiona de manera transparente las credenciales institucionales (`CNO_API_KEY`) y administra una memoria caché optimizada de una hora (máximo 500 registros) para garantizar respuestas instantáneas y preservar el cupo compartido de peticiones por minuto.
+El buscador permite consultar directamente las ocupaciones oficiales en tiempo real, garantizando respuestas ágiles y una navegación fluida al explorar los catálogos ocupacionales.
 
 El procedimiento paso a paso para la consulta ciudadana y exploración ocupacional es el siguiente:
 
@@ -2651,7 +2672,7 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 #### 3.4.4.2. Visualizadores y Tableros Analíticos en Pantalla
 
 ##### 3.4.4.2.1. Uso de tableros BI en la Intranet (Power BI)
-En las páginas o secciones de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página.
+En las páginas de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página.
 
 > **[Captura: Tablero BI]**
 > *Tablero de Power BI embebido en una página de la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis.*
@@ -2849,7 +2870,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 4. **Establecimiento de la contraseña definitiva (Reglas de robustez y coincidencia):**
    * *Acciones erróneas y validaciones:*
      * **Omisión de contraseña temporal:** Si no se ingresa la clave provisoria en la primera casilla, se indica: `"La contraseña temporal es requerida"`.
-     * **Contraseña temporal errónea al enviar:** Si la clave temporal ingresada no concuerda con la base de datos, el servidor rechaza la solicitud al presionar "Continuar" con la alerta: `"No se pudo completar la configuración"`.
+     * **Contraseña temporal errónea al enviar:** Si la clave temporal ingresada no concuerda con la base de datos, el sistema muestra la alerta al presionar "Continuar": `"No se pudo completar la configuración"`.
      * **Incumplimiento de requisitos de seguridad:** Al digitar la nueva contraseña, si no se cumplen las condiciones mínimas exigidas por la entidad, los indicadores interactivos permanecen desmarcados o con aviso de requisito pendiente y el sistema resalta el primer fallo pendiente bajo el campo (ej. `"Al menos 12 caracteres"` o `"Combina 3 de 4: mayúsculas, minúsculas, números y símbolos"`), bloqueando el avance.
      * **Contraseña repetida o no permitida por seguridad:** Si la nueva contraseña coincide con la clave temporal, con una contraseña anterior o no cumple la política de seguridad, se despliega directamente bajo la casilla el aviso: `«Esta contraseña no es válida por seguridad, elige otra.»`.
      * **Falta de confirmación o discrepancia:** Si la confirmación se encuentra vacía, se solicita `"Confirma tu contraseña"`. Si el texto digitado no es exactamente idéntico al de la nueva clave, se despliega la advertencia: `"Las contraseñas no coinciden"`.
@@ -2928,7 +2949,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 4. **Establecimiento de la contraseña definitiva (Reglas de robustez y coincidencia):**
    * *Acciones erróneas y validaciones:*
      * **Clave temporal vacía o sin ingresar:** Si se omite la clave provisoria en el primer campo, el sistema exige: `"La contraseña temporal es requerida"`.
-     * **Clave temporal no válida:** Si la clave temporal ingresada no coincide con la registrada en el sistema, al pulsar "Continuar" el servidor notifica: `"No se pudo completar la configuración"`.
+     * **Clave temporal no válida:** Si la clave temporal ingresada no coincide con la registrada en el sistema, al pulsar "Continuar" el sistema notifica: `"No se pudo completar la configuración"`.
      * **Contraseña débil:** Si la nueva clave no satisface la totalidad de las 5 condiciones exigidas, el panel de requisitos muestra las condiciones no cumplidas y bloquea el avance con el mensaje del primer fallo (ej. `"Al menos 12 caracteres"` o `"Combina 3 de 4: mayúsculas, minúsculas, números y símbolos"`).
      * **Contraseña repetida o no permitida por seguridad:** Si la nueva contraseña coincide con la clave temporal, con una contraseña anterior o no cumple la política de seguridad, se despliega directamente bajo la casilla el aviso: `«Esta contraseña no es válida por seguridad, elige otra.»`.
      * **Contraseñas no coincidentes:** Si el campo de repetición difiere de la nueva clave registrada, se bloquea el guardado indicando: `"Las contraseñas no coinciden"`.
@@ -2986,7 +3007,7 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 > *Redirección errónea hacia la pantalla de acceso de la Intranet por presionar el botón incorrecto en la cabecera. (Móvil).*
 
 2. **Presentación de la interfaz de autenticación (Acceso directo a rutas protegidas):**
-   * *Situación anómala y control:* Si el usuario intenta acceder directamente a una ruta interna administrativa (`/admin-panel/...`) sin una sesión activa previa, el sistema intercepta la navegación y lo conduce a este formulario de inicio de sesión.
+   * *Situación anómala y control:* Si el usuario intenta acceder directamente a una pantalla interna del Panel Administrativo sin una sesión activa previa, el sistema intercepta la navegación y lo conduce a este formulario de inicio de sesión.
    * *Acción de corrección:* Proceder al diligenciamiento regular de las credenciales corporativas autorizadas para ingresar al entorno administrativo.
 
 3. **Ingreso con credenciales definitivas (Validaciones de campos de entrada):**
@@ -3141,7 +3162,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 3. **Verificación de identidad mediante preguntas de seguridad:**
    * *Acciones erróneas y validaciones:*
      * **Respuesta vacía o sin diligenciar:** Si se pulsa "Continuar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
-     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden con nuestros registros. Intenta nuevamente."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
+     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden con nuestros registros. Intenta nuevamente."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en la cuenta.
      * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la cuenta pasa automáticamente a estado bloqueado temporal durante **30 minutos**, impidiendo tanto la recuperación como el acceso normal al sistema con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
      * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/login/recovery/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/login/recovery`.
    * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
@@ -3166,7 +3187,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > *Validador de seguridad de contraseña y alerta de confirmación discrepante en el Sitio Web. (Móvil).*
 
 5. **Confirmación y retorno seguro:**
-   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/login/recovery/reset-success` confirma la operación y bloquea retornos involuntarios con el botón de retroceso del navegador, obligando a iniciar sesión formalmente.
+   * *Situación de control:* Tras confirmar el cambio de contraseña, la pantalla de confirmación exitosa informa la operación y bloquea retornos involuntarios con el botón de retroceso del navegador, obligando a iniciar sesión formalmente.
    * *Acción de corrección:* Hacer clic sobre el botón "Iniciar sesión" y autenticarse con la nueva contraseña definitiva.
 
 > **[Captura: Pantalla de Éxito en Recuperación Sitio Web]**
@@ -3204,7 +3225,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 3. **Verificación de identidad mediante preguntas de seguridad:**
    * *Acciones erróneas y validaciones:*
      * **Respuesta vacía o sin diligenciar:** Si se pulsa "Siguiente" o "Verificar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
-     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden. Intenta de nuevo."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
+     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden. Intenta de nuevo."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en la cuenta.
      * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la plataforma bloquea la cuenta de forma automática durante **30 minutos** con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
      * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/login/recovery/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/login/recovery`.
    * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
@@ -3229,7 +3250,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > *Verificador de directivas de seguridad y aviso de falta de coincidencia en la confirmación en la Intranet. (Móvil).*
 
 5. **Confirmación y retorno seguro:**
-   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/login/recovery/reset-success` confirma la operación con el título *"¡Genial, tu clave ha sido actualizada con éxito!"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
+   * *Situación de control:* Tras confirmar el cambio de contraseña, la pantalla de confirmación exitosa muestra la operación con el título *"¡Genial, tu clave ha sido actualizada con éxito!"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
    * *Acción de corrección:* Hacer clic sobre el botón "Ir a iniciar sesión" y autenticarse con la nueva contraseña definitiva en la pantalla de acceso de la Intranet (`/login`).
 
 > **[Captura: Pantalla de Éxito en Recuperación Intranet]**
@@ -3345,7 +3366,7 @@ Durante la interacción cotidiana con el entorno del Panel Administrativo (cuyo 
 * **Situación:** La insignia con el contador numérico de borradores pendientes junto al ítem "Páginas en revisión" muestra una cifra desactualizada que no concuerda con las páginas que realmente se encuentran en espera dentro del módulo.
 * **Causa técnica y operativa:** Retención de datos en la memoria caché temporal del navegador web o concurrencia operativa, generada cuando otro usuario con rol Administrador aprueba, rechaza o descarta una página simultáneamente desde otra sesión.
 * **Acción correctiva:**
-  1. Hacer clic sobre el ítem **"Páginas en revisión"** para acceder directamente a la cola de aprobación y consultar los registros reales actualizados en el servidor.
+  1. Hacer clic sobre el ítem **"Páginas en revisión"** para acceder directamente a la cola de aprobación y consultar los registros reales actualizados en el sistema.
   2. Presionar las teclas `Ctrl + F5` (o forzar recarga en el navegador) para renovar el contador numérico del menú lateral con la información más reciente de la base de datos.
 
 #### 3.5.1.6. Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo
@@ -3397,7 +3418,7 @@ El Tablero Principal (Dashboard) recopila métricas y registros consolidados del
 
 ##### 1. Tarjetas de métricas muestran guion «—» o no cargan datos
 * **Situación:** Las tarjetas de páginas publicadas o visitas presentan un guion («—») y en la parte superior del tablero principal se despliega un mensaje de advertencia indicando la imposibilidad de cargar las métricas, acompañado del botón **«Reintentar»**.
-* **Posible causa:** Interrupción temporal en la comunicación con el servidor al momento de obtener las estadísticas consolidadas. Para mantener un entorno visual limpio, las tarjetas individuales no repiten textos de error aislados y el aviso se consolida únicamente en la cabecera del panel.
+* **Posible causa:** Interrupción temporal en la comunicación del sistema al momento de obtener las estadísticas consolidadas. Para mantener un entorno visual limpio, las tarjetas individuales no repiten textos de error aislados y el aviso se consolida únicamente en la cabecera del panel.
 * **Acción correctiva:**
   1. Presionar directamente el botón **«Reintentar»** en la alerta superior para reanudar la consulta de datos de inmediato sin recargar toda la ventana del navegador.
   2. Si la interrupción persiste, verificar la conectividad a internet o presionar la tecla `F5` para recargar el panel administrativo.
@@ -3569,7 +3590,7 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
   1. Ingresar a este módulo (**Roles y Permisos**).
   2. Localizar el rol derivado y hacer clic en el ícono de **lápiz**.
   3. Pulsar el botón con título **"Editar permisos"**.
-  4. Ubicar la página creada dentro de la sección correspondiente (*"Secciones del sitio web"* o *"Secciones de la intranet"*), utilizando el buscador interno si es necesario.
+  4. Ubicar la página creada dentro del grupo correspondiente (*"Páginas del sitio web"* o *"Páginas de la intranet"*), utilizando el buscador interno si es necesario.
   5. Activar el interruptor de la página (el sistema mostrará la insignia *«se añade»*) y hacer clic en **"Guardar permisos"**.
 
 > **[Captura: Delegación de Nueva Página en Catálogo de Permisos]**
@@ -3903,7 +3924,7 @@ El módulo de Criterios de Clasificación de Resultados ([Sección 3.4.2.8.3](#3
 * **Causa técnica y operativa:** Regla de celda libre. La plataforma prohíbe sobreescrituras en caliente para garantizar la inmutabilidad de los datos analíticos y prevenir discrepancias con los boletines publicados. Cada combinación de año y periodo admite un único corte de datos activo (sea en estado *Borrador* o *Publicado*).
 * **Acción correctiva:**
   1. Hacer clic directamente en el enlace **«Ver en el historial»**; el sistema desplazará la vista a la tabla inferior y filtrará de forma automática el registro de ese año y periodo.
-  2. Si la carga previa debe ser reemplazada por una versión corregida, presionar el ícono de papelera sobre dicha fila para eliminarla (si estaba publicada, retirará su visibilidad en el portal; si estaba en borrador, eliminará el archivo del servidor).
+  2. Si la carga previa debe ser reemplazada por una versión corregida, presionar el ícono de papelera sobre dicha fila para eliminarla (si estaba publicada, retirará su visibilidad en el portal; si estaba en borrador, eliminará el archivo cargado).
   3. Una vez eliminada, la celda quedará libre y el botón **«Cargar»** se habilitará nuevamente de inmediato.
 
 > **[Captura: Bloqueo de Celda Ocupada con Enlace al Historial]**
@@ -4014,9 +4035,9 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 
 ##### 4. Cambios Pendientes sin Guardar y Reversión
 * **Situación:** En la cabecera del acordeón se visualiza el indicador *«[N] sin guardar»*, la fila del elemento muestra la etiqueta *«Sin guardar»*, y los botones de acción inferior permanecen activos esperando confirmación.
-* **Causa:** Se modificaron colores en la vista previa interactiva, pero no se ha invocado la persistencia en el servidor. Si el funcionario sale del módulo sin guardar, las personalizaciones se perderán.
+* **Causa:** Se modificaron colores en la vista previa interactiva, pero aún no se han guardado los cambios. Si sales de la pantalla sin guardar, las modificaciones se perderán.
 * **Acción correctiva:**
-  * **Confirmar cambios:** Presionar el botón **«Guardar colores de las etiquetas»** o **«Guardar colores de los botones»** para asentar las configuraciones en la base de datos de manera definitiva.
+  * **Confirmar cambios:** Presionar el botón **«Guardar colores de las etiquetas»** o **«Guardar colores de los botones»** para guardar las configuraciones de manera definitiva.
   * **Descartar ajustes no guardados:** Hacer clic en el botón plano **«Descartar cambios»** para regresar a la última paleta guardada.
   * **Restaurar paleta de fábrica:** Hacer clic en **«Volver a los de fábrica»** para reinstaurar los colores originales predeterminados del sistema.
 
@@ -4052,6 +4073,311 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 
 ---
 
+#### 3.5.1.17. Validaciones y Solución de Problemas en el Acceso a las Opciones de Edición (Botón Flotante)
+
+El botón flotante de edición ([Sección 3.4.3.1](#3431-acceso-a-las-opciones-de-edición-botón-flotante)) permite a los usuarios con facultades editoriales gestionar los contenidos directamente durante la navegación por el portal. A continuación se detallan las posibles situaciones de validación, restricciones de permisos y acciones correctivas asociadas a su visualización y uso:
+
+##### 1. Botón Flotante no Visible en la Pantalla
+* **Situación:** El usuario navega por las páginas del Sitio Web o de la Intranet pero el botón circular flotante no se muestra en la esquina inferior derecha.
+* **Causa:** 
+  1. No se ha iniciado sesión en la plataforma y se está navegando como visitante público anónimo.
+  2. La cuenta con la que se inició sesión no posee el rol de Administrador ni cuenta con permisos editoriales asignados (por ejemplo, directivos con rol de consulta en la Intranet o funcionarios sin permisos sobre el portal correspondiente).
+* **Acción correctiva:**
+  1. Verificar si la sesión se encuentra iniciada observando el enlace **«Ingresar»** en la cabecera del portal.
+  2. Si no hay sesión activa, hacer clic en «Ingresar» e introducir las credenciales de correo y contraseña autorizadas.
+  3. Si la sesión ya se encuentra activa pero el botón sigue sin visualizarse, comunicarse con el Administrador para que asigne un rol de Editor o habilite los permisos de edición correspondientes a la cuenta en el Panel Administrativo.
+
+> **[Captura: Botón Flotante No Visible por Falta de Sesión]**
+> *Pantalla de navegación pública sin el botón flotante en la esquina inferior derecha por ausencia de sesión editorial activa.*
+>
+> **[Captura: Botón Flotante No Visible por Falta de Sesión (Móvil)]**
+> *Visualización móvil sin controles flotantes de edición para usuarios públicos. (Móvil).*
+
+##### 2. Opciones Faltantes en el Menú Desplegado del Botón Flotante
+* **Situación:** Al hacer clic en el botón circular de lápiz para desplegar las opciones, algunas herramientas no aparecen en el menú vertical (por ejemplo, no se muestra «Editar página», «Menú y pie», «Nueva página» o «Eliminar página»).
+* **Causa:** Control granular de permisos por página y por función. El sistema evalúa en tiempo real los permisos asignados al rol del usuario:
+  * Si el rol no tiene asignado el permiso para editar la página específica en la que se encuentra posicionado, la opción **«Editar página»** no se dibuja en el menú.
+  * Si carece del permiso **«Menú y pie del sitio web»** o **«Menú y pie de la intranet»**, la opción **«Menú y pie»** no estará disponible.
+  * Si no tiene concedido el permiso de creación de páginas en su rol, la opción **«Nueva página»** no se mostrará.
+* **Acción correctiva:**
+  1. Contactar al Administrador del sistema para solicitar la habilitación de los permisos requeridos.
+  2. El Administrador debe acceder al Panel Administrativo, ingresar al módulo **«Roles y Permisos»**, seleccionar el rol del usuario y marcar las casillas correspondientes a las páginas o funciones requeridas dentro de los grupos *Editar* y *Crear*.
+  3. Tras guardar los permisos en el panel, el funcionario debe recargar la página en su navegador para visualizar las opciones actualizadas en el botón flotante.
+
+> **[Captura: Menú Flotante con Opciones Parciales según Permisos]**
+> *Menú de edición desplegado mostrando únicamente las opciones habilitadas para el rol del usuario conectado.*
+>
+> **[Captura: Menú Flotante con Opciones Parciales según Permisos (Móvil)]**
+> *Menú flotante adaptado con opciones limitadas por rol en pantalla móvil. (Móvil).*
+
+##### 3. La Opción «Eliminar página» no Aparece en el Menú
+* **Situación:** El funcionario desea eliminar una página del portal pero el ícono de papelera con la opción «Eliminar página» no se visualiza en la parte superior del menú flotante.
+* **Causa:** 
+  1. La página en la que se encuentra es una página fija o estructural protegida del sistema (por ejemplo: la página de Inicio `/inicio`, la sección de privacidad o los visores fijos), las cuales no pueden ser eliminadas bajo ninguna circunstancia.
+  2. El rol del usuario no tiene concedido el permiso para eliminar páginas dinámicas.
+* **Acción correctiva:**
+  1. Verificar si la página actual corresponde a una página creada por los editores o a una ruta protegida del sistema. Las páginas fijas están blindadas contra borrado por seguridad institucional.
+  2. Si se trata de una página dinámica creada por un editor y se requiere retirarla, solicitar al Administrador que active el permiso de eliminación sobre dicha página para su rol en el Panel Administrativo.
+
+> **[Captura: Menú Flotante en Página Fija Protegida sin Opción de Eliminar]**
+> *Menú flotante desplegado en la página de inicio donde la opción de eliminar se omite por protección de rutas fijas.*
+>
+> **[Captura: Menú Flotante en Página Fija Protegida sin Opción de Eliminar (Móvil)]**
+> *Visualización móvil del menú flotante sin opción de borrado en página protegida. (Móvil).*
+
+##### 4. Cierre Involuntario de Sesión al Presionar el Botón de Salida
+* **Situación:** Al interactuar con el botón flotante, el usuario hace clic en el botón inferior con ícono de puerta y flecha creyendo que solo ocultará las herramientas en pantalla, pero el sistema le muestra la advertencia para cerrar su sesión.
+* **Causa:** El botón circular inferior permanente tiene como función específica y directa **«Salir del modo edición»**, lo que equivale a cerrar la sesión activa de la cuenta en la plataforma.
+* **Acción correctiva:**
+  1. Para ocultar o cerrar el menú de herramientas desplegado sin cerrar la sesión, hacer clic nuevamente sobre el botón circular principal (ícono de equis) o pulsar en cualquier área libre fuera del menú.
+  2. Si se presionó el botón de salida por equivocación, hacer clic en el botón **«Cancelar»** dentro de la ventana de confirmación para permanecer en el portal con la sesión abierta.
+  3. En caso de haber confirmado la salida y cerrado la sesión, presionar **«Ingresar»** en la parte superior de la pantalla e introducir nuevamente las credenciales corporativas.
+
+> **[Captura: Ventana de Confirmación Salir del Modo Edición]**
+> *Ventana modal advirtiendo el cierre de sesión tras pulsar el botón inferior de salida.*
+>
+> **[Captura: Ventana de Confirmación Salir del Modo Edición (Móvil)]**
+> *Modal de confirmación de salida y cierre de sesión en vista móvil. (Móvil).*
+
+---
+
+#### 3.5.1.18. Validaciones y Solución de Problemas en la Edición de Contenidos: Páginas y «Menú y pie de página»
+
+La plataforma separa claramente los contenidos particulares de cada pantalla del esquema de navegación global ([Sección 3.4.3.2](#3432-edición-de-contenidos-páginas-y-menú-y-pie-de-página)). A continuación se presentan las situaciones de validación, alcance de cambios y contingencias más habituales entre ambas modalidades:
+
+##### 1. Confusión entre Modificaciones Particulares y Cambios Globales en el Portal
+* **Situación:** Un editor realiza cambios en un bloque pensando que solo afectará a la página actual, pero al publicar nota que el cambio impactó a todas las páginas del portal; o al contrario, edita una página esperando que un bloque nuevo se replique automáticamente en el resto del sitio web y no ocurre.
+* **Causa:** Desconocimiento de la frontera funcional entre la edición de páginas dinámicas y la edición de menú y pie de página:
+  * **«Editar página»:** Opera de manera aislada y exclusiva sobre el cuerpo central de la página activa. No impacta ninguna otra página del portal.
+  * **«Menú y pie»:** Modifica los componentes globales (cabecera superior, menú de navegación principal y pie de página institucional). Todo cambio publicado en esta modalidad se proyecta de forma inmediata en la totalidad de las páginas de la aplicación.
+* **Acción correctiva:**
+  1. Si se necesita actualizar artículos, noticias, comunicados o bloques de contenido temático, utilizar siempre la opción **«Editar página»**.
+  2. Si se requiere agregar un nuevo enlace de navegación, actualizar las redes sociales o cambiar los teléfonos y logotipos de contacto, seleccionar la opción **«Menú y pie»**.
+  3. Si se introdujo un cambio global por error, ingresar nuevamente a **«Menú y pie»**, restaurar los datos correctos y enviar la versión a revisión para su corrección.
+
+> **[Captura: Diferenciación Visual entre Cuerpo de Página y Envoltura Global]**
+> *Esquema gráfico destacando la zona editable local del cuerpo frente a la cabecera y pie globales.*
+>
+> **[Captura: Diferenciación Visual entre Cuerpo de Página y Envoltura Global (Móvil)]**
+> *Esquema comparativo entre página y menú global en dispositivo móvil. (Móvil).*
+
+##### 2. Cabecera y Pie de Página Bloqueados al Editar una Página Individual
+* **Situación:** Al ingresar al Editor Visual mediante la opción «Editar página», el editor hace clic sobre los botones del menú superior o sobre los enlaces del pie de página pero la interfaz no permite seleccionarlos, arrastrarlos ni modificarlos.
+* **Causa:** Protección de elementos compartidos. Al editar una página individual, el sistema muestra la cabecera y el pie en modo de solo lectura como referencia gráfica y de alineación estética, impidiendo alteraciones involuntarias sobre la navegación general del portal.
+* **Acción correctiva:**
+  1. Si la intención es modificar los textos, imágenes o bloques del contenido central de la página, trabajar directamente sobre el lienzo entre la cabecera y el pie.
+  2. Si se requiere modificar la cabecera o el pie de página, guardar el borrador de la página actual y salir del editor.
+  3. Desde la navegación del portal, abrir el botón flotante y elegir expresamente la opción **«Menú y pie»**. En este entorno específico, ambos componentes se habilitarán para su edición completa.
+
+> **[Captura: Modo Solo Lectura de Cabecera y Pie en Edición de Página]**
+> *Lienzo de edición de página individual mostrando la cabecera y el pie con indicador de bloqueo de edición.*
+>
+> **[Captura: Modo Solo Lectura de Cabecera y Pie en Edición de Página (Móvil)]**
+> *Visualización móvil de cabecera y pie en modo de referencia visual no interactivo. (Móvil).*
+
+##### 3. Opción «Menú y pie» no Disponible o Inactiva en el Menú Flotante
+* **Situación:** Un funcionario con rol editorial puede ingresar a maquetar páginas dinámicas con «Editar página», pero la opción «Menú y pie» no se encuentra presente en el menú de herramientas.
+* **Causa:** El rol del usuario no tiene concedido el permiso global de edición de estructura. La modificación del menú principal y del pie de página es una facultad de alto impacto visual asignada de forma independiente a través de los permisos *«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*.
+* **Acción correctiva:**
+  1. Comunicarse con el Administrador de la plataforma.
+  2. El Administrador debe acceder al módulo **«Roles y Permisos»** del Panel Administrativo, seleccionar el rol asignado al funcionario y marcar la casilla correspondiente (**«Menú y pie del sitio web»** o **«Menú y pie de la intranet»**) dentro del grupo *Editar*.
+  3. Tras guardar los ajustes, el usuario debe actualizar la página en el navegador para que la opción aparezca disponible en su menú flotante.
+
+> **[Captura: Permiso Menú y Pie en Panel de Roles y Permisos]**
+> *Catálogo de permisos en el Panel Administrativo señalando las casillas de Menú y pie del sitio web y de la intranet.*
+>
+> **[Captura: Permiso Menú y Pie en Panel de Roles y Permisos (Móvil)]**
+> *Módulo de permisos de roles con opción de Menú y pie en vista móvil. (Móvil).*
+
+##### 4. Cambios en Menú y Pie no Reflejados entre el Sitio Web y la Intranet
+* **Situación:** Se publicaron ajustes en el menú o en el pie de página desde el Sitio Web, pero al entrar a la Intranet la navegación no muestra los nuevos enlaces (o viceversa).
+* **Causa:** Independencia de plataformas. El Sitio Web público y la Intranet son dos aplicaciones distintas con estructuras de navegación independientes, dirigidas a públicos diferentes (ciudadanía en general y funcionarios internos del SENA).
+* **Acción correctiva:**
+  1. Si un enlace o dato institucional debe figurar en ambos portales, la modificación debe realizarse de forma separada en cada uno.
+  2. Ingresar al Sitio Web, seleccionar **«Menú y pie»**, actualizar los bloques y enviar a revisión.
+  3. Ingresar a la Intranet, seleccionar **«Menú y pie»**, aplicar los cambios requeridos y enviar igualmente a revisión para su posterior publicación por el Administrador.
+
+> **[Captura: Comparativa de Navegación entre Sitio Web e Intranet]**
+> *Estructuras independientes de menú de navegación para el Sitio Web público y la Intranet institucional.*
+>
+> **[Captura: Comparativa de Navegación entre Sitio Web e Intranet (Móvil)]**
+> *Diferenciación de menús entre ambos portales en pantalla móvil. (Móvil).*
+
+---
+
+#### 3.5.1.19. Validaciones y Solución de Problemas en la Estructura y Funcionalidades del Editor Visual
+
+El Editor Visual ([Sección 3.4.3.3](#3433-estructura-y-funcionalidades-del-editor-visual)) es el entorno de maquetación interactiva donde se estructuran las páginas y sus bloques modulares. A continuación se presentan las validaciones en tiempo real, bloqueos de concurrencia, reglas de accesibilidad y contingencias operativas del editor:
+
+##### 1. Advertencia de Bloqueo por Concurrencia («Página en edición por otro usuario»)
+* **Situación:** Al intentar abrir una página en el Editor Visual, la pantalla despliega un aviso destacado informando que otro usuario se encuentra editando la página en ese momento, impidiendo modificar el contenido o recomendando no sobrescribir el borrador.
+* **Causa:** Protección de versiones simultáneas. Para evitar que dos personas realicen cambios opuestos al mismo tiempo y destruyan el trabajo de la otra, el sistema activa un bloqueo de seguridad temporal sobre la página durante el tiempo que permanezca abierta en el editor de un funcionario (con un límite de 15 minutos de inactividad).
+* **Acción correctiva:**
+  1. Ponerse en contacto con el compañero de trabajo identificado en el aviso para verificar si continúa editando o si ya finalizó su labor.
+  2. Si el otro editor ya terminó, debe guardar sus cambios y salir del editor para liberar el bloqueo de inmediato.
+  3. Si el otro usuario dejó la página abierta por olvido, esperar a que expire el tiempo de inactividad de 15 minutos, tras el cual el bloqueo se levantará de forma automática.
+  4. Una vez liberada, abrir nuevamente la página en el editor para continuar la maquetación.
+
+> **[Captura: Advertencia de Bloqueo por Concurrencia en Edición]**
+> *Notificación de advertencia en el Editor Visual informando que la página está siendo editada por otro usuario.*
+>
+> **[Captura: Advertencia de Bloqueo por Concurrencia en Edición (Móvil)]**
+> *Aviso preventivo de concurrencia de edición en pantalla móvil. (Móvil).*
+
+##### 2. Alerta de Observaciones de Rechazo en la Barra Superior del Editor
+* **Situación:** Al ingresar a maquetar una página que había sido enviada previamente a revisión, la parte superior del lienzo exhibe una franja destacada de advertencia informando que la versión fue devuelta o rechazada por el Administrador.
+* **Causa:** El Administrador revisó la página en el módulo «Páginas en revisión» del Panel Administrativo y consideró que requiere correcciones de forma o contenido antes de ser publicada, adjuntando una nota explicativa.
+* **Acción correctiva:**
+  1. Leer atentamente las observaciones consignadas en la franja superior informativa para comprender los cambios solicitados por la administración.
+  2. Realizar los ajustes requeridos en los textos, imágenes o bloques del lienzo.
+  3. Presionar **«Guardar cambios»** en la barra superior.
+  4. Pulsar **«Enviar a revisión»** e ingresar en la ventana modal una breve descripción explicando cómo se corrigieron los puntos señalados por el Administrador.
+
+> **[Captura: Franja de Observaciones de Rechazo en el Editor Visual]**
+> *Franja superior de advertencia en el Editor Visual con los comentarios y motivos de devolución del Administrador.*
+>
+> **[Captura: Franja de Observaciones de Rechazo en el Editor Visual (Móvil)]**
+> *Aviso de devolución con observaciones del Administrador en pantalla móvil. (Móvil).*
+
+##### 3. Bloqueo del Envío a Revisión por Accesibilidad (Imágenes sin Descripción)
+* **Situación:** El editor presiona el botón «Enviar a revisión», pero la ventana para ingresar el comentario no se despliega y en su lugar aparece una notificación de alerta: *«Hay imágenes sin descripción (texto alternativo). Completa la descripción antes de enviar a revisión.»*.
+* **Causa:** Cumplimiento obligatorio de estándares de accesibilidad web (WCAG AA). Para garantizar que las personas con discapacidad visual que emplean lectores de pantalla puedan comprender la información gráfica, la plataforma prohíbe enviar páginas que contengan imágenes sin texto alternativo.
+* **Acción correctiva:**
+  1. Revisar los bloques del lienzo que contengan imágenes (bloque de Imagen, Carrusel, Tarjetas o Cabecera).
+  2. Hacer clic sobre la imagen que carezca de descripción para abrir sus propiedades en el panel lateral derecho.
+  3. Localizar el campo **«Texto alternativo (descripción)»** y redactar un texto breve y claro que describa el contenido de la imagen (por ejemplo: *«Gráfica estadística de la demanda laboral en el sector agropecuario 2025»*).
+  4. Guardar los cambios y pulsar nuevamente el botón **«Enviar a revisión»**.
+
+> **[Captura: Alerta de Imágenes sin Descripción en el Editor]**
+> *Notificación de advertencia bloqueando el envío a revisión por ausencia de texto alternativo en imágenes.*
+>
+> **[Captura: Alerta de Imágenes sin Descripción en el Editor (Móvil)]**
+> *Aviso de accesibilidad por imágenes incompletas en pantalla móvil. (Móvil).*
+
+##### 4. Validación del Comentario de Cambios al Enviar a Revisión
+* **Situación:** En la ventana modal «Enviar a revisión», el botón verde de confirmación permanece desactivado o el sistema impide el envío al hacer clic sobre él.
+* **Causa:** El comentario de cambios es obligatorio y está sujeto a una regla de longitud mínima y máxima: debe contener **entre 10 y 100 caracteres**. Si se deja en blanco, contiene menos de 10 caracteres o supera el límite de 100, la acción no se procesa.
+* **Acción correctiva:**
+  1. Ubicar la casilla de texto en la ventana **«Enviar a revisión»**.
+  2. Redactar una explicación clara y concisa de las modificaciones realizadas (por ejemplo: *«Se agregaron nuevos enlaces y se actualizaron las cifras del boletín.»*).
+  3. Verificar que el texto tenga al menos 10 caracteres y no sobrepase el contador máximo de 100 caracteres.
+  4. El botón «Enviar a revisión» se habilitará en verde para confirmar el envío hacia el Panel Administrativo.
+
+> **[Captura: Validación de Caracteres en Modal Enviar a Revisión]**
+> *Ventana modal «Enviar a revisión» mostrando la casilla de comentario con el contador de caracteres permitido.*
+>
+> **[Captura: Validación de Caracteres en Modal Enviar a Revisión (Móvil)]**
+> *Modal de envío a revisión con validación de longitud de comentario en pantalla móvil. (Móvil).*
+
+##### 5. Dificultades para Arrastrar, Soltar o Reordenar Bloques en el Lienzo
+* **Situación:** Al intentar mover un bloque desde el catálogo lateral izquierdo hacia el lienzo, o al intentar reordenar bloques existentes hacia arriba o hacia abajo, el elemento regresa a su posición previa o no se ubica en el sitio deseado.
+* **Causa:** 
+  1. Soltado fuera de las zonas activas de inserción (no se esperó la aparición de la franja azul indicadora).
+  2. Limitaciones de precisión táctil al operar desde pantallas móviles o tabletas.
+* **Acción correctiva:**
+  1. Al arrastrar un bloque, mover lentamente el cursor sobre el lienzo hasta visualizar la línea horizontal o recuadro azul que indica el espacio exacto donde se insertará el bloque antes de soltar el botón del ratón.
+  2. Para organizar bloques existentes con máxima precisión, utilizar la herramienta **Explorador de capas** en el panel lateral, haciendo clic en los botones de flecha hacia arriba o hacia abajo para mover los bloques de posición sin necesidad de arrastrarlos con el ratón.
+  3. En dispositivos táctiles, preferir siempre los botones de ordenamiento del panel de capas en lugar del arrastre libre.
+
+> **[Captura: Indicador de Inserción y Reordenamiento con Explorador de Capas]**
+> *Lienzo del Editor Visual con línea azul de inserción y panel de capas con botones de subir y bajar.*
+>
+> **[Captura: Indicador de Inserción y Reordenamiento con Explorador de Capas (Móvil)]**
+> *Uso del explorador de capas para reordenar bloques en pantalla táctil móvil. (Móvil).*
+
+##### 6. Prevención de Pérdida de Datos ante Salida sin Guardar
+* **Situación:** El usuario hace clic en el enlace para volver a la página de navegación o intenta cerrar la pestaña del navegador, y la pantalla emite una advertencia preventiva: *«Es posible que los cambios que aplicaste no se guarden»*.
+* **Causa:** Mecanismo de seguridad contra pérdida involuntaria de trabajo. Existen cambios y modificaciones en el lienzo que aún no han sido guardados mediante el botón «Guardar borrador».
+* **Acción correctiva:**
+  1. Si se desea conservar los cambios realizados, presionar **«Cancelar»** o **«Permanecer en la página»** en el diálogo de advertencia.
+  2. Hacer clic de inmediato en el botón **«Guardar cambios»** de la barra superior del editor para asegurar el contenido.
+  3. Si deliberadamente se desea descartar las modificaciones y volver al estado previo, confirmar la salida del navegador.
+
+> **[Captura: Advertencia de Salida con Cambios Sin Guardar]**
+> *Alerta preventiva del sistema al intentar abandonar el editor visual con modificaciones pendientes de guardar.*
+>
+> **[Captura: Advertencia de Salida con Cambios Sin Guardar (Móvil)]**
+> *Aviso de salida sin guardar en dispositivo móvil. (Móvil).*
+
+---
+
+#### 3.5.1.20. Validaciones y Solución de Problemas en la Creación de Nuevas Páginas
+
+El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación-de-nuevas-páginas-paso-a-paso)) transforma automáticamente el título ingresado en una dirección web de navegación limpia y comprueba su validez en tiempo real. A continuación se presentan las validaciones campo a campo, restricciones de rutas y acciones correctivas ante cada eventualidad:
+
+##### 1. Nombre que no Produce una Ruta Válida
+* **Situación:** Al escribir en la casilla «Nombre de la página», debajo se muestra el mensaje de advertencia: *«Ese nombre no produce una ruta. Usa al menos una letra o un número.»* y el botón **«Crear y editar»** permanece deshabilitado.
+* **Causa:** Se ingresaron únicamente caracteres especiales, signos de puntuación, emojis o espacios en blanco (por ejemplo: `***`, `---`, `???` o `   `), los cuales son descartados por el generador de rutas limpias, dejando una dirección web vacía.
+* **Acción correctiva:** Incluir al menos una letra o un número en el título descriptivo para que el sistema pueda generar la dirección web correspondiente.
+
+> **[Captura: Validación de Nombre sin Ruta Válida]**
+> *Mensaje de advertencia en el formulario modal indicando que el texto ingresado no produce una dirección web válida.*
+>
+> **[Captura: Validación de Nombre sin Ruta Válida (Móvil)]**
+> *Alerta de nombre sin ruta válida en formulario móvil. (Móvil).*
+
+##### 2. Ruta Resultante con Menos de 2 Caracteres
+* **Situación:** El formulario despliega la advertencia: *«La ruta necesita al menos 2 caracteres.»* e impide guardar la creación.
+* **Causa:** El texto digitado solo genera un único caracter alfanumérico en la ruta web (por ejemplo: ingresar `A` produce `/a` o `1` produce `/1`). Por estándar de navegación de la plataforma, toda ruta web requiere un mínimo de dos caracteres útiles.
+* **Acción correctiva:** Escribir un nombre más representativo o descriptivo que contenga al menos dos caracteres útiles (por ejemplo: *«Página A»*, *«Faq»* o *«Glosario»*).
+
+> **[Captura: Validación de Ruta con Menos de Dos Caracteres]**
+> *Advertencia en la ventana modal indicando el requerimiento de al menos dos caracteres para la dirección web.*
+>
+> **[Captura: Validación de Ruta con Menos de Dos Caracteres (Móvil)]**
+> *Aviso de longitud mínima de ruta en dispositivo móvil. (Móvil).*
+
+##### 3. Ruta Reservada por la Plataforma
+* **Situación:** Tras escribir el nombre, la ventana modal muestra la alerta: *«Esa ruta está reservada por el sistema. Elige otro nombre.»*.
+* **Causa:** La dirección web generada coincide con una ruta técnica, administrativa o estructural protegida de la plataforma (por ejemplo: `inicio`, `login`, `admin-panel`, `clasificacion`, `intranet`, etc.).
+* **Acción correctiva:** Modificar el título de la página agregando palabras complementarias o sinónimos (por ejemplo: en vez de *«Inicio»*, titular *«Portal de Bienvenida»* o *«Página Principal Informativa»*).
+
+> **[Captura: Alerta de Ruta Reservada por el Sistema]**
+> *Notificación de advertencia en el formulario impidiendo el uso de direcciones web reservadas por la plataforma.*
+>
+> **[Captura: Alerta de Ruta Reservada por el Sistema (Móvil)]**
+> *Aviso de ruta reservada en pantalla móvil. (Móvil).*
+
+##### 4. Ruta Duplicada (Página ya Existente con la Misma Dirección)
+* **Situación:** Al finalizar de escribir el nombre, aparece la advertencia: *«Ya existe una página en la ruta /[nombre]. Elige otro nombre.»*.
+* **Causa:** Ya existe en el portal otra página (sea en borrador, en revisión o publicada) que utiliza exactamente la misma dirección web.
+* **Acción correctiva:**
+  1. Modificar el título para generar una dirección web única (por ejemplo: agregar el año, la regional o el público objetivo: *«Bolsa de Empleo Regional 2025»*).
+  2. Si la página existente con esa ruta ya no es requerida y se cuenta con los permisos necesarios, navegar a dicha página y eliminarla antes de crear la nueva.
+
+> **[Captura: Alerta de Ruta Duplicada en Creación de Página]**
+> *Mensaje preventivo informando que la dirección web ya se encuentra asignada a otra página del portal.*
+>
+> **[Captura: Alerta de Ruta Duplicada en Creación de Página (Móvil)]**
+> *Alerta de dirección web duplicada en dispositivo móvil. (Móvil).*
+
+##### 5. Límite Máximo de Caracteres en el Título (Hasta 120 Caracteres)
+* **Situación:** El editor intenta escribir un título extenso o pegar una descripción completa y el campo bloquea el ingreso de más texto.
+* **Causa:** Restricción de longitud del campo. La casilla «Nombre de la página» admite un máximo estricto de 120 caracteres para asegurar que los títulos sean legibles en menús, pestañas del navegador y barras de navegación.
+* **Acción correctiva:** Escribir un nombre conciso y representativo dentro de los 120 caracteres permitidos. La información extensa, párrafos o antecedentes institucionales deben redactarse posteriormente en los bloques de texto del Editor Visual.
+
+> **[Captura: Campo de Nombre con Límite de Caracteres]**
+> *Formulario modal de creación con título dentro del límite permitido de 120 caracteres.*
+>
+> **[Captura: Campo de Nombre con Límite de Caracteres (Móvil)]**
+> *Control de longitud máxima de título en pantalla móvil. (Móvil).*
+
+##### 6. Comprensión del Estado Inicial Borrador en Páginas Nuevas
+* **Situación:** El usuario crea una página y observa el recuadro informativo: *«La página se creará en estado borrador, NO será pública hasta que sea aprobada por el administrador.»*. Luego, al buscar la página en el portal público o en otro navegador sin iniciar sesión, comprueba que la página no está visible.
+* **Causa:** Control del flujo editorial. Toda página recién creada nace de forma segura en estado Borrador; permanece visible únicamente para los editores con permisos y no se publica a la ciudadanía hasta completar el ciclo de maquetación y recibir la aprobación del Administrador.
+* **Acción correctiva:**
+  1. Diseñar y maquetar los bloques deseados en el Editor Visual.
+  2. Al culminar el diseño, presionar el botón **«Enviar a revisión»** en la barra superior del editor.
+  3. Solicitar al Administrador la revisión y aprobación definitiva en el Panel Administrativo para que la página sea publicada.
+
+> **[Captura: Aviso de Estado Borrador en Formulario de Creación]**
+> *Recuadro informativo al pie del modal advirtiendo que la página se creará en estado borrador sin visibilidad pública inicial.*
+>
+> **[Captura: Aviso de Estado Borrador en Formulario de Creación (Móvil)]**
+> *Aviso de estado borrador en pantalla móvil. (Móvil).*
+
+---
+
 ### 3.5.2. Preguntas Frecuentes
 
 #### 3.5.2.1. Problemas de acceso por bloqueo
@@ -4072,20 +4398,20 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 **Acción:** El editor debe enviar la página a revisión y esperar a que el Administrador la apruebe definitivamente para su publicación.
 
 #### 3.5.2.3. Bloqueo al intentar eliminar páginas
-**Situación:** El sistema no muestra la opción o presenta el mensaje de advertencia *«Página en uso en la navegación»* (o *«Página en uso en el portal»*) bloqueando el borrado de una página.
-**Posible causa:** Se está intentando retirar una ruta fija protegida del sistema (como las interfaces de inicio de sesión o áreas de gestión), o bien la página seleccionada cuenta con enlaces activos en el menú principal o en botones de otras secciones del portal.
+**Situación:** El sistema presenta el mensaje de advertencia *«Página en uso en la navegación»* (o *«Página en uso en el portal»*) impidiendo confirmar la eliminación de una página.
+**Posible causa:** La página seleccionada cuenta con enlaces activos en el menú de navegación, en el pie de página o dentro de botones de otras páginas del portal (o bien se trata de una página fija protegida del sistema que no puede borrarse).
 **Acción:** 
-* Las rutas fijas del sistema están protegidas permanentemente y no son eliminables.
-* Si se trata de una página de contenido, seguir la guía paso a paso que presenta el propio mensaje de advertencia:
-  1. Acceder a **«Editar Menú y pie»** o a la página específica indicada donde reside el enlace.
-  2. Localizar en el editor el componente que contiene el botón con el enlace a la página.
-  3. Borrar el enlace asignado en la configuración del componente y guardar los cambios.
-  4. Regresar a la página y abrir de nuevo la opción **«Eliminar página»** para confirmar la operación escribiendo su nombre exacto.
+* Las rutas y herramientas fijas del sistema están protegidas permanentemente y no se pueden eliminar.
+* Si se trata de una página de contenido, seguir la guía guiada de 4 pasos que detalla la propia ventana de advertencia:
+  1. Acceder a **«Editar Menú y pie»** (o a la página correspondiente indicada donde reside el enlace).
+  2. En el editor, hacer clic en el bloque señalado (ej.: *«Pie de página»*) y abrir en el panel lateral derecho la lista o campo especificado (ej.: *«Enlaces inferiores · fila 3»*).
+  3. Localizar el enlace por su nombre exacto y eliminarlo mediante el ícono de papelera, o cambiarle la dirección web hacia otra página.
+  4. Presionar **«Enviar a revisión»** en la barra superior del editor para que el Administrador apruebe y publique la actualización sin el enlace. Una vez publicado el cambio, regresar a la página y abrir de nuevo **«Eliminar página»** para completar el borrado digitando su nombre exacto.
 * Si la página se encuentra publicada, tener presente la advertencia en pantalla: una vez confirmada la eliminación, su contenido dejará de estar visible de inmediato para el público.
 
-#### 3.5.2.4. Imposibilidad de crear nuevas secciones
+#### 3.5.2.4. Imposibilidad de crear nuevas páginas
 **Situación:** Un editor no encuentra o no puede usar la opción para crear páginas nuevas.
-**Posible causa:** Al usuario se le asignó un "Rol derivado de Editor" que no tiene activado el permiso manual de "Crear secciones".
+**Posible causa:** Al usuario se le asignó un "Rol derivado de Editor" que no tiene activado el permiso manual de "Crear páginas".
 **Acción:** El usuario debe solicitar al Administrador del sistema la activación de dicho permiso en el Panel Administrativo.
 
 #### 3.5.2.5. Inicio de sesión y credenciales entre Sitio Web e Intranet
@@ -4111,22 +4437,23 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 3. En el selector de **«Repetición de imagen»**, elegir `no-repeat` si se trata de una fotografía o ilustración temática única, o `repeat` si se utiliza un patrón geométrico o textura de trama sutil.
 4. Guardar los cambios en el editor y previsualizar la página en modos claro y oscuro antes de enviar a revisión.
 
-#### 3.5.2.8. Mensajes de estado y contingencias en el Buscador de Ocupaciones CNO/CUOC
-**Situación:** Al consultar ocupaciones en `/clasificacion`, el usuario visualiza mensajes como *«No se encontró la ocupación»*, *«No se pudo consultar el catálogo de ocupaciones»* o una demora temporal con alerta de reintento.
-**Posibles causas y reglas técnicas de la plataforma:**
-1. **Código con longitud incorrecta:** Si se ingresa un código que no corresponde a 4 dígitos numéricos (CNO) o 5 dígitos numéricos (CUOC), el intermediario del servidor valida la cadena y devuelve 404 de inmediato sin consumir peticiones de red externas.
-2. **Límite de peticiones por minuto (*Rate Limiting* - Código 429):** La API pública oficial CNO/CUOC impone una cuota compartida de 300 peticiones por minuto por llave institucional. Para mitigar saturaciones, el servidor del OLO almacena en memoria caché las fichas técnicas durante 1 hora (hasta 500 registros). Si se sobrepasa la cuota en ráfagas de alta demanda, el servidor devuelve 429 respetando la cabecera `Retry-After`.
-3. **Indisponibilidad del servicio central o error de llave (Códigos 502/503):** Si la API central presenta interrupciones o la variable de entorno `CNO_API_KEY` no se encuentra configurada en el servidor, el aplicativo oculta los detalles técnicos de infraestructura al visitante y despliega el mensaje amigable : *«No se pudo consultar el catálogo de ocupaciones»*.
+#### 3.5.2.8. Mensajes de estado en el Buscador de Ocupaciones CNO/CUOC
+**Situación:** Al buscar ocupaciones en el catálogo, en pantalla pueden mostrarse mensajes como *«No se encontró la ocupación»*, *«No se pudo consultar el catálogo de ocupaciones»* o el buscador tarda en responder.
+**Qué significan estos mensajes:**
+1. **«No se encontró la ocupación»:** La palabra o código ingresado no coincide con ninguna ocupación registrada en los catálogos CNO o CUOC.
+2. **Código incompleto o con formato diferente:** Si buscas por código numérico, debe tener exactamente **4 dígitos** para la CNO (por ejemplo: `2173`) o **5 dígitos** para la CUOC (por ejemplo: `25120`). Si faltan o sobran números, el sistema no encuentra coincidencias.
+3. **«No se pudo consultar el catálogo de ocupaciones»:** Existe una interrupción momentánea de conexión con la base oficial del catálogo ocupacional.
 **Acción:** 
-* Si la búsqueda fue por código, verificar que contenga exactamente 4 dígitos para CNO o 5 para CUOC.
-* Si el mensaje corresponde a congestión temporal (429), esperar breves segundos y pulsar nuevamente en «Buscar».
-* Si la indisponibilidad persiste, verificar la conectividad a Internet o reportarlo al equipo técnico para la validación de las credenciales de servicio en el contenedor del portal.
+* Si buscas por código, verifica que contenga exactamente 4 dígitos (CNO) o 5 dígitos (CUOC).
+* Si buscas por texto o profesión, intenta escribir palabras clave más amplias o comunes (por ejemplo: *«enfermería»*, *«sistemas»*, *«mecánica»*).
+* Si aparece el aviso de que no se pudo consultar, espera unos momentos y presiona nuevamente el botón **«Buscar»**.
+* Si la situación persiste, revisa tu conexión a internet o intenta nuevamente más tarde.
 
-#### 3.5.2.9. Subida de archivos y descargas binarias bajo el proxy de seguridad del servidor
-**Situación:** Un funcionario tiene dudas sobre si las cargas de plantillas masivas de Excel o los logotipos en el panel administrativo sufren alteraciones de datos, o si los archivos descargados conservan su formato original.
-**Aclaración y arquitectura de seguridad:**
-* **Canalización por Proxy Endurecido:** Todas las comunicaciones entre el navegador web y los microservicios backend pasan a través de canales seguros del servidor, evitando exponer la dirección IP o puertos internos del sistema.
-* **Transmisión Streaming Multipart:** Para archivos pesados (como matrices de actualización de Excel `.xlsx` en `/admin-panel/update-section` o imágenes `.png` en `/admin-panel/configuration`), el servidor canaliza los flujos de datos en formato binario continuo (*streaming*) sin decodificación intermedia, evitando corrupciones de archivo o desbordamientos de memoria en el servidor.
-* **Descargas Binarias Protegidas:** Las plantillas oficiales de Excel y los reportes generados se descargan directamente con sus cabeceras HTTP de tipo MIME intactas (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`), garantizando compatibilidad absoluta con Microsoft Excel, LibreOffice y visores en línea.
+#### 3.5.2.9. Compatibilidad y seguridad en la subida y descarga de archivos
+**Situación:** Un funcionario tiene dudas sobre si los archivos de Excel o las imágenes subidas al sistema se alteran, o si los reportes y plantillas descargadas abren correctamente en sus programas.
+**Aclaración para el usuario:**
+* **Conservación de datos en archivos Excel:** Las matrices y archivos de Excel cargados en el sistema conservan su contenido y estructura original sin modificaciones accidentales.
+* **Formatos de descarga estándar:** Todas las plantillas oficiales y reportes que descargas se guardan en formato estándar `.xlsx` (Excel), abriendo sin problemas en Microsoft Excel, LibreOffice u otros visores compatibles.
+* **Imágenes del portal:** Las imágenes y logotipos cargados en el sistema conservan su formato original (como `.png` o `.jpg`) manteniendo su calidad visual en el portal.
 
 

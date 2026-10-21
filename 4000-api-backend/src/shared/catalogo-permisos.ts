@@ -246,7 +246,7 @@ export const permisoDeSeccion = (
     etiqueta: esPlantilla ? `Menú y pie de ${NOMBRE_DE_AMBITO[ambito]}` : nombre,
     descripcion: esPlantilla
       ? `Editar la cabecera y el pie que comparten TODAS las páginas de ${NOMBRE_DE_AMBITO[ambito]}.`
-      : `Editar la sección «${nombre}» de ${NOMBRE_DE_AMBITO[ambito]}.`,
+      : `Editar la página «${nombre}» de ${NOMBRE_DE_AMBITO[ambito]}.`,
     grupo: esPlantilla ? 'plantilla' : (`secciones-${ambito}` as GrupoDePermiso),
     esFrontera: true,
   };
