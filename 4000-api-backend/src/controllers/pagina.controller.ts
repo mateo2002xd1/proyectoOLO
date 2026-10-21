@@ -44,7 +44,7 @@ const ambitoDe = (req: Request) => resolverAmbito(req.header(AMBITO_HEADER));
  * tienen su `/inicio`, así que un ámbito equivocado no da error — da la página de la
  * otra aplicación. Los dos clientes mandan la cabecera siempre
  * (`3001-intranet/src/shared/lib/api-client.ts`, `CABECERAS_DEL_SITIO` en
- * `3000-sitio-web/src/features/paginas/model/ambito.ts`), de
+ * `3000-sitio-web/src/features/editor/model/ambito.ts`), de
  * modo que exigirla no rompe a nadie y convierte en 400 lo que antes era escribir en
  * el sitio equivocado en silencio.
  */

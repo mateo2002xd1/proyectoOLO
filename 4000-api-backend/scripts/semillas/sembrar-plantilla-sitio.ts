@@ -38,7 +38,7 @@ const AMBITO = 'sitio' as const;
 
 /**
  * Los mismos valores que hoy sirve `CABECERA_POR_DEFECTO`
- * (`3000-sitio-web/src/features/paginas/menu-y-pie/cabecera-por-defecto.ts`),
+ * (`3000-sitio-web/src/features/editor/navegation/cabecera-por-defecto.ts`),
  * que es lo que `obtenerPlantilla()` usa como cabecera cuando no hay página
  * `plantilla` — es decir, exactamente lo que ya está en pantalla. Sembrar la
  * página con estos valores no cambia nada visible; solo lo vuelve editable.
