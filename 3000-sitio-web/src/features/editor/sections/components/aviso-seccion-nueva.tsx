@@ -38,7 +38,7 @@ export function AvisoSeccionNueva({ slug }: { slug: string }) {
   return (
     <div className="aviso-seccion-nueva">
       <span>
-        Sección creada. Su dirección es <code>{ruta}</code>
+        Página creada. Su dirección es <code>{ruta}</code>
       </span>
       <button type="button" onClick={copiar} className="aviso-seccion-nueva-copiar">
         {copiado ? 'Copiado' : 'Copiar enlace'}

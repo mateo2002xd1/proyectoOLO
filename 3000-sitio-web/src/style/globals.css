@@ -932,13 +932,14 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   justify-content: center;
   width: 40px;
   height: 40px;
-  color: var(--color-primary-darkest);
+  color: #ffffff;
   border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .olo-menu-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .olo-mobile-menu {
@@ -1075,6 +1076,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 
   .olo-menu-btn {
     display: flex;
+    color: #ffffff;
+  }
+
+  .olo-menu-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 

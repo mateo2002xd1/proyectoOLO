@@ -103,7 +103,7 @@ export const enviarARevisionSchema = z
  */
 export const crearSeccionSchema = z
   .object({
-    titulo: z.string().trim().min(1, 'La sección necesita un nombre.').max(120),
+    titulo: z.string().trim().min(1, 'La página necesita un nombre.').max(120),
   })
   .strict();
 

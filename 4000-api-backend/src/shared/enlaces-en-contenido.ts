@@ -46,14 +46,24 @@ const esBloque = (objeto: Record<string, unknown>): boolean =>
   typeof objeto.type === 'string' && typeof objeto.props === 'object' && objeto.props !== null;
 
 /** Claves que en este contenido significan «a dónde lleva esto». */
-const CLAVES_DE_ENLACE = ['href', 'url'];
+const CLAVES_DE_ENLACE = [
+  'href',
+  'url',
+  'urlEnlace',
+  'enlace',
+  'enlaceBoton',
+  'govBannerEnlace',
+  'link',
+  'urlDestino',
+  'enlaceUrl',
+];
 
 /**
  * Claves de las que sale el texto visible, en orden de preferencia.
  *
- * `label` lo usan los menús, `texto` el pie, `etiqueta` las descargas y `titulo` las
- * tarjetas. Se busca en el **mismo objeto** que el enlace porque es donde está: un
- * `{ label, href }` es la forma que tienen todos.
+ * `label` lo usan los menús, `texto` el pie y los botones, `etiqueta` las descargas y
+ * `titulo` las tarjetas. Se busca en el **mismo objeto** que el enlace o se hereda
+ * del bloque contenedor.
  */
 const CLAVES_DE_TEXTO = ['label', 'texto', 'etiqueta', 'titulo', 'title'];
 
@@ -99,14 +109,18 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
   // un recorrido recursivo sin red se cuelga en vez de fallar si algún día las tiene.
   const visitados = new WeakSet<object>();
 
-  /** Apunta los `href`/`url` de `objeto` que llevan a la ruta. */
-  const registrar = (objeto: Record<string, unknown>, ubicacion: (clave: string) => Ubicacion): void => {
-    for (const clave of CLAVES_DE_ENLACE) {
-      const valor = objeto[clave];
-      if (typeof valor === 'string' && apuntaA(valor, ruta)) {
+  /** Apunta los enlaces de `objeto` que llevan a la ruta. */
+  const registrar = (
+    objeto: Record<string, unknown>,
+    ubicacion: (clave: string) => Ubicacion,
+    textoDelBloque: string | null
+  ): void => {
+    for (const [clave, valor] of Object.entries(objeto)) {
+      if (typeof valor === 'string' && CLAVES_DE_ENLACE.includes(clave) && apuntaA(valor, ruta)) {
         const claveTexto = CLAVES_DE_TEXTO.find((c) => typeof objeto[c] === 'string' && objeto[c]);
+        const textoVisible = claveTexto ? String(objeto[claveTexto]) : textoDelBloque;
         encontrados.push({
-          texto: claveTexto ? String(objeto[claveTexto]) : null,
+          texto: textoVisible,
           href: valor,
           ...ubicacion(clave),
         });
@@ -114,13 +128,13 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
     }
   };
 
-  const recorrer = (nodo: unknown, ubicacion: Ubicacion): void => {
+  const recorrer = (nodo: unknown, ubicacion: Ubicacion, textoDelBloque: string | null): void => {
     if (nodo === null || typeof nodo !== 'object') return;
     if (visitados.has(nodo)) return;
     visitados.add(nodo);
 
     if (Array.isArray(nodo)) {
-      nodo.forEach((hijo) => recorrer(hijo, ubicacion));
+      nodo.forEach((hijo) => recorrer(hijo, ubicacion, textoDelBloque));
       return;
     }
 
@@ -132,15 +146,21 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
       const bloque = objeto.type as string;
       const props = objeto.props as Record<string, unknown>;
       visitados.add(props);
-      registrar(props, (clave) => ({ bloque, campo: clave }));
-      for (const [campo, valor] of Object.entries(props)) recorrer(valor, { bloque, campo });
+
+      const claveTextoProp = CLAVES_DE_TEXTO.find((c) => typeof props[c] === 'string' && props[c]);
+      const textoDeProps = claveTextoProp ? String(props[claveTextoProp]) : null;
+
+      registrar(props, (clave) => ({ bloque, campo: clave }), textoDeProps);
+      for (const [campo, valor] of Object.entries(props)) {
+        recorrer(valor, { bloque, campo }, textoDeProps);
+      }
       return;
     }
 
-    registrar(objeto, () => ubicacion);
-    Object.values(objeto).forEach((hijo) => recorrer(hijo, ubicacion));
+    registrar(objeto, () => ubicacion, textoDelBloque);
+    Object.values(objeto).forEach((hijo) => recorrer(hijo, ubicacion, textoDelBloque));
   };
 
-  recorrer(contenido, { bloque: null, campo: null });
+  recorrer(contenido, { bloque: null, campo: null }, null);
   return encontrados;
 }

@@ -31,22 +31,22 @@ const GRUPOS: { id: string; titulo: string; ayuda: string; sensible?: boolean }[
     id: 'plantilla',
     titulo: 'Editar',
     ayuda:
-      'Cambia la cabecera y el pie de TODAS las páginas de esa aplicación, no de una sección.',
+      'Cambia la cabecera y el pie de TODAS las páginas de esa aplicación, no de una página.',
   },
   {
     id: 'secciones-sitio',
-    titulo: 'Secciones del sitio web',
+    titulo: 'Páginas del sitio web',
     ayuda: 'Cada una es una página del portal público.',
   },
   {
     id: 'secciones-intranet',
-    titulo: 'Secciones de la intranet',
+    titulo: 'Páginas de la intranet',
     ayuda: 'Cada una es una página de la intranet.',
   },
   {
     id: 'editor',
     titulo: 'Qué puede hacer dentro del editor',
-    ayuda: 'Se aplica a todas las secciones que tenga concedidas.',
+    ayuda: 'Se aplica a todas las páginas que tenga concedidas.',
   },
 
   {
