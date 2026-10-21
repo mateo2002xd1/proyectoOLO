@@ -136,7 +136,7 @@ export function requierePermisoDeSeccion() {
         // porque una sección creada desde el editor existe sin estar en esa lista y su
         // propio creador se comía un 404 al ir a llenarla.
         if (!(await esSeccionConocida(ambito, slug))) {
-          return res.status(404).json({ error: 'Sección no encontrada' });
+          return res.status(404).json({ error: 'Página no encontrada' });
         }
 
         const resultado = await resolverPermisos(req, res);
@@ -146,13 +146,13 @@ export function requierePermisoDeSeccion() {
         const permisoAcceso = ambito === 'sitio' ? 'acceso.sitio' : 'acceso.intranet';
         if (!resultado.perms.includes(permisoAcceso)) {
           return res.status(403).json({
-            error: `No tienes acceso a ${ambito}, por tanto no puedes editar sus secciones.`,
+            error: `No tienes acceso a ${ambito}, por tanto no puedes editar sus páginas.`,
           });
         }
 
         if (!resultado.perms.includes(claveDeSeccion(ambito, slug))) {
           return res.status(403).json({
-            error: 'No tienes permiso para editar esta sección',
+            error: 'No tienes permiso para editar esta página',
           });
         }
         next();

@@ -189,7 +189,7 @@ function AccionesCabecera({
       >
         <IconoGuardar />
         <span className="olo-editor-tooltip" aria-hidden="true">
-          {sinCandado ? "Ya no tienes esta sección reservada" : (isSaving ? "Guardando…" : "Guardar borrador")}
+          {sinCandado ? "Ya no tienes esta página reservada" : (isSaving ? "Guardando…" : "Guardar borrador")}
         </span>
       </button>
       <button
@@ -201,7 +201,7 @@ function AccionesCabecera({
       >
         <IconoEnviar />
         <span className="olo-editor-tooltip" aria-hidden="true">
-          {sinCandado ? "Ya no tienes esta sección reservada" : (isSendingToReview ? "Enviando…" : "Enviar a revisión")}
+          {sinCandado ? "Ya no tienes esta página reservada" : (isSendingToReview ? "Enviando…" : "Enviar a revisión")}
         </span>
       </button>
     </div>

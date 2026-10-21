@@ -143,7 +143,7 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
 export const ETIQUETA_ENTIDAD: Record<EntidadAuditable, string> = {
   contenido: 'Contenido',
   pagina: 'Página',
-  seccion: 'Sección',
+  seccion: 'Página',
   usuario: 'Usuario',
   rol: 'Rol',
   marca: 'Marca',

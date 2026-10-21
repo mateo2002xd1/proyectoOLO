@@ -114,10 +114,10 @@ const listaDeTexto = (valor: unknown): string | null =>
 const ETIQUETA_DE_PERMISO = new Map(CATALOGO_PERMISOS.map((p) => [p.clave, p.etiqueta]));
 
 /**
- * Un permiso como lo ve una persona: `«Crear secciones nuevas»`, no `secciones.crear`.
+ * Un permiso como lo ve una persona: `«Crear páginas nuevas»`, no `secciones.crear`.
  *
- * Los de sección se dicen enteros —`de editar la sección «Inicio» del sitio web`—
- * porque en el catálogo su etiqueta es solo el nombre de la sección, y «el permiso
+ * Los de sección se dicen enteros —`de editar la página «Inicio» del sitio web`—
+ * porque en el catálogo su etiqueta es solo el nombre de la página, y «el permiso
  * «Inicio»» no le dice a nadie qué deja hacer. Las secciones creadas desde el editor
  * no están en el catálogo: se nombran por su ruta.
  */
@@ -128,7 +128,7 @@ const nombreDePermiso = (clave: unknown): string | null => {
   const seccion = partesDeClaveDeSeccion(texto);
   if (seccion) {
     const nombre = ETIQUETA_DE_PERMISO.get(texto) ?? seccion.slug;
-    return `de editar la sección «${nombre}» ${DEL_PORTAL[seccion.ambito] ?? `de ${seccion.ambito}`}`;
+    return `de editar la página «${nombre}» ${DEL_PORTAL[seccion.ambito] ?? `de ${seccion.ambito}`}`;
   }
 
   const fija = ETIQUETA_DE_PERMISO.get(texto);
@@ -234,7 +234,7 @@ const VERBO_DE_ACCION: Record<AccionAuditable, string> = {
 
 const ALGO_DE_ESTE_TIPO: Record<EntidadAuditable, string> = {
   pagina: 'una página',
-  seccion: 'una sección',
+  seccion: 'una página',
   usuario: 'una cuenta de usuario',
   rol: 'un rol',
   marca: 'la marca',

@@ -259,7 +259,7 @@ export function RevisionQueueView() {
                   {/* Solo en acordeón (en la tabla, `display: none`): la frase de la fila.
                       Plegada, la corta; desplegada, la frase entera en vez de una ficha de
                       datos con etiquetas (pedido del usuario, 2026-10-10: «muy saturada»):
-                      «Ana envió la versión 3 de la sección /contacto del sitio web el …».
+                      «Ana envió la versión 3 de la página /contacto del sitio web el …».
                       Debajo, el comentario y los botones. */}
                   <td data-resumen>
                     <ResumenDeFila abierta={abierta} onAlternar={() => alternar(pagina.id)}>
@@ -267,7 +267,7 @@ export function RevisionQueueView() {
                       versión {pagina.numeroVersion} de{' '}
                       {abierta ? (
                         <>
-                          la sección <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(pagina.slug)}</span> de
+                          la página <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(pagina.slug)}</span> de
                           {pagina.ambito === 'intranet' ? ' la ' : 'l '}
                           <span className={RESALTE_DE_FILA}>{pagina.ambito === 'intranet' ? 'intranet' : 'sitio web'}</span> el{' '}
                           <span className={RESALTE_DE_FILA}>{fechaDeFila(pagina.creadoEn)}</span>

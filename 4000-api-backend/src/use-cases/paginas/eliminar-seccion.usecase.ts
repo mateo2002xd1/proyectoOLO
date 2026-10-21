@@ -98,7 +98,7 @@ export const analizarEliminacion = async (
   ambito: Ambito
 ): Promise<AnalisisDeEliminacion> => {
   const pagina = await Pagina.findOne({ where: { slug, ambito } });
-  if (!pagina) throw fallo('La sección no existe.', 404);
+  if (!pagina) throw fallo('La página no existe.', 404);
 
   const versiones = await PaginaVersion.count({ where: { paginaId: pagina.id } });
 
@@ -183,7 +183,7 @@ async function limpiarArchivosDeSeccionEliminada(paginaId: string, ambito: Ambit
     eliminarDirectorioBackupCompleto(paginaId, ambito);
     await borrarArchivosHuerfanos(rutas, ambito);
   } catch (error) {
-    console.error(`[paginas] No se pudieron limpiar los archivos de la sección ${paginaId}:`, error);
+    console.error(`[paginas] No se pudieron limpiar los archivos de la página ${paginaId}:`, error);
   }
 }
 
@@ -229,7 +229,7 @@ export const eliminarSeccion = async (
       .join('; ');
     throw fallo(
       `Todavía hay ${analisis.referencias.length} enlace(s) apuntando a /${slug} (${donde}). ` +
-        'Quítalos antes de eliminar la sección.',
+        'Quítalos antes de eliminar la página.',
       409
     );
   }
@@ -237,7 +237,7 @@ export const eliminarSeccion = async (
   const esperado = analisis.titulo.trim().toLowerCase();
   if ((confirmacion ?? '').trim().toLowerCase() !== esperado) {
     throw fallo(
-      `Para confirmar hay que escribir el nombre de la sección: «${analisis.titulo}».`,
+      `Para confirmar hay que escribir el nombre de la página: «${analisis.titulo}».`,
       400
     );
   }

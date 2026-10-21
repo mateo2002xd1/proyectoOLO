@@ -49,7 +49,7 @@ function etiquetaCorta(item: ItemMenuIntranet): string {
     return texto.length <= 12 ? texto : texto.split(/\s+/)[0];
   }
   const seccion = seccionDe(item);
-  return seccion ? seccion.charAt(0).toUpperCase() + seccion.slice(1).replace(/-/g, ' ') : 'Sección';
+  return seccion ? seccion.charAt(0).toUpperCase() + seccion.slice(1).replace(/-/g, ' ') : 'Página';
 }
 
 function icono(item: ItemMenuIntranet) {
@@ -146,7 +146,7 @@ export function NavegacionMobileIntranet({ menuItems, fondo, onBuscar }: Navegac
 
   return (
     <NavegacionMobile
-      etiqueta="Secciones de la intranet"
+      etiqueta="Páginas de la intranet"
       destinos={destinos}
       inicio={{
         href: itemInicio?.href === '/' ? '/inicio' : itemInicio?.href ?? '/inicio',

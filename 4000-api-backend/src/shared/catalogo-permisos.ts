@@ -146,7 +146,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
 
   {
     clave: 'secciones.crear',
-    etiqueta: 'Crear secciones nuevas',
+    etiqueta: 'Crear páginas nuevas',
     descripcion:
       'Añadir páginas al portal. Cada una estrena una ruta y una clave de permiso, que se concede al rol de quien la crea.',
     grupo: 'editor',
@@ -154,9 +154,9 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
   },
   {
     clave: 'secciones.eliminar',
-    etiqueta: 'Eliminar secciones',
+    etiqueta: 'Eliminar páginas',
     descripcion:
-      'Borrar páginas creadas desde el editor, con su contenido y su historial de versiones. No se puede deshacer. Las secciones del sistema nunca se pueden borrar.',
+      'Borrar páginas creadas desde el editor, con su contenido y su historial de versiones. No se puede deshacer. Las páginas del sistema nunca se pueden borrar.',
     grupo: 'editor',
     esFrontera: true,
   },

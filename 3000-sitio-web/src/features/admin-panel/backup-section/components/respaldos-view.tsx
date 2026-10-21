@@ -209,7 +209,7 @@ export function RespaldosView() {
                 <tr key={registro.id} data-abierta={abierta || undefined} className="bg-white dark:bg-[#0f1626]">
                   {/* Solo en acordeón: la frase. Plegada, quién publicó qué versión de qué
                       sección; desplegada, una sola frase con el ámbito, la fecha y quién la
-                      editó: «… de la sección /inicio del sitio web el 10 de octubre de 2026
+                      editó: «… de la página /inicio del sitio web el 10 de octubre de 2026
                       a las 9:00 a. m., editada por Ana Gómez el 9 de octubre…». */}
                   <td data-resumen>
                     <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
@@ -217,7 +217,7 @@ export function RespaldosView() {
                       {registro.numeroVersion} de{' '}
                       {abierta ? (
                         <>
-                          la sección <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(registro.slug)}</span>
+                          la página <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(registro.slug)}</span>
                           {registro.ambito && (
                             <>
                               {registro.ambito === 'intranet' ? ' de la ' : ' del '}

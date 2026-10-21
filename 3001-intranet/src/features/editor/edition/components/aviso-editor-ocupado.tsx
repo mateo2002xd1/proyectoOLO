@@ -35,7 +35,7 @@ export function AvisoEditorOcupado({
     <div className="olo-ocupado" role="alert">
       <div className="olo-ocupado-caja">
         <div className="olo-ocupado-contenido">
-          <h1 className="olo-ocupado-titulo">Esta sección está siendo editada por {nombre}</h1>
+          <h1 className="olo-ocupado-titulo">Esta página está siendo editada por {nombre}</h1>
           <div className="olo-ocupado-acciones">
             <button
               type="button"

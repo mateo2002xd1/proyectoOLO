@@ -1418,7 +1418,7 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
               <PreviewIntercalado
                 seccion={seccion}
                 config={puckConfig}
-                etiqueta={`Sección /${seccion.slug} · no editable aquí`}
+                etiqueta={`Página /${seccion.slug} · no editable aquí`}
               />
             </>
           ),
