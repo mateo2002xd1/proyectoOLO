@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useCierreAnimado, useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado, useUltimoValorAbierto } from '@/shared/lib/modals/use-cierre-animado';
 import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Button, FormaDeModal } from '@/shared/ui/atoms/button';

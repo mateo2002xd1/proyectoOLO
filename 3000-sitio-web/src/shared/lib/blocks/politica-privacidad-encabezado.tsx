@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { TituloRico } from './titulo-rico';
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 
 interface PoliticaPrivacidadEncabezadoProps {
   block: { id: string };

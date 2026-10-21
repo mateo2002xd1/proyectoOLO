@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import {
   Check,
   CheckCircle2,

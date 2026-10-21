@@ -1,6 +1,6 @@
 'use server';
 
-import { getAuthSessionSnapshot } from '@/shared/lib/session';
+import { getAuthSessionSnapshot } from '@/shared/lib/session/session';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 

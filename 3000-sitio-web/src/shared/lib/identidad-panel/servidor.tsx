@@ -1,8 +1,8 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
-import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
+import { AUTH_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
+import { URL_DE_LA_API } from '@/shared/lib/api/url-de-la-api';
 import { ICONO_APPLE } from '@/shared/lib/pwa';
 import { ACCIONES_DEL_PANEL } from './acciones';
 import { BOTONES_DEL_PANEL } from './botones';

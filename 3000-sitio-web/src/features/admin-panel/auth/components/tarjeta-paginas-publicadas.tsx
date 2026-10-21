@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { rutaPublicaDeSlug, type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
+import { rutaPublicaDeSlug, type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/editor';
 import type { TreeSeriesOption } from 'echarts/charts';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 
 /**
  * Cuántas páginas están publicadas, separadas por aplicación y con el detalle a un clic.

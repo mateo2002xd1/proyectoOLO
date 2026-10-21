@@ -7,7 +7,7 @@ import {
   modoDelPrimerIngreso,
   type ModoPrimerIngreso,
   type Pendiente,
-} from '@/shared/lib/ruta-del-primer-ingreso';
+} from '@/shared/lib/session/ruta-del-primer-ingreso';
 import {
   cumplePolitica,
   esPasswordRepetida,

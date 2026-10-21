@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
+import { conCabecerasDeCliente } from '@/shared/lib/api/reenviar-cliente';
 import { cookies } from 'next/headers';
 import {
   AUTH_COOKIE_NAME,
   AUTH_MUST_CHANGE_PW_COOKIE_NAME,
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-} from '@/shared/lib/auth-cookies';
+} from '@/shared/lib/session/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 

@@ -3,7 +3,7 @@
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import {
   CheckCircle2,
   Database,
@@ -15,7 +15,7 @@ import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { FormaDeModal } from '@/shared/ui/atoms/button';
 import { etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { analizarDepuracion, ejecutarDepuracion } from '../services/respaldos.service';
 import type { AnalisisDepuracionDTO, FiltrosDepuracion, RegistroRespaldo } from '../types';
 

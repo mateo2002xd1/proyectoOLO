@@ -2,7 +2,7 @@
  * Los cinco tamaños del texto de una sección del menú (`normal` es el de hoy, 15 px).
  *
  * Vive aparte y sin imports a propósito: lo usan `header.tsx` y `puck.config.tsx`, y
- * `header.tsx` importa de `@/features/paginas`, que termina cargando `puck.config.tsx`.
+ * `header.tsx` importa de `@/features/editor`, que termina cargando `puck.config.tsx`.
  * Exportado desde `header.tsx`, el editor lo leía antes de que ese módulo terminara
  * de cargarse: «Cannot access 'TAMANOS_TEXTO_MENU' before initialization».
  */

@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
+import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
 import { desplazarAElemento } from '@olo/blocks-renderer';
-import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/paginas';
+import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/editor';
 import { BuscadorSitio } from './buscador-sitio';
 import { TAMANOS_TEXTO_MENU } from './tamanos-texto-menu';
 import { estiloDeFranjaGov } from './tinta-de-franja';

@@ -6,9 +6,9 @@ import {
   PARAM_MOTIVO,
   MOTIVO_SESION_EXPIRADA,
   MOTIVO_SIN_PERMISOS,
-} from '@/shared/lib/auth-cookies';
-import { verificarSesion } from '@/shared/lib/verificar-sesion';
-import { rutaDelPrimerIngreso } from '@/shared/lib/ruta-del-primer-ingreso';
+} from '@/shared/lib/session/auth-cookies';
+import { verificarSesion } from '@/shared/lib/session/verificar-sesion';
+import { rutaDelPrimerIngreso } from '@/shared/lib/session/ruta-del-primer-ingreso';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -58,7 +58,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routes (/admin-panel/dashboard, /admin/usuarios, /editor/*): require session
+  // Protected routes (/admin-panel/dashboard, /admin/usuarios, /edit/*): require session
   if (!hasValidSession) {
     const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
@@ -85,7 +85,7 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith('/admin-panel/dashboard')) {
     if (!hasAccesoPanel) {
       if (hasPermisosEdicion) {
-        return NextResponse.redirect(new URL('/editor', request.url));
+        return NextResponse.redirect(new URL('/edit', request.url));
       }
       return loginRedirect();
     }
@@ -152,9 +152,11 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // /editor/* — cualquiera con permisos de edición. Vive fuera del panel desde el
-  // 2026-09-18; /admin/editor/* redirige aquí desde next.config.mjs.
-  if (pathname.startsWith('/editor')) {
+  // /edit/* — cualquiera con permisos de edición. Vive fuera del panel desde el
+  // 2026-09-18 y se llamó /editor/* hasta el 2026-10-21; /admin/editor/* y /editor/*
+  // redirigen aquí desde next.config.mjs. `/edit` exacto o `/edit/…`: una página
+  // pública cuyo slug empiece por «edit» (`/editorial`) no es el editor.
+  if (pathname === '/edit' || pathname.startsWith('/edit/')) {
     if (!hasAccesoPanel && !hasPermisosEdicion) {
       return loginRedirect();
     }
@@ -204,7 +206,7 @@ export const config = {
     '/admin-panel/backup-section',
     '/admin-panel/search-section/:path*',
     '/admin-panel/search-section',
-    '/editor/:path*',
+    '/edit/:path*',
     '/login',
     '/login/first-login',
     '/login/first-login/security-questions',

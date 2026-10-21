@@ -10,7 +10,7 @@ import type { CSSProperties } from 'react';
  * dibujadas: son imágenes que se suben.
  *
  * Sin imports de la app a propósito: lo usan `header.tsx` y `footer.tsx` (ver
- * `tamanos-texto-menu.ts` por qué importa no colgar de `@/features/paginas`).
+ * `tamanos-texto-menu.ts` por qué importa no colgar de `@/features/editor`).
  */
 
 export const TINTA_SOBRE_CLARO = '#0943B5';

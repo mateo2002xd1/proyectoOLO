@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { AUTH_COOKIES } from '@/shared/lib/auth-cookies';
+import { AUTH_COOKIES } from '@/shared/lib/session/auth-cookies';
 
 export async function POST() {
   const response = NextResponse.json({ message: 'Sesión cerrada' });

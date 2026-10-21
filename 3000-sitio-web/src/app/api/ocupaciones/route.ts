@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   buscarOcupaciones,
   respuestaDeErrorCno,
-} from '@/features/sitio-web/buscador-ocupaciones/lib/consulta-cno';
+} from '@/shared/lib/buscador-ocupaciones/lib/consulta-cno';
 
 /**
  * `GET /api/ocupaciones?q=<término>` — buscador de las clasificaciones CNO y CUOC.

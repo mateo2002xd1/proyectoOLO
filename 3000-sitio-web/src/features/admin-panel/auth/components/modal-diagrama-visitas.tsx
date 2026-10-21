@@ -2,8 +2,8 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
-import { type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
+import { type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/editor';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
 interface Props {

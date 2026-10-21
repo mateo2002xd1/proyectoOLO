@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { ReproductorDeVideo } from './reproductor-de-video';
 import { CapaDeImagenDeFondo, type ImagenDeFondo } from './imagen-de-fondo';
+import { TituloRico } from './titulo-rico';
 
 /** Un ID de video de YouTube: 11 caracteres de letras, números, `-` y `_`. */
 const ID_DE_YOUTUBE = /^[\w-]{11}$/;
@@ -92,7 +93,7 @@ export function VideoEmbebido({
       <CapaDeImagenDeFondo fondo={fondo} />
       {(titulo || subtitulo) && (
         <div className="olo-video-embebido__encabezado">
-          {titulo && <h2 className="olo-video-embebido__titulo">{titulo}</h2>}
+          {titulo && <TituloRico className="olo-video-embebido__titulo">{titulo}</TituloRico>}
           {subtitulo && <div className="olo-video-embebido__subtitulo">{subtitulo}</div>}
         </div>
       )}

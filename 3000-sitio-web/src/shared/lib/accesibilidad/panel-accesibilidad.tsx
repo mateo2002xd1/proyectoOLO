@@ -22,9 +22,9 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { poppins } from '@/shared/lib/fonts';
+import { poppins } from '@/shared/lib/typography/fonts';
 import { Switch } from '@/shared/ui/atoms/switch';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import { FiguraAccesibilidad } from './icono-accesibilidad';
 import {
   DALTONISMO_AL_ENCENDER,

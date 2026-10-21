@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import { reproducirSonidoAviso } from '@/shared/lib/sonido-avisos';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useRouter, usePathname } from 'next/navigation';
@@ -25,7 +25,7 @@ import {
   logoEnBlancoEnOscuro,
   type IdentidadPanel,
 } from '@/shared/lib/identidad-panel';
-import { BuscadorModal } from '@/features/admin-panel/buscador';
+import { BuscadorModal } from '@/features/admin-panel/search';
 import {
   Sidebar,
   SidebarBody,
@@ -63,7 +63,7 @@ import {
   SLUG_PLANTILLA,
   type PaginaEnRevision,
   type ResumenPaginasPublicadas,
-} from '@/features/paginas';
+} from '@/features/editor';
 import { TarjetaPaginasPublicadas } from './tarjeta-paginas-publicadas';
 import { TarjetaVisitas } from './tarjeta-visitas';
 import { TarjetaUsuarios } from './tarjeta-usuarios';
@@ -158,7 +158,7 @@ const MS_ENTRE_CONSULTAS_DE_ALERTAS = 30_000;
 
 /**
  * Dónde se guardan las alertas ya vistas durante la sesión de la pestaña. Hace falta fuera
- * de React: el editor (`/editor/[slug]`) está fuera del layout de `/admin-panel`, y al volver
+ * de React: el editor (`/edit/[slug]`) está fuera del layout de `/admin-panel`, y al volver
  * el layout se monta de nuevo; con la memoria solo en un `useRef`, la página recién
  * enviada a revisión contaba como «ya estaba» y no sonaba.
  */

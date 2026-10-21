@@ -1,4 +1,4 @@
-import { proxyToBackend } from '@/shared/lib/backend-proxy';
+import { proxyToBackend } from '@/shared/lib/api/backend-proxy';
 
 /**
  * Recuento de páginas publicadas para el panel general.

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { ActualizacionesView } from '@/features/admin-panel/update-section';
-import { getAuthSessionSnapshot } from '@/shared/lib/session';
+import { getAuthSessionSnapshot } from '@/shared/lib/session/session';
 
 export const metadata: Metadata = {
   title: 'Actualizaciones',

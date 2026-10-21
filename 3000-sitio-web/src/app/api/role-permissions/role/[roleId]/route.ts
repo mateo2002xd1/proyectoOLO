@@ -1,4 +1,4 @@
-import { proxyToBackend } from '@/shared/lib/backend-proxy';
+import { proxyToBackend } from '@/shared/lib/api/backend-proxy';
 import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';

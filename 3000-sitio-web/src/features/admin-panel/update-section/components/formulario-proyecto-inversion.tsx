@@ -16,7 +16,7 @@ import {
 import { Button } from '@/shared/ui/atoms/button';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
-import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { mensajeDeErrorApi } from '@/shared/lib/api/errores-api';
 import { crearProyectoInversionManual, obtenerOpcionesProyectoInversion } from '../services/observatorio.service';
 import type { ClaseCiiu, SeccionCiiu } from '../types';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';

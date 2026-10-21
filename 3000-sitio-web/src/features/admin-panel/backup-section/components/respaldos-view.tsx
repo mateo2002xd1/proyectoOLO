@@ -9,7 +9,7 @@ import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { BotonDeFila, CeldaDePagina, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
-import { rutaPublicaDeSlug } from '@/features/paginas';
+import { rutaPublicaDeSlug } from '@/features/editor';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';

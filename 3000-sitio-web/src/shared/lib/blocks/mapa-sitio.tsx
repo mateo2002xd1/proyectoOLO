@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { PaginaIndiceBusqueda } from '@/features/paginas/model/pagina.types';
-import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
+import type { PaginaIndiceBusqueda } from '@/features/editor/model/pagina.types';
+import { obtenerIndiceBusqueda } from '@/features/editor/publishing/services/publicacion.service';
 
 export interface MapaSitioProps {
   block?: { id: string };
