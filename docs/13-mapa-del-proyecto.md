@@ -205,7 +205,7 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `admin-panel/` | ⚠ sin descripción | `auth/` `backup-section/` `buscador/` `changelog-view/` `configuration/` `update-section/` | **no** | 77 |
-| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 40 |
+| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 38 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 48 |
 
 ### 3001-intranet
