@@ -30,7 +30,9 @@ export default async function SeccionesLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const sesion = await obtenerSesion();
-  const esSuperadmin = (sesion?.rol ?? "").trim().toLowerCase() === "superadmin";
+  const rol = (sesion?.rol ?? "").trim().toLowerCase();
+  const esSuperadmin = rol === "superadmin";
+  const esAprobador = rol === "superadmin" || rol === "administrador";
   // Quien edita (superadmin, administrador, editor y sus roles hijos) cierra sesión
   // desde el botón flotante; dirección y subdirección, que no lo tienen, desde la barra.
   const cerrarSesionEnFlotante = await puedeEditarPaginas();
@@ -40,6 +42,7 @@ export default async function SeccionesLayout({
       {children}
       <PaginasFabSpeedDial
         esSuperadmin={esSuperadmin}
+        esAprobador={esAprobador}
         conCerrarSesion={cerrarSesionEnFlotante}
       />
       <BotonSubir />

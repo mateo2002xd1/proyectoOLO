@@ -340,71 +340,98 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 10: Composición Visual y Gestión Editorial — Editor Visual
 
-### Escenario 16: Maquetación, Bloques y Flujo de Revisión en el Editor Visual (`/editor/[slug]`)
+### Escenario 16: Maquetación, Bloques y Flujo de Revisión en el Editor Visual (`/editor/[slug]` o `/edit/[slug]`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Despliegue de opciones flotantes, maquetación de bloques temáticos, accesibilidad, autoguardado y envío con comentario |
-| **Resultado Esperado:** | Despliegue fluido del menú flotante, arrastre y configuración de bloques (incluyendo Buscador de Ocupaciones, Alertas de Inversión, Video Embebido con fondo decorativo y Dato OLO de la Semana), autoguardado periódico, comprobación de accesibilidad y envío a revisión con comentario obligatorio. |
-| **Precondición:** | Usuario autenticado navegando en una página con modo edición habilitado. |
-| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` o `editor@sena.edu.co`<br>**Contraseña:** Contraseña definitiva activa<br>**Bloques:** Tarjetas, columnas, títulos, Buscador de Ocupaciones, Alertas de Inversión, Video Embebido, Dato OLO de la Semana<br>**Comentario de revisión:** Texto explicativo de cambios (entre 10 y 100 caracteres) |
+| **Resultado Esperado:** | Despliegue fluido del menú flotante con sus 5 acciones (*Editar página*, *Menú y pie*, *Nueva página*, *Editar dirección*, *Eliminar página* y *Salir del modo edición*), arrastre y configuración de bloques (incluyendo Buscador de Ocupaciones, Resultados de Ocupaciones, Alertas de Inversión, Video Embebido con fondo decorativo y Dato OLO de la Semana), autoguardado periódico, comprobación de accesibilidad y envío a revisión con comentario obligatorio. |
+| **Precondición:** | Usuario autenticado navegando en una página con modo edición habilitado (en Sitio Web o Intranet). |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` o `editor@sena.edu.co`<br>**Contraseña:** Contraseña definitiva activa<br>**Bloques:** Tarjetas, columnas, títulos, Buscador de Ocupaciones, Resultados de Ocupaciones, Alertas de Inversión, Video Embebido, Dato OLO de la Semana<br>**Comentario de revisión:** Texto explicativo de cambios (entre 10 y 100 caracteres) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Hacer clic en el botón circular flotante de lápiz | El botón rota a una cruz (**X**) y despliega el menú de acciones (*Editar página*, *Menú y pie*, *Nueva página*, *Eliminar página*, *Salir de modo edición*) |
+| **1.** Hacer clic en el botón circular flotante de lápiz | El botón rota a una cruz (**X**) y despliega el menú de acciones (*Editar página*, *Menú y pie*, *Nueva página*, *Editar dirección*, *Eliminar página*, *Salir del modo edición*) |
 | **2.** Seleccionar "Editar página" | Abre el Editor Visual con panel lateral de bloques, lienzo central de trabajo, panel de opciones y barra superior con ruta (`/{slug}`) |
 | **3.** Arrastrar nuevo bloque desde el catálogo al lienzo central | Inserta el componente en la posición seleccionada reorganizando fluidamente los demás bloques |
-| **4.** Probar bloque «Buscador de Ocupaciones» | Inserta el bloque en la página y permite personalizar el texto orientativo de ayuda en el panel lateral; despliega la barra interactiva de consulta de clasificaciones CNO y CUOC |
-| **5.** Probar bloque «Alertas de Inversión» | Inserta el bloque en el lienzo, permite configurar título y descripción en el panel de opciones y presenta de forma automática los filtros temáticos y la lista de iniciativas de inversión |
-| **6.** Probar bloque «Video Embebido» con fondo decorativo | Permite ingresar el enlace de YouTube, seleccionar una imagen decorativa de fondo, regular el control de transparencia de 0% a 100% y seleccionar la modalidad de fondo (pantalla completa o repetición en mosaico), garantizando que los textos y el reproductor permanezcan completamente legibles |
-| **7.** Probar bloque «Dato OLO de la Semana» | Permite configurar infografías destacadas con imágenes de fondo independientes y transiciones fluidas al alternar entre contenidos |
-| **8.** Reordenar bloques con la agarradera y eliminar con ícono de papelera | Desplaza verticalmente el bloque seleccionado o lo retira inmediatamente del lienzo |
-| **9.** Probar botones de Deshacer y Rehacer en la barra superior | Revierte y reaplica modificaciones durante la sesión activa sin alterar el borrador guardado en el servidor |
-| **10.** Verificar autoguardado y botón de guardado manual | La barra superior exhibe avisos informativos (*«Guardando…»*, *«Sin guardar»*, *«Guardado a las [hora]»*) y permite guardar manualmente mediante el botón correspondiente |
-| **11.** Intentar enviar a revisión con una imagen sin texto alternativo descriptivo | El sistema efectúa una comprobación automática de accesibilidad obligatoria, bloquea el envío y despliega alerta exigiendo la descripción para personas con discapacidad visual |
-| **12.** Pulsar "Enviar a revisión" con accesibilidad aprobada | Abre ventana modal exigiendo comentario de cambios obligatorio (10 a 100 caracteres); al confirmar, remite la página a la bandeja de revisión y libera la edición |
-| **13.** Probar botón "Salir sin publicar" (ícono de detención) | Advierte sobre cambios pendientes sin guardar y libera la reserva de edición de la página |
-| **14.** Probar opción "Salir de modo edición" desde el menú flotante público | Cierra la sesión local del editor y recarga la página para visualizarla exactamente como un visitante ciudadano |
+| **4.** Probar bloque «Buscador de Ocupaciones» | Inserta el bloque en la página y permite personalizar el texto orientativo de ayuda en el panel lateral; despliega la barra interactiva de consulta de clasificaciones CNO y CUOC y evalúa el interruptor general Activo / Apagado |
+| **5.** Probar bloque «Resultados de Ocupaciones» | Permite estructurar la página de destino de resultados sin barra duplicada, mostrando la lista de coincidencias según el parámetro `?buscar=…` y la ficha técnica de la ocupación |
+| **6.** Probar bloque «Alertas de Inversión» | Inserta el bloque en el lienzo, permite configurar título y descripción en el panel de opciones y presenta de forma automática los filtros temáticos y la lista de iniciativas de inversión |
+| **7.** Probar bloque «Video Embebido» con fondo decorativo | Permite ingresar el enlace de YouTube, seleccionar una imagen decorativa de fondo, regular el control de transparencia de 0% a 100% y seleccionar la modalidad de fondo (pantalla completa o repetición en mosaico), garantizando que los textos y el reproductor permanezcan completamente legibles |
+| **8.** Probar bloque «Dato OLO de la Semana» | Permite configurar infografías destacadas con imágenes de fondo independientes y transiciones fluidas al alternar entre contenidos |
+| **9.** Reordenar bloques con la agarradera y eliminar con ícono de papelera | Desplaza verticalmente el bloque seleccionado o lo retira inmediatamente del lienzo |
+| **10.** Probar botones de Deshacer y Rehacer en la barra superior | Revierte y reaplica modificaciones durante la sesión activa sin alterar el borrador guardado en el servidor |
+| **11.** Verificar autoguardado y botón de guardado manual | La barra superior exhibe avisos informativos (*«Guardando…»*, *«Sin guardar»*, *«Guardado a las [hora]»*) y permite guardar manualmente mediante el botón correspondiente |
+| **12.** Intentar enviar a revisión con una imagen sin texto alternativo descriptivo | El sistema efectúa una comprobación automática de accesibilidad obligatoria, bloquea el envío y despliega alerta exigiendo la descripción para personas con discapacidad visual |
+| **13.** Pulsar "Enviar a revisión" con accesibilidad aprobada | Abre ventana modal exigiendo comentario de cambios obligatorio (10 a 100 caracteres); al confirmar, remite la página a la bandeja de revisión y libera la edición |
+| **14.** Probar botón "Salir sin publicar" (ícono de detención) | Advierte sobre cambios pendientes sin guardar y libera la reserva de edición de la página |
+| **15.** Probar opción "Salir de modo edición" desde el menú flotante público | Despliega ventana modal de confirmación y, al aceptar, cierra la sesión local del editor y recarga la página para visualizarla exactamente como un visitante ciudadano |
 
 ---
 
-### Escenario 17: Gestión Global de «Menú y pie», Creación y Eliminación de Páginas Dinámicas
+### Escenario 17: Gestión Global de «Menú y pie», Creación y Eliminación Segura de Páginas Dinámicas
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Edición de cabecera/pie global, creación con ruta automática y eliminación con análisis de dependencias |
-| **Resultado Esperado:** | Propagación universal de cabecera y pie, creación de página con ruta en tiempo real, bloqueo de eliminación ante enlaces activos dependientes y confirmación por digitación idéntica del título. |
-| **Precondición:** | Usuario autenticado con facultades editoriales en el portal público. |
+| **Escenario:** | Edición de cabecera/pie global con URLs dinámicas, creación de páginas y procedimiento seguro de eliminación guiada |
+| **Resultado Esperado:** | Propagación universal de cabecera y pie, asignación jerárquica de URLs por desplegables y páginas internas, creación de página con ruta en tiempo real, bloqueo de eliminación ante enlaces activos con guía paso a paso en 4 puntos (bloque, panel lateral, campo y revisión), y confirmación por digitación idéntica del título en ambos entornos (Sitio Web e Intranet). |
+| **Precondición:** | Usuario autenticado con facultades editoriales en el portal público o en la intranet. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Nueva página:** Nombre de la página (*«Bolsa de empleo»*)<br>**Eliminación:** Nombre exacto de la página a retirar |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Seleccionar "Menú y pie" en el menú flotante de edición (`/editor/menu-y-pie`) | Abre el Editor Visual enfocado en los componentes globales de cabecera y pie de página |
-| **2.** Modificar enlaces o textos en cabecera/pie, guardar borrador y enviar a revisión | Tras su aprobación, las modificaciones se propagan de manera uniforme e inmediata a todas las páginas del portal |
-| **3.** Seleccionar "Nueva página" en el botón flotante | Despliega ventana modal solicitando *«¿Cómo se llama?»*; genera la ruta (`/{slug}`) automáticamente en tiempo real a partir del nombre digitado |
-| **4.** Pulsar "Crear y editar" en el modal de nueva página | Crea la página vacía en estado de borrador y redirige de inmediato a su lienzo en el Editor Visual |
-| **5.** Intentar eliminar página que tiene enlaces entrantes activos (en menú o dentro de páginas) | El sistema analiza en tiempo real todo el portal, bloquea el borrado y lista las páginas que contienen enlaces dependientes a retirar primero |
-| **6.** Desvincular enlaces dependientes y volver a seleccionar "Eliminar página" | El análisis confirma 0 dependencias y habilita la ventana de confirmación con el resumen de ruta y el conteo de versiones a borrar |
-| **7.** Digitar idénticamente el título de la página en la casilla de confirmación | Escribir el nombre exacto en *«Escribe [Nombre] para confirmar»* para desbloquear el botón de confirmación "Eliminar" |
-| **8.** Confirmar eliminación definitiva | Retira la página y sus versiones, redirige automáticamente a `/inicio` y registra el evento en la bitácora de auditoría |
+| **1.** Seleccionar "Menú y pie" en el menú flotante de edición | Abre el Editor Visual enfocado en los componentes globales de cabecera y pie de página |
+| **2.** Modificar enlaces o textos en cabecera/pie, guardar borrador y enviar a revisión | Tras su aprobación, las modificaciones se propagan de manera uniforme e inmediata a todas las páginas de la aplicación correspondiente |
+| **3.** Probar asignación de rutas jerárquicas dinámicas bajo menú desplegable | Al ubicar una página hija dentro de un ítem desplegable en «Menú y pie», su dirección canónica pública adopta automáticamente el prefijo `/{desplegable}/{pagina}`, redirigiendo de forma canónica si el usuario escribe la URL plana |
+| **4.** Probar configuración de «Páginas dentro de esta página» (`internas`) | Al editar las propiedades de una página en la cabecera, añadir una página interna subordinada (ej. `/resultado`); su ruta se construye en triple tramo (`/{desplegable}/{padre}/{interna}`) sin saturar visualmente el menú principal |
+| **5.** Seleccionar "Nueva página" en el botón flotante | Despliega ventana modal solicitando *«¿Cómo se llama?»*; genera la ruta (`/{slug}`) automáticamente en tiempo real a partir del nombre digitado |
+| **6.** Pulsar "Crear y editar" en el modal de nueva página | Crea la página vacía en estado de borrador y redirige de inmediato a su lienzo en el Editor Visual |
+| **7.** Intentar eliminar página que tiene enlaces entrantes activos (en menú, pie o dentro de páginas) | El sistema analiza en tiempo real todo el portal, bloquea el borrado con aviso de advertencia (*«Página en uso en la navegación»* o *«Página en uso en el portal»*) y despliega la **guía paso a paso en 4 puntos** con los nombres exactos del editor: 1. Ir a la sección o página; 2. Localizar el bloque (ej. «Pie de página») y abrir el campo en el panel derecho (ej. «Enlaces inferiores · fila 3»); 3. Eliminar o reasignar el enlace exacto; 4. Pulsar «Enviar a revisión» |
+| **8.** Desvincular enlaces dependientes, publicar la actualización y volver a seleccionar "Eliminar página" | El análisis confirma 0 dependencias y habilita la ventana de confirmación con el resumen de ruta y el conteo de versiones a borrar |
+| **9.** Digitar idénticamente el título de la página en la casilla de confirmación | Escribir el nombre exacto en *«Escribe «[Nombre]» para confirmar»* para desbloquear el botón de confirmación "Eliminar" |
+| **10.** Confirmar eliminación definitiva | Retira la página y sus versiones, redirige automáticamente a `/inicio` y registra el evento en la bitácora de auditoría tanto en el Sitio Web como en la Intranet |
+
+---
+
+### Escenario 18: Cambio de Dirección de Páginas Web y Actualización Atómica de Enlaces (Botón «Editar dirección»)
+
+| **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
+| :--- | :--- |
+| **Escenario:** | Modificación controlada del slug/ruta de una página, validación anti-rebote en vivo, bloqueo ante candados de edición, consentimiento de actualización de hipervínculos y reescritura atómica en Sitio Web e Intranet |
+| **Resultado Esperado:** | Despliegue de la opción «Editar dirección» en el botón flotante (ícono de cadena) para usuarios con rol Administrador o roles autorizados con el permiso `secciones.cambiar-direccion`; validación asíncrona de nueva ruta; bloqueo preventivo en páginas protegidas del sistema; detección y bloqueo por candados de edición concurrente; tarjeta amarilla detallando ubicaciones exactas (bloque y campo) de enlaces entrantes; botón dinámico de consentimiento («Actualizar enlaces y cambiar»); reescritura atómica en base de datos de enlaces vigentes y archivados; actualización de clave de permiso `editar.{ambito}.{slug}`; redirección canónica y registro inmutable en auditoría. |
+| **Precondición:** | Funcionario autenticado con rol Administrador o rol con permiso `secciones.cambiar-direccion` activo, posicionado sobre una página dinámica no protegida. |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co`<br>**Contraseña:** Contraseña definitiva activa<br>**Página origen:** Página existente (ej. `/bolsa-empleo`)<br>**Nueva dirección:** Texto normalizado (ej. `empleo-nacional-2025`) |
+
+| Descripción de pasos a realizar | Resultado obtenido |
+| :--- | :--- |
+| **1.** Comprobar disponibilidad de la opción en el menú flotante | En páginas dinámicas se despliega el botón circular con ícono de eslabón de cadena (`.fab-speed-dial__btn--direccion`) entre *Nueva página* y *Eliminar página*; en la portada (`/inicio`) el botón no se ofrece |
+| **2.** Abrir «Editar dirección» en página protegida del sistema (`inicio`, `menu-y-pie`, secciones de fábrica de sitio o intranet como `tasa`, `matriz`, `encuestas-*`) | La ventana modal despliega la tarjeta de advertencia *«Dirección del sistema: La dirección /[slug] la usa el sistema y no se puede cambiar.»* presentando como única acción el botón **«Entendido»** |
+| **3.** Abrir «Editar dirección» en página dinámica y consultar estado inicial | El diálogo consulta asíncronamente a la API el uso de la dirección y los candados de edición vigentes; muestra la dirección actual en etiqueta `code` y enfoca el campo «Nueva dirección» |
+| **4.** Escribir nueva dirección y comprobar validación en tiempo real (espera de 350 ms) | Al teclear, el sistema normaliza en minúsculas y guiones; si la ruta es inválida, tiene menos de 2 caracteres, coincide con la actual o está ocupada por otra página, despliega tarjeta de error roja con el motivo exacto y deshabilita el botón de confirmación |
+| **5.** Probar intento de cambio mientras otro funcionario edita la página o una página que la enlaza | El sistema detecta el candado de edición concurrente activo (`enEdicion`) y despliega tarjeta de error: *«No se puede cambiar ahora: [Página] ([Usuario]) tiene abierto el editor. Espera a que lo cierre e inténtalo de nuevo.»* impidiendo el guardado |
+| **6.** Escribir dirección válida en página que tiene enlaces entrantes en el portal | El diálogo detecta las referencias activas (`referencias`) y despliega la tarjeta amarilla de aviso: *«La dirección actual está en uso: Hay [N] enlaces a /[slug] en [M] páginas. Al continuar se actualizan a /[nueva]»*, detallando la lista con bloque, campo del editor y textos visibles |
+| **7.** Verificar botón de consentimiento dinámico | Al haber enlaces dependientes, el botón de confirmación adopta estilo de aviso (`nueva-seccion-boton--aviso`) con borde amarillo (#b48a00) y texto **«Actualizar enlaces y cambiar»**; los dos botones del diálogo son simétricos |
+| **8.** Escribir dirección válida en página libre de enlaces | Despliega tarjeta verde de confirmación: *«Dirección disponible: /[nueva] está libre y ningún enlace del portal apunta a /[slug].»*, y el botón principal adopta estilo estándar azul con el texto **«Cambiar dirección»** |
+| **9.** Confirmar el cambio de dirección | El sistema ejecuta la transacción atómica: renombra la página, actualiza en bloque el contenido JSON de las versiones afectadas (reescribiendo enlaces a la nueva ruta), renombra la clave de permiso de edición sin revocar accesos a los editores asignados, registra el evento en la bitácora de auditoría y redirige el navegador a la nueva URL canónica (`router.push`) |
+| **10.** Comprobar funcionamiento en ambos entornos (Sitio Web e Intranet) | Ejecutar el procedimiento tanto en el Sitio Web Público como en la Intranet privada, verificando que la API backend acepte ambos ámbitos (`AMBITOS_HABILITADOS`) y redirija a las rutas canónicas correspondientes (`rutaPublicaDeSlug` en intranet) |
 
 ---
 
 ## MÓDULO 11: Portal Ciudadano, Búsquedas y Visualizadores Públicos
 
-### Escenario 18: Buscador Global del Portal y Catálogo Ocupacional CNO / CUOC (`/clasificacion`)
+### Escenario 19: Buscador Global del Portal y Catálogo Ocupacional CNO / CUOC (`/clasificacion`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Búsqueda global en cabecera, consulta ocupacional CNO y CUOC por código o palabra clave y ficha técnica con correlativas cruzadas |
-| **Resultado Esperado:** | Despliegue fluido del buscador en cabecera con navegación por teclado, validación de código numérico (4 dígitos CNO / 5 dígitos CUOC), despliegue de ficha ocupacional a pantalla completa con funciones y correlativas cruzadas CNO ↔ CUOC, y opciones de descarga oficial. |
+| **Escenario:** | Búsqueda global en cabecera con página de resultados configurada, consulta ocupacional CNO y CUOC por código o palabra clave y ficha técnica con correlativas cruzadas |
+| **Resultado Esperado:** | Despliegue fluido del buscador en cabecera con navegación por teclado, redirección a la página de resultados configurada en «Menú y pie» (`?buscar=…`), validación de código numérico (4 dígitos CNO / 5 dígitos CUOC), despliegue de ficha ocupacional a pantalla completa con funciones y correlativas cruzadas CNO ↔ CUOC, y opciones de descarga oficial. |
 | **Precondición:** | Usuario ciudadano o funcionario navegando en el Sitio Web Público. |
 | **Datos de entrada** | **Términos de búsqueda:** Palabras clave en cabecera o catálogo ocupacional (ej. "sistemas", "enfermería")<br>**Códigos ocupacionales:** Códigos numéricos de 4 dígitos (CNO) o 5 dígitos (CUOC) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Utilizar el buscador global desplegable en la cabecera del portal | Hacer clic sobre el ícono de lupa; el campo de búsqueda se despliega fluidamente hacia la izquierda; digitar términos y presionar Enter para visualizar resultados organizados por relevancia |
-| **2.** Acceder a la sección de clasificación ocupacional (`/clasificacion`) | Despliega la interfaz oficial de consulta ocupacional con acceso a los catálogos CNO y CUOC |
+| **1.** Utilizar el buscador global desplegable en la cabecera del portal | Hacer clic sobre el ícono de lupa; el campo de búsqueda se despliega fluidamente hacia la izquierda; digitar términos y presionar Enter; el sistema redirige automáticamente a la página de resultados asignada en la cabecera (`?buscar=…`) |
+| **2.** Acceder a la sección de clasificación ocupacional (`/clasificacion` o ruta asignada en el menú) | Despliega la interfaz oficial de consulta ocupacional con acceso a los catálogos CNO y CUOC |
 | **3.** Consultar por código numérico oficial (4 dígitos para CNO o 5 dígitos para CUOC) | Valida la estructura del código y despliega inmediatamente la ocupación correspondiente sin peticiones innecesarias |
 | **4.** Consultar por denominaciones o palabras clave | Muestra el listado de ocupaciones coincidentes con su denominación oficial y código de clasificación |
 | **5.** Abrir la ficha técnica detallada de una ocupación | Despliega la ventana a pantalla completa con descripción de funciones, conocimientos, habilidades y la tabla de equivalencias correlativas cruzadas CNO ↔ CUOC |
@@ -413,7 +440,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 19: Visores de Documentos (PDF), Recursos Multimedia y Descarga Directa
+### Escenario 20: Visores de Documentos (PDF), Recursos Multimedia y Descarga Directa
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -433,28 +460,29 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 12: Entorno Privado Intranet y Analítica Estratégica
 
-### Escenario 20: Tableros Analíticos en Power BI y Consulta Gerencial en la Intranet
+### Escenario 21: Tableros Analíticos en Power BI y Gestión Editorial Paritaria en la Intranet
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
-| **Escenario:** | Consulta gerencial de tableros de Power BI e indicadores estratégicos |
-| **Resultado Esperado:** | Carga protegida de tableros analíticos en la Intranet, interacción fluida con segmentadores de datos, modo pantalla completa y preservación de la modalidad de solo lectura. |
-| **Precondición:** | Funcionario autenticado con rol Director o Subdirector en la Intranet privada (`/inicio`). |
-| **Datos de entrada** | **Usuario:** `directivo@sena.edu.co` (Rol Director o Subdirector)<br>**Contraseña:** Contraseña definitiva activa<br>**Filtros:** Selección de vigencia anual, región o sector económico en el tablero |
+| **Escenario:** | Consulta gerencial de tableros de Power BI e indicadores estratégicos, y validación de herramientas editoriales paritarias en el entorno privado |
+| **Resultado Esperado:** | Carga protegida de tableros analíticos en la Intranet, interacción fluida con segmentadores de datos, modo pantalla completa; para usuarios directivos, preservación de la modalidad de solo lectura; para usuarios editores, disponibilidad completa del botón flotante (`PaginasFabSpeedDial`) con soporte para *Editar página*, *Menú y pie*, *Nueva página*, *Editar dirección* y *Eliminar página* con la misma paridad del Sitio Web. |
+| **Precondición:** | Funcionario autenticado en la Intranet privada (`/inicio`). |
+| **Datos de entrada** | **Usuario directivo:** `directivo@sena.edu.co` (Rol Director o Subdirector)<br>**Usuario editor:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Acceder a la página principal de la Intranet con rol directivo | Presenta la cabecera privada, navegación interna y contenedores de tableros analíticos |
+| **1.** Acceder a la página principal de la Intranet con rol directivo | Presenta la cabecera privada, navegación interna y contenedores de tableros analíticos en modo de solo lectura (sin botón flotante) |
 | **2.** Cargar tablero de Power BI integrado | Muestra el componente integrado con indicadores analíticos de empleabilidad sin requerir inicio de sesión adicional |
 | **3.** Interactuar con segmentadores de periodo, región y sector en el tablero | Actualiza dinámicamente las gráficas y tablas de indicadores en tiempo real sin recargar la página |
 | **4.** Activar botón de pantalla completa en el visor del tablero | Expande la visualización a monitor completo y retorna a la vista normal con botón de salir o tecla Escape |
-| **5.** Verificar entorno de solo lectura gerencial | Comprueba que la interfaz privada no muestre botones flotantes de edición ni accesos al Panel Administrativo |
+| **5.** Acceder a la Intranet con cuenta de Administrador o Editor | La interfaz despliega en la esquina inferior el botón flotante de edición (`PaginasFabSpeedDial`), ofreciendo las opciones correspondientes a sus permisos |
+| **6.** Probar herramientas editoriales en la Intranet | Permite ingresar a maquetar páginas (`/edit/[slug]`), editar la envoltura global (`/edit/menu-y-pie`), crear nuevas secciones privadas, cambiar la dirección de páginas dinámicas con «Editar dirección» y ejecutar el retiro seguro con «Eliminar página» |
 
 ---
 
 ## MÓDULO 13: Accesibilidad Universal e Instalación PWA
 
-### Escenario 21: Accesibilidad Web y Navegación por Teclado (Resolución 1519 de 2020)
+### Escenario 22: Accesibilidad Web y Navegación por Teclado (Resolución 1519 de 2020)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -474,7 +502,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 22: Instalación y Funcionamiento como Aplicación Web Progresiva (PWA)
+### Escenario 23: Instalación y Funcionamiento como Aplicación Web Progresiva (PWA)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -493,7 +521,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 23: Panel de Preferencias de Accesibilidad e Inclusión Ciudadana (Sitio Web Público)
+### Escenario 24: Panel de Preferencias de Accesibilidad e Inclusión Ciudadana (Sitio Web Público)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -517,3 +545,4 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **11.** Probar botón "Restablecer configuración" | Revierte inmediatamente todos los cambios visuales y auditivos a los valores predeterminados originales |
 | **12.** Verificar persistencia en el navegador | Recargar la página (`F5`) o navegar a otra sección pública y comprobar que las preferencias seleccionadas se mantienen activas automáticamente sin parpadeos |
 | **13.** Probar botón flotante «Subir» | Al desplazarse hacia abajo en la página, se despliega el botón flotante en la esquina inferior; al pulsarlo, desplaza suavemente la pantalla hacia el inicio de la página |
+

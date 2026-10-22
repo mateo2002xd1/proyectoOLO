@@ -88,7 +88,7 @@ const fallo = (mensaje: string, status: number) =>
  * propias convenciones de rutas (`encuestas-*`) y todavía no tiene botón ni diálogo: se
  * añade aquí cuando los tenga.
  */
-export const AMBITOS_HABILITADOS: ReadonlySet<Ambito> = new Set<Ambito>(['sitio']);
+export const AMBITOS_HABILITADOS: ReadonlySet<Ambito> = new Set<Ambito>(['sitio', 'intranet']);
 
 /** Las páginas cuyo slug el código da por hecho en todos los ámbitos. */
 export const DIRECCIONES_DEL_SISTEMA: ReadonlySet<string> = new Set(['inicio', 'menu-y-pie']);
@@ -351,12 +351,8 @@ export const cambiarDireccion = async (
 ): Promise<DireccionCambiada> => {
   // Antes de abrir nada: lo que no depende de la base.
   exigirAmbitoHabilitado(ambito);
-  if (!paginasPolicies.puedePublicar(actor.rol)) {
-    throw fallo(
-      'Cambiar la dirección reescribe lo publicado sin pasar por la aprobación: ' +
-        'solo quien aprueba puede hacerlo.',
-      403
-    );
+  if (!paginasPolicies.puedeEditar(actor.rol)) {
+    throw fallo('No tienes permisos para editar páginas.', 403);
   }
 
   const execute = async (transaction: Transaction): Promise<DireccionCambiada> => {

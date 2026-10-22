@@ -380,7 +380,7 @@ router.delete(
  */
 router.get(
   '/:slug/direccion',
-  requierePermisoPagina('puedePublicar'),
+  requierePermisoPagina('puedeEditar'),
   requirePermission('secciones.cambiar-direccion'),
   PaginaController.consultarUsoDeDireccion
 );
@@ -419,7 +419,7 @@ router.get(
  */
 router.get(
   '/:slug/direccion/validacion',
-  requierePermisoPagina('puedePublicar'),
+  requierePermisoPagina('puedeEditar'),
   requirePermission('secciones.cambiar-direccion'),
   PaginaController.validarNuevaDireccion
 );
@@ -481,7 +481,7 @@ router.get(
 router.patch(
   '/:slug/direccion',
   limitadorDeEscritura,
-  requierePermisoPagina('puedePublicar'),
+  requierePermisoPagina('puedeEditar'),
   requirePermission('secciones.cambiar-direccion'),
   validarCuerpo(cambiarDireccionSchema),
   PaginaController.cambiarDireccion

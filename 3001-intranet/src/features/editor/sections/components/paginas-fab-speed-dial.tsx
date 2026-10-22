@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { enlaceAlEditor, slugDeRutaPublica } from '../../model/rutas';
 import { SLUG_PLANTILLA } from '../../navegation/menu-y-pie';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
+import { ModalEditarDireccion } from './modal-editar-direccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
 import { ModalCerrarSesion } from './modal-cerrar-sesion';
-import { pedirPermisosDeLaSesion } from '../services/secciones.service';
+import { pedirDatosDeLaSesion } from '../services/secciones.service';
 
 export interface PaginasFabSpeedDialProps {
   esSuperadmin?: boolean;
+  esAprobador?: boolean;
   permisosActivos?: string[];
   /** Este botón es el «Cerrar sesión» de quien edita: la barra de arriba no lo lleva
    *  para ellos (`MarcoSecciones`). Con esto se pinta aunque en la sección actual no
@@ -21,6 +23,7 @@ export interface PaginasFabSpeedDialProps {
 
 export function PaginasFabSpeedDial({
   esSuperadmin = false,
+  esAprobador: esAprobadorProp = false,
   permisosActivos: permisosIniciales = [],
   conCerrarSesion = false,
 }: PaginasFabSpeedDialProps) {
@@ -29,6 +32,7 @@ export function PaginasFabSpeedDial({
 
   const [montado, setMontado] = useState(false);
   const [permisosActivos, setPermisosActivos] = useState<string[]>(permisosIniciales);
+  const [rolActivo, setRolActivo] = useState<string>('');
 
   // `montado` marca que ya estamos en el navegador —el FAB no debe pintarse en el HTML
   // del servidor— y a continuación se piden los permisos reales de la sesión. Los dos
@@ -40,9 +44,12 @@ export function PaginasFabSpeedDial({
     let vigente = true;
 
     const actualizarPermisos = () => {
-      pedirPermisosDeLaSesion()
-        .then((permisos) => {
-          if (vigente) setPermisosActivos(permisos);
+      pedirDatosDeLaSesion()
+        .then((datos) => {
+          if (vigente) {
+            setPermisosActivos(datos.permisos);
+            if (datos.rol) setRolActivo(datos.rol);
+          }
         })
         .catch(() => {
           if (vigente) setPermisosActivos([]);
@@ -72,6 +79,12 @@ export function PaginasFabSpeedDial({
   const tieneAccesoIntranet = permisosActivos.includes('acceso.intranet');
   const tienePermisoGlobal = esSuperadmin || tieneAccesoIntranet;
 
+  const esAprobador =
+    esSuperadmin ||
+    esAprobadorProp ||
+    rolActivo === 'superadmin' ||
+    rolActivo === 'administrador';
+
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.intranet.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.intranet.menu-y-pie');
 
@@ -79,12 +92,22 @@ export function PaginasFabSpeedDial({
   const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
   const puedeCrearSeccion = tienePermisoGlobal && (esSuperadmin || permisosActivos.includes('secciones.crear'));
   const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
+  const puedeCambiarDireccion =
+    tienePermisoGlobal &&
+    Boolean(slug) &&
+    slug !== 'inicio' &&
+    (esSuperadmin || permisosActivos.includes('secciones.cambiar-direccion'));
 
   const tieneAlgunaAccion =
-    puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
+    puedeEditarSeccion ||
+    puedeEditarPlantilla ||
+    puedeCrearSeccion ||
+    puedeCambiarDireccion ||
+    puedeEliminarSeccion;
 
   const [abierto, setAbierto] = useState(false);
   const [modalNuevaAbierto, setModalNuevaAbierto] = useState(false);
+  const [modalDireccionAbierto, setModalDireccionAbierto] = useState(false);
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
   const [modalSalirAbierto, setModalSalirAbierto] = useState(false);
 
@@ -275,7 +298,43 @@ export function PaginasFabSpeedDial({
             </div>
           )}
 
-          {/* 4. Eliminar página */}
+          {/* 4. Editar dirección */}
+          {puedeCambiarDireccion && (
+            <div className="fab-speed-dial__item" role="none">
+              <span className="fab-speed-dial__tooltip" role="tooltip">
+                Editar dirección
+              </span>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  cerrarMenu();
+                  setModalDireccionAbierto(true);
+                }}
+                className="fab-speed-dial__btn fab-speed-dial__btn--direccion"
+                aria-label="Editar dirección"
+                title="Editar dirección"
+                tabIndex={abierto ? 0 : -1}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width={18}
+                  height={18}
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* 5. Eliminar página */}
           {puedeEliminarSeccion && (
             <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
@@ -406,6 +465,12 @@ export function PaginasFabSpeedDial({
       <ModalNuevaSeccion
         abierto={modalNuevaAbierto}
         alCerrar={() => setModalNuevaAbierto(false)}
+      />
+
+      <ModalEditarDireccion
+        slug={slug}
+        abierto={modalDireccionAbierto}
+        alCerrar={() => setModalDireccionAbierto(false)}
       />
 
       <ModalEliminarSeccion
