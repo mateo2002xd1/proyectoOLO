@@ -46,7 +46,11 @@ import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/m
 import { obtenerIndiceBusqueda } from '@/features/editor/publishing/services/publicacion.service';
 
 import { CABECERA_POR_DEFECTO } from '@/features/editor/client';
-import { HeroBuscadorOcupaciones, BuscadorOcupacionesView } from '@/shared/lib/buscador-ocupaciones';
+import {
+  HeroBuscadorOcupaciones,
+  BuscadorOcupacionesView,
+  PaginaDeResultadosOcupaciones,
+} from '@/shared/lib/buscador-ocupaciones';
 import { AlertasInversionView } from '@/shared/lib/alertas-inversion';
 import { ProgramasSobresalientesView } from '@/shared/lib/programas-sobresalientes';
 import {
@@ -294,6 +298,26 @@ function CampoYoutubePreview({ value = '', onChange }: CustomFieldRender<string>
   );
 }
 
+/**
+ * El interruptor de todo el buscador de ocupaciones, en los dos bloques que pueden vivir en la
+ * página de resultados (`BuscadorOcupaciones` y `ResultadosOcupaciones`). La regla que lo lee
+ * está en `features/editor/navegation/buscador-ocupaciones.ts`.
+ */
+const campoActivoDelBuscador = () =>
+  campoEnAcordeon(
+    {
+      type: 'radio',
+      label: 'Buscador de ocupaciones',
+      options: [
+        { label: 'Activo', value: true },
+        { label: 'Apagado', value: false },
+      ],
+      ayuda:
+        'Interruptor de todo el sitio: apagado, desaparecen los buscadores de ocupaciones (el de la portada y los demás), los resultados y la consulta al catálogo. Solo cuenta el de la página de resultados que se elige en «Menú y pie»; en cualquier otra página no tiene efecto. Los enlaces con una búsqueda ya guardados llegan a un aviso.',
+    },
+    { resumen: (activo) => (activo === false ? 'Apagado' : 'Activo') }
+  );
+
 const campoFondo = {
   type: 'radio' as const,
   label: 'Fondo',
@@ -361,6 +385,7 @@ const puckConfigBase: Config = {
         'CanalesAtencion',
         'ProgramasSobresalientes',
         'BuscadorOcupaciones',
+        'ResultadosOcupaciones',
         'AlertasInversion',
         'TendenciaOcupacional',
         'MapaSitio',
@@ -446,12 +471,22 @@ const puckConfigBase: Config = {
           },
           { resumen: (boton) => boton?.texto || 'Intranet' }
         ),
+        paginaDelBuscador: campoEnAcordeon(
+          {
+            type: 'text',
+            label: 'Página de resultados del buscador de ocupaciones',
+            placeholder: '/clasificacion-nacional-de-ocupaciones',
+            ayuda:
+              'Todos los buscadores de ocupaciones del sitio llevan a esta página con lo buscado. Escríbela como un enlace del menú; su ruta completa la da el menú (si está dentro de un desplegable, cuelga de él). Esa página debe llevar el bloque «Buscador de Ocupaciones», que es el que muestra los resultados. Vacío: los resultados salen en la misma página donde se busca.',
+          },
+          { resumen: (pagina) => pagina || 'Sin página' }
+        ),
         navLinks: {
           type: 'array',
           label: 'Menú de navegación',
           arrayFields: {
             label: { type: 'text', label: 'Texto del enlace' },
-            href: { type: 'text', label: 'URL' },
+            href: { type: 'text', label: 'Página (/nombre-de-la-página) o dirección completa' },
             active: {
               type: 'radio',
               label: 'Marcar como sección actual',
@@ -462,10 +497,19 @@ const puckConfigBase: Config = {
             },
             children: {
               type: 'array',
-              label: 'Submenú desplegable (opcional)',
+              label: 'Submenú desplegable (opcional). Sus páginas cuelgan de una ruta con el nombre de esta sección',
               arrayFields: {
                 label: { type: 'text', label: 'Texto del enlace' },
-                href: { type: 'text', label: 'URL' },
+                href: { type: 'text', label: 'Página (/nombre-de-la-página) o dirección completa' },
+                internas: {
+                  type: 'array',
+                  label: 'Páginas dentro de esta página (no salen en el menú; su ruta cuelga de esta)',
+                  arrayFields: {
+                    label: { type: 'text', label: 'Nombre de la página' },
+                    href: { type: 'text', label: 'Página (/nombre-de-la-página)' },
+                  },
+                  getItemSummary: (item: { label?: string }) => item.label || 'Página',
+                },
               },
               getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
             },
@@ -660,6 +704,7 @@ const puckConfigBase: Config = {
         };
       },
       render: ({
+        puck,
         textos,
         tituloSeccion,
         descripcion,
@@ -669,6 +714,7 @@ const puckConfigBase: Config = {
         transparenciaFondo,
         colorFondo,
       }: BlockRender<{
+        puck?: { isEditing?: boolean };
         // `ReactNode` y no `string`: Puck convierte los campos `richtext` a nodos
         // antes de llamar al render, también dentro de un `object`.
         textos?: { tituloSeccion?: ReactNode; descripcion?: ReactNode; titulo?: ReactNode };
@@ -689,6 +735,7 @@ const puckConfigBase: Config = {
           imagenFondo={imagenFondo}
           transparenciaFondo={transparenciaFondo}
           colorFondo={colorFondo}
+          esEdicion={Boolean(puck?.isEditing)}
         />
       ),
     },
@@ -1861,9 +1908,10 @@ const puckConfigBase: Config = {
       ),
     },
     /**
-     * El buscador de ocupaciones completo: el banner de búsqueda con sus resultados y el
-     * detalle en el diálogo. Es lo que sirve la página `clasificacion` (`/clasificacion`),
-     * que hasta la migración 046 era una carpeta propia en `app/(public)/`.
+     * El buscador de ocupaciones completo: el banner de búsqueda con sus resultados y la
+     * ficha de cada ocupación, que son parte de la página (la consulta va en la URL,
+     * `?buscar=…&ocupacion=…`). Al buscar lleva a la página de resultados que se elige en
+     * «Menú y pie»; si esa es esta misma página, los resultados salen aquí debajo.
      */
     BuscadorOcupaciones: {
       label: 'Buscador de Ocupaciones',
@@ -1872,12 +1920,41 @@ const puckConfigBase: Config = {
           type: 'textarea',
           label: 'Texto de ayuda (debajo del buscador; vacío no se muestra)',
         },
+        activo: campoActivoDelBuscador(),
       },
       defaultProps: {
         ayuda: 'Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.',
+        activo: true,
       },
-      render: (props: BlockRender<{ ayuda?: string }>) => (
-        <BuscadorOcupacionesView ayuda={props.ayuda ?? ''} />
+      render: ({
+        puck,
+        ...props
+      }: BlockRender<{ ayuda?: string; activo?: boolean; puck?: { isEditing?: boolean } }>) => (
+        <BuscadorOcupacionesView
+          ayuda={props.ayuda ?? ''}
+          activo={props.activo !== false}
+          esEdicion={Boolean(puck?.isEditing)}
+        />
+      ),
+    },
+    /**
+     * Solo los resultados del buscador de ocupaciones: la lista (`?buscar=…`) y la ficha de
+     * cada ocupación (`?buscar=…&ocupacion=…`), sin el banner de búsqueda. Es lo que lleva la
+     * página de resultados que se elige en «Menú y pie», para que los buscadores (el de la
+     * portada, el de CNO) estén en una página y la lista en otra. Lleva también el interruptor
+     * de todo el buscador.
+     */
+    ResultadosOcupaciones: {
+      label: 'Resultados de ocupaciones',
+      fields: {
+        activo: campoActivoDelBuscador(),
+      },
+      defaultProps: { activo: true },
+      render: ({ puck, ...props }: BlockRender<{ activo?: boolean; puck?: { isEditing?: boolean } }>) => (
+        <PaginaDeResultadosOcupaciones
+          activo={props.activo !== false}
+          esEdicion={Boolean(puck?.isEditing)}
+        />
       ),
     },
     /**

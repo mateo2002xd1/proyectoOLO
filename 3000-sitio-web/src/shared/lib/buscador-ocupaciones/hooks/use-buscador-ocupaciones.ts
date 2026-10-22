@@ -1,72 +1,61 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { buscarOcupaciones as consultarOcupaciones } from '../services/buscador-ocupaciones.service';
 import type { ResultadoOcupacion } from '../types';
 
+interface Respuesta {
+  termino: string;
+  resultados: ResultadoOcupacion[];
+  /** Mensaje para la pantalla si la consulta falló; `null` si respondió bien. */
+  error: string | null;
+}
+
 /**
- * Estado del buscador de ocupaciones: dispara la consulta y guarda lo que la
- * vista de resultados necesita pintar.
+ * Los resultados de buscar `termino` en el catálogo de ocupaciones.
  *
- * `terminoBuscado` no es el texto del input, sino el de la última consulta que
- * se lanzó: es el que se resalta en los resultados y el que aparece en el
- * mensaje de "sin coincidencias". Si se usara el valor del input, ambos
- * cambiarían mientras la persona sigue escribiendo sobre resultados que
- * corresponden a otra búsqueda.
+ * El término lo pone quien llama (sale de la URL, `?buscar=`), así que esta consulta se
+ * puede enlazar, recargar y volver a ella con el botón «atrás». `termino` es el de la
+ * consulta que se lanzó, no el texto del input: es el que se resalta en los resultados y
+ * el del mensaje de «sin coincidencias».
+ *
+ * La respuesta se guarda con el término al que pertenece. De ahí salen dos cosas sin
+ * efectos que ajusten el estado: `loading` es «hay término y aún no ha llegado la
+ * respuesta de ESE término», y una respuesta lenta de una búsqueda vieja no pisa los
+ * resultados de la nueva (el efecto la descarta al limpiarse, y aunque llegara, su
+ * término ya no coincide).
  */
-export function useBuscadorOcupaciones() {
-  const [resultados, setResultados] = useState<ResultadoOcupacion[]>([]);
-  const [terminoBuscado, setTerminoBuscado] = useState('');
-  const [loading, setLoading] = useState(false);
-  /** Mensaje para la pantalla si la última consulta falló; `null` si respondió bien. */
-  const [error, setError] = useState<string | null>(null);
-  /** Falso hasta la primera búsqueda; es lo que decide si la vista de resultados se abre. */
-  const [consultaRealizada, setConsultaRealizada] = useState(false);
+export function useBuscadorOcupaciones(termino: string) {
+  const texto = termino.trim();
+  const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
 
-  /**
-   * Contador de peticiones. Dos búsquedas seguidas pueden responder en orden
-   * inverso, y sin este guardia la más lenta —la vieja— pisaría los resultados
-   * de la más reciente.
-   */
-  const peticionVigente = useRef(0);
+  useEffect(() => {
+    if (!texto) return;
 
-  const limpiar = useCallback(() => {
-    peticionVigente.current += 1;
-    setResultados([]);
-    setTerminoBuscado('');
-    setConsultaRealizada(false);
-    setLoading(false);
-    setError(null);
-  }, []);
+    let vigente = true;
+    consultarOcupaciones(texto)
+      .then((resultados) => {
+        if (vigente) setRespuesta({ termino: texto, resultados, error: null });
+      })
+      .catch((fallo) => {
+        if (!vigente) return;
+        setRespuesta({
+          termino: texto,
+          resultados: [],
+          error: fallo instanceof Error ? fallo.message : 'No se pudo consultar el catálogo de ocupaciones.',
+        });
+      });
 
-  const buscar = useCallback(
-    async (termino: string) => {
-      const texto = termino.trim();
-      if (!texto) {
-        limpiar();
-        return;
-      }
+    return () => {
+      vigente = false;
+    };
+  }, [texto]);
 
-      const idPeticion = (peticionVigente.current += 1);
-      setTerminoBuscado(texto);
-      setConsultaRealizada(true);
-      setLoading(true);
-      setError(null);
+  const lista = Boolean(texto) && respuesta?.termino === texto ? respuesta : null;
 
-      try {
-        const encontradas = await consultarOcupaciones(texto);
-        if (idPeticion !== peticionVigente.current) return;
-        setResultados(encontradas);
-      } catch (fallo) {
-        if (idPeticion !== peticionVigente.current) return;
-        setResultados([]);
-        setError(fallo instanceof Error ? fallo.message : 'No se pudo consultar el catálogo de ocupaciones.');
-      } finally {
-        if (idPeticion === peticionVigente.current) setLoading(false);
-      }
-    },
-    [limpiar],
-  );
-
-  return { resultados, terminoBuscado, loading, error, consultaRealizada, buscar, limpiar };
+  return {
+    resultados: lista?.resultados ?? [],
+    loading: Boolean(texto) && !lista,
+    error: lista?.error ?? null,
+  };
 }

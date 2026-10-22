@@ -1,52 +1,52 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { obtenerDetalleOcupacion } from '../services/buscador-ocupaciones.service';
 import type { DetalleOcupacion } from '../types';
 
+interface Respuesta {
+  codigo: string;
+  detalle: DetalleOcupacion | null;
+  error: string | null;
+}
+
 /**
- * Estado de la vista ampliada de una ocupación.
+ * La vista ampliada de la ocupación `codigo` (sale de la URL, `?ocupacion=`).
  *
- * `codigoAbierto` se fija antes de que llegue la respuesta para que la vista
- * pueda abrirse ya —con su encabezado y un indicador de carga— en lugar de
- * quedarse en blanco esperando a la consulta.
+ * Mismo esquema que `useBuscadorOcupaciones`: la respuesta se guarda con su código y
+ * `loading` es «hay código y aún no llegó la respuesta de ese código». Una ocupación
+ * inexistente no es un error, es `detalle === null`; `error` es solo la consulta fallida.
  */
-export function useDetalleOcupacion() {
-  const [codigoAbierto, setCodigoAbierto] = useState<string | null>(null);
-  const [detalle, setDetalle] = useState<DetalleOcupacion | null>(null);
-  const [loading, setLoading] = useState(false);
-  /** Mensaje para la pantalla si la consulta falló; una ocupación inexistente no es un error, es `detalle === null`. */
-  const [error, setError] = useState<string | null>(null);
+export function useDetalleOcupacion(codigo: string | null) {
+  const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
 
-  /** Mismo guardia contra respuestas fuera de orden que en `use-buscador-ocupaciones`. */
-  const peticionVigente = useRef(0);
+  useEffect(() => {
+    if (!codigo) return;
 
-  const cerrar = useCallback(() => {
-    peticionVigente.current += 1;
-    setCodigoAbierto(null);
-    setDetalle(null);
-    setLoading(false);
-    setError(null);
-  }, []);
+    let vigente = true;
+    obtenerDetalleOcupacion(codigo)
+      .then((detalle) => {
+        if (vigente) setRespuesta({ codigo, detalle, error: null });
+      })
+      .catch((fallo) => {
+        if (!vigente) return;
+        setRespuesta({
+          codigo,
+          detalle: null,
+          error: fallo instanceof Error ? fallo.message : 'No se pudo cargar el detalle de esta ocupación.',
+        });
+      });
 
-  const abrir = useCallback(async (codigoOcupacion: string) => {
-    const idPeticion = (peticionVigente.current += 1);
-    setCodigoAbierto(codigoOcupacion);
-    setDetalle(null);
-    setLoading(true);
-    setError(null);
+    return () => {
+      vigente = false;
+    };
+  }, [codigo]);
 
-    try {
-      const encontrado = await obtenerDetalleOcupacion(codigoOcupacion);
-      if (idPeticion !== peticionVigente.current) return;
-      setDetalle(encontrado);
-    } catch (fallo) {
-      if (idPeticion !== peticionVigente.current) return;
-      setError(fallo instanceof Error ? fallo.message : 'No se pudo cargar el detalle de esta ocupación.');
-    } finally {
-      if (idPeticion === peticionVigente.current) setLoading(false);
-    }
-  }, []);
+  const lista = codigo && respuesta?.codigo === codigo ? respuesta : null;
 
-  return { codigoAbierto, detalle, loading, error, abrir, cerrar };
+  return {
+    detalle: lista?.detalle ?? null,
+    loading: Boolean(codigo) && !lista,
+    error: lista?.error ?? null,
+  };
 }

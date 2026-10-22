@@ -1,22 +1,10 @@
 'use client';
 
-import { Suspense, useCallback, type ReactNode } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/20/solid';
-import { useBuscadorOcupaciones } from '../hooks/use-buscador-ocupaciones';
-import { useDetalleOcupacion } from '../hooks/use-detalle-ocupacion';
-import { ModalOcupaciones } from './modal-ocupaciones';
-import { ResultadosOcupaciones } from './resultados-ocupaciones';
-import { DetalleOcupacion } from './detalle-ocupacion';
+import { Suspense, type ReactNode } from 'react';
+import { useBuscadorActivo } from '@/shared/lib/rutas-del-menu';
+import { useBuscarEnPagina } from '../hooks/use-buscar-en-pagina';
+import { ConsultaOcupaciones } from './consulta-ocupaciones';
 import { AZUL_PORTADA, PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
-
-const ETIQUETAS_TIPO: Record<string, string> = {
-  cuoc: 'Clasificación Única de Ocupaciones para Colombia',
-  cno: 'Clasificación Nacional de Ocupaciones',
-};
-
-/** Título del modal de resultados cuando la búsqueda no viene de una clasificación concreta. */
-const TITULO_RESULTADOS = 'Clasificación Nacional de Ocupaciones - Buscador de Ocupaciones';
 
 /*
  * Textos del diseño. Puck entrega un campo `richtext` vacío —o ausente, como en una
@@ -49,40 +37,18 @@ export interface HeroBuscadorOcupacionesProps {
   transparenciaFondo?: number | '';
   /** Color del recuadro del buscador (antes, del banner azul). */
   colorFondo?: string;
+  /** Dentro del editor la búsqueda no navega. */
+  esEdicion?: boolean;
   className?: string;
 }
 
-function TituloModal({
-  codigoAbierto,
-  codigoTitulo,
-  nombreTitulo,
-}: {
-  codigoAbierto: string | null;
-  codigoTitulo: string;
-  nombreTitulo: string;
-}) {
-  const searchParams = useSearchParams();
-  const etiquetaTipo = ETIQUETAS_TIPO[searchParams.get('tipo') ?? ''];
-
-  if (codigoAbierto) {
-    return (
-      <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-        <span className="rounded-[8px] bg-white/10 px-2 py-1 font-mono text-sm tabular-nums">
-          {codigoTitulo}
-        </span>
-        <span>{nombreTitulo}</span>
-      </span>
-    );
-  }
-
-  return <span>{etiquetaTipo || TITULO_RESULTADOS}</span>;
-}
-
 /**
- * Componente del banner buscador de ocupaciones interactivo para Puck y páginas públicas.
+ * Banner buscador de ocupaciones de la portada y de las páginas públicas.
  *
- * Conecta el banner visual con el flujo completo de búsqueda (`useBuscadorOcupaciones`),
- * consulta de detalles (`useDetalleOcupacion`) y diálogo modal con resultados (`ModalOcupaciones`).
+ * Al buscar lleva a la página de resultados que se elige en «Menú y pie», con la consulta en la
+ * URL (`?buscar=…`); ahí, el bloque «Buscador de Ocupaciones» pinta los resultados y la ficha de
+ * cada ocupación (`ConsultaOcupaciones`). Sin esa página, o si ya se está en ella, los pinta
+ * debajo de sí mismo. Con el buscador apagado no se pinta (ver `useBuscadorActivo`).
  */
 export function HeroBuscadorOcupaciones({
   tituloSeccion,
@@ -92,27 +58,14 @@ export function HeroBuscadorOcupaciones({
   imagenFondo,
   transparenciaFondo,
   colorFondo,
+  esEdicion = false,
   className = 'w-full',
 }: HeroBuscadorOcupacionesProps) {
-  const { resultados, terminoBuscado, loading, error, consultaRealizada, buscar, limpiar } =
-    useBuscadorOcupaciones();
-  const {
-    codigoAbierto,
-    detalle,
-    loading: cargandoDetalle,
-    error: errorDetalle,
-    abrir,
-    cerrar: cerrarDetalle,
-  } = useDetalleOcupacion();
-
-  const cerrarTodo = useCallback(() => {
-    cerrarDetalle();
-    limpiar();
-  }, [cerrarDetalle, limpiar]);
-
-  const ocupacionSeleccionada = resultados.find((fila) => fila.codigoOcupacion === codigoAbierto);
-  const codigoTitulo = detalle?.codigoOcupacion ?? codigoAbierto ?? '';
-  const nombreTitulo = detalle?.nombreOcupacion ?? ocupacionSeleccionada?.nombreOcupacion ?? '';
+  const { buscar } = useBuscarEnPagina(esEdicion);
+  // Apagado en el bloque «Buscador de Ocupaciones»: el sitio no lo pinta. El editor sí,
+  // para poder quitarlo de la página (no conoce el interruptor: no tiene el menú).
+  const activo = useBuscadorActivo();
+  if (!activo && !esEdicion) return null;
 
   return (
     <div className={className}>
@@ -127,47 +80,11 @@ export function HeroBuscadorOcupaciones({
         onSearch={buscar}
       />
 
-      <ModalOcupaciones
-        abierto={consultaRealizada}
-        onCerrar={cerrarTodo}
-        claveContenido={codigoAbierto ?? 'resultados'}
-        colorAcento={colorFondo || AZUL_PORTADA}
-        pantallaCompleta
-        antetitulo={codigoAbierto ? 'Ocupación' : 'Resultados de la búsqueda'}
-        titulo={
-          <Suspense fallback={<span>{TITULO_RESULTADOS}</span>}>
-            <TituloModal
-              codigoAbierto={codigoAbierto}
-              codigoTitulo={codigoTitulo}
-              nombreTitulo={nombreTitulo}
-            />
-          </Suspense>
-        }
-        pie={
-          codigoAbierto ? (
-            <button
-              type="button"
-              onClick={cerrarDetalle}
-              className="flex cursor-pointer items-center gap-1.5 rounded-[10px] px-2 py-1.5 text-sm font-medium text-[#001631] transition-colors hover:bg-[#001631]/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB828]"
-            >
-              <ArrowLeftIcon aria-hidden="true" className="size-4" />
-              Volver a los resultados
-            </button>
-          ) : undefined
-        }
-      >
-        {codigoAbierto ? (
-          <DetalleOcupacion detalle={detalle} loading={cargandoDetalle} error={errorDetalle} />
-        ) : (
-          <ResultadosOcupaciones
-            resultados={resultados}
-            termino={terminoBuscado}
-            loading={loading}
-            error={error}
-            onSeleccionar={abrir}
-          />
-        )}
-      </ModalOcupaciones>
+      {/* `useSearchParams` obliga a una frontera de Suspense en una página que se genera
+          de antemano; sin consulta en la URL no pinta nada. */}
+      <Suspense fallback={null}>
+        <ConsultaOcupaciones colorAcento={colorFondo || AZUL_PORTADA} />
+      </Suspense>
     </div>
   );
 }

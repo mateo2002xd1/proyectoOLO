@@ -13,6 +13,7 @@
 // Components
 export { BuscadorOcupacionesBanner } from './components/buscador-ocupaciones-banner';
 export { BuscadorOcupacionesView } from './components/buscador-ocupaciones-view';
+export { PaginaDeResultadosOcupaciones } from './components/pagina-de-resultados';
 export { DetalleOcupacion } from './components/detalle-ocupacion';
 export { ModalOcupaciones } from './components/modal-ocupaciones';
 export { ResultadosOcupaciones } from './components/resultados-ocupaciones';

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { buscadorDeOcupacionesActivo } from '@/features/editor';
 import {
   obtenerDetalleOcupacion,
   respuestaDeErrorCno,
@@ -13,7 +14,13 @@ import {
  */
 export const dynamic = 'force-dynamic';
 
+/** Con el buscador apagado (bloque «Buscador de Ocupaciones») el catálogo deja de consultarse. */
+const APAGADO = () =>
+  NextResponse.json({ error: 'El buscador de ocupaciones no está disponible.' }, { status: 404 });
+
 export async function GET(_request: Request, { params }: { params: Promise<{ codigo: string }> }) {
+  if (!(await buscadorDeOcupacionesActivo())) return APAGADO();
+
   const { codigo } = await params;
 
   try {

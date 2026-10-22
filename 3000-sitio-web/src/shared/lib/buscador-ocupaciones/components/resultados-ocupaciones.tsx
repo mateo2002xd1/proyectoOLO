@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 import type { ResultadoOcupacion } from '../types';
 
@@ -10,7 +11,8 @@ interface ResultadosOcupacionesProps {
   loading: boolean;
   /** Mensaje de la consulta fallida; se pinta en lugar del "sin coincidencias", que sería falso. */
   error?: string | null;
-  onSeleccionar: (codigoOcupacion: string) => void;
+  /** La URL de la vista ampliada de una ocupación. */
+  hrefDe: (codigoOcupacion: string) => string;
 }
 
 /** Denominaciones que se listan en la fila antes de resumir el resto en un "+N más". */
@@ -26,16 +28,16 @@ const CLASE_RESALTADO = 'rounded bg-[#7DB828]/30 px-0.5 text-[#001631]';
  * `nomb_ocupacion_cno`), a la derecha sus denominaciones
  * (`descr_denominacion_cno` unidas por el código de la ocupación).
  *
- * Cada fila es un `<button>` y no una `<tr>` con `onClick` porque la fila
- * entera es la que abre el detalle: como botón se alcanza con el tabulador y
- * responde a Enter y a la barra espaciadora sin añadir nada.
+ * Cada fila es un enlace y no una `<tr>` con `onClick` porque la fila entera lleva al
+ * detalle, que es otra URL: como enlace se alcanza con el tabulador, responde a Enter y
+ * se puede abrir en otra pestaña o copiar.
  */
 export function ResultadosOcupaciones({
   resultados,
   termino,
   loading,
   error,
-  onSeleccionar,
+  hrefDe,
 }: ResultadosOcupacionesProps) {
   if (loading) {
     return (
@@ -96,11 +98,11 @@ export function ResultadosOcupaciones({
 
             return (
               <li key={`${ocupacion.tipo}-${ocupacion.codigoOcupacion}`}>
-                <button
-                  type="button"
-                  onClick={() => onSeleccionar(ocupacion.codigoOcupacion)}
+                <Link
+                  href={hrefDe(ocupacion.codigoOcupacion)}
+                  scroll={false}
                   aria-label={`Ver el detalle de la ocupación ${ocupacion.codigoOcupacion} ${ocupacion.nombreOcupacion}`}
-                  className="grid w-full cursor-pointer grid-cols-1 gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#f8f9fa] focus:outline-none focus-visible:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-[#7DB828] focus-visible:ring-inset sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-4"
+                  className="grid w-full grid-cols-1 gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#f8f9fa] focus:outline-none focus-visible:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-[#7DB828] focus-visible:ring-inset sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-4"
                 >
                   <span className="flex items-start gap-2.5">
                     <span className="mt-0.5 shrink-0 rounded-[8px] bg-[var(--olo-modal-acento,#001631)] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
@@ -138,7 +140,7 @@ export function ResultadosOcupaciones({
                       </span>
                     )}
                   </span>
-                </button>
+                </Link>
               </li>
             );
           })}
