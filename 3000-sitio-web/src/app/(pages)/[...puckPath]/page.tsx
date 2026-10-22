@@ -8,9 +8,12 @@ import {
   ClientPuckRender,
   obtenerPaginaPublicadaCacheada,
   obtenerPaginaInicio,
+  obtenerPlantilla,
   enlaceAlEditor,
   rutaPublicaDeSlug,
+  slugsDeRutaPublica,
 } from '@/features/editor';
+import { mapaDelMenu } from '@/shared/lib/rutas-del-menu';
 import { puedeEditarPaginas, puedeEditarSeccion } from '@/shared/lib/session/session';
 
 /**
@@ -24,16 +27,22 @@ import { puedeEditarPaginas, puedeEditarSeccion } from '@/shared/lib/session/ses
  * toca `app/`. Es el mismo modelo de la intranet (`app/(pages)/[...puckPath]`).
  *
  * **El slug nunca lleva barra**, aunque la URL sí: la API expone
- * `/paginas/publica/:slug` y un parámetro de Express no cruza una barra. Por eso el slug
- * son los segmentos unidos con `-`: `/clasificacion/cno` da `clasificacion-cno`. La vuelta
- * (slug → URL) la decide `rutaPublicaDeSlug` con su lista de carpetas.
+ * `/paginas/publica/:slug` y un parámetro de Express no cruza una barra. La URL la arma el
+ * menú de «Menú y pie» (`shared/lib/rutas-del-menu`): una hija de un desplegable cuelga de
+ * su tramo, `/clasificacion-de-las-ocupaciones/clasificacion-cuoc`, y el slug es el último
+ * tramo. Una página que no está en el menú vive en `/{slug}`. Nada de esto está escrito en
+ * el código: crear la página en el editor y ponerla en el menú basta.
+ *
+ * Las URLs viejas de dos tramos (`/clasificacion/cuoc`, que antes salían de una lista de
+ * carpetas) siguen llegando: si el último tramo no es una página, se prueba con todos unidos
+ * por guion (`clasificacion-cuoc`) y se redirige a la ruta buena.
  */
 
 /** Una sola llamada por request aunque la pidan `generateMetadata` y la página. */
 const obtenerPaginaCacheada = cache(obtenerPaginaPublicadaCacheada);
 
 /**
- * El slug de la URL, o `null` si no puede serlo.
+ * Si un candidato puede ser el slug de una página.
  *
  * Que no cambie al pasar por `slugificar` descarta lo que nunca fue una página
  * (`/.well-known/...`, mayúsculas, espacios) sin gastar una petición a la API. Que sea
@@ -41,10 +50,28 @@ const obtenerPaginaCacheada = cache(obtenerPaginaPublicadaCacheada);
  * `paginas`, pero guarda la cabecera y el pie que el layout pinta alrededor de todo, y
  * servida aquí los mostraría duplicados dentro del `<main>`.
  */
-function slugDesdeParams(puckPath: string[]): string | null {
-  const slug = puckPath.join('-');
-  return slug === slugificar(slug) && esSlugValido(slug) ? slug : null;
-}
+const esSlugPosible = (slug: string) => slug === slugificar(slug) && esSlugValido(slug);
+
+/**
+ * La página que nombra la URL: el slug y su versión publicada.
+ *
+ * Se prueban los candidatos de `slugsDeRutaPublica` en orden y gana el primero que existe.
+ * Si ninguno existe, el slug es el primero (el último tramo) y `pagina` es `null`: quien
+ * llama decide entre el 404 y la invitación a crearla. La portada no se consulta aquí, la
+ * lee `obtenerPaginaInicio`, que tiene su respaldo.
+ *
+ * Con `cache` de React para que `generateMetadata` y la página no pidan dos veces lo mismo.
+ * La clave es el texto, no el arreglo: dos arreglos iguales no son la misma entrada.
+ */
+const resolverPagina = cache(async (ruta: string) => {
+  const candidatos = slugsDeRutaPublica(ruta.split('/')).filter(esSlugPosible);
+  for (const slug of candidatos) {
+    if (slug === 'inicio') return { slug, pagina: null };
+    const pagina = await obtenerPaginaCacheada(slug);
+    if (pagina) return { slug, pagina };
+  }
+  return { slug: candidatos[0] ?? null, pagina: null };
+});
 
 /**
  * Metadata SEO de las páginas que la tenían en su carpeta propia, migrada tal cual.
@@ -80,7 +107,7 @@ export async function generateMetadata({
   params: Promise<{ puckPath: string[] }>;
 }): Promise<Metadata> {
   const { puckPath } = await params;
-  const slug = slugDesdeParams(puckPath);
+  const { slug, pagina } = await resolverPagina(puckPath.join('/'));
   if (!slug) return {};
 
   const conocida = METADATA_POR_SLUG[slug];
@@ -88,7 +115,6 @@ export async function generateMetadata({
 
   // Un título igual al slug es de una fila creada sin nombre (`tendencias`,
   // `publicaciones`): en la pestaña se vería peor que el título por defecto del sitio.
-  const pagina = await obtenerPaginaCacheada(slug);
   return pagina?.titulo && pagina.titulo !== slug ? { title: `${pagina.titulo} | SENA OLO` } : {};
 }
 
@@ -98,20 +124,20 @@ export default async function PaginaPublica({
   params: Promise<{ puckPath: string[] }>;
 }) {
   const { puckPath } = await params;
-  const slug = slugDesdeParams(puckPath);
+  const { slug, pagina } = await resolverPagina(puckPath.join('/'));
   if (!slug) notFound();
 
-  // Cada página tiene una sola URL. Como el slug no distingue guion de barra,
-  // `/clasificacion-cno` y `/clasificacion/cno` darían la misma página; se manda a la
-  // buena para no tener contenido duplicado.
-  const ruta = rutaPublicaDeSlug(slug);
-  if (`/${puckPath.join('/')}` !== ruta) redirect(ruta);
+  // Cada página tiene una sola URL: la que le da el menú. `/clasificacion-cuoc`, la forma
+  // vieja `/clasificacion/cuoc` y un tramo de más darían la misma página; se manda a la
+  // buena para no tener contenido duplicado. Solo si la página existe: redirigir una
+  // dirección inventada a otra que tampoco existe sería un salto para acabar en el 404.
+  const plantilla = await obtenerPlantilla();
+  const ruta = rutaPublicaDeSlug(slug, mapaDelMenu(plantilla.cabecera?.navLinks ?? []));
+  if ((pagina || slug === 'inicio') && `/${puckPath.join('/')}` !== ruta) redirect(ruta);
 
   // La portada nunca se queda en blanco: si la API no responde, `obtenerPaginaInicio`
   // devuelve la identidad visual de respaldo (`homeFallbackData`).
   if (slug === 'inicio') return <ClientPuckRender data={await obtenerPaginaInicio()} />;
-
-  const pagina = await obtenerPaginaCacheada(slug);
 
   // Sin versión aprobada no hay nada que enseñar. A quien visita el sitio eso es un
   // 404 y punto; a quien puede editar se le da la entrada al editor, porque el caso
@@ -134,9 +160,9 @@ export default async function PaginaPublica({
         <p style={{ marginTop: '1rem' }}>
           <Link
             href={enlaceAlEditor(slug, ruta)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#002c46] rounded-full hover:bg-[#001a2a]"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
           >
-            Editar sección
+            Termina de editar la página
           </Link>
         </p>
       </div>

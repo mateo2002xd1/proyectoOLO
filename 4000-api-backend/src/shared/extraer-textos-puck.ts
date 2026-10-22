@@ -42,22 +42,44 @@ export function limpiarTextoHtml(valor: unknown): string {
 }
 
 /**
- * Las carpetas de cada app: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
+ * Las carpetas de la intranet: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
  *
- * Copia de `CARPETAS` en `features/editor/model/rutas.ts` de cada app: las dos resuelven
- * cualquier URL con un comodín `[...puckPath]` que une los segmentos con guion, y esta es
- * la vuelta. Si el buscador no la conociera, enlazaría `/clasificacion-cno`, que el sitio
- * igual redirige, pero con un salto de más.
+ * Copia de `CARPETAS` en `features/editor/model/rutas.ts` de la intranet: resuelve cualquier
+ * URL con un comodín `[...puckPath]` que une los segmentos con guion, y esta es la vuelta.
+ *
+ * **El sitio no tiene carpetas**: su jerarquía la define el menú de «Menú y pie» (una hija de
+ * un desplegable cuelga de su tramo) y se calcula en el propio sitio
+ * (`shared/lib/rutas-del-menu`). Aquí todas sus páginas son `/{slug}`; el sitio redirige esa
+ * URL a la que le toca.
  */
 const CARPETAS: Record<'intranet' | 'sitio', string[]> = {
   intranet: ['encuestas'],
-  sitio: ['clasificacion'],
+  sitio: [],
 };
 
 /** Resuelve la URL pública de un slug en su ámbito ('intranet' o 'sitio'). */
 export function resolverHref(slug: string, ambito: 'intranet' | 'sitio' = 'sitio'): string {
   const carpeta = CARPETAS[ambito].find((c) => slug.startsWith(`${c}-`));
   return carpeta ? `/${carpeta}/${slug.slice(carpeta.length + 1)}` : `/${slug}`;
+}
+
+/**
+ * Si un enlace guardado en el contenido lleva a la página `slug`.
+ *
+ * En la intranet, la ruta de `resolverHref` o `/{slug}`. En el sitio la ruta no sale del
+ * slug sino del menú, que aquí no se conoce, así que vale cualquier forma que el sitio
+ * resuelve a esa página: su último tramo (`/padre/{slug}`, la ruta del menú) o todos los
+ * tramos unidos con guion (`/clasificacion/cuoc` para `clasificacion-cuoc`, la forma de
+ * antes). Es lo que decide si borrar una página dejaría un enlace roto.
+ */
+export function rutaLlevaAPagina(
+  ruta: string,
+  slug: string,
+  ambito: 'intranet' | 'sitio' = 'sitio'
+): boolean {
+  if (ambito === 'intranet') return ruta === `/${slug}` || ruta === resolverHref(slug, ambito);
+  const tramos = ruta.split('/').filter(Boolean);
+  return tramos.length > 0 && (tramos[tramos.length - 1] === slug || tramos.join('-') === slug);
 }
 
 /**

@@ -15,7 +15,7 @@ import type { Pagina, PaginaIndiceBusqueda } from '../../model/pagina.types';
 import { CABECERAS_DEL_SITIO } from '../../model/ambito';
 import { homeFallbackData } from '../../model/home-fallback-data';
 import { SITIO_ESTATICO_FALLBACK } from '../lib/sitio-busqueda-fallback';
-import { etiquetaDePagina } from '../lib/etiquetas-cache';
+import { ETIQUETA_TITULOS, etiquetaDePagina } from '../lib/etiquetas-cache';
 import { URL_DE_LA_API } from '@/shared/lib/api/url-de-la-api';
 
 /** Cliente anónimo: sin `withCredentials`, a diferencia del de `services/`. */
@@ -60,6 +60,30 @@ export async function obtenerPaginaPublicadaCacheada(slug: string): Promise<Pagi
     return await res.json();
   } catch {
     return null;
+  }
+}
+
+/**
+ * Los títulos de las páginas publicadas del sitio, por slug.
+ *
+ * Para las migas de pan, que se pintan en cada visita y necesitan saber cómo se llama la
+ * página en la que se está (el último tramo de la ruta es su slug). Mismo trato que `obtenerPaginaPublicadaCacheada`:
+ * `fetch` con caché y etiqueta (`ETIQUETA_TITULOS`, que tira `app/api/revalidar`), corte a
+ * los 5s y `{}` en cualquier fallo, porque unas migas sin nombres no justifican romper la
+ * página.
+ */
+export async function obtenerTitulosPublicados(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/paginas/titulos`, {
+      headers: CABECERAS_DEL_SITIO,
+      next: { revalidate: 60, tags: [ETIQUETA_TITULOS] },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return {};
+    const filas: { slug: string; titulo: string }[] = await res.json();
+    return Object.fromEntries(filas.map(({ slug, titulo }) => [slug, titulo]));
+  } catch {
+    return {};
   }
 }
 

@@ -20,6 +20,8 @@ export interface NavLink {
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavLink[];
+  /** Páginas que cuelgan de esta y no salen en el menú (ver `rutas-del-menu`). */
+  internas?: NavLink[];
   colorTexto?: string;
   colorHover?: string;
   tamanoTexto?: string;
@@ -45,6 +47,11 @@ export interface CabeceraPorDefecto {
   separacionMenuAcciones?: number | '';
   /** Texto y colores del botón «Intranet». Ver `BotonIntranet` en header.tsx. */
   botonIntranet?: { texto?: string; colorFondo?: string; colorTexto?: string };
+  /**
+   * La página de resultados de todos los buscadores de ocupaciones del sitio, escrita como
+   * un enlace del menú. Vacía = los resultados salen en la página donde se busca.
+   */
+  paginaDelBuscador?: string;
 }
 
 // Sin `intranetUrl`: la cabecera la toma siempre de NEXT_PUBLIC_INTRANET_URL (ver header.tsx).
@@ -55,14 +62,16 @@ export const CABECERA_POR_DEFECTO: CabeceraPorDefecto = {
     { label: 'Inicio', href: '/inicio', active: true },
     {
       label: 'Clasificaciones',
-      href: '/clasificacion',
+      href: '#',
       children: [
-        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion/cuoc' },
-        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion/cno' },
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion-cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion-cno' },
       ],
     },
     { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
     { label: 'Publicaciones', href: '/publicaciones' },
     { label: 'APE', href: '/ape' },
   ],
+  // El slug de la página, no su ruta: el menú es quien la cuelga de su desplegable.
+  paginaDelBuscador: '/clasificacion-nacional-de-ocupaciones',
 };

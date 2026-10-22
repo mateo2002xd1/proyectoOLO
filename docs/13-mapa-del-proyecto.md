@@ -14,16 +14,17 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 50 | 2 | 47 | — | 33 |
+| `3000-sitio-web` | 51 | 2 | 47 | — | 33 |
 | `3001-intranet` | 36 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
 Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
-## Carpetas sin descripción (3)
+## Carpetas sin descripción (4)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
+- `3000-sitio-web/src/shared/lib/rutas-del-menu/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
 - `auditorias/`
@@ -76,6 +77,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── modals/                        la salida animada de los modales (`useCierreAnimado`)
     │   │   ├── programas-sobresalientes/      mapa, filtros y tabla del Observatorio
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
+    │   │   ├── rutas-del-menu/                ⚠ sin descripción
     │   │   ├── session/                       cookies de sesión, lectura y verificación de la sesión, y a qué paso del primer ingreso va una cuenta
     │   │   ├── sonido-avisos/                 el tono de los avisos flotantes y la preferencia de silenciarlo
     │   │   ├── tema/                          tema oscuro del panel, sin parpadeo al cargar
@@ -201,7 +203,7 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `admin-panel/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `auth/` `backup-section/` `changelog-view/` `configuration/` `search/` `update-section/` | **no** | 77 |
-| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 40 |
+| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 41 |
 
 ### 3001-intranet
 

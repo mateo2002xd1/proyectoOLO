@@ -37,16 +37,18 @@ const escaparGlob = (valor: string) => valor.replace(/[\*?[\]]/g, (caracter) => 
 export const invalidarCacheListener = async (evento: ContenidoPublicadoEvent): Promise<void> => {
   const patron = `cache:/api/paginas/publica/${escaparGlob(evento.slug)}|*`;
   const patronIndice = 'cache:/api/paginas/indice-busqueda|*';
+  const patronTitulos = 'cache:/api/paginas/titulos|*';
 
-  const [borradasPagina, borradasIndice] = await Promise.all([
+  const [borradasPagina, borradasIndice, borradasTitulos] = await Promise.all([
     borrarClavesPorPatron(patron),
     borrarClavesPorPatron(patronIndice),
+    borrarClavesPorPatron(patronTitulos),
   ]);
 
-  const totalBorradas = borradasPagina + borradasIndice;
+  const totalBorradas = borradasPagina + borradasIndice + borradasTitulos;
   if (totalBorradas > 0) {
     console.log(
-      `[invalidar-cache] ${borradasPagina} entrada(s) borradas para ${patron}, ${borradasIndice} para índice de búsqueda`
+      `[invalidar-cache] ${borradasPagina} entrada(s) borradas para ${patron}, ${borradasIndice} para índice de búsqueda, ${borradasTitulos} para títulos`
     );
   }
 };

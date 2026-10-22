@@ -51,10 +51,10 @@ const CABECERA = {
     { label: 'Inicio', href: '/inicio', active: true },
     {
       label: 'Clasificaciones',
-      href: '/clasificacion',
+      href: '#',
       children: [
-        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion/cuoc' },
-        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion/cno' },
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion-cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion-cno' },
       ],
     },
     { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },

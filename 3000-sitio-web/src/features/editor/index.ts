@@ -28,6 +28,7 @@ export {
   rutaPublicaDeSlug,
   slugDeOrigen,
   slugDeRutaPublica,
+  slugsDeRutaPublica,
 } from "./model/rutas";
 export { homeFallbackData } from "./model/home-fallback-data";
 
@@ -36,12 +37,14 @@ export {
   obtenerPagina,
   obtenerPaginaPublicadaCacheada,
   obtenerPaginaInicio,
+  obtenerTitulosPublicados,
   registrarVisita,
   obtenerIndiceBusqueda,
 } from "./publishing/services/publicacion.service";
+export { buscadorDeOcupacionesActivo } from "./navegation/buscador-ocupaciones";
 export { ClientPuckRender } from "./publishing/components/client-puck-render";
 export { RastreadorVisitas } from "./publishing/components/rastreador-visitas";
-export { etiquetaDePagina } from "./publishing/lib/etiquetas-cache";
+export { etiquetaDePagina, ETIQUETA_TITULOS } from "./publishing/lib/etiquetas-cache";
 
 // edicion/ — el editor Puck, el borrador y el candado de edición
 export {

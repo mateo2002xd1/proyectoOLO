@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
 import { desplazarAElemento } from '@olo/blocks-renderer';
 import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/editor';
+import { hrefDelMenu } from '@/shared/lib/rutas-del-menu';
 import { BuscadorSitio } from './buscador-sitio';
 import { TAMANOS_TEXTO_MENU } from './tamanos-texto-menu';
 import { estiloDeFranjaGov } from './tinta-de-franja';
@@ -18,6 +19,8 @@ export interface NavItem {
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavItem[];
+  /** Páginas que cuelgan de esta y no se pintan en el menú (solo en las hijas de un desplegable). */
+  internas?: NavItem[];
   /** Color del texto de esta sección del menú; vacío = el de `.olo-nav-link`. */
   colorTexto?: string;
   /** Color del texto al pasar el cursor; vacío = el mismo de siempre. */
@@ -82,6 +85,12 @@ interface HeaderProps {
    * `intranetText`, que es donde lo guardaban las cabeceras de antes.
    */
   botonIntranet?: BotonIntranet;
+  /**
+   * La página de resultados de los buscadores de ocupaciones. No la usa la cabecera: la
+   * lee `app/(pages)/layout.tsx` para `MenuDelSitio`; vive aquí porque «Menú y pie» solo
+   * guarda las props de este bloque.
+   */
+  paginaDelBuscador?: string;
 }
 
 export interface BotonIntranet {
@@ -429,10 +438,10 @@ export function Header({
     { label: 'Inicio', href: '/inicio', active: true },
     {
       label: 'Clasificaciones',
-      href: '/clasificacion',
+      href: '#',
       children: [
-        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion/cuoc' },
-        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion/cno' },
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion-cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion-cno' },
       ],
     },
     { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
@@ -583,7 +592,7 @@ export function Header({
                       {link.children.map((child, childIndex) => (
                         <a
                           key={`child-${childIndex}`}
-                          href={child.href}
+                          href={hrefDelMenu(child, link)}
                           className="olo-nav-dropdown-link"
                           role="menuitem"
                           onClick={() => setOpenDropdown(null)}
@@ -599,7 +608,7 @@ export function Header({
               return (
                 <a
                   key={`nav-link-${index}`}
-                  href={link.href}
+                  href={hrefDelMenu(link)}
                   className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
                   data-tapado={tapado}
                   style={estiloDelEnlace(link)}
@@ -662,7 +671,7 @@ export function Header({
                 {link.children.map((child, childIndex) => (
                   <a
                     key={`m-child-${childIndex}`}
-                    href={child.href}
+                    href={hrefDelMenu(child, link)}
                     className="olo-mobile-nav-link olo-mobile-nav-link-child"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -673,7 +682,7 @@ export function Header({
             ) : (
               <a
                 key={`m-nav-${index}`}
-                href={link.href}
+                href={hrefDelMenu(link)}
                 className="olo-mobile-nav-link"
                 onClick={() => setMobileMenuOpen(false)}
               >

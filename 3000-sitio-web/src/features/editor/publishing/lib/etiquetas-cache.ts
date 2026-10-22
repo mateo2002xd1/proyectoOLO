@@ -13,3 +13,10 @@
  * colisión esperando a que la intranet estrene ISR.
  */
 export const etiquetaDePagina = (slug: string) => `pagina:sitio:${slug}`;
+
+/**
+ * La etiqueta de la lista de títulos de las páginas publicadas (las migas de pan la leen en
+ * cada visita). Es una sola para todo el sitio: aprobar cualquier página puede cambiar un
+ * título o añadir una página nueva a la lista, así que `app/api/revalidar` la tira siempre.
+ */
+export const ETIQUETA_TITULOS = 'titulos:sitio';

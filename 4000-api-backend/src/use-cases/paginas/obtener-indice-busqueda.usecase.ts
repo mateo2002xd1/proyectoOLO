@@ -10,7 +10,7 @@ import {
 /**
  * Slugs reservados que no son páginas navegables (plantillas, menús, etc.).
  */
-const SLUGS_IGNORADOS = new Set(['menu-y-pie', 'plantilla']);
+export const SLUGS_IGNORADOS = new Set(['menu-y-pie', 'plantilla']);
 
 /**
  * Construye el índice de búsqueda dinámico para las páginas publicadas de un ámbito.

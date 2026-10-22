@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from 'crypto';
 import { revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
-import { etiquetaDePagina } from '@/features/editor';
+import { ETIQUETA_TITULOS, etiquetaDePagina } from '@/features/editor';
 
 /**
  * Tira de la caché el contenido publicado de una página.
@@ -84,6 +84,9 @@ export async function POST(request: Request) {
   // route handler lanza. Ver `revalidate.js` en next/dist: trata `expire: 0` igual que
   // la forma antigua de un solo argumento.
   revalidateTag(etiqueta, { expire: 0 });
+  // Los nombres de las migas de pan salen de una lista aparte: una página recién aprobada
+  // puede ser nueva o venir con otro título, y la lista tiene que enterarse igual.
+  revalidateTag(ETIQUETA_TITULOS, { expire: 0 });
 
   return NextResponse.json({ revalidado: etiqueta });
 }

@@ -7,6 +7,8 @@
  * porque se pierde en cuanto el editor recarga o navega.
  */
 
+import { rutaDeSlug, type MapaDelMenu } from '@/shared/lib/rutas-del-menu';
+
 const PARAM = 'volver';
 
 /**
@@ -24,43 +26,48 @@ export function enlaceAlEditor(slug: string, volverA: string): string {
 }
 
 /**
- * Las carpetas del sitio: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
+ * La ruta pública de una página: la que le da el menú de «Menú y pie» o, si no está en él,
+ * `/{slug}`.
  *
- * Todas las páginas las sirve el comodín `app/(pages)/[...puckPath]`, que une los
- * segmentos de la URL con guion para sacar el slug (`/clasificacion/cno` →
- * `clasificacion-cno`). Esa ida no necesita nada; la vuelta sí, porque un guion no dice
- * si separa carpetas o palabras: `clasificacion-cno` podría ser `/clasificacion-cno`.
- * Esta lista lo decide. Es la misma regla que la intranet aplica a `encuestas-`.
- *
- * Una página nueva dentro de una carpeta que ya está aquí no toca código: basta con que
- * su slug empiece por `{carpeta}-`. Solo una carpeta nueva se añade a esta lista y a su
- * copia de la API (`CARPETAS` en `api-backend/src/shared/extraer-textos-puck.ts`), que
- * es la que arma los enlaces del buscador.
- */
-const CARPETAS = ['clasificacion'];
-
-/**
- * La ruta pública de un slug.
+ * El slug es plano (`clasificacion-cuoc`) y la jerarquía de la URL sale del menú: una hija
+ * de un desplegable cuelga de su tramo (`/clasificacion-de-las-ocupaciones/clasificacion-cuoc`).
+ * Ver `shared/lib/rutas-del-menu`. Sin `mapa` (donde no se tiene el menú a mano: listados del
+ * panel, el editor) devuelve `/{slug}`, y el sitio redirige esa URL a la ruta buena.
  *
  * La portada no es excepción: vive en `/inicio`, igual que su slug. Antes había un
  * caso especial que traducía `inicio` a `/` porque la portada estaba en la raíz,
  * pero eso servía el mismo contenido bajo dos URLs; ahora `/` redirige a `/inicio`
  * (ver `next.config.mjs`).
  */
-export function rutaPublicaDeSlug(slug: string): string {
-  const carpeta = CARPETAS.find((c) => slug.startsWith(`${c}-`));
-  return carpeta ? `/${carpeta}/${slug.slice(carpeta.length + 1)}` : `/${slug}`;
+export function rutaPublicaDeSlug(slug: string, mapa?: MapaDelMenu): string {
+  return rutaDeSlug(slug, mapa);
 }
 
 /**
- * El slug de una ruta pública: el inverso de `rutaPublicaDeSlug`.
+ * El slug de una ruta pública: su último tramo (`/padre/hija` → `hija`); la raíz es `inicio`.
  *
- * Los segmentos unidos con guion (`/clasificacion/cno` → `clasificacion-cno`) y la
- * raíz es `inicio`. Es la misma cuenta que hace el comodín `[...puckPath]`.
+ * Es la inversa de `rutaPublicaDeSlug` para las rutas buenas. Las viejas de dos tramos
+ * (`/clasificacion/cuoc`) las resuelve `slugsDeRutaPublica`.
  */
 export function slugDeRutaPublica(ruta: string): string {
   const segmentos = ruta.split(/[?#]/)[0].split('/').filter(Boolean);
-  return segmentos.length === 0 ? 'inicio' : segmentos.join('-');
+  return segmentos.length === 0 ? 'inicio' : segmentos[segmentos.length - 1];
+}
+
+/**
+ * Los slugs que puede nombrar una URL, del más probable al menos.
+ *
+ * 1. El último tramo: `/padre/hija` → `hija`, la ruta que arma el menú.
+ * 2. Todos los tramos unidos con guion: `/clasificacion/cuoc` → `clasificacion-cuoc`. Así se
+ *    generaban las rutas de dos tramos antes de que las definiera el menú; hay enlaces
+ *    guardados y de otros sitios con esa forma, y de este modo siguen llegando (la página
+ *    los redirige a la ruta buena).
+ */
+export function slugsDeRutaPublica(segmentos: string[]): string[] {
+  const ultimo = segmentos[segmentos.length - 1];
+  if (!ultimo) return [];
+  const unido = segmentos.join('-');
+  return unido === ultimo ? [ultimo] : [ultimo, unido];
 }
 
 /**
