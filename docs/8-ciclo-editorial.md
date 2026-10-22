@@ -104,7 +104,16 @@ sobre Redis, para que la caché sea común.
 Desde el 2026-08-20 el ciclo ya no opera sobre una lista fija de páginas. Hay un botón
 «Nueva sección» (intranet) / «Nueva página» (sitio) y otro de eliminar, cada uno con su
 permiso propio (`secciones.crear`, `secciones.eliminar`, ambos de Superadmin y
-Administrador por defecto; el Editor no).
+Administrador por defecto; el Editor no). Un tercer botón, «Editar dirección»
+(`secciones.cambiar-direccion`, mismos roles), cambia el slug de una página y actualiza los
+enlaces que la apuntaban. Esa actualización reescribe también la versión **publicada** sin
+pasar por la cola de aprobación: solo cambia direcciones de enlaces, no texto ni diseño, y
+queda en la bitácora (una fila en la página renombrada y otra en cada página cuyo contenido se
+reescribió). **Por eso solo la puede usar quien aprueba**, aunque otro rol tenga el permiso: es,
+en la práctica, publicar. También se reescriben las versiones **rechazadas** (el editor las vuelve
+a abrir y se reenvían) y las **archivadas** (restaurar una versión anterior la vuelve a
+publicar tal cual): si no, el enlace viejo reaparecería. Si alguien tiene abierto el editor en una
+página afectada, no se hace.
 
 No son estados del ciclo: son el antes y el después de todo el ciclo. Y encajan sin
 romper la invariante del §1.2 gracias a dos decisiones:
@@ -285,7 +294,7 @@ features/editor/
 │
 ├── model/                          # lo que comparten las etapas
 │   ├── pagina.types.ts             # Pagina, PaginaVersion, Bloque, PuckData, EstadoPagina
-│   ├── rutas.ts                    # CARPETAS, slug ↔ URL, ruta de vuelta del editor
+│   ├── rutas.ts                    # slug ↔ URL (la jerarquía la da el menú), ruta de vuelta del editor
 │   ├── ambito.ts                   # cabecera X-Ambito: sitio
 │   ├── api-con-sesion.ts           # axios withCredentials — nunca desde publishing/
 │   ├── eventos.ts                  # notificarRevisionActualizada

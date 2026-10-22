@@ -333,9 +333,17 @@ lo mantiene acotado:
 - **Se concede al rol de quien crea, no a la persona.** El modelo es por rol y no existe
   la concesión individual. La consecuencia hay que decirla en voz alta —si quien crea es
   Editor, **todos** los Editores editarán esa sección— y el diálogo de creación la dice.
-- **Crear y eliminar son permisos distintos** (`secciones.crear`, `secciones.eliminar`),
-  ninguno de los dos del Editor por defecto. Separarlos permite dar el primero a más
-  gente sin dar el segundo: crear añade, eliminar destruye y no se deshace.
+- **Crear, eliminar y cambiar la dirección son permisos distintos** (`secciones.crear`,
+  `secciones.eliminar`, `secciones.cambiar-direccion`), ninguno de los tres del Editor por
+  defecto. Separarlos permite dar el primero a más gente sin dar los otros: crear añade,
+  eliminar destruye y no se deshace, y cambiar la dirección reescribe contenido ajeno (y rompe
+  los enlaces de fuera del portal). Los tres se comprueban en el servidor, no solo en el botón;
+  el cambio de dirección vuelve a validarlo todo dentro de la transacción y deja la bitácora.
+  **El de cambiar la dirección, además, solo opera para quien aprueba** (Superadmin y
+  Administrador, `puedePublicar`): reescribe la versión publicada sin pasar por la cola, y
+  concederlo a un Editor desde el panel dejaría que ese rol cambiara lo que ve el ciudadano sin
+  que nadie lo apruebe. La guarda va en la ruta y otra vez en el caso de uso (§4.3). Tampoco
+  fusiona accesos: si la clave de permiso de la dirección nueva ya tiene roles, responde 409.
 - **`sembrar-permisos-roles.ts` borra lo que no esté en el catálogo.** Las claves creadas
   en caliente están exentas **mientras su página exista**. Quien toque ese script tiene
   que preservar esa exención, o una siembra rutinaria revoca en silencio el acceso a todo

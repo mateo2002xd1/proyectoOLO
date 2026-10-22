@@ -189,40 +189,82 @@ inversión, los programas sobresalientes) son bloques de Puck (`BuscadorOcupacio
 `AlertasInversion`, `ProgramasSobresalientes`) dentro de su fila de `paginas`. Crear, mover
 o borrar una página no toca `app/`.
 
-**El slug no lleva barra; la URL sí.** El slug es la llave de la página en la base: de él
-cuelgan el contenido, el permiso `editar.sitio.{slug}`, el contador de visitas y la
-etiqueta de caché. El comodín lo saca **uniendo los segmentos con guion**:
-`/tendencias` → `tendencias`, `/clasificacion/cno` → `clasificacion-cno`.
+**El slug no lleva barra; la URL la arma el menú.** El slug es la llave de la página en la
+base: de él cuelgan el contenido, el permiso `editar.sitio.{slug}`, el contador de visitas y
+la etiqueta de caché. Es plano (`clasificacion-cuoc`): la API lo expone como
+`/paginas/publica/:slug` y un parámetro de Express no cruza una barra.
 
-La vuelta (slug → URL) no se puede deducir del guion solo: `clasificacion-cno` podría ser
-`/clasificacion-cno`. La decide la lista **`CARPETAS`** de `features/editor/model/rutas.ts`:
-un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`. Hoy solo es `clasificacion`; en
-la intranet es `encuestas`. La API tiene la misma lista (`CARPETAS` en
-`4000-api-backend/src/shared/extraer-textos-puck.ts`) para los enlaces del buscador.
+La URL, en cambio, sale del menú de «Menú y pie» (`shared/lib/rutas-del-menu`), no de una
+lista escrita en el código:
 
-**Anidar una página:**
+- Un **enlace suelto** del menú, o una página que no está en él, vive en `/{slug}`.
+- Un **desplegable** crea un tramo con su nombre (`Clasificación de las Ocupaciones` →
+  `/clasificacion-de-las-ocupaciones`) y cada hija cuelga de él:
+  `/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones`. El desplegable no
+  es una página: es el botón que abre el submenú (y el tramo de la ruta).
+- El comodín toma como slug el **último tramo**. Si no existe, prueba con todos los tramos
+  unidos por guion (`/clasificacion/cuoc` → `clasificacion-cuoc`, como eran las rutas de dos
+  tramos antes), de modo que los enlaces viejos siguen llegando. Después manda a la URL que
+  el menú le da a esa página (`redirect`): cada página tiene una sola.
 
-- **En una carpeta que ya existe** (`/clasificacion/<algo>`): basta con crear la sección con
-  slug `clasificacion-<algo>`. No toca código.
-- **En una carpeta nueva** (`/<padre>/<hija>`): añadir `<padre>` a `CARPETAS` en el sitio
-  **y** en la API, y crear la sección con slug `<padre>-<hija>`. Si solo se actualiza el
-  sitio, el buscador enlaza `/<padre>-<hija>`. El comodín redirige cualquier URL a la buena
-  (`rutaPublicaDeSlug`), así que el síntoma no se ve.
+**Poner una página bajo un desplegable:** crearla desde el editor (su slug sale de su
+nombre) y, en «Menú y pie», añadirla como hija del desplegable escribiendo en su campo
+`/{slug}`. La ruta con padre se arma sola; no se toca código ni se despliega. Quitar la
+hija del menú la devuelve a `/{slug}`. Un desplegable cuyo nombre da un tramo reservado
+(`admin`, `login`…, ver `@olo/slug-policy`) no crea tramo: sus hijas quedan en `/{slug}`.
+
+**Una página dentro de otra:** una hija del desplegable puede llevar `internas` («Páginas dentro
+de esta página», campo de la hija en «Menú y pie»): páginas que no salen en el menú y cuelgan de
+ella, en `/{desplegable}/{hija}/{interna}` (p. ej. `…/clasificacion-nacional-de-ocupaciones/resultado`).
+Es la única forma de que una página sea padre de otra (el desplegable no es página) y está en
+`mapaDelMenu` (`PaginaDelMenu.padre`). Un campo que pide un enlace (como el de la página de
+resultados del buscador) acepta el slug (`/resultado`) o la ruta completa, de dos o tres tramos.
+
+**Cambiar la dirección de una página** (botón «Editar dirección» del menú flotante, permiso
+`secciones.cambiar-direccion`). El slug es la identidad de la página: de él cuelgan la clave de
+permiso `editar.{ambito}.{slug}`, el candado de edición, la caché y cada enlace guardado en el
+contenido de otras páginas. Por eso el cambio no es solo renombrar: `cambiar-direccion.usecase.ts`
+valida la dirección nueva (la política de `@olo/slug-policy`, libre y no reservada), busca quién
+enlaza a la actual con `referencias-a-pagina.ts` (la misma búsqueda de eliminar) y, si hay enlaces,
+exige `actualizarEnlaces: true` para reescribirlos (`reemplazarEnlaces`) en las versiones vigentes
+—publicada, en revisión y borradores— y, siempre, en la historia que se puede reabrir (rechazadas) o
+restaurar (archivadas), antes de renombrar, todo en una transacción. Solo lo hace quien aprueba
+(`puedePublicar` en la ruta y en el caso de uso, además del permiso). Un cambio de dirección a la vez por ámbito
+(`pg_advisory_xact_lock`), con la lectura dentro de la transacción y las versiones afectadas
+bloqueadas (`FOR UPDATE`): un guardado del editor no puede pisar la reescritura. Se detiene si
+alguien tiene abierto el editor en la página o en una que habría que reescribir, y si la clave de
+permiso de la dirección nueva ya tiene accesos concedidos (no se fusionan). No cambian de
+dirección `inicio`, `menu-y-pie`, las páginas de fábrica ni las acopladas al código
+(`clasificacion-cno`, `clasificacion-cuoc`). Hoy solo el sitio (`AMBITOS_HABILITADOS`). No deja
+redirección: los enlaces de fuera del portal se rompen.
+
+Las migas de pan siguen la misma estructura: *Inicio › desplegable › página* (el desplegable
+como texto, sin enlace) o *Inicio › página* si es un enlace suelto; una interna suma a su
+padre, con enlace: *Inicio › desplegable › padre › interna*.
+
+La API **no** conoce el menú: para el sitio todas sus páginas son `/{slug}` en los enlaces
+del buscador (`resolverHref`) y el sitio las redirige a la ruta buena. En la intranet sigue
+valiendo `CARPETAS` (`encuestas`), copiada en `features/editor/model/rutas.ts` de la intranet.
 
 **Metadata.** El comodín lleva `METADATA_POR_SLUG` con el título y la descripción SEO de
 las páginas que la tenían en su carpeta propia (inicio, política de privacidad, CNO, CUOC).
 Las demás usan el título guardado en `paginas`.
 
-**URLs viejas.** `/cno` y `/cuoc` redirigen a `/clasificacion/cno` y `/clasificacion/cuoc`
-desde `next.config.mjs`: el menú publicado en la base todavía puede enlazarlas.
+**URLs viejas.** Ya no hay redirecciones de `/cno` ni `/cuoc` en `next.config.mjs`: son slugs
+que una página puede usar (2026-10-21; con la regla vieja, una página llamada `cuoc` se
+redirigía a `/clasificacion-cuoc`). Lo que no exista da 404.
 
-**Ruta o parámetro.** `/clasificacion/cno` (ruta) y `/clasificacion?tipo=cno`
-(parámetro) no son intercambiables. La ruta es **otra página**: contenido propio
-editable, título propio para buscadores, y la reconocen el botón de editar y el contador
-de visitas. El parámetro es **la misma página con otra opción**: sirve para filtros,
-orden o pestañas del mismo contenido, y todo lo que va después del `?` es invisible para
-el cálculo del slug. En el buscador de ocupaciones, `?tipo=` solo cambia dos rótulos y se
-conserva por los enlaces ya repartidos; CNO y CUOC tienen página propia.
+**Ruta o parámetro.** Una ruta es **otra página**: contenido propio editable, título propio
+para buscadores, y la reconocen el botón de editar y el contador de visitas. Un parámetro
+(`?buscar=…`, `?ocupacion=…`) es **la misma página con otra opción**: sirve para filtros,
+orden o pestañas del mismo contenido, y todo lo que va después del `?` es invisible para el
+cálculo del slug. El buscador de ocupaciones lo usa así: los resultados y la ficha de cada
+ocupación son parte de la página que lleva el bloque `BuscadorOcupaciones`, y a esa página
+llevan todos los buscadores del sitio: se elige en «Menú y pie» (campo `paginaDelBuscador` de la
+cabecera) y su ruta la da el menú, así que cuelga de su desplegable. Ese mismo bloque lleva el
+interruptor `activo` de todo el buscador (lo lleva también el bloque `ResultadosOcupaciones`,
+que pinta solo la lista y la ficha, sin banner, para la página de resultados): apagado, el sitio no pinta buscadores ni resultados y
+`/api/ocupaciones` responde 404 (`features/editor/navegation/buscador-ocupaciones.ts`).
 
 ### 4.3 Intranet (`3001-intranet/`) — repo independiente - Architecture Feature-based + App Router de Next.js
 

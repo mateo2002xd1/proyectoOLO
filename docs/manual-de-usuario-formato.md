@@ -215,6 +215,7 @@ Por este motivo, **los únicos roles cuyos permisos son personalizables y editab
 | **Editar páginas asignadas del Sitio Web e Intranet** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Modificar cabecera y pie de página del portal** | Permitido | Permitido | No (Por defecto) | Sin acceso |
 | **Crear nuevas páginas en el portal** | Permitido | Permitido | Según asignación manual | Sin acceso |
+| **Cambiar la dirección web de una página** | Permitido | Permitido | Sin acceso | Sin acceso |
 | **Eliminar páginas creadas por usuarios** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Eliminar páginas base del sistema (de fábrica)** | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) |
 | **Guardar borradores y enviar a revisión** | Permitido | Permitido | Permitido | Sin acceso |
@@ -389,9 +390,10 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 
 * **Caso 2: Usuario autenticado con rol de Administrador o Editor (y roles hijos autorizados):**
   * Si el funcionario cuenta con sesión activa y permisos administrativos o editoriales, el sistema despliega el botón circular flotante en la esquina inferior derecha de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
-    * **"Editar sección":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
+    * **"Editar página":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
     * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página («Menú y pie de página») en el editor visual.
     * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
+    * **"Editar dirección":** Disponible solo para Superadmin y Administrador (quien aprueba contenido): reescribe enlaces de lo ya publicado sin pasar por la revisión. No se muestra en la portada.
     * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
   * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante de edición completo se oculta automáticamente.
   * **Coexistencia y coordinación con el botón «Subir»:** Si el usuario se desplaza verticalmente y se activa el botón «Subir», el sistema detecta la presencia del botón flotante de edición y desplaza automáticamente el botón «Subir» hacia su izquierda, evitando que ambos controles se solapen o interfieran entre sí.
@@ -2047,7 +2049,7 @@ Todo lo explicado en este numeral aplica de la misma forma tanto para el **Sitio
 
 *(Nota: Para consultar las posibles situaciones de validación, permisos requeridos, opciones no visibles o contingencias con el botón flotante y el cierre de sesión, remitirse a la [Sección 3.5.1.17: Validaciones y Solución de Problemas en el Acceso a las Opciones de Edición (Botón Flotante)](#35117-validaciones-y-solución-de-problemas-en-el-acceso-a-las-opciones-de-edición-botón-flotante)).*
 
-El botón flotante permite a los usuarios con facultades editoriales gestionar contenidos directamente mientras navegan por el portal. Las opciones que se despliegan en este botón responden de manera dinámica a los permisos asignados a cada usuario; si cuenta con los permisos correspondientes para la página en la que se encuentra posicionado, podrá acceder a: **Editar página** (para maquetar la página actual), **Menú y pie** (para modificar la cabecera y el pie de página globales), **Nueva página** (para crear una nueva página) y **Eliminar página** (para retirar la página actual), además de disponer de un botón directo para **salir del modo de edición** (para cerrar sesion).
+El botón flotante permite a los usuarios con facultades editoriales gestionar contenidos directamente mientras navegan por el portal. Las opciones que se despliegan en este botón responden de manera dinámica a los permisos asignados a cada usuario; si cuenta con los permisos correspondientes para la página en la que se encuentra posicionado, podrá acceder a: **Editar página** (para maquetar la página actual), **Menú y pie** (para modificar la cabecera y el pie de página globales), **Nueva página** (para crear una nueva página), **Editar dirección** (para cambiar la dirección web de la página actual) y **Eliminar página** (para retirar la página actual), además de disponer de un botón directo para **salir del modo de edición** (para cerrar sesion).
 
 1. **Visibilidad y estructura del botón flotante:**
    El componente se fija en la esquina inferior derecha de la pantalla y permanece visible en cualquier página siempre que el usuario cuente con una sesión activa y permisos editoriales asignados (o rol de Administrador). Para visitantes públicos o usuarios sin facultades de edición, el botón no se dibuja en pantalla.
@@ -2066,6 +2068,7 @@ El botón flotante permite a los usuarios con facultades editoriales gestionar c
    * **Editar página (Ícono de lápiz sobre documento):** Abre de inmediato la página actual en el Editor Visual para modificar sus textos, imágenes y estructura de bloques. Se muestra si el usuario tiene asignado el permiso para editar esa página específica o si cuenta con el rol de Administrador.
    * **Menú y pie (Ícono de capas):** Abre el Editor Visual para estructurar los elementos globales que comparten todas las páginas del portal (barra superior, menú de navegación principal e información del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
    * **Nueva página (Ícono de suma "+"):** Despliega la ventana modal de creación, solicitando el nombre deseado y generando automáticamente su dirección web de acceso. Requiere el permiso de creación correspondiente o el rol de Administrador.
+   * **Editar dirección (Ícono de eslabón de cadena):** Abre la ventana modal para cambiar la dirección web de la página actual y actualizar los enlaces del portal que apuntaban a la anterior (ver [Sección 3.4.3.5.1](#34351-cambio-de-dirección-de-una-página-botón-editar-dirección)). No aparece en la portada. Solo lo ofrece el sistema a Superadmin y Administrador.
    * **Eliminar página (Ícono de papelera):** Ubicado en la parte superior del menú desplegado con estilo de advertencia. Inicia el procedimiento de retiro seguro y comprobación previa de enlaces activos. Solo aparece en páginas dinámicas creadas por editores y requiere el permiso para eliminar páginas o el rol de Administrador.
 
 > **[Captura: Menú Flotante de Edición Desplegado]**
@@ -2483,6 +2486,23 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 > **[Captura: Confirmación de Eliminación de Página (Móvil)]**
 > *Notificación de eliminación segura en dispositivo móvil. (Móvil).*
 
+##### 3.4.3.5.1. Cambio de dirección de una página (botón «Editar dirección»)
+
+Permite cambiarle la dirección web a una página ya creada sin dejar enlaces rotos dentro del portal:
+
+1. **Acceso:** Navegar a la página, abrir el botón flotante de edición y elegir **«Editar dirección»** (ícono de eslabón de cadena).
+2. **Escribir la nueva dirección:** El campo acepta el nombre como se escribe normalmente (*Resultado final*): se convierte solo a minúsculas y guiones (*resultado-final*). El sistema comprueba mientras se escribe que la dirección sea válida y esté libre; si no lo está (por ejemplo, ya existe otra página con esa dirección o es una dirección reservada del sistema), lo explica en un mensaje de color rojo.
+3. **Revisar el uso de la dirección actual:** Si otras páginas enlazan a la dirección actual (el menú, el pie de página, botones o textos con enlaces), un mensaje amarillo lo advierte y lista dónde están, con los nombres del editor (bloque y campo). También cuenta lo que está en borrador o pendiente de revisión, para que al aprobarlo no vuelva a publicarse el enlace viejo. Si no hay enlaces, un mensaje verde confirma que la dirección está disponible.
+4. **Confirmar:** El botón dice **«Actualizar enlaces y cambiar»** cuando hay enlaces (al pulsarlo se reescriben todos a la dirección nueva, en el mismo paso). En ese caso es blanco con borde amarillo —el color del mensaje de aviso— y se rellena de amarillo claro al pasar el cursor; cuando no hay enlaces dice **«Cambiar dirección»** y es el botón azul de siempre. Los dos botones del diálogo miden lo mismo. Si mientras tanto alguien enlazó la página o abrió el editor, el sistema lo avisa y actualiza la lista sin cerrar el diálogo.
+5. **Resultado:** El navegador abre la página en su dirección nueva. La clave de permiso de edición se renombra sola: quienes editaban la página siguen pudiendo hacerlo.
+
+**Cuándo no se puede:**
+* **La portada**, la página «Menú y pie» y las páginas propias del portal (como la política de privacidad o las clasificaciones CNO y CUOC): el sistema da por hecha su dirección y el diálogo lo avisa.
+* **La dirección nueva** es el nombre de una página propia del portal, o su clave de permiso ya tiene accesos concedidos a otros roles: el sistema pide elegir otra.
+* **Alguien tiene abierto el editor** en la página, o en una de las que habría que reescribir: el diálogo indica quién es y pide esperar a que lo cierre, para que su guardado no deshaga el cambio.
+
+> **Importante:** los enlaces que están **fuera del portal** (correos, otros sitios, marcadores del navegador) hacia la dirección anterior dejan de funcionar; el sistema no deja una redirección. El diálogo lo recuerda siempre. También se actualizan los enlaces que hubiera en versiones rechazadas o archivadas, para que restaurar una versión anterior no traiga enlaces rotos. El cambio queda registrado en la bitácora de auditoría: una entrada en la página cuya dirección cambió (la anterior y la nueva) y otra en cada página cuyos enlaces se actualizaron.
+
 #### 3.4.3.6. Componentes del Sitio Web Público en el Editor Visual
 
 Este apartado describe los bloques de contenido prediseñados disponibles para maquetar y estructurar las páginas del Sitio Web Público del Observatorio Laboral y Ocupacional (OLO):
@@ -2492,10 +2512,19 @@ Permite integrar la herramienta de consulta de clasificaciones laborales CNO y C
 * **Ubicación en el editor:** Se encuentra en el panel lateral de bloques, dentro de la categoría *Sitio Web*, bajo el nombre **«Buscador de Ocupaciones»**.
 * **Opciones configurables:**
   * **Texto de ayuda:** Permite personalizar el mensaje explicativo que se muestra debajo de la barra de búsqueda (por ejemplo: *«Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.»*). Si se deja en blanco, la franja de ayuda se oculta automáticamente.
-* **Comportamiento en la página:** Despliega la barra de búsqueda por código (4 o 5 dígitos) o por palabra clave, el listado de resultados y la ventana con la ficha completa del perfil ocupacional y sus ocupaciones equivalentes.
+  * **Buscador de ocupaciones (Activo / Apagado):** Es el interruptor de todo el buscador del sitio. Al pasarlo a **Apagado** y publicar la página, desaparecen los buscadores de ocupaciones (el de la portada y los de otras páginas), los resultados y la consulta al catálogo; quien llegue con un enlace de búsqueda ya guardado verá el aviso «El buscador de ocupaciones no está disponible.». Solo cuenta el bloque de la página de resultados elegida en «Menú y pie»; apagarlo en otra página no tiene efecto. Dentro del editor el buscador se sigue viendo, con un aviso, para poder volver a encenderlo.
+* **Comportamiento en la página:** Despliega la barra de búsqueda por código (4 o 5 dígitos) o por palabra clave, el listado de resultados y la ficha completa del perfil ocupacional y sus ocupaciones equivalentes.
+* **Página de resultados única:** Cualquier buscador de ocupaciones del sitio (el de la portada o una copia del bloque en otra página) lleva, al buscar, a la página que se haya elegido en **«Menú y pie»**, en la cabecera, campo **«Página de resultados del buscador de ocupaciones»** (por ejemplo `/clasificacion-nacional-de-ocupaciones`). Su dirección completa la da el menú: si esa página está dentro de un desplegable, cuelga de él (`/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones?buscar=…`). Esa página debe llevar este bloque, que es el que muestra los resultados. Si el campo se deja vacío, los resultados salen en la misma página donde se busca.
 
 > **[Captura: Bloque Buscador de Ocupaciones en el Editor Visual]**
 > *Configuración del bloque Buscador de Ocupaciones en el editor visual mostrando el campo de texto de ayuda en el panel lateral.*
+
+##### 3.4.3.6.1.1. Bloque «Resultados de ocupaciones»
+Muestra solo los resultados de una búsqueda de ocupaciones, sin la barra de búsqueda: la lista (cuando la dirección trae `?buscar=…`) y la ficha completa de la ocupación que se elija. Es el bloque de la página de resultados, para tener los buscadores en un sitio (por ejemplo la página de la Clasificación Nacional de Ocupaciones y la portada) y la lista en otro.
+* **Ubicación en el editor:** Panel lateral de bloques, categoría *Sitio Web*, **«Resultados de ocupaciones»**.
+* **Opciones configurables:** el mismo interruptor **«Buscador de ocupaciones» (Activo / Apagado)** del bloque «Buscador de Ocupaciones». Cuenta el de la página de resultados elegida en «Menú y pie».
+* **Comportamiento en la página:** Sin búsqueda en la dirección muestra «No hay ninguna búsqueda. Usa el buscador de ocupaciones para consultar el catálogo.». Con el buscador apagado, «El buscador de ocupaciones no está disponible.».
+* **Cómo ponerla bajo la Clasificación Nacional de Ocupaciones:** crear la página (por ejemplo «Resultado», con este bloque); en «Menú y pie», dentro de la hija «Clasificación Nacional de Ocupaciones», añadirla en **«Páginas dentro de esta página»** con `/resultado` (no sale en el menú y su dirección queda `/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones/resultado`); y escribir `/resultado` en **«Página de resultados del buscador de ocupaciones»**, en la cabecera.
 
 ##### 3.4.3.6.2. Bloque «Alertas de Inversión»
 Permite presentar y explorar los proyectos de inversión empresarial registrados en el país, alimentándose automáticamente de la información cargada en el sistema:
@@ -2607,7 +2636,7 @@ Para consultas específicas en catálogos y listados, el sistema ofrece herramie
 > *Botón de descarga o exportación dentro de la ficha de información. (Móvil).*
 
 ##### 3.4.4.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
-El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible a través de la ruta canónica `/clasificacion` (servida de forma dinámica mediante el bloque de diseño `BuscadorOcupaciones`), así como en las secciones dedicadas `/clasificacion/cno` y `/clasificacion/cuoc`.
+El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible en la página que lleve el bloque de diseño `BuscadorOcupaciones` (hoy, la de la Clasificación Nacional de Ocupaciones, dentro del menú «Clasificación de las Ocupaciones»); el buscador de la portada lleva a esa página con la consulta ya hecha.
 
 El buscador permite consultar directamente las ocupaciones oficiales en tiempo real, garantizando respuestas ágiles y una navegación fluida al explorar los catálogos ocupacionales.
 
@@ -2638,8 +2667,8 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 > **[Captura: Resultados del Catálogo de Ocupaciones (Móvil)]**
 > *Visualización de tarjetas de resultados del catálogo ocupacional en pantalla móvil. (Móvil).*
 
-3. **Apertura de la Ficha Técnica Ocupacional a pantalla completa:**
-   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema despliega una ventana modal interactiva a pantalla completa diseñada con la presentación visual distintiva del módulo.
+3. **Apertura de la Ficha Técnica Ocupacional:**
+   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema abre la ficha en la misma página, debajo del buscador. Los resultados y la ficha no son ventanas emergentes: cada uno tiene su propia dirección (`?buscar=…` y `?buscar=…&ocupacion=…`), de modo que se puede copiar el enlace, recargar la página y volver con el botón «atrás» del navegador. Al abrir cada vista, el foco pasa a su encabezado para que los lectores de pantalla anuncien el cambio.
    * La ficha técnica proporciona el desglose integral del perfil ocupacional oficial:
      * **Encabezado y Código:** Título formal, código de clasificación e indicador de tipo (`CNO` o `CUOC`).
      * **Descripción general:** Resumen contextual de la ocupación, su propósito en el mercado laboral y el nivel de cualificación correspondiente.
@@ -2649,7 +2678,7 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
      * **Ocupaciones relacionadas y denominaciones alternas:** Listado de nombres alternativos y cargos afines utilizados en el sector productivo.
 
 > **[Captura: Ficha Técnica Ocupacional Ampliada]**
-> *Modal a pantalla completa con el detalle ocupacional completo: descripción, funciones, habilidades y conocimientos.*
+> *Ficha en la página con el detalle ocupacional completo: descripción, funciones, habilidades y conocimientos.*
 >
 > **[Captura: Ficha Técnica Ocupacional Ampliada (Móvil)]**
 > *Ficha técnica ocupacional desplegada en dispositivo móvil con navegación vertical optimizada. (Móvil).*
@@ -2659,7 +2688,7 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
      * **Al consultar una ocupación CNO (código de 4 dígitos):** Se presenta el bloque **«Correlativa CUOC»**, el cual lista los códigos numéricos de 5 dígitos y nombres de las ocupaciones equivalentes según la Clasificación Única de Ocupaciones para Colombia.
      * **Al consultar una ocupación CUOC (código de 5 dígitos):** El bloque se titula automáticamente **«Correlativa CNO»**, mostrando las ocupaciones equivalentes de 4 dígitos en la Clasificación Nacional de Ocupaciones.
    * **Navegación interactiva:** Cada ocupación listada en las correlativas funciona como un enlace directo interactivo; al pulsarlo, el visor actualiza inmediatamente la ficha en pantalla para presentar en detalle la ocupación correlativa seleccionada, permitiendo al usuario transitar fluidamente entre ambos catálogos sin reiniciar la búsqueda.
-   * Para cerrar la ficha técnica y regresar al listado de resultados, hacer clic en el botón de cierre (ícono «X») situado en la esquina superior del diálogo modal o presionar la tecla *Escape*.
+   * Para regresar al listado de resultados, hacer clic en el enlace «Volver a los resultados» situado sobre el título de la ficha o usar el botón «atrás» del navegador.
 
 > **[Captura: Sección de Correlativas Cruzadas CNO y CUOC]**
 > *Bloque de homologación bidireccional con enlaces directos entre la ocupación CNO y sus equivalentes en la CUOC.*
