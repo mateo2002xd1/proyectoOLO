@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import { poppins } from '@/shared/lib/typography/fonts';
@@ -10,16 +10,7 @@ import {
   eliminarSeccion,
   type AnalisisDeEliminacion,
 } from '../services/secciones.service';
-
-/** «A», «A y B», «A, B y C»: para nombrar páginas y botones dentro de una frase. */
-function unirConY(partes: ReactNode[]) {
-  return partes.map((parte, indice) => (
-    <Fragment key={indice}>
-      {indice > 0 && (indice === partes.length - 1 ? ' y ' : ', ')}
-      {parte}
-    </Fragment>
-  ));
-}
+import { agruparUbicaciones, lugarDe, unirConY } from '../lib/ubicacion-de-enlaces';
 
 export interface ModalEliminarSeccionProps {
   slug: string;
@@ -90,6 +81,17 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
   const varios = (analisis?.referencias.length ?? 0) > 1;
   // Cómo se llama la página del menú y pie, para no nombrarla dos veces en el paso 1.
   const tituloDelMenu = analisis?.referencias.find((referencia) => referencia.slug === 'menu-y-pie')?.titulo;
+  // Dónde está cada enlace con los nombres que se ven en el editor, sin repetir los que
+  // están en la misma lista (dos enlaces en «fila 3» se buscan en un solo sitio).
+  const ubicaciones = agruparUbicaciones(analisis?.referencias ?? []);
+  // Para la advertencia: «el pie de página», «el menú de navegación», «otras páginas».
+  const lugares = [
+    ...new Set(
+      (analisis?.referencias ?? []).map((referencia) =>
+        referencia.slug === 'menu-y-pie' ? lugarDe(referencia) : 'otras páginas',
+      ),
+    ),
+  ];
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
@@ -162,9 +164,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                 {enOtras ? 'Página en uso en el portal' : 'Página en uso en la navegación'}
               </p>
               <p className="mt-0.5">
-                {!enOtras
-                  ? 'Esta página está enlazada en el menú principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.'
-                  : `Esta página está enlazada ${enMenu ? 'en el menú principal y en otras páginas' : 'desde otras páginas'}, quita esos enlaces antes de eliminarla para evitar enlaces rotos.`}
+                Esta página está enlazada en {unirConY(lugares)}, {varios ? 'quita esos enlaces' : 'quita ese enlace'}{' '}
+                antes de eliminarla para evitar enlaces rotos.
               </p>
             </MensajeEstado>
 
@@ -201,24 +202,77 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                   )}
                   .
                 </>,
+                // Paso a paso con los nombres del editor (pedido del usuario, 2026-10-20): qué
+                // bloque pulsar, qué lista abrir en el panel y qué enlace quitar, para que quien
+                // edita no tenga que adivinar en cuál de los bloques está.
+                ubicaciones.length === 1 ? (
+                  <>
+                    En el editor, haz clic en el bloque{' '}
+                    {ubicaciones[0].bloque ? <strong className="font-semibold">«{ubicaciones[0].bloque}»</strong> : 'que tiene el enlace'}
+                    {ubicaciones[0].campo && (
+                      <>
+                        {' '}y, en el panel de la derecha, abre{' '}
+                        <strong className="font-semibold">«{ubicaciones[0].campo}»</strong>
+                      </>
+                    )}
+                    .
+                  </>
+                ) : (
+                  <>
+                    En el editor, abre cada uno de estos sitios (el bloque y, en el panel de la derecha, la lista):
+                    <ul className="mt-2 list-disc space-y-1 pl-5">
+                      {ubicaciones.map((ubicacion, indice) => (
+                        <li key={indice}>
+                          <strong className="font-semibold">«{ubicacion.bloque ?? 'Bloque con el enlace'}»</strong>
+                          {ubicacion.campo && (
+                            <>
+                              {' › '}
+                              <strong className="font-semibold">«{ubicacion.campo}»</strong>
+                            </>
+                          )}
+                          {ubicacion.textos.length > 0 && <>: {unirConY(ubicacion.textos.map((texto) => `«${texto}»`))}</>}
+                          {paginasConEnlace.length > 1 && ` (en ${ubicacion.pagina})`}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ),
+                // Siempre con dónde se ve (pedido del usuario, 2026-10-20): pie, menú u otra página.
+                ubicaciones.length === 1 ? (
+                  <>
+                    Busca {ubicaciones[0].textos.length > 1 ? 'los enlaces ' : 'el enlace '}
+                    <strong className="font-semibold">
+                      {ubicaciones[0].textos.length > 0
+                        ? unirConY(ubicaciones[0].textos.map((texto) => `«${texto}»`))
+                        : `que lleva a /${analisis.slug}`}
+                    </strong>{' '}
+                    en <strong className="font-semibold">{ubicaciones[0].lugar}</strong> y{' '}
+                    {ubicaciones[0].textos.length > 1 ? 'elimínalos' : 'elimínalo'}, o cámbiale el hipervínculo a otra página.
+                  </>
+                ) : (
+                  <>
+                    Elimina{' '}
+                    {unirConY(
+                      ubicaciones.map((ubicacion, indice) => (
+                        <span key={indice}>
+                          <strong className="font-semibold">
+                            {ubicacion.textos.length > 0
+                              ? unirConY(ubicacion.textos.map((texto) => `«${texto}»`))
+                              : `el enlace a /${analisis.slug}`}
+                          </strong>{' '}
+                          en <strong className="font-semibold">{ubicacion.lugar}</strong>
+                        </span>
+                      )),
+                    )}
+                    , o cámbiales el hipervínculo a otra página.
+                  </>
+                ),
+                // Se comprueba contra lo publicado: guardar el borrador no basta.
                 <>
-                  {varios ? 'Busca los componentes que tienen los botones ' : 'Busca el componente que tiene el botón '}
-                  {unirConY(
-                    analisis.referencias.map((referencia, indice) => (
-                      <span key={`${referencia.slug}-${indice}`}>
-                        <strong className="font-semibold">
-                          {referencia.texto ? `«${referencia.texto}»` : `que lleva a /${analisis.slug}`}
-                        </strong>
-                        {paginasConEnlace.length > 1 && ` (en ${referencia.titulo})`}
-                      </span>
-                    )),
-                  )}
-                  {/* Dónde buscarlos (pedido del usuario, 2026-10-15). */}
-                  {' en el editor.'}
+                  Pulsa el botón <strong className="font-semibold">«Enviar a revisión»</strong>, arriba a la derecha
+                  del editor. El enlace sigue en la intranet
+                  hasta que el cambio se apruebe y se publique.
                 </>,
-                varios
-                  ? 'Borra los enlaces asignados en la configuración de los componentes.'
-                  : 'Borra el enlace asignado en la configuración del componente.',
               ].map((paso, indice) => (
                 <li key={indice} className="flex items-start gap-3 text-sm text-[#001631]">
                   <span
@@ -232,7 +286,7 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
               ))}
             </ol>
             <p className="mt-4 text-xs text-[#4b5563]">
-              Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.
+              Cuando el cambio esté publicado, vuelve a abrir este diálogo para continuar.
             </p>
           </>
         )}

@@ -27,8 +27,8 @@ import { esSlugValido, slugificar } from '@olo/slug-policy';
 
 /** Lo que se necesita de un enlace del menú (`NavItem` en `blocks/header.tsx`). */
 export interface EnlaceDelMenu {
-  label: ReactNode;
-  href: string;
+  label?: ReactNode;
+  href?: string;
   children?: EnlaceDelMenu[];
   /** Solo en las hijas de un desplegable: páginas que cuelgan de esta y no se pintan en el menú. */
   internas?: EnlaceDelMenu[];
@@ -55,13 +55,15 @@ export interface MapaDelMenu {
 }
 
 /** Solo valen los rótulos de texto; un rótulo con marcado no se puede repetir en otro sitio. */
-const texto = (rotulo: ReactNode): string | null =>
+const texto = (rotulo?: ReactNode): string | null =>
   typeof rotulo === 'string' && rotulo.trim() ? rotulo.trim() : null;
 
 /** Separa la ruta de lo que la sigue (`?consulta`, `#ancla`). */
-function partir(href: string): [ruta: string, resto: string] {
-  const corte = href.search(/[?#]/);
-  return corte === -1 ? [href, ''] : [href.slice(0, corte), href.slice(corte)];
+function partir(href?: string | null): [ruta: string, resto: string] {
+  if (typeof href !== 'string') return ['', ''];
+  const limpio = href.trim();
+  const corte = limpio.search(/[?#]/);
+  return corte === -1 ? [limpio, ''] : [limpio.slice(0, corte), limpio.slice(corte)];
 }
 
 /**
@@ -77,8 +79,9 @@ function partir(href: string): [ruta: string, resto: string] {
  * primer tramo es uno de esos, es el del desplegable y no parte del slug, que es lo que queda
  * (`cuoc`). Sin esto se unirían todos y saldría un slug que no existe.
  */
-export function slugDeEnlace(href: string, tramos: ReadonlySet<string> = new Set()): string | null {
-  const [ruta] = partir(href.trim());
+export function slugDeEnlace(href?: string | null, tramos: ReadonlySet<string> = new Set()): string | null {
+  if (typeof href !== 'string') return null;
+  const [ruta] = partir(href);
   if (!ruta.startsWith('/') || ruta.startsWith('//')) return null;
   const partes = ruta.split('/').filter(Boolean);
   if (partes.length > 1 && tramos.has(partes[0].toLowerCase())) partes.shift();
@@ -91,7 +94,7 @@ export function slugDeEnlace(href: string, tramos: ReadonlySet<string> = new Set
  * carpetas de la aplicación). Sin tramo, sus hijas viven en `/{slug}` y el menú sigue
  * funcionando.
  */
-export function tramoDeDesplegable(rotulo: ReactNode): string | null {
+export function tramoDeDesplegable(rotulo?: ReactNode): string | null {
   const nombre = texto(rotulo);
   if (!nombre) return null;
   const tramo = slugificar(nombre);
@@ -104,10 +107,11 @@ export function tramoDeDesplegable(rotulo: ReactNode): string | null {
  * del propio desplegable.
  */
 function paginaDelEnlace(
-  enlace: EnlaceDelMenu,
-  desplegable?: EnlaceDelMenu,
+  enlace?: EnlaceDelMenu | null,
+  desplegable?: EnlaceDelMenu | null,
   tramos?: ReadonlySet<string>
 ): { slug: string; ruta: string } | null {
+  if (!enlace || typeof enlace.href !== 'string') return null;
   const tramo = desplegable ? tramoDeDesplegable(desplegable.label) : null;
   const slug = slugDeEnlace(enlace.href, tramos ?? new Set(tramo ? [tramo] : []));
   if (!slug) return null;
@@ -118,19 +122,22 @@ function paginaDelEnlace(
  * El `href` que se pinta para un enlace del menú: la ruta de verdad más lo que llevara
  * detrás (`?consulta`, `#ancla`). Lo que no es un enlace interno se deja tal cual.
  */
-export function hrefDelMenu(enlace: EnlaceDelMenu, desplegable?: EnlaceDelMenu): string {
+export function hrefDelMenu(enlace?: EnlaceDelMenu | null, desplegable?: EnlaceDelMenu | null): string {
+  if (!enlace || typeof enlace.href !== 'string') return enlace?.href ?? '#';
   const pagina = paginaDelEnlace(enlace, desplegable);
   if (!pagina) return enlace.href;
-  return `${pagina.ruta}${partir(enlace.href.trim())[1]}`;
+  return `${pagina.ruta}${partir(enlace.href)[1]}`;
 }
 
 /** El menú recorrido una vez: dónde está cada página y qué tramos crean los desplegables. */
-export function mapaDelMenu(menu: EnlaceDelMenu[]): MapaDelMenu {
+export function mapaDelMenu(menu?: EnlaceDelMenu[] | null): MapaDelMenu {
   const mapa: MapaDelMenu = { porSlug: new Map(), porRuta: new Map(), desplegables: new Map() };
+  if (!Array.isArray(menu)) return mapa;
 
   // Los tramos de todos los desplegables, para reconocer una ruta pegada con el suyo delante.
   const tramos = new Set<string>();
   for (const enlace of menu) {
+    if (!enlace) continue;
     const tramo = (enlace.children ?? []).length > 0 ? tramoDeDesplegable(enlace.label) : null;
     if (tramo) tramos.add(tramo);
   }
@@ -140,7 +147,8 @@ export function mapaDelMenu(menu: EnlaceDelMenu[]): MapaDelMenu {
     if (!mapa.porRuta.has(pagina.ruta)) mapa.porRuta.set(pagina.ruta, pagina);
   };
 
-  const registrar = (enlace: EnlaceDelMenu, desplegable?: EnlaceDelMenu) => {
+  const registrar = (enlace?: EnlaceDelMenu | null, desplegable?: EnlaceDelMenu | null) => {
+    if (!enlace) return;
     const destino = paginaDelEnlace(enlace, desplegable, tramos);
     if (!destino || mapa.porSlug.has(destino.slug)) return;
     anotar({ ...destino, nombre: texto(enlace.label) });
@@ -151,6 +159,7 @@ export function mapaDelMenu(menu: EnlaceDelMenu[]): MapaDelMenu {
     const padre = paginaDelEnlace(hija, desplegable, tramos);
     if (!padre) return;
     for (const interna of hija.internas ?? []) {
+      if (!interna) continue;
       const slug = slugDeEnlace(interna.href, tramos);
       if (!slug || mapa.porSlug.has(slug)) continue;
       anotar({ slug, ruta: `${padre.ruta}/${slug}`, nombre: texto(interna.label), padre: padre.ruta });
@@ -158,6 +167,7 @@ export function mapaDelMenu(menu: EnlaceDelMenu[]): MapaDelMenu {
   };
 
   for (const enlace of menu) {
+    if (!enlace) continue;
     const hijas = enlace.children ?? [];
     if (hijas.length === 0) {
       registrar(enlace);
@@ -175,7 +185,8 @@ export function mapaDelMenu(menu: EnlaceDelMenu[]): MapaDelMenu {
 }
 
 /** La ruta pública de una página: la que le da el menú o, si no está en él, `/{slug}`. */
-export function rutaDeSlug(slug: string, mapa?: MapaDelMenu): string {
+export function rutaDeSlug(slug?: string | null, mapa?: MapaDelMenu | null): string {
+  if (!slug) return '/';
   return mapa?.porSlug.get(slug)?.ruta ?? `/${slug}`;
 }
 
@@ -185,8 +196,9 @@ export function rutaDeSlug(slug: string, mapa?: MapaDelMenu): string {
  * (`/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones/resultado`). Una
  * ruta que el menú conoce manda; si no, se aplican las reglas de `slugDeEnlace`.
  */
-export function slugDeEnlaceEnMenu(enlace: string, mapa?: MapaDelMenu): string | null {
-  const [ruta] = partir(enlace.trim());
+export function slugDeEnlaceEnMenu(enlace?: string | null, mapa?: MapaDelMenu | null): string | null {
+  if (typeof enlace !== 'string') return null;
+  const [ruta] = partir(enlace);
   const exacta = mapa?.porRuta.get(ruta.replace(/\/+$/, '').toLowerCase());
   if (exacta) return exacta.slug;
   const tramos = new Set([...(mapa?.desplegables.keys() ?? [])].map((tramo) => tramo.slice(1)));
@@ -197,7 +209,8 @@ export function slugDeEnlaceEnMenu(enlace: string, mapa?: MapaDelMenu): string |
  * La ruta de verdad de un enlace escrito por una persona (ver `slugDeEnlaceEnMenu`). Lo que
  * no es un enlace interno se devuelve tal cual.
  */
-export function rutaDeEnlace(enlace: string, mapa?: MapaDelMenu): string {
+export function rutaDeEnlace(enlace?: string | null, mapa?: MapaDelMenu | null): string {
+  if (typeof enlace !== 'string') return '';
   const slug = slugDeEnlaceEnMenu(enlace, mapa);
   return slug ? rutaDeSlug(slug, mapa) : enlace.trim();
 }

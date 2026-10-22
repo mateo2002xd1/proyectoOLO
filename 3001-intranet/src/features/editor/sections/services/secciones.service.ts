@@ -39,11 +39,17 @@ export async function crearSeccion(titulo: string): Promise<SeccionCreada> {
   return apiClient.post<SeccionCreada>("/paginas", { titulo });
 }
 
-/** Un sitio del portal que enlaza a la sección que se quiere borrar. */
+/** Un sitio del portal que enlaza a la sección que se quiere borrar o renombrar. */
 export interface ReferenciaAEnlace {
   slug: string;
   titulo: string;
   texto: string | null;
+  /** Tipo del bloque de Puck que tiene el enlace (`IntranetTopbar`, `IntranetFooter`…). */
+  bloque?: string | null;
+  /** Prop de ese bloque donde está (`enlacesFila3`, `navLinks`…). */
+  campo?: string | null;
+  /** De qué versión es el enlace: lo publicado, lo que espera aprobación o un borrador. */
+  estado?: 'publicado' | 'en_revision' | 'borrador';
 }
 
 export interface AnalisisDeEliminacion {
@@ -93,6 +99,95 @@ export async function eliminarSeccion(
   });
 }
 
+/** Alguien con una página abierta en el editor. */
+export interface PaginaEnEdicion {
+  slug: string;
+  titulo: string;
+  usuario: string;
+}
+
+/** Dónde se usa la dirección de una página, antes de cambiarla. */
+export interface UsoDeLaDireccion {
+  id: string;
+  slug: string;
+  titulo: string;
+  ambito: "sitio" | "intranet";
+  /** La portada y «Menú y pie»: su dirección no se cambia. */
+  protegida: boolean;
+  referencias: ReferenciaAEnlace[];
+  paginasConEnlaces: number;
+  /** Quién tiene abierta esta página o alguna de las que la enlazan. */
+  enEdicion: PaginaEnEdicion[];
+}
+
+/**
+ * Dónde se usa la dirección de la página, sin cambiar nada.
+ *
+ * Lo pide el diálogo de «Editar dirección» al abrirse. No depende de la dirección nueva:
+ * se pide una sola vez, no con cada tecla.
+ */
+export async function consultarUsoDeDireccion(slug: string): Promise<UsoDeLaDireccion> {
+  return apiClient.get<UsoDeLaDireccion>(`/paginas/${slug}/direccion`);
+}
+
+export interface ValidacionDeDireccion {
+  /** Lo escrito, ya normalizado (`Bolsa de empleo` → `bolsa-de-empleo`). */
+  valor: string;
+  valida: boolean;
+  motivo: 'vacia' | 'igual' | 'invalida' | 'ocupada' | null;
+  mensaje: string | null;
+}
+
+/** Si lo que se está escribiendo sirve como dirección nueva. Barata: se repite al teclear. */
+export async function validarNuevaDireccion(
+  slug: string,
+  nueva: string
+): Promise<ValidacionDeDireccion> {
+  return apiClient.get<ValidacionDeDireccion>(
+    `/paginas/${slug}/direccion/validacion?nueva=${encodeURIComponent(nueva)}`
+  );
+}
+
+export interface DireccionCambiada {
+  id: string;
+  slugAnterior: string;
+  slug: string;
+  titulo: string;
+  ambito: "sitio" | "intranet";
+  enlacesActualizados: number;
+  paginasActualizadas: { slug: string; titulo: string }[];
+}
+
+/**
+ * Cambia la dirección de la página y, con `actualizarEnlaces`, los enlaces que la apuntaban.
+ */
+export async function cambiarDireccion(
+  slug: string,
+  nuevaDireccion: string,
+  actualizarEnlaces: boolean
+): Promise<DireccionCambiada> {
+  return apiClient.patch<DireccionCambiada>(`/paginas/${slug}/direccion`, {
+    nuevaDireccion,
+    actualizarEnlaces,
+  });
+}
+
+export interface DatosDeSesionCliente {
+  rol: string;
+  permisos: string[];
+}
+
+/**
+ * Los datos y permisos de la sesión actual, pedidos desde el navegador.
+ */
+export async function pedirDatosDeLaSesion(): Promise<DatosDeSesionCliente> {
+  const datos = await apiClient.get<{ user?: { role?: string }; permisos?: string[] }>("/me");
+  return {
+    rol: (datos.user?.role ?? '').trim().toLowerCase(),
+    permisos: Array.isArray(datos.permisos) ? datos.permisos.map(String) : [],
+  };
+}
+
 /**
  * Las llaves de permiso de la sesión, pedidas desde el navegador.
  *
@@ -102,6 +197,6 @@ export async function eliminarSeccion(
  * si a alguien le quitan un permiso, el botón deja de ofrecerlo sin recargar.
  */
 export async function pedirPermisosDeLaSesion(): Promise<string[]> {
-  const datos = await apiClient.get<{ permisos?: string[] }>("/me");
-  return Array.isArray(datos.permisos) ? datos.permisos.map(String) : [];
+  const datos = await pedirDatosDeLaSesion();
+  return datos.permisos;
 }

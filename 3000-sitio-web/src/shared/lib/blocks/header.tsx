@@ -15,7 +15,7 @@ import type { CSSProperties, ReactNode } from 'react';
 
 export interface NavItem {
   label: ReactNode;
-  href: string;
+  href?: string;
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavItem[];

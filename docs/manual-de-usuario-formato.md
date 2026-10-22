@@ -215,7 +215,7 @@ Por este motivo, **los únicos roles cuyos permisos son personalizables y editab
 | **Editar páginas asignadas del Sitio Web e Intranet** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Modificar cabecera y pie de página del portal** | Permitido | Permitido | No (Por defecto) | Sin acceso |
 | **Crear nuevas páginas en el portal** | Permitido | Permitido | Según asignación manual | Sin acceso |
-| **Cambiar la dirección web de una página** | Permitido | Permitido | Sin acceso | Sin acceso |
+| **Cambiar la dirección web de una página** | Permitido | Sin acceso | Según asignación manual | Sin acceso |
 | **Eliminar páginas creadas por usuarios** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Eliminar páginas base del sistema (de fábrica)** | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) |
 | **Guardar borradores y enviar a revisión** | Permitido | Permitido | Permitido | Sin acceso |
@@ -393,7 +393,7 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
     * **"Editar página":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
     * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página («Menú y pie de página») en el editor visual.
     * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
-    * **"Editar dirección":** Disponible solo para Superadmin y Administrador (quien aprueba contenido): reescribe enlaces de lo ya publicado sin pasar por la revisión. No se muestra en la portada.
+    * **"Editar dirección":** Muestra un ícono de eslabón de cadena: abre la ventana modal para modificar la dirección web de la página actual y actualiza automáticamente los botones, menús y enlaces del portal que apunten a ella. Se encuentra disponible si el usuario es Administrador o si su rol cuenta con el permiso para cambiar la dirección de las páginas.
     * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
   * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante de edición completo se oculta automáticamente.
   * **Coexistencia y coordinación con el botón «Subir»:** Si el usuario se desplaza verticalmente y se activa el botón «Subir», el sistema detecta la presencia del botón flotante de edición y desplaza automáticamente el botón «Subir» hacia su izquierda, evitando que ambos controles se solapen o interfieran entre sí.
@@ -1369,7 +1369,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
 > *Lista de roles en formato acordeón en dispositivos móviles, con el rol Editor desplegado y su botón de eliminación deshabilitado.*
 
 3. **Creación de Roles Derivados (Botón "Nuevo Editor"):** En la cabecera superior del módulo, hacer clic en el botón **"Nuevo Editor"** para abrir la ventana modal de configuración. Se deben diligenciar los siguientes campos:
-   * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres).
+   * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres). La plataforma valida tanto en la interfaz como en el servidor backend que todo rol hijo cumpla estrictamente con la convención de nomenclatura `Editor [Nombre]`, bloqueando cualquier intento de crear o renombrar roles fuera de este estándar.
    * **Descripción:** Cuadro de texto para especificar las funciones o el alcance operativo del rol (hasta 200 caracteres).
    * **Permisos:** Se debe hacer clic en el botón **"Añadir permisos"**, el cual abre la ventana modal de permisos y actualiza el contador de permisos elegidos (ej. *«3 seleccionados»*). *(Nota: Para consultar la definición y el alcance de las 5 secciones de control de permisos que componen la plataforma, remitirse a la [Sección 3.2.2.3: Estructura y Ámbitos de los Permisos (Las 5 Secciones de Control)](#3223-estructura-y-ámbitos-de-los-permisos-las-5-secciones-de-control)).*
    
@@ -1405,7 +1405,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
      2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
      3. **Páginas del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
      4. **Páginas de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
-     5. **Qué puede hacer dentro del editor:** Facultades de acción estructural dentro del lienzo de trabajo interactivo (crear nuevas páginas o eliminar páginas dinámicas creadas).
+     5. **Qué puede hacer dentro del editor:** Presenta los interruptores para activar las herramientas visuales del botón flotante de edición: **Crear páginas nuevas** (muestra el botón con ícono de suma para diseñar una nueva sección), **Eliminar páginas** (muestra el botón con ícono de papelera para retirar páginas creadas) y **Cambiar la dirección de las páginas** (muestra el botón con ícono de eslabón para modificar la dirección de acceso y actualizar automáticamente los menús y enlaces del portal que lleven a ella). Cada opción del menú flotante se muestra únicamente si el rol tiene activo el permiso respectivo.
    * **Interruptores deslizantes e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
      * **«se añade»:** Indica que el permiso está siendo incorporado al rol.
      * **«se quita»:** Indica que el permiso está siendo revocado del rol.
@@ -1526,7 +1526,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
    Si la versión contiene inconsistencias o requiere ajustes:
    * **Apertura de la ventana modal de rechazo:** El Administrador presiona el botón **"Rechazar"** (con ícono de equis en computadores) de la página a evaluar. El sistema abre la ventana modal *«Rechazar versión [N] de [Página]»* para registrar las observaciones; el borrador pasa a estado rechazado conservando todos sus cambios, de modo que al volver a editar la página se retoma para ajustar y reenviarlo a revisión.
    * **Registro obligatorio de observaciones:** En el campo de texto (*«Explica la razón…»*), el Administrador redacta claramente el motivo del rechazo (hasta 100 caracteres con contador visible).
-     * **Validación de seguridad:** El botón de confirmación **"Rechazar"** permanece inactivo mientras el campo esté vacío; es obligatorio escribir las observaciones para habilitarlo.
+     * **Obligatoriedad del motivo:** El botón de confirmación **"Rechazar"** permanece inactivo mientras el campo esté vacío o contenga únicamente espacios en blanco, impidiendo devolver un borrador sin dejar constancia escrita de las observaciones para el editor.
    * **Confirmación del rechazo:** Al presionar **"Rechazar"**, el borrador queda en estado rechazado con las observaciones registradas, sale de la bandeja de revisión y queda disponible para que al editar la página se ajuste el motivo de rechazo y se vuelva a enviar.
 
 > **[Captura: Modal Rechazo con Observaciones]**
@@ -1539,7 +1539,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
    Si el borrador no procede, es un duplicado o fue remitido por error y debe anularse definitivamente:
    * **Apertura de la advertencia destructiva:** El Administrador presiona el botón **"Eliminar"** (con ícono de papelera en computadores) del borrador que se requiere anular. El sistema abre la ventana modal *«Eliminar versión [N] de [Página]»*, advirtiendo que los cambios no publicados se perderán de manera permanente e irreversible.
    * **Registro obligatorio del motivo:** En el campo de texto (*«Explica la razón…»*), registrar la justificación por la cual se descarta la versión (hasta 100 caracteres).
-     * **Validación de seguridad:** El botón de confirmación **"Eliminar"** en la ventana modal permanece deshabilitado e inactivo mientras el campo se encuentre vacío. Es obligatorio ingresar el motivo para habilitar la confirmación.
+     * **Obligatoriedad de la justificación:** El botón de confirmación **"Eliminar"** en la ventana modal permanece inactivo mientras el campo se encuentre vacío o contenga únicamente espacios en blanco, garantizando que jamás se descarten versiones sin justificar el motivo para la bitácora de auditoría.
    * **Confirmación del descarte:** Al presionar el botón **"Eliminar"** dentro de la ventana modal, la versión se elimina permanentemente de la plataforma y el motivo queda registrado de forma automática en la bitácora de auditoría.
 
 > **[Captura: Confirmación Descarte]**
@@ -2068,11 +2068,11 @@ El botón flotante permite a los usuarios con facultades editoriales gestionar c
    * **Editar página (Ícono de lápiz sobre documento):** Abre de inmediato la página actual en el Editor Visual para modificar sus textos, imágenes y estructura de bloques. Se muestra si el usuario tiene asignado el permiso para editar esa página específica o si cuenta con el rol de Administrador.
    * **Menú y pie (Ícono de capas):** Abre el Editor Visual para estructurar los elementos globales que comparten todas las páginas del portal (barra superior, menú de navegación principal e información del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
    * **Nueva página (Ícono de suma "+"):** Despliega la ventana modal de creación, solicitando el nombre deseado y generando automáticamente su dirección web de acceso. Requiere el permiso de creación correspondiente o el rol de Administrador.
-   * **Editar dirección (Ícono de eslabón de cadena):** Abre la ventana modal para cambiar la dirección web de la página actual y actualizar los enlaces del portal que apuntaban a la anterior (ver [Sección 3.4.3.5.1](#34351-cambio-de-dirección-de-una-página-botón-editar-dirección)). No aparece en la portada. Solo lo ofrece el sistema a Superadmin y Administrador.
+   * **Editar dirección (Ícono de eslabón de cadena):** Abre la ventana modal para cambiar la dirección web de la página actual y actualizar los botones, menús y enlaces del portal que lleven a ella (ver [Sección 3.4.3.5.1](#34351-cambio-de-dirección-de-una-página-botón-editar-dirección)). No aparece en la portada ni en páginas fijas del portal. Se encuentra disponible en ambos entornos (**Sitio Web** e **Intranet**) si el usuario cuenta con el permiso para cambiar la dirección de las páginas o si tiene el rol de Administrador.
    * **Eliminar página (Ícono de papelera):** Ubicado en la parte superior del menú desplegado con estilo de advertencia. Inicia el procedimiento de retiro seguro y comprobación previa de enlaces activos. Solo aparece en páginas dinámicas creadas por editores y requiere el permiso para eliminar páginas o el rol de Administrador.
 
 > **[Captura: Menú Flotante de Edición Desplegado]**
-> *Menú de herramientas editoriales desplegado verticalmente mostrando las opciones de Editar página, Menú y pie, Nueva página y Eliminar página con sus etiquetas flotantes.*
+> *Menú de herramientas editoriales desplegado verticalmente mostrando las opciones de Editar página, Menú y pie, Nueva página, Editar dirección y Eliminar página con sus etiquetas flotantes.*
 >
 > **[Captura: Menú Flotante de Edición Desplegado (Móvil)]**
 > *Menú flotante desplegable adaptado a pantalla móvil. (Móvil).*
@@ -2104,6 +2104,14 @@ En la plataforma, una pantalla se divide visualmente en dos componentes fundamen
      * *Menú principal de navegación:* Estructura jerárquica de enlaces primarios, botones de acción y menús desplegables multinivel organizados por temáticas.
      * *Pie de página del portal:* Franjas de contacto, logotipos del SENA y del Estado, políticas de tratamiento de datos, enlaces de interés y derechos de autor.
    * **Comportamiento en pantalla:** Al seleccionar **«Menú y pie»**, el Editor Visual enfoca su lienzo de trabajo exclusivamente en los bloques correspondientes a la cabecera y al pie de página, permitiendo ordenar enlaces, agregar nuevos ítems de menú y actualizar datos de contacto.
+   * **Definición dinámica de las direcciones web (URLs) por el menú:** La dirección de cada página del portal la define de forma dinámica su posición en el árbol de navegación de «Menú y pie», eliminando la necesidad de programar rutas fijas en el código:
+     * *Páginas en el primer nivel del menú:* Poseen una dirección web directa (ej. `/inicio`, `/ape`, `/publicaciones`).
+     * *Páginas agrupadas en menús desplegables:* Toda página que cuelga de un desplegable adopta automáticamente como prefijo el tramo generado por el título del desplegable: `/{desplegable}/{pagina}` (por ejemplo, al agrupar la Clasificación CUOC bajo el menú «Clasificación de las Ocupaciones», su dirección canónica pasa a ser `/clasificacion-de-las-ocupaciones/clasificacion-cuoc`). Si un ciudadano o usuario escribe la dirección simple `/clasificacion-cuoc`, el sistema detecta su jerarquía y lo redirige automáticamente a la dirección canónica completa.
+     * *Páginas dentro de esta página («Páginas internas»):* Al editar las propiedades de una página hija dentro de un desplegable, se dispone del campo **«Páginas dentro de esta página»** (`internas`). Permite declarar páginas secundarias que dependen jerárquicamente de esa sección (por ejemplo, una página de `/resultado` para búsquedas) sin que se muestren como botones en el menú principal; su dirección pública se compone automáticamente de tres tramos organizados (por ejemplo: `/tema/pagina-principal/pagina-interna`).
+     * *Migas de pan automáticas:* Los eslabones de navegación (breadcrumbs) en la parte superior del contenido toman su estructura y los títulos actualizados directamente de las páginas publicadas en base de datos, guiando al usuario por la jerarquía canónica de navegación.
+     * *Pantalla de página no encontrada:* Si se ingresa a una dirección que no existe o que cambió de ubicación, el sistema despliega una pantalla institucional integrada que orienta al visitante a volver al inicio o utilizar el buscador.
+     * *Configuración de espaciado y protección del logotipo:* En el bloque de cabecera se dispone de controles para calibrar la separación visual entre el logotipo y los enlaces del menú (`Separación logo-menú`), así como entre el menú y las acciones de la derecha (`Separación menú-acciones`). El sistema incorpora reglas de maquetación que impiden que el logotipo del SENA y del Observatorio se reduzca o distorsione al agrandar el menú.
+     * *Tolerancia a enlaces vacíos en edición:* Durante la configuración del menú, si un enlace nuevo aún no cuenta con su URL (`href`) diligenciada, el sistema le asigna automáticamente un ancla segura (`#`), permitiendo continuar con la maquetación sin interrupciones.
    * **Requisitos de acceso:** Requiere contar expresamente con el permiso **«Menú y pie del sitio web»** o **«Menú y pie de la intranet»** (según el portal en el que se opere) dentro del grupo *Editar*, o contar con el rol de Administrador.
 
 > **[Captura: Acceso a Edición de Menú y Pie]**
@@ -2434,7 +2442,7 @@ El procedimiento para crear una nueva página dinámica en el portal se realiza 
 
 #### 3.4.3.5. Eliminación de Páginas (Procedimiento Seguro)
 
-La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de páginas dinámicas que evita la generación de enlaces rotos y previene eliminaciones accidentales:
+La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de páginas dinámicas que evita la generación de enlaces rotos y previene eliminaciones accidentales (aplicable tanto en el **Sitio Web** como en la **Intranet**):
 
 1. **Acceso desde el botón flotante:**
    Navegar hacia la página que se desea eliminar. Hacer clic en el botón flotante de edición y seleccionar la opción **«Eliminar página»** (ícono de papelera con estilo de advertencia).
@@ -2488,9 +2496,10 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 
 ##### 3.4.3.5.1. Cambio de dirección de una página (botón «Editar dirección»)
 
-Permite cambiarle la dirección web a una página ya creada sin dejar enlaces rotos dentro del portal:
+Permite cambiarle la dirección web a una página ya creada sin dejar enlaces rotos dentro del portal (disponible en ambos entornos, **Sitio Web** e **Intranet**):
 
 1. **Acceso:** Navegar a la página, abrir el botón flotante de edición y elegir **«Editar dirección»** (ícono de eslabón de cadena).
+   *(Nota: Esta opción se encuentra visible para usuarios con rol de Administrador o usuarios cuyo rol tenga asignado el permiso para cambiar la dirección de las páginas).*
 2. **Escribir la nueva dirección:** El campo acepta el nombre como se escribe normalmente (*Resultado final*): se convierte solo a minúsculas y guiones (*resultado-final*). El sistema comprueba mientras se escribe que la dirección sea válida y esté libre; si no lo está (por ejemplo, ya existe otra página con esa dirección o es una dirección reservada del sistema), lo explica en un mensaje de color rojo.
 3. **Revisar el uso de la dirección actual:** Si otras páginas enlazan a la dirección actual (el menú, el pie de página, botones o textos con enlaces), un mensaje amarillo lo advierte y lista dónde están, con los nombres del editor (bloque y campo). También cuenta lo que está en borrador o pendiente de revisión, para que al aprobarlo no vuelva a publicarse el enlace viejo. Si no hay enlaces, un mensaje verde confirma que la dirección está disponible.
 4. **Confirmar:** El botón dice **«Actualizar enlaces y cambiar»** cuando hay enlaces (al pulsarlo se reescriben todos a la dirección nueva, en el mismo paso). En ese caso es blanco con borde amarillo —el color del mensaje de aviso— y se rellena de amarillo claro al pasar el cursor; cuando no hay enlaces dice **«Cambiar dirección»** y es el botón azul de siempre. Los dos botones del diálogo miden lo mismo. Si mientras tanto alguien enlazó la página o abrió el editor, el sistema lo avisa y actualiza la lista sin cerrar el diálogo.
@@ -3639,6 +3648,19 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 > **[Captura: Botón Guardar Deshabilitado sin Cambios (Móvil)]**
 > *Pie de la ventana modal mostrando el mensaje informativo de ausencia de cambios en dispositivo móvil. (Móvil).*
 
+##### 6. Rechazo al Crear o Modificar un Rol sin el Prefijo Obligatorio «Editor »
+* **Situación:** Al enviar el formulario de creación o edición de un rol desde el Panel Administrativo, el sistema arroja una alerta de error y bloquea el guardado.
+* **Causa técnica y operativa:** Para preservar la jerarquía de gobierno y evitar la creación no autorizada de roles administrativos o directivos ficticios, el servidor backend (`usuarios.validators.ts`) exige de manera estricta que todo rol derivado comience obligatoriamente con el prefijo `Editor ` (ej. *«Editor Regional Antioquia»* o *«Editor Estadísticas»*).
+* **Acción correctiva:**
+  1. Verificar que el campo del nombre del rol incluya el prefijo exacto **«Editor »** seguido del nombre de la función o sección asignada.
+  2. En la interfaz de creación, el prefijo viene fijado de forma protegida para asegurar que la denominación cumpla con este estándar institucional.
+
+> **[Captura: Validación de Prefijo Obligatorio en Rol]**
+> *Mensaje de validación exigiendo el prefijo estándar «Editor » en la denominación del nuevo rol.*
+>
+> **[Captura: Validación de Prefijo Obligatorio en Rol (Móvil)]**
+> *Mensaje de validación del prefijo de rol en pantalla móvil. (Móvil).*
+
 #### 3.5.1.10. Validaciones y Solución de Problemas en la Aprobación y Publicación de Contenidos (Páginas en Revisión)
 
 El flujo editorial de revisión y paso a producción (cuyo procedimiento operativo se detalla en la [Sección 3.4.2.5: Aprobación y Publicación de Contenidos: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)) incorpora reglas estrictas de control y validación para evitar publicaciones incompletas, descartes no justificados o inconsistencias en la bitácora de auditoría. A continuación se presentan las principales situaciones, sus causas y las acciones correctivas correspondientes:
@@ -4232,6 +4254,35 @@ La plataforma separa claramente los contenidos particulares de cada pantalla del
 > **[Captura: Comparativa de Navegación entre Sitio Web e Intranet (Móvil)]**
 > *Diferenciación de menús entre ambos portales en pantalla móvil. (Móvil).*
 
+##### 5. La Dirección de una Página Cambió de Forma Automática al Agruparla en un Menú Desplegable
+* **Situación:** Una página que anteriormente se accedía desde una URL plana directa (ej. `/clasificacion-cuoc`) ahora muestra en la barra de navegación del explorador una ruta anidada con carpeta (ej. `/clasificacion-de-las-ocupaciones/clasificacion-cuoc`).
+* **Causa técnica y operativa:** Arquitectura dinámica de URLs por menú. Las direcciones canónicas de las páginas no son estáticas ni fijas en el código: se recalculan automáticamente según la estructura del menú en «Menú y pie». Al colocar un enlace como hijo dentro de un menú desplegable, el sistema le antepone de forma transparente el tramo slugificado del desplegable. Además, si un visitante o motor de búsqueda ingresa escribiendo la dirección plana o antigua, el sistema lo redirige de forma canónica y automática a la nueva dirección con desplegable.
+* **Acción correctiva:**
+  1. Si se desea mantener la estructura jerárquica por temas, no se requiere ninguna acción; es el comportamiento estándar de organización del portal.
+  2. Si expresamente se requiere que la página vuelva a tener una dirección directa en la raíz (ej. `/clasificacion-cuoc`), se debe ingresar a **«Menú y pie»**, retirar el enlace de adentro del desplegable y ubicarlo en el primer nivel del menú principal.
+
+> **[Captura: Redirección Canónica a Ruta con Desplegable]**
+> *Barra del navegador evidenciando la redirección canónica automática desde la ruta simple a la jerarquía del desplegable.*
+>
+> **[Captura: Redirección Canónica a Ruta con Desplegable (Móvil)]**
+> *Visualización de la ruta jerárquica en dispositivo móvil. (Móvil).*
+
+##### 6. Configuración de «Páginas dentro de esta página» (Páginas Internas Subordinadas)
+* **Situación:** Se requiere crear una página subordinada (por ejemplo, una página dedicada exclusivamente a mostrar resultados de una búsqueda ocupacional o detalle técnico) que dependa de una sección principal pero que no deba figurar como un botón visible en el menú principal de navegación.
+* **Causa técnica y operativa:** Para no sobrecargar visualmente la barra de navegación con enlaces secundarios, el editor de «Menú y pie» admite **páginas internas**. Estas se organizan bajo la ruta de una página del menú (por ejemplo: `/tema/pagina-principal/pagina-interna`) pero no se muestran en los botones del menú visible a la ciudadanía.
+* **Acción correctiva:**
+  1. Crear la página normalmente desde el botón flotante (*«Nueva página»*, ej. con título *"Resultado"* y dirección `/resultado`).
+  2. Ingresar a **«Menú y pie»** y pulsar el bloque de la cabecera para abrir sus propiedades en el panel lateral.
+  3. Desplegar los enlaces del menú y ubicar la página de la que debe depender (ej. *"Clasificación Nacional de Ocupaciones"*).
+  4. En el campo **«Páginas dentro de esta página»**, pulsar *«Añadir»*, ingresar el nombre de la página y su dirección (`/resultado`).
+  5. Al guardar y publicar, la página adoptará la ruta completa de tres tramos (`/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones/resultado`) y las migas de pan automáticas enlazarán a su página padre de manera coherente.
+
+> **[Captura: Configuración de Páginas Internas en Menú y Pie]**
+> *Campo «Páginas dentro de esta página» en el inspector lateral de la cabecera en Menú y pie.*
+>
+> **[Captura: Configuración de Páginas Internas en Menú y Pie (Móvil)]**
+> *Configuración de páginas internas anidadas en pantalla móvil. (Móvil).*
+
 ---
 
 #### 3.5.1.19. Validaciones y Solución de Problemas en la Estructura y Funcionalidades del Editor Visual
@@ -4485,4 +4536,14 @@ El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación
 * **Formatos de descarga estándar:** Todas las plantillas oficiales y reportes que descargas se guardan en formato estándar `.xlsx` (Excel), abriendo sin problemas en Microsoft Excel, LibreOffice u otros visores compatibles.
 * **Imágenes del portal:** Las imágenes y logotipos cargados en el sistema conservan su formato original (como `.png` o `.jpg`) manteniendo su calidad visual en el portal.
 
-
+#### 3.5.2.10. Cambio de dirección de una página web («Editar dirección») y resolución de dependencias
+**Situación:** Al intentar cambiar la dirección de una página mediante la opción «Editar dirección», el sistema presenta mensajes de advertencia o no permite confirmar el cambio.
+**Posibles causas y reglas aplicadas:**
+1. **Dirección del sistema protegida:** La página actual es la portada (`/inicio`), la plantilla (`/menu-y-pie`) o una sección fija de la plataforma (como las páginas analíticas de la Intranet). El sistema muestra una tarjeta de aviso con un mensaje de advertencia indicando que esa dirección la usa el sistema y no se puede modificar, ofreciendo únicamente el botón **«Entendido»**.
+2. **Dirección nueva no válida u ocupada:** Lo escrito contiene caracteres no permitidos, tiene menos de 2 caracteres, o ya está en uso por otra página. El sistema lo informa en una tarjeta de color rojo en tiempo real mientras se escribe.
+3. **Página en edición concurrente:** Alguien tiene abierta la página o alguna de las páginas que la enlazan en el Editor Visual. El sistema identifica quién la tiene abierta y exige esperar a que cierre el editor para evitar sobrescrituras accidentales.
+4. **Presencia de enlaces dependientes:** Si existen enlaces hacia la página en el menú, pie u otras páginas, el sistema despliega una tarjeta amarilla detallando su ubicación exacta (bloque y campo del editor). El botón adopta estilo de advertencia (**«Actualizar enlaces y cambiar»**) para registrar el consentimiento explícito y reescribir atómicamente todos los hipervínculos internos en un solo paso.
+**Acción:** 
+* Escribir una dirección libre y válida.
+* Si hay enlaces dependientes, revisar el listado del diálogo y pulsar **«Actualizar enlaces y cambiar»**; el sistema actualizará los enlaces internos de forma automática tanto en el **Sitio Web** como en la **Intranet**.
+* Recordar que los enlaces externos (correos, marcadores de navegador) hacia la dirección anterior dejarán de funcionar al no haber redirección.
