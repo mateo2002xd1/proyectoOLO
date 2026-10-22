@@ -10,6 +10,7 @@ import { permisosDeLaSesion } from '../services/secciones.service';
 import { cerrarSesionLocal } from '@/shared/lib/api/api-client';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
+import { ModalEditarDireccion } from './modal-editar-direccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
 import { ModalCerrarSesion } from './modal-cerrar-sesion';
 import { Pencil, X } from 'lucide-react';
@@ -36,6 +37,12 @@ function esSuperadminSincrono(): boolean {
   return rol === 'superadmin';
 }
 
+/** Quien aprueba (Superadmin o Administrador): la API exige esto para cambiar una dirección. */
+function esAprobadorSincrono(): boolean {
+  const rol = leerRolActual();
+  return rol === 'superadmin' || rol === 'administrador';
+}
+
 const sinSuscripcion = () => () => { };
 const enCliente = () => true;
 const enServidor = () => false;
@@ -50,10 +57,12 @@ export function PaginasFabSpeedDial() {
     esSuperadminSincrono,
     () => false
   );
+  const esAprobador = useSyncExternalStore(sinSuscripcion, esAprobadorSincrono, () => false);
   const montado = useSyncExternalStore(sinSuscripcion, enCliente, enServidor);
   const [permisosActivos, setPermisosActivos] = useState<string[]>([]);
   const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const puedeEliminar = usePermisoDeSeccion('secciones.eliminar');
+  const puedeCambiarDir = usePermisoDeSeccion('secciones.cambiar-direccion');
 
   useEffect(() => {
     let vigente = true;
@@ -96,12 +105,26 @@ export function PaginasFabSpeedDial() {
   const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
   const puedeCrearSeccion = tienePermisoGlobal && (puedeCrear || esSuperadmin);
   const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (puedeEliminar || esSuperadmin);
+  // La portada no cambia de dirección (el sistema da por hecho `/inicio`): el botón ni se ofrece.
+  // Tampoco a quien no aprueba: reescribir lo publicado sin cola equivale a publicar, y la API
+  // lo exige (`puedePublicar`) aunque el permiso se le haya concedido desde el panel.
+  const puedeCambiarDireccion =
+    tienePermisoGlobal &&
+    esAprobador &&
+    Boolean(slug) &&
+    slug !== 'inicio' &&
+    (puedeCambiarDir || esSuperadmin);
 
   const tieneAlgunaAccion =
-    puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
+    puedeEditarSeccion ||
+    puedeEditarPlantilla ||
+    puedeCrearSeccion ||
+    puedeCambiarDireccion ||
+    puedeEliminarSeccion;
 
   const [abierto, setAbierto] = useState(false);
   const [modalNuevaAbierto, setModalNuevaAbierto] = useState(false);
+  const [modalDireccionAbierto, setModalDireccionAbierto] = useState(false);
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
   const [modalSalirAbierto, setModalSalirAbierto] = useState(false);
 
@@ -285,7 +308,43 @@ export function PaginasFabSpeedDial() {
             </div>
           )}
 
-          {/* 4. Eliminar página (extremo superior del menú desplegado) */}
+          {/* 4. Editar dirección */}
+          {puedeCambiarDireccion && (
+            <div className="fab-speed-dial__item" role="none">
+              <span className="fab-speed-dial__tooltip" role="tooltip">
+                Editar dirección
+              </span>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  cerrarMenu();
+                  setModalDireccionAbierto(true);
+                }}
+                className="fab-speed-dial__btn fab-speed-dial__btn--direccion"
+                aria-label="Editar dirección"
+                title="Editar dirección"
+                tabIndex={abierto ? 0 : -1}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width={18}
+                  height={18}
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* 5. Eliminar página (extremo superior del menú desplegado) */}
           {puedeEliminarSeccion && (
             <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
@@ -386,6 +445,12 @@ export function PaginasFabSpeedDial() {
       <ModalNuevaSeccion
         abierto={modalNuevaAbierto}
         alCerrar={() => setModalNuevaAbierto(false)}
+      />
+
+      <ModalEditarDireccion
+        slug={slug}
+        abierto={modalDireccionAbierto}
+        alCerrar={() => setModalDireccionAbierto(false)}
       />
 
       <ModalEliminarSeccion

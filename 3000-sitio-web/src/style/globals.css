@@ -5026,6 +5026,19 @@ body:has(.fab-speed-dial) .olo-boton-subir {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
+.fab-speed-dial__btn--direccion {
+  background: #ffffff;
+  color: #0a4060;
+  border: 1.5px solid #0a4060;
+}
+
+.fab-speed-dial__btn--direccion:hover {
+  background: #0a4060;
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
 .fab-speed-dial__btn--eliminar {
   background: #ffffff;
   color: #b3261e;
@@ -5314,6 +5327,85 @@ body:has(.fab-speed-dial) .olo-boton-subir {
 .nueva-seccion-boton--peligro:hover:not(:disabled) {
   border-color: #b91c1c;
   background: #b91c1c;
+}
+
+/* Botón de confirmar cuando el diálogo está en estado de aviso (tarjeta amarilla): blanco con
+   el amarillo del estado como borde y, al pasar el cursor, como relleno. Es el mismo ámbar de
+   `MensajeEstado` (#b48a00), así que el botón y la tarjeta se leen como una sola cosa.
+
+   El texto queda en el azul oscuro del resto de botones y no en ámbar: ámbar sobre blanco no
+   llega a AA, y blanco sobre ámbar (#b48a00) da unos 3:1. Con #001631 sobre blanco y sobre el
+   relleno claro del hover (#fcefb4) el contraste pasa de 12:1. El borde ámbar, más fuerte que
+   el gris de «Cancelar», es lo que dice cuál de los dos es el que confirma. */
+.nueva-seccion-boton--aviso {
+  border-color: #b48a00;
+  background: #fff;
+  color: #001631;
+  font-weight: 600;
+}
+
+.nueva-seccion-boton--aviso:hover:not(:disabled) {
+  background: #fcefb4;
+}
+
+.nueva-seccion-boton--aviso:focus-visible {
+  outline: 2px solid #b48a00;
+  outline-offset: 2px;
+}
+
+/* --- Modales simétricos (primero, «Editar dirección») ---
+
+   Dos botones del mismo ancho, que reparten la fila a partes iguales y cuyo texto puede
+   partirse en dos líneas sin descuadrarlos ("Actualizar enlaces y cambiar"). En pantallas
+   estrechas se apilan, también iguales. `--una`: el único botón de un aviso, a todo el ancho.
+   La caja `--ancha` da más aire al texto y, si lo que cuenta es largo, se desplaza ella y no
+   la página (con `dvh`, que descuenta las barras del móvil). */
+.nueva-seccion-caja--ancha {
+  max-width: 32rem;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.nueva-seccion-acciones--simetricas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.nueva-seccion-acciones--una {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.nueva-seccion-acciones--simetricas .nueva-seccion-boton {
+  width: 100%;
+  height: auto;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+@media (max-width: 30rem) {
+  .nueva-seccion-acciones--simetricas:not(.nueva-seccion-acciones--una) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Nota fija de un diálogo, sin tarjeta: no es el estado de lo escrito. */
+.nueva-seccion-nota {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+/* Las direcciones dentro de un mensaje de estado, como en `.nueva-seccion-ruta`. */
+.nueva-seccion-estado code {
+  padding: 0.05rem 0.3rem;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  word-break: break-all;
 }
 
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────

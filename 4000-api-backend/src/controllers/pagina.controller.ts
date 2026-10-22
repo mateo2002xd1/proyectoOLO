@@ -5,6 +5,7 @@ import { aprobarPagina } from '../use-cases/paginas/aprobar-pagina.usecase';
 import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
 import { obtenerIndiceBusqueda } from '../use-cases/paginas/obtener-indice-busqueda.usecase';
+import { obtenerTitulosPublicados } from '../use-cases/paginas/obtener-titulos-publicados.usecase';
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { listarPaginasPublicadas } from '../use-cases/paginas/listar-publicadas.usecase';
@@ -20,6 +21,13 @@ import {
   analizarEliminacion,
   eliminarSeccion,
 } from '../use-cases/paginas/eliminar-seccion.usecase';
+import {
+  cambiarDireccion,
+  consultarUsoDeDireccion,
+  estadosEnPalabras,
+  validarNuevaDireccion,
+} from '../use-cases/paginas/cambiar-direccion.usecase';
+import { emitirContenidoPublicado } from '../domain-events/paginas/contenido-publicado.event';
 import { adquirirBloqueo } from '../use-cases/paginas/adquirir-bloqueo.usecase';
 import { liberarBloqueo } from '../use-cases/paginas/liberar-bloqueo.usecase';
 import { registrarSubidaPendiente } from '../use-cases/paginas/registrar-subida-pendiente.usecase';
@@ -126,6 +134,16 @@ export const PaginaController = {
   },
 
   /**
+   * Los títulos de las páginas publicadas del ámbito, para rotular las migas de pan.
+   * Es el índice de búsqueda sin los textos: ver `obtener-titulos-publicados.usecase.ts`.
+   */
+  async obtenerTitulos(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.json(await obtenerTitulosPublicados(ambitoDe(req)));
+    } catch (err) { next(err); }
+  },
+
+  /**
    * Crea una sección: la fila en `paginas`, su clave de permiso y la asignación al
    * rol de quien la crea. No publica nada — ver `crear-seccion.usecase.ts`.
    *
@@ -219,6 +237,126 @@ export const PaginaController = {
       });
 
       res.json(seccion);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Dónde se usa la dirección de una página y quién la tiene abierta, sin tocar nada.
+   *
+   * Lo consulta el diálogo de «Editar dirección» al abrirse. Va con el permiso de cambiar
+   * la dirección y no con el de editar la sección, por lo mismo que `eliminable`: enseñar
+   * dónde enlaza el portal a una ruta es información de administración.
+   */
+  async consultarUsoDeDireccion(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.json(
+        await consultarUsoDeDireccion(req.params.slug as string, ambitoExigidoDe(req), req.user?.id)
+      );
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Si lo que se está escribiendo sirve como dirección nueva. Una consulta barata que el
+   * diálogo repite mientras se teclea; el cambio vuelve a comprobarlo todo.
+   */
+  async validarNuevaDireccion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const nueva = typeof req.query.nueva === 'string' ? req.query.nueva : '';
+      res.json(
+        await validarNuevaDireccion(req.params.slug as string, ambitoExigidoDe(req), nueva)
+      );
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Cambia la dirección de una página y, si se pide, actualiza los enlaces que la apuntaban.
+   *
+   * Las guardas (quien pide aprueba, la página no es del sistema, la dirección está libre,
+   * hay que aceptar la actualización de enlaces y nadie tiene abierto el editor) viven en el
+   * use-case y se comprueban ahí, no aquí. Tras confirmar la transacción se avisa a la caché
+   * de la API y del sitio, igual que al publicar: cada página que cambió, y las dos
+   * direcciones.
+   *
+   * Bitácora: una fila en la página renombrada y **otra en cada página ajena cuyo contenido se
+   * reescribió**. Sin esa segunda, la historia de `menu-y-pie` no diría que su versión
+   * publicada cambió sin pasar por la aprobación. Todas dentro de la transacción: si no se
+   * puede auditar, no se cambia.
+   */
+  async cambiarDireccion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { nuevaDireccion, actualizarEnlaces } = req.body;
+      const cambio = await sequelize.transaction(async (tx) => {
+        const result = await cambiarDireccion(
+          req.params.slug as string,
+          ambitoExigidoDe(req),
+          nuevaDireccion,
+          actualizarEnlaces,
+          { rol: req.user?.role, usuarioId: req.user?.id },
+          tx
+        );
+
+        const datos = datosDeAuditoria(req);
+        await logAudit({
+          ...datos,
+          entidadId: result.id,
+          entidadTipo: 'pagina',
+          accion: 'actualizar',
+          camposModificados: [
+            { campo: 'slug', antes: result.slugAnterior, despues: result.slug },
+            { campo: 'permiso', antes: result.clavePermisoAnterior, despues: result.clavePermiso },
+            { campo: 'enlaces_actualizados', antes: null, despues: result.enlacesActualizados },
+            { campo: 'enlaces_en_historial', antes: null, despues: result.enlacesEnHistorial },
+            {
+              campo: 'paginas_con_enlaces_actualizados',
+              antes: null,
+              despues: result.paginasActualizadas.map((pagina) => pagina.slug).join(', ') || null,
+            },
+          ],
+        }, tx);
+
+        // Cada página ajena que se reescribió: su propia historia tiene que decirlo.
+        for (const pagina of result.paginasReescritas.filter((p) => p.paginaId !== result.id)) {
+          await logAudit({
+            ...datos,
+            entidadId: pagina.paginaId,
+            entidadTipo: 'pagina',
+            accion: 'actualizar',
+            camposModificados: [
+              { campo: 'direccion_enlazada', antes: result.slugAnterior, despues: result.slug },
+              {
+                campo: 'enlaces_actualizados',
+                antes: null,
+                despues: pagina.enlacesVigentes + pagina.enlacesEnHistorial,
+              },
+              { campo: 'versiones_reescritas', antes: null, despues: estadosEnPalabras(pagina.estados) },
+            ],
+          }, tx);
+        }
+        return result;
+      });
+
+      await Promise.all(
+        cambio.slugsARevalidar.map(({ slug, paginaId, versionId }) =>
+          emitirContenidoPublicado({
+            paginaId,
+            slug,
+            ambito: cambio.ambito,
+            versionId,
+            publicadoPor: req.user?.id ?? null,
+            fecha: new Date(),
+          })
+        )
+      );
+
+      res.json({
+        id: cambio.id,
+        slugAnterior: cambio.slugAnterior,
+        slug: cambio.slug,
+        titulo: cambio.titulo,
+        ambito: cambio.ambito,
+        enlacesActualizados: cambio.enlacesActualizados,
+        paginasActualizadas: cambio.paginasActualizadas,
+      });
     } catch (err) { next(err); }
   },
 

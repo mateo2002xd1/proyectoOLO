@@ -133,6 +133,8 @@ export interface ReferenciaAEnlace {
   bloque?: string | null;
   /** Prop de ese bloque donde está (`enlacesFila3`, `navLinks`…). */
   campo?: string | null;
+  /** De qué versión es el enlace: lo publicado, lo que espera aprobación o un borrador. */
+  estado?: 'publicado' | 'en_revision' | 'borrador';
 }
 
 export interface AnalisisDeEliminacion {
@@ -179,5 +181,87 @@ export async function eliminarSeccion(
   confirmacion: string
 ): Promise<SeccionEliminada> {
   const { data } = await api.delete(`/api/paginas/${slug}`, { data: { confirmacion } });
+  return data;
+}
+
+/** Alguien con una página abierta en el editor. */
+export interface PaginaEnEdicion {
+  slug: string;
+  titulo: string;
+  usuario: string;
+}
+
+/** Dónde se usa la dirección de una página, antes de cambiarla. */
+export interface UsoDeLaDireccion {
+  id: string;
+  slug: string;
+  titulo: string;
+  ambito: Ambito;
+  /** La portada y «Menú y pie»: su dirección no se cambia. */
+  protegida: boolean;
+  referencias: ReferenciaAEnlace[];
+  paginasConEnlaces: number;
+  /** Quién tiene abierta esta página o alguna de las que la enlazan. */
+  enEdicion: PaginaEnEdicion[];
+}
+
+/**
+ * Dónde se usa la dirección de la página, sin cambiar nada.
+ *
+ * Lo pide el diálogo de «Editar dirección» al abrirse. No depende de la dirección nueva:
+ * se pide una sola vez, no con cada tecla.
+ */
+export async function consultarUsoDeDireccion(slug: string): Promise<UsoDeLaDireccion> {
+  const { data } = await api.get(`/api/paginas/${slug}/direccion`);
+  return data;
+}
+
+export interface ValidacionDeDireccion {
+  /** Lo escrito, ya normalizado (`Bolsa de empleo` → `bolsa-de-empleo`). */
+  valor: string;
+  valida: boolean;
+  motivo: 'vacia' | 'igual' | 'invalida' | 'ocupada' | null;
+  mensaje: string | null;
+}
+
+/** Si lo que se está escribiendo sirve como dirección nueva. Barata: se repite al teclear. */
+export async function validarNuevaDireccion(
+  slug: string,
+  nueva: string
+): Promise<ValidacionDeDireccion> {
+  const { data } = await api.get(`/api/paginas/${slug}/direccion/validacion`, {
+    params: { nueva },
+  });
+  return data;
+}
+
+export interface DireccionCambiada {
+  id: string;
+  slugAnterior: string;
+  slug: string;
+  titulo: string;
+  ambito: Ambito;
+  enlacesActualizados: number;
+  paginasActualizadas: { slug: string; titulo: string }[];
+}
+
+/**
+ * Cambia la dirección de la página y, con `actualizarEnlaces`, los enlaces que la apuntaban.
+ *
+ * Renombra también la clave de permiso de edición (`editar.sitio.{slug}`), que la sesión
+ * tiene en caché: se olvida para que los botones del menú flotante se recalculen con la
+ * dirección nueva y no se queden un minuto sin «Editar página».
+ */
+export async function cambiarDireccion(
+  slug: string,
+  nuevaDireccion: string,
+  actualizarEnlaces: boolean
+): Promise<DireccionCambiada> {
+  const { data } = await api.patch(`/api/paginas/${slug}/direccion`, {
+    nuevaDireccion,
+    actualizarEnlaces,
+  });
+  cachePromesaPermisos = null;
+  fechaCachePermisos = 0;
   return data;
 }

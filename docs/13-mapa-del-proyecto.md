@@ -16,9 +16,9 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 51 | 2 | 47 | — | 33 |
 | `3001-intranet` | 36 | 2 | 14 | — | 27 |
-| `4000-api-backend` | 35 | — | — | 96 | 43 |
+| `4000-api-backend` | 35 | — | — | 100 | 43 |
 
-Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 47 · modelos: 23.
 
 ## Carpetas sin descripción (4)
 
@@ -203,7 +203,7 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `admin-panel/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `auth/` `backup-section/` `changelog-view/` `configuration/` `search/` `update-section/` | **no** | 77 |
-| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 41 |
+| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 43 |
 
 ### 3001-intranet
 
@@ -385,10 +385,14 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/paginas/publica/:slug` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerPublica |
 | GET | `/api/paginas/indice-busqueda` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerIndiceBusqueda |
+| GET | `/api/paginas/titulos` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerTitulos |
 | POST | `/api/paginas/visitas/registrar` | 🔓 limitadorDeVisitas, limitadorDeVisitasPorPagina | PaginaController.registrarVisita |
 | POST | `/api/paginas` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.crear'), validarCuerpo(crearSeccionSchema) | PaginaController.crearSeccion |
 | GET | `/api/paginas/:slug/eliminable` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar') | PaginaController.analizarEliminacion |
 | DELETE | `/api/paginas/:slug` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar'), validarCuerpo(eliminarSeccionSchema) | PaginaController.eliminarSeccion |
+| GET | `/api/paginas/:slug/direccion` | requireAuth, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion') | PaginaController.consultarUsoDeDireccion |
+| GET | `/api/paginas/:slug/direccion/validacion` | requireAuth, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion') | PaginaController.validarNuevaDireccion |
+| PATCH | `/api/paginas/:slug/direccion` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion'), validarCuerpo(cambiarDireccionSchema) | PaginaController.cambiarDireccion |
 | GET | `/api/paginas/:slug/editable` | requireAuth, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion() | PaginaController.obtenerEditable |
 | POST | `/api/paginas/:slug/borrador` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion(), validarCuerpo(guardarBorradorSchema) | PaginaController.guardarBorrador |
 | POST | `/api/paginas/:slug/subidas` | requireAuth, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion(), validarCuerpo(registrarSubidaSchema) | PaginaController.registrarSubida |
@@ -636,6 +640,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `044-identidad-del-panel`
 - `045-password-anterior`
 - `046-paginas-del-sitio-en-bd`
+- `047-permiso-cambiar-direccion-secciones`
 
 ### Modelos
 

@@ -114,6 +114,7 @@ export function MensajeEstado({
   children,
   rol = 'status',
   className = '',
+  sinIcono = false,
 }: {
   tipo: TipoMensajeEstado;
   children: ReactNode;
@@ -126,13 +127,19 @@ export function MensajeEstado({
   rol?: 'status' | 'note' | 'alert';
   /** Márgenes de quien lo coloca; el mensaje no trae ninguno. */
   className?: string;
+  /**
+   * Sin el icono del tipo: el color de la tarjeta ya dice si es una advertencia o un error,
+   * y cuando el texto lo repite (un título como «Dirección en uso») el icono es redundante.
+   * Lo piden los diálogos que cuentan el estado con un título y una frase.
+   */
+  sinIcono?: boolean;
 }) {
   return (
     <div
       className={`flex items-start gap-3 rounded-[16px] px-4 py-3 text-sm leading-5 ${ESTILOS[tipo]} ${className}`}
       role={rol}
     >
-      {ICONOS[tipo]}
+      {!sinIcono && ICONOS[tipo]}
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

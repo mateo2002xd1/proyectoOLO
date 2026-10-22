@@ -79,6 +79,21 @@ export const BloqueoEdicionRepository = {
   },
 
   /**
+   * Quién tiene cada una de estas páginas abiertas, en UNA consulta.
+   *
+   * Es la versión en lote de `vigente`: quien repasa varias páginas (el cambio de dirección
+   * mira la propia y todas las que la enlazan) no debe lanzar una consulta por página.
+   */
+  async vigentesEn(ambito: Ambito, slugs: string[]): Promise<FilaBloqueo[]> {
+    if (slugs.length === 0) return [];
+    return sequelize.query<FilaBloqueo>(
+      `SELECT * FROM bloqueos_edicion
+        WHERE ambito = :ambito AND slug IN (:slugs) AND expira_en > now()`,
+      { replacements: { ambito, slugs }, type: QueryTypes.SELECT }
+    );
+  },
+
+  /**
    * Suelta el candado, pero solo si es de quien lo suelta.
    *
    * El `usuarioId` en el `where` no sobra: sin él, a quien acaba de perder el candado

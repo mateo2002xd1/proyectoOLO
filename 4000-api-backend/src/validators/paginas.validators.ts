@@ -122,6 +122,22 @@ export const eliminarSeccionSchema = z
   .strict();
 
 /**
+ * Cuerpo de `PATCH /api/paginas/:slug/direccion`.
+ *
+ * `nuevaDireccion` es lo que se escribió, no el slug: el servidor lo normaliza con
+ * `@olo/slug-policy` y es quien decide si sirve. `actualizarEnlaces` es el consentimiento
+ * explícito para reescribir los enlaces de otras páginas; sin él, si hay alguno el cambio se
+ * rechaza (409). No tiene valor por defecto a propósito: reescribir contenido ajeno no debe
+ * ocurrir por omisión.
+ */
+export const cambiarDireccionSchema = z
+  .object({
+    nuevaDireccion: z.string().trim().min(1, 'Escribe la nueva dirección.').max(200),
+    actualizarEnlaces: z.boolean(),
+  })
+  .strict();
+
+/**
  * Cuerpo de `POST /api/paginas/:slug/bloqueo`.
  *
  * `forzar` es «entrar de todos modos» y quitarle el candado a quien lo tenga. Pedirlo

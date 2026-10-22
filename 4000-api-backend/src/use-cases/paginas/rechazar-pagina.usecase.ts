@@ -15,7 +15,10 @@ export const rechazarPagina = async (
   tx?: Transaction
 ) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
-  if (!pagina) throw new Error('Página no encontrada');
+  if (!pagina) throw Object.assign(
+    new Error('Página no encontrada. Puede que haya cambiado de dirección: actualiza la lista.'),
+    { status: 404 }
+  );
   const paginaAnterior = pagina.toJSON();
 
   const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision', tx);

@@ -36,12 +36,10 @@
  * tienen ese colchón y su ruta simplemente deja de servir contenido hasta que alguien la
  * vuelva a crear.
  */
-import { Op } from 'sequelize';
 import sequelize from '../../config/database';
 import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
-import { buscarEnlacesA, type EnlaceEncontrado } from '../../shared/enlaces-en-contenido';
-import { resolverHref } from '../../shared/extraer-textos-puck';
+import { buscarReferencias, type ReferenciaAEnlace } from './referencias-a-pagina';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
@@ -53,21 +51,10 @@ import { borrarArchivosHuerfanos } from './borrar-archivos-huerfanos.usecase';
 const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
 
-/** Un sitio del portal que enlaza a la sección. */
-export interface ReferenciaAEnlace {
-  /** Slug de la página donde está el enlace. */
-  slug: string;
-  /** Su título, que es como se llama en las pantallas. */
-  titulo: string;
-  /** El texto visible del enlace, si lo tiene. */
-  texto: string | null;
-  /** El tipo del bloque que lo tiene (`Footer`, `Header`…); el diálogo lo traduce a su etiqueta. */
-  bloque: string | null;
-  /** La prop de ese bloque donde está (`enlacesFila3`, `navLinks`…). */
-  campo: string | null;
-}
 
 /** Lo que hace falta saber para decidir si se borra, y para pintar el diálogo. */
+export type { ReferenciaAEnlace };
+
 export interface AnalisisDeEliminacion {
   /** El id de la fila. Se lleva desde el análisis porque después de borrar ya no existe
    *  y la bitácora lo necesita como `entidad_id`. */
@@ -111,7 +98,9 @@ export const analizarEliminacion = async (
     publicada: Boolean(pagina.versionPublicadaId),
   };
 
-  const referencias = await buscarReferencias(slug, ambito, pagina.id);
+  // Solo lo publicado, que es lo que ve la gente, y sin la propia página: un enlace de una
+  // sección a sí misma no impide nada, se va con ella.
+  const referencias = await buscarReferencias(slug, ambito, { excluirPaginaId: pagina.id });
 
   return {
     ...base,
@@ -120,53 +109,6 @@ export const analizarEliminacion = async (
     referencias,
   };
 };
-
-/**
- * Dónde enlaza el portal a esta ruta.
- *
- * Mira el contenido **publicado** de las demás páginas del mismo ámbito, incluida
- * `menu-y-pie` —que es donde estarán casi siempre, porque es el menú—. Se excluye la
- * propia página: un enlace de una sección a sí misma no impide nada, se va con ella.
- *
- * Solo el ámbito propio: el menú del sitio y el de la intranet son independientes, y
- * una ruta `/bolsa-de-empleo` de intranet no la rompe un enlace del sitio público, que
- * apunta a otro dominio.
- */
-async function buscarReferencias(
-  slug: string,
-  ambito: Ambito,
-  idPropio: string
-): Promise<ReferenciaAEnlace[]> {
-  const otras = await Pagina.findAll({
-    where: { ambito, id: { [Op.ne]: idPropio }, versionPublicadaId: { [Op.ne]: null } },
-  });
-
-  const referencias: ReferenciaAEnlace[] = [];
-  // Una página movida a una subcarpeta (`/inicio/politica-de-privacidad`) se enlaza por
-  // su ruta nueva, pero el contenido ya publicado puede seguir usando `/{slug}`, que
-  // redirige ahí. Las dos cuentan como enlace vivo.
-  const rutas = [...new Set([`/${slug}`, resolverHref(slug, ambito)])];
-
-  for (const otra of otras) {
-    const version = await PaginaVersion.findByPk(otra.versionPublicadaId as string);
-    if (!version) continue;
-
-    const enlaces: EnlaceEncontrado[] = rutas.flatMap((ruta) =>
-      buscarEnlacesA(version.contenido, ruta)
-    );
-    for (const enlace of enlaces) {
-      referencias.push({
-        slug: otra.slug,
-        titulo: otra.titulo,
-        texto: enlace.texto,
-        bloque: enlace.bloque,
-        campo: enlace.campo,
-      });
-    }
-  }
-
-  return referencias;
-}
 
 /**
  * Quita del disco lo que dejó una sección ya eliminada: su carpeta de backup y, de sus

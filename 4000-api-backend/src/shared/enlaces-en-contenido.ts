@@ -59,7 +59,41 @@ const CLAVES_DE_ENLACE = [
   'govBannerEnlace',
   'link',
   'urlDestino',
+  // La página de resultados del buscador de ocupaciones, en la cabecera de «Menú y pie».
+  'paginaDelBuscador',
 ];
+
+/**
+ * Los `href="…"` de un texto con marcado (los campos de texto enriquecido guardan HTML).
+ * Cada coincidencia trae el valor en el grupo 3.
+ */
+const ANCLAS_EN_HTML = /(\bhref\s*=\s*)(["'])(.*?)\2/gi;
+
+/** Si un texto parece llevar enlaces escritos como HTML. */
+const llevaAnclas = (valor: string): boolean => /\bhref\s*=/i.test(valor);
+
+/**
+ * El texto visible de una ancla (`<a href="…">texto</a>`): lo que hay entre su etiqueta de
+ * apertura y su cierre, sin marcado. `desde` es donde acaba el `href="…"` encontrado. Sin él,
+ * el «texto» del enlace sería el HTML entero del campo donde está.
+ */
+const textoDeAncla = (html: string, desde: number): string | null => {
+  const finDeApertura = html.indexOf('>', desde);
+  if (finDeApertura === -1) return null;
+  const cierre = html.toLowerCase().indexOf('</a', finDeApertura);
+  const interior = html
+    .slice(finDeApertura + 1, cierre === -1 ? undefined : cierre)
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return interior || null;
+};
+
+/** Lo que sigue a la ruta (`?consulta`, `#ancla`), que sigue valiendo tras cambiarla. */
+const restoDeLaRuta = (valor: string): string => {
+  const corte = valor.search(/[?#]/);
+  return corte === -1 ? '' : valor.slice(corte);
+};
 
 /**
  * Claves de las que sale el texto visible, en orden de preferencia.
@@ -85,28 +119,37 @@ const normalizarRuta = (valor: string): string =>
  *
  * Acepta la ruta con y sin barra inicial porque el campo lo rellena una persona a mano
  * y las dos formas funcionan en el navegador. Descarta lo que lleve esquema (`http:`,
- * `mailto:`) y lo que solo sea un ancla (`#`).
+ * `mailto:`), lo que solo sea un ancla (`#`) y la URL sin esquema (`//otro-sitio/ruta`), que
+ * el navegador resuelve hacia fuera aunque empiece por barra.
  */
-function apuntaA(valor: string, ruta: string): boolean {
+function apuntaA(valor: string, destino: Destino): boolean {
   const limpio = valor.trim();
-  if (!limpio || limpio.startsWith('#') || /^[a-z][a-z0-9+.-]*:/i.test(limpio)) return false;
+  if (!limpio || limpio.startsWith('#') || limpio.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(limpio)) {
+    return false;
+  }
 
-  const objetivo = normalizarRuta(ruta);
-  const candidato = normalizarRuta(limpio.startsWith('/') ? limpio : `/${limpio}`);
+  const candidato = normalizarRuta(limpio.startsWith('/') ? limpio : `/${limpio}`).split(/[?#]/)[0];
 
   // Solo coincidencia exacta: `/bolsa-de-empleo-2024` es otra sección, no esta.
   // Se ignora lo que venga detrás de `?` o `#`, que sigue siendo la misma página.
-  return candidato.split(/[?#]/)[0] === objetivo;
+  return typeof destino === 'function' ? destino(candidato) : candidato === normalizarRuta(destino);
 }
+
+/**
+ * A dónde puede llevar un enlace: una ruta exacta, o una función que dice si una ruta
+ * (ya normalizada y sin `?` ni `#`) cuenta. La función existe para las páginas cuya ruta
+ * no sale solo de su slug (las del sitio, que las arma el menú).
+ */
+type Destino = string | ((ruta: string) => boolean);
 
 /**
  * Todos los enlaces del contenido que apuntan a `ruta`.
  *
- * `ruta` se pasa como `/slug`. Devuelve una entrada por enlace encontrado, así que un
+ * `ruta` se pasa como `/slug` (o como función, ver `Destino`). Devuelve una entrada por enlace encontrado, así que un
  * mismo destino repetido en dos sitios sale dos veces — que es lo que hace falta para
  * decirle a alguien cuántos tiene que quitar.
  */
-export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontrado[] {
+export function buscarEnlacesA(contenido: unknown, ruta: Destino): EnlaceEncontrado[] {
   const encontrados: EnlaceEncontrado[] = [];
   // Guarda contra referencias circulares: el JSON de la base no debería tenerlas, pero
   // un recorrido recursivo sin red se cuelga en vez de fallar si algún día las tiene.
@@ -119,14 +162,26 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
     textoDelBloque: string | null
   ): void => {
     for (const [clave, valor] of Object.entries(objeto)) {
-      if (typeof valor === 'string' && CLAVES_DE_ENLACE.includes(clave) && apuntaA(valor, ruta)) {
-        const claveTexto = CLAVES_DE_TEXTO.find((c) => typeof objeto[c] === 'string' && objeto[c]);
-        const textoVisible = claveTexto ? String(objeto[claveTexto]) : textoDelBloque;
-        encontrados.push({
-          texto: textoVisible,
-          href: valor,
-          ...ubicacion(clave),
-        });
+      if (typeof valor !== 'string') continue;
+      const claveTexto = CLAVES_DE_TEXTO.find((c) => typeof objeto[c] === 'string' && objeto[c]);
+      const textoVisible = claveTexto ? String(objeto[claveTexto]) : textoDelBloque;
+
+      if (CLAVES_DE_ENLACE.includes(clave)) {
+        if (apuntaA(valor, ruta)) {
+          encontrados.push({ texto: textoVisible, href: valor, ...ubicacion(clave) });
+        }
+        continue;
+      }
+
+      // Un enlace dentro de un texto enriquecido (`<a href="/pagina">`): no tiene campo
+      // propio, así que se busca en el HTML de cualquier otro campo de texto.
+      if (llevaAnclas(valor)) {
+        for (const ancla of valor.matchAll(ANCLAS_EN_HTML)) {
+          if (apuntaA(ancla[3], ruta)) {
+            const textoAncla = textoDeAncla(valor, (ancla.index ?? 0) + ancla[0].length);
+            encontrados.push({ texto: textoAncla, href: ancla[3], ...ubicacion(clave) });
+          }
+        }
       }
     }
   };
@@ -166,4 +221,57 @@ export function buscarEnlacesA(contenido: unknown, ruta: string): EnlaceEncontra
 
   recorrer(contenido, { bloque: null, campo: null }, null);
   return encontrados;
+}
+
+/**
+ * Una copia del contenido con los enlaces a `ruta` apuntando a `nuevoHref`, y cuántos se
+ * cambiaron. No toca el original.
+ *
+ * Recorre lo mismo que `buscarEnlacesA` y con las mismas reglas de «a dónde lleva»
+ * (`apuntaA`), así que lo que el análisis enseñó es exactamente lo que se reescribe: las
+ * claves de `CLAVES_DE_ENLACE` y los `href` de los textos enriquecidos. Lo que va detrás de
+ * `?` o `#` se conserva (`/vieja?buscar=1#a` → `/nueva?buscar=1#a`).
+ *
+ * `nuevoHref` va con su barra inicial y sin resto; no se valida aquí: quien llama ya decidió
+ * que la ruta nueva es buena.
+ */
+export function reemplazarEnlaces(
+  contenido: unknown,
+  ruta: Destino,
+  nuevoHref: string
+): { contenido: unknown; cambiados: number } {
+  let cambiados = 0;
+  const copia = structuredClone(contenido);
+  const visitados = new WeakSet<object>();
+
+  const nuevoValor = (valor: string): string => {
+    cambiados += 1;
+    return `${nuevoHref}${restoDeLaRuta(valor.trim())}`;
+  };
+
+  const recorrer = (nodo: unknown): void => {
+    if (nodo === null || typeof nodo !== 'object' || visitados.has(nodo)) return;
+    visitados.add(nodo);
+
+    if (Array.isArray(nodo)) {
+      nodo.forEach(recorrer);
+      return;
+    }
+
+    const objeto = nodo as Record<string, unknown>;
+    for (const [clave, valor] of Object.entries(objeto)) {
+      if (typeof valor !== 'string') {
+        recorrer(valor);
+      } else if (CLAVES_DE_ENLACE.includes(clave)) {
+        if (apuntaA(valor, ruta)) objeto[clave] = nuevoValor(valor);
+      } else if (llevaAnclas(valor)) {
+        objeto[clave] = valor.replace(ANCLAS_EN_HTML, (completo, antes, comilla, href) =>
+          apuntaA(href, ruta) ? `${antes}${comilla}${nuevoValor(href)}${comilla}` : completo
+        );
+      }
+    }
+  };
+
+  recorrer(copia);
+  return { contenido: copia, cambiados };
 }

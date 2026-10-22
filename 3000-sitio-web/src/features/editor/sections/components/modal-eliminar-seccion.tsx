@@ -1,68 +1,16 @@
 'use client';
 
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import { poppins } from '@/shared/lib/typography/fonts';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
-import { puckConfig } from '@/config/puck.config';
 import {
   analizarEliminacion,
   eliminarSeccion,
   type AnalisisDeEliminacion,
-  type ReferenciaAEnlace,
 } from '../services/secciones.service';
-
-/** «A», «A y B», «A, B y C»: para nombrar páginas y botones dentro de una frase. */
-function unirConY(partes: ReactNode[]) {
-  return partes.map((parte, indice) => (
-    <Fragment key={indice}>
-      {indice > 0 && (indice === partes.length - 1 ? ' y ' : ', ')}
-      {parte}
-    </Fragment>
-  ));
-}
-
-/** Cómo se nombra en la advertencia cada bloque de «Menú y pie». */
-const LUGAR_EN_MENU_Y_PIE: Record<string, string> = {
-  Header: 'el menú de navegación',
-  Footer: 'el pie de página',
-};
-
-interface UbicacionEnElEditor {
-  /** Título de la página donde está el enlace. */
-  pagina: string;
-  /** Etiqueta del bloque en el editor («Pie de página»), o `null` si no se sabe. */
-  bloque: string | null;
-  /** Etiqueta del campo en el panel del bloque («Enlaces inferiores · fila 3»). */
-  campo: string | null;
-  /** Textos visibles de los enlaces de ese campo («Mapa del sitio»). */
-  textos: string[];
-  /** En qué parte del portal se ve: «el pie de página», «el menú de navegación», «la página «Inicio»». */
-  lugar: string;
-}
-
-/** Dónde se ve un enlace, para nombrarlo en una frase. */
-const lugarDe = (referencia: ReferenciaAEnlace): string =>
-  referencia.slug === 'menu-y-pie'
-    ? (LUGAR_EN_MENU_Y_PIE[referencia.bloque ?? ''] ?? 'el menú y pie')
-    : `la página «${referencia.titulo}»`;
-
-/**
- * Traduce el bloque y la prop que manda la API a lo que se lee en el editor, con las
- * etiquetas de `puckConfig`: así el paso a paso no se desfasa si cambia una etiqueta.
- */
-function ubicacionEnElEditor(referencia: ReferenciaAEnlace): UbicacionEnElEditor {
-  const bloque = referencia.bloque ? puckConfig.components[referencia.bloque] : undefined;
-  const campo = bloque && referencia.campo ? bloque.fields?.[referencia.campo] : undefined;
-  return {
-    pagina: referencia.titulo,
-    bloque: bloque?.label ?? null,
-    campo: campo?.label ?? null,
-    textos: referencia.texto ? [referencia.texto] : [],
-    lugar: lugarDe(referencia),
-  };
-}
+import { agruparUbicaciones, lugarDe, unirConY } from '../lib/ubicacion-de-enlaces';
 
 export interface ModalEliminarSeccionProps {
   slug: string;
@@ -135,15 +83,7 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
   const tituloDelMenu = analisis?.referencias.find((referencia) => referencia.slug === 'menu-y-pie')?.titulo;
   // Dónde está cada enlace con los nombres que se ven en el editor, sin repetir los que
   // están en la misma lista (dos enlaces en «fila 3» se buscan en un solo sitio).
-  const ubicaciones: UbicacionEnElEditor[] = [];
-  for (const referencia of analisis?.referencias ?? []) {
-    const ubicacion = ubicacionEnElEditor(referencia);
-    const misma = ubicaciones.find(
-      (otra) => otra.pagina === ubicacion.pagina && otra.bloque === ubicacion.bloque && otra.campo === ubicacion.campo,
-    );
-    if (!misma) ubicaciones.push(ubicacion);
-    else for (const texto of ubicacion.textos) if (!misma.textos.includes(texto)) misma.textos.push(texto);
-  }
+  const ubicaciones = agruparUbicaciones(analisis?.referencias ?? []);
   // Para la advertencia: «el pie de página», «el menú de navegación», «otras páginas».
   const lugares = [
     ...new Set(

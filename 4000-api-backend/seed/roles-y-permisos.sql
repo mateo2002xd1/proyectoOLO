@@ -23,6 +23,7 @@ INSERT INTO "permisos" ("id", "clave", "created_at", "updated_at") VALUES
   (gen_random_uuid(), 'editor.enviar-revision', now(), now()),
   (gen_random_uuid(), 'secciones.crear', now(), now()),
   (gen_random_uuid(), 'secciones.eliminar', now(), now()),
+  (gen_random_uuid(), 'secciones.cambiar-direccion', now(), now()),
   (gen_random_uuid(), 'usuarios.crear', now(), now()),
   (gen_random_uuid(), 'usuarios.editar', now(), now()),
   (gen_random_uuid(), 'usuarios.eliminar', now(), now()),

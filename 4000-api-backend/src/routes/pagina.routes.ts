@@ -8,6 +8,7 @@ import { validarCuerpo } from '../middlewares/validar.middleware';
 import {
   adquirirBloqueoSchema,
   crearSeccionSchema,
+  cambiarDireccionSchema,
   eliminarSeccionSchema,
   enviarARevisionSchema,
   guardarBorradorSchema,
@@ -82,6 +83,41 @@ router.get(
   '/indice-busqueda',
   cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
   PaginaController.obtenerIndiceBusqueda
+);
+
+/**
+ * @openapi
+ * /api/paginas/titulos:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Títulos de las páginas publicadas (público)
+ *     description: |
+ *       Slug y título de cada página con una versión publicada en el ámbito, sin su
+ *       contenido. Es lo que el sitio necesita en cada visita para rotular las migas de
+ *       pan; el índice de búsqueda trae lo mismo con todo el texto y sería excesivo.
+ *       No exige sesión. Respuesta cacheada 5 minutos por ámbito; aprobar una página
+ *       invalida la entrada.
+ *     security: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Los títulos, ordenados por slug.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   slug: { type: string }
+ *                   titulo: { type: string }
+ */
+// El ámbito entra en la clave de caché, igual que en las dos de arriba.
+router.get(
+  '/titulos',
+  cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
+  PaginaController.obtenerTitulos
 );
 
 router.post(
@@ -275,6 +311,180 @@ router.delete(
   requirePermission('secciones.eliminar'),
   validarCuerpo(eliminarSeccionSchema),
   PaginaController.eliminarSeccion
+);
+
+/**
+ * Las tres rutas de «Editar dirección» van con `puedePublicar` (solo quien aprueba) **y**
+ * `secciones.cambiar-direccion`, y **no** con `requierePermisoDeSeccion()`: esa clave la tiene
+ * solo el rol que creó la página, y quien administra el portal tiene que poder cambiar la
+ * dirección de lo que no creó.
+ *
+ * `puedePublicar` y no `puedeEditar` porque reescribir los enlaces de la versión publicada
+ * sin pasar por la cola de aprobación equivale a publicar: dejarlo a cualquier rol con el
+ * permiso concedido desde el panel rompería la invariante del ciclo editorial. El permiso
+ * sigue existiendo (para verlo y repartirlo con el resto), pero solo opera para quien
+ * aprueba. `cambiar-direccion.usecase.ts` lo vuelve a comprobar: es la doble capa de
+ * `3-seguridad-del-proyecto.md` §4.3.
+ */
+/**
+ * @openapi
+ * /api/paginas/{slug}/direccion:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Dónde se usa la dirección de una página
+ *     description: |
+ *       Consulta previa al cambio de dirección: los enlaces del portal que apuntan a la
+ *       dirección actual (en lo publicado, en lo que espera aprobación y en los borradores),
+ *       si la página está protegida (`inicio`, `menu-y-pie`, las secciones de fábrica y las
+ *       acopladas al código: no se cambian) y quién tiene abierta en el editor esta página o
+ *       alguna de las que la enlazan. Solo quien aprueba (Superadmin y Administrador); 400 si
+ *       el ámbito no es el sitio.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Uso de la dirección.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id: { type: string }
+ *                 slug: { type: string }
+ *                 titulo: { type: string }
+ *                 protegida: { type: boolean }
+ *                 paginasConEnlaces: { type: integer }
+ *                 referencias:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       slug: { type: string }
+ *                       titulo: { type: string }
+ *                       texto: { type: string, nullable: true }
+ *                       bloque: { type: string, nullable: true }
+ *                       campo: { type: string, nullable: true }
+ *                       estado: { type: string, enum: [publicado, en_revision, borrador] }
+ *                 enEdicion:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       slug: { type: string }
+ *                       titulo: { type: string }
+ *                       usuario: { type: string }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
+router.get(
+  '/:slug/direccion',
+  requierePermisoPagina('puedePublicar'),
+  requirePermission('secciones.cambiar-direccion'),
+  PaginaController.consultarUsoDeDireccion
+);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/direccion/validacion:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Comprobar si una dirección nueva sirve
+ *     description: |
+ *       Normaliza lo escrito con la política de direcciones (la de crear una página) y
+ *       dice si está libre. Es una sola consulta y se puede repetir mientras se escribe;
+ *       el cambio vuelve a comprobarlo todo.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *       - in: query
+ *         name: nueva
+ *         schema: { type: string }
+ *         description: Lo que se escribió como dirección nueva.
+ *     responses:
+ *       200:
+ *         description: Veredicto.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valor: { type: string, description: La dirección ya normalizada. }
+ *                 valida: { type: boolean }
+ *                 motivo: { type: string, nullable: true, enum: [vacia, igual, invalida, ocupada] }
+ *                 mensaje: { type: string, nullable: true }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ */
+router.get(
+  '/:slug/direccion/validacion',
+  requierePermisoPagina('puedePublicar'),
+  requirePermission('secciones.cambiar-direccion'),
+  PaginaController.validarNuevaDireccion
+);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/direccion:
+ *   patch:
+ *     tags: [Páginas]
+ *     summary: Cambiar la dirección de una página
+ *     description: |
+ *       Cambia el slug de la página y reescribe los enlaces que apuntaban a la dirección
+ *       anterior: con `actualizarEnlaces`, los de las versiones vigentes (publicada, en
+ *       revisión y borradores) y siempre los de la historia que se puede reabrir (rechazadas)
+ *       o restaurar (archivadas). Todo en una transacción, con un cambio de dirección a la vez
+ *       por ámbito y las versiones afectadas bloqueadas. Renombra también la clave de
+ *       permiso de edición, sin quitarle el acceso a nadie.
+ *
+ *       Solo quien aprueba (Superadmin y Administrador): reescribir lo publicado sin pasar por
+ *       la cola de aprobación equivale a publicar. Se rechaza (409) si la dirección está
+ *       ocupada, si la clave de permiso de la dirección nueva ya tiene accesos, si hay enlaces
+ *       y no se pidió actualizarlos, o si alguien tiene abierto el editor en esta página o en
+ *       una que habría que reescribir. La portada, `menu-y-pie`, las secciones de fábrica y las
+ *       acopladas al código no se cambian (403). Solo el sitio (400 en otro ámbito).
+ *
+ *       **No deja redirección:** los enlaces de fuera del portal dejan de funcionar.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nuevaDireccion: { type: string }
+ *               actualizarEnlaces: { type: boolean }
+ *             required: [nuevaDireccion, actualizarEnlaces]
+ *             additionalProperties: false
+ *     responses:
+ *       200:
+ *         description: Dirección cambiada.
+ *       400:
+ *         description: La dirección no sirve.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ *       409:
+ *         description: Dirección ocupada, enlaces sin autorizar o página abierta en el editor.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
+router.patch(
+  '/:slug/direccion',
+  limitadorDeEscritura,
+  requierePermisoPagina('puedePublicar'),
+  requirePermission('secciones.cambiar-direccion'),
+  validarCuerpo(cambiarDireccionSchema),
+  PaginaController.cambiarDireccion
 );
 
 /**

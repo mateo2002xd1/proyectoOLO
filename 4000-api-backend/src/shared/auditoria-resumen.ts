@@ -146,6 +146,8 @@ const ETIQUETA_DE_CAMPO: Record<string, string> = {
   expiration_date: 'fecha de caducidad',
   password: 'contraseña',
   slug: 'ruta',
+  direccion_enlazada: 'dirección enlazada',
+  versiones_reescritas: 'versiones reescritas',
   version: 'versión',
   estado: 'estado',
   motivo: 'motivo',
@@ -388,6 +390,71 @@ const fraseDeEdicionAntigua = (d: Contexto): string | null => {
   if (!soloTrae(d.campos, ['slug', 'version'])) return null;
   const cual = versionDePagina(d.campos);
   return cual ? `Se guardó la ${cual}` : null;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Cambio de dirección
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * «Editar dirección»: el cambio de slug de una página y los enlaces que se reescribieron por
+ * su culpa. Se escribe como `actualizar` (no como un verbo propio: eso pide una migración del
+ * `CHECK` de la bitácora y tocar la pantalla de filtros, y esta fila ya cae bien en
+ * «Contenido editorial»), y se reconoce por sus campos.
+ *
+ * Hay dos formas de fila, las dos dentro de la misma transacción:
+ * - la de la **página renombrada** (`slug` + `permiso`): cuenta de dónde a dónde, cuántos
+ *   enlaces se actualizaron en lo vigente y en la historia, y en qué páginas;
+ * - la de cada **página ajena cuyo contenido se reescribió** (`direccion_enlazada`): sin ella,
+ *   la historia de `menu-y-pie` no diría que su versión publicada cambió sin pasar por la
+ *   aprobación.
+ */
+const CAMPOS_DE_CAMBIO_DE_DIRECCION = [
+  'slug',
+  'permiso',
+  'enlaces_actualizados',
+  'enlaces_en_historial',
+  'paginas_con_enlaces_actualizados',
+  'direccion_enlazada',
+  'versiones_reescritas',
+];
+
+const enEnlaces = (n: number) => (n === 1 ? '1 enlace' : `${n} enlaces`);
+
+const fraseDeCambioDeDireccion = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, CAMPOS_DE_CAMBIO_DE_DIRECCION)) return null;
+  const vigentes = Number(comoTextoONumero(campoDe(d.campos, 'enlaces_actualizados')?.despues) ?? 0);
+
+  // Una página ajena a la que se le reescribieron enlaces.
+  const enlazada = campoDe(d.campos, 'direccion_enlazada');
+  if (enlazada) {
+    const antes = comoTextoONumero(enlazada.antes);
+    const despues = comoTextoONumero(enlazada.despues);
+    if (!antes || !despues) return null;
+    const versiones = comoTextoONumero(campoDe(d.campos, 'versiones_reescritas')?.despues);
+    return [
+      `Se actualizaron ${enEnlaces(vigentes)} de /${antes} a /${despues} por el cambio de dirección de esa página`,
+      versiones ? `Versiones tocadas: ${versiones}` : null,
+      'Sin pasar por la aprobación',
+    ].filter(Boolean).join(' · ');
+  }
+
+  // La página que cambió de dirección.
+  const slug = campoDe(d.campos, 'slug');
+  if (!slug || !campoDe(d.campos, 'permiso')) return null;
+  const antes = comoTextoONumero(slug.antes);
+  const despues = comoTextoONumero(slug.despues);
+  if (!antes || !despues) return null;
+
+  const historial = Number(comoTextoONumero(campoDe(d.campos, 'enlaces_en_historial')?.despues) ?? 0);
+  const paginas = comoTextoONumero(campoDe(d.campos, 'paginas_con_enlaces_actualizados')?.despues);
+  return [
+    `Se cambió la dirección de la página de /${antes} a /${despues}`,
+    vigentes > 0
+      ? `${enEnlaces(vigentes)} actualizado${vigentes === 1 ? '' : 's'}${paginas ? ` en ${paginas}` : ''}`
+      : 'Ningún enlace que actualizar',
+    historial > 0 ? `${enEnlaces(historial)} en versiones anteriores` : null,
+  ].filter(Boolean).join(' · ');
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -898,7 +965,7 @@ const reglaPropia = (d: Contexto): string | null => {
     case 'actualizar':
       if (d.entidadTipo === 'usuario') return fraseDeModificacionDeUsuario(d);
       if (d.entidadTipo === 'rol') return fraseDeModificacionDeRol(d);
-      if (d.entidadTipo === 'pagina') return fraseDeEdicionAntigua(d);
+      if (d.entidadTipo === 'pagina') return fraseDeCambioDeDireccion(d) ?? fraseDeEdicionAntigua(d);
       return null;
     case 'inactivar':
       return d.entidadTipo === 'usuario' ? fraseDeModificacionDeUsuario(d) : null;
