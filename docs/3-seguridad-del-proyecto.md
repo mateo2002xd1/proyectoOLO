@@ -683,7 +683,7 @@ Un solo sitio donde cada hallazgo tiene **un identificador** y un estado. La bit
 
 **Reglas del registro:**
 - Un ID es único en todo el repositorio, no se reutiliza ni se renumera. Familia = el tema
-  (`OBS` off-by-slash, `SES` sesión, `RED` Redis y límites, `ROL` roles).
+  (`OBS` off-by-slash, `SES` sesión, `RED` Redis y límites, `ROL` roles, `DIR` cambio de dirección).
 - En la bitácora, los informes y los mensajes entre sesiones se cita **el ID**, no «H1», «H2» u
   «O1»: esas son numeraciones de un solo informe. El 2026-10-23 una sesión llamó «H2» a la lectura
   de la intranet sin sesión, que el informe del 19-10 llamaba «O1» (hoy OBS-04), mientras que el
@@ -701,18 +701,13 @@ Un solo sitio donde cada hallazgo tiene **un identificador** y un estado. La bit
 | SES-01 | El token llevaba **todas** las claves del rol y crecía con cada sección creada: con ~200, la cookie pasaba los 4 KB y el navegador la descartaba en silencio; la cabecera `Authorization` daba 431 | **Corregido 2026-10-23.** Solo viajan las claves fijas del catálogo (21) y `edita`; ver §S3 | `sesion:permisos`: 605 bytes frente a más de 9 800 solo en permisos |
 | SES-02 | Revocar un permiso no surtía efecto hasta que caducaba el token (8 h): las policies leían `req.user.permisos` del token | **Corregido 2026-10-23.** `requireAuth` pone los permisos desde la base (caché de 30 s con invalidación) | `sesion:permisos`: mismo token, 200 → 403 → 200 |
 | RED-01 | Con Redis caído cada petición esperaba más (0,4 → 6 s) y pasaba por hasta tres limitadores | **Corregido 2026-10-23**: tope por comando, reconexión corta y salto inmediato si la conexión se perdió; ver §4.5 | `limites:redis` (13 comprobaciones) |
+| DIR-01 | Los commits de Mateo (`OLO/dev`, 2026-10-23) bajaron `PATCH /:slug/direccion` y sus dos consultas de `puedePublicar` a `puedeEditar`. Cambiar la dirección reescribe los enlaces de lo **publicado** sin pasar por la aprobación, y un Editor al que se le concede la clave `secciones.cambiar-direccion` podía hacerlo: comprobado, renombró una página con HTTP 200 | **Corregido 2026-10-23**: vuelve `puedePublicar` en las tres rutas y en `cambiar-direccion.usecase.ts`, y la descripción de la clave dice de nuevo «solo opera para quien aprueba». Se conserva lo demás de Mateo (ámbito `intranet` habilitado y su interfaz, que ya solo ofrecía el botón a quien aprueba) | `idor:verificar` (174): un Editor al que se le concede la clave no cambia, consulta ni valida direcciones y el Administrador sí; contra el código de Mateo daba 4 fallos |
 
 **Pendiente de ejecutar (la herramienta ya está):**
 
 | ID | Hallazgo | Qué falta |
 |---|---|---|
 | ROL-01 | El rol `visitante_interno` está retirado desde el 2026-09-15 pero una base antigua puede tener cuentas con él (y un seed anterior al 2026-10-23 lo volvía a crear) | **Correrlo en el servidor real:** `./docker/deploy.sh retirar-rol` (informa sin cambiar nada) y, si hay cuentas, elegir la salida (`docker/guia-bash.md` A6c). Probado en una base desechable con las cuatro salidas y sus rechazos; **no se ha tocado Neon ni el servidor** |
-
-**Por decidir antes de integrar** (viene en `OLO/dev`, aún no está en `dev`):
-
-| ID | Hallazgo | Qué lo cierra |
-|---|---|---|
-| DIR-01 | Los commits de Mateo (`OLO/dev`, 2026-10-23) cambian `PATCH /:slug/direccion` y sus dos consultas de `puedePublicar` a `puedeEditar` (rutas y `cambiar-direccion.usecase.ts`), y habilitan el ámbito `intranet`. Cambiar la dirección **reescribe los enlaces de la versión publicada sin pasar por la aprobación** (su propia descripción de la clave lo decía: «solo opera para quien aprueba») y ahora lo puede hacer un Editor al que se le conceda `secciones.cambiar-direccion`. La clave sigue siendo de concesión explícita, así que no es un hueco abierto a todos los Editores; sí es una **rebaja del control editorial** | Decidir: (a) dejarlo, entendiendo que quien tenga la clave publica sin aprobación; o (b) volver a `puedePublicar`. `idor:verificar` («el Editor no cambia direcciones») sigue en verde con la cuenta Editor de fábrica porque no tiene la clave: no vigila el caso del Editor con la clave |
 
 **Abiertos** (cada uno nombra qué lo cierra; ninguno se puede cerrar solo con código):
 

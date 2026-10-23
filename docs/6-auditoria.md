@@ -5,6 +5,20 @@
 
 ---
 
+## sesión 23-10-2026 (8.ª parte): cambiar la dirección vuelve a ser de quien aprueba (DIR-01)
+
+**Qué pidió el usuario:** la opción (b) de DIR-01: volver a `puedePublicar`, con su prueba.
+
+**Qué se hizo.** `pagina.routes.ts` (las tres rutas de `/:slug/direccion`) y `cambiar-direccion.usecase.ts` vuelven a exigir `puedePublicar`, y la descripción de la clave `secciones.cambiar-direccion` en `catalogo-permisos.ts` vuelve a decir que solo opera quien aprueba. Se conserva lo demás de los commits de Mateo (el ámbito `intranet` habilitado y su interfaz).
+
+**La prueba, y dos intentos que no probaban nada.** `idor:verificar` ya tenía «el Editor no cambia direcciones», pero pasaba porque el Editor de fábrica **no tiene** la clave. El caso que cuenta es el del Editor al que sí se la conceden. Mi primer intento (un rol propio con la clave) también pasaba contra el código de Mateo: el caso de uso compara por **nombre** de rol y un rol con otro nombre se negaba por eso. La prueba buena concede la clave al rol Editor de fábrica durante el bloque (y la retira siempre, también si falla) y ataca una página renombrable creada para el caso. **Contra el código de Mateo daba 4 fallos: el Editor renombró la página con HTTP 200.** Con el arreglo, 403 en el cambio, la consulta y la validación, la página conserva su dirección y el Administrador sí puede.
+
+**Verificación:** `idor:verificar` 174 comprobaciones, 0 fallos (5 más que antes); `propiedad:verificar`, `permisos:verificar`, `sesion:permisos` y `carreras:paginas` (28 escenarios) en verde; `tsc` de la API sin errores. No se corrió el resto de la batería: este cambio solo toca esas tres rutas, el caso de uso y un texto.
+
+**Para Mateo:** conviene avisarle. Su cambio se hizo para que un Editor pudiera cambiar la dirección desde la intranet; con esta vuelta solo podrá quien aprueba (Superadmin y Administrador), que es lo que ya mostraba su propia interfaz. Si el producto quiere que los Editores puedan, hay que decidirlo como una regla editorial (por ejemplo, que el cambio quede como borrador y pase por aprobación), no relajando el permiso.
+
+---
+
 ## sesión 23-10-2026 (7.ª parte): sesión y permisos, Redis, rol retirado, contención de rutas y un registro de hallazgos con ID único
 
 **Qué pidió el usuario:** arreglar u organizar con rigor técnico —escalabilidad, integración, buenas prácticas— lo que las otras sesiones dejaron abierto: el tamaño de la sesión y los permisos, el usuario con el rol retirado (con comando en el deploy), lo que faltaba probar de Redis y los límites, los hallazgos de seguridad sin cerrar; bajar los commits de `dev`, revisar todas las pruebas de ayer y de hoy, y arreglar el choque de nombres «H2».

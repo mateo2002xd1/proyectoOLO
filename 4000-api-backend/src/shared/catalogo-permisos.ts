@@ -164,7 +164,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
     clave: 'secciones.cambiar-direccion',
     etiqueta: 'Cambiar la dirección de las páginas',
     descripcion:
-      'Cambiar la dirección (/nombre) de una página y actualizar los enlaces del portal que apuntaban a la anterior, incluida la versión publicada. Los enlaces de fuera del portal dejan de funcionar. La portada, «Menú y pie» y las páginas propias del portal no se pueden cambiar.',
+      'Cambiar la dirección (/nombre) de una página y actualizar los enlaces del portal que apuntaban a la anterior, incluida la versión publicada y sin pasar por la aprobación. Solo opera para quien aprueba (Superadmin y Administrador). Los enlaces de fuera del portal dejan de funcionar. La portada, «Menú y pie» y las páginas propias del portal no se pueden cambiar.',
     grupo: 'editor',
     esFrontera: true,
   },

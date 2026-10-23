@@ -65,6 +65,7 @@ if (!process.env.FILESYSTEM_DIR) abortar('define FILESYSTEM_DIR a una carpeta te
 const sequelize = require('../../src/config/database').default as import('sequelize').Sequelize;
 const { hashearPassword } = require('../../src/shared/password-policy') as typeof import('../../src/shared/password-policy');
 const { app } = require('../../src/app') as typeof import('../../src/app');
+const { invalidarPermisosDeRol } = require('../../src/shared/permisos-de-rol') as typeof import('../../src/shared/permisos-de-rol');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Redis = require('ioredis');
 
@@ -288,6 +289,7 @@ const limpiar = async () => {
       await ejecutar('DELETE FROM paginas WHERE ambito = :ambito AND slug = :slug', { ambito, slug });
     }
   }
+  await ejecutar("DELETE FROM paginas WHERE ambito = 'sitio' AND slug LIKE 'idor-dir01%'");
   await ejecutar('DELETE FROM bloqueos_edicion');
   if (cargasCreadas.length) await ejecutar('DELETE FROM cargas_datos WHERE id IN (:ids)', { ids: cargasCreadas });
   await ejecutar(`DELETE FROM usuarios WHERE email LIKE :p`, { p: `${PREFIJO_CORREO}%${DOMINIO}` });
@@ -553,6 +555,31 @@ const probarPaginas = async (m: Mundo) => {
   niega('el Editor no restaura', await llamar(m.ed1, 'POST', '/api/paginas/inicio/restaurar', { cuerpo: {}, ambito: 'sitio' }));
   niega('el Editor no elimina secciones', await llamar(m.ed1, 'DELETE', '/api/paginas/inicio', { cuerpo: { confirmacion: 'inicio' }, ambito: 'sitio' }));
   niega('el Editor no cambia direcciones', await llamar(m.ed1, 'PATCH', '/api/paginas/inicio/direccion', { cuerpo: { nuevaDireccion: 'robada', actualizarEnlaces: false }, ambito: 'sitio' }));
+  // DIR-01: cambiar la dirección reescribe los enlaces de lo PUBLICADO sin pasar por la aprobación, así
+  // que es de quien aprueba. La prueba de arriba pasaba porque el Editor de fábrica no tiene la clave
+  // `secciones.cambiar-direccion`; este es el caso que cuenta: un Editor al que SÍ se la concedieron
+  // (lo que el panel de roles permite). Se concede solo durante el bloque y se retira siempre.
+  console.log('\n  [DIR-01: un Editor al que se le concede secciones.cambiar-direccion sigue sin poder]');
+  const [{ id: claveDireccionId }] = await consulta<{ id: string }>("SELECT id FROM permisos WHERE clave = 'secciones.cambiar-direccion'");
+  const existePagina = async (slug: string) =>
+    (await consulta('SELECT 1 FROM paginas WHERE ambito = :a AND slug = :s', { a: 'sitio', s: slug })).length > 0;
+  await ejecutar("INSERT INTO paginas (slug, titulo, ambito) VALUES ('idor-dir01', 'Idor DIR-01', 'sitio') ON CONFLICT DO NOTHING");
+  await ejecutar('INSERT INTO roles_permisos (rol_id, permiso_id) VALUES (:r, :p) ON CONFLICT DO NOTHING', { r: m.rolEditor, p: claveDireccionId });
+  invalidarPermisosDeRol(null);
+  try {
+    niega('el Editor CON la clave no cambia direcciones (PATCH)', await llamar(m.ed1, 'PATCH', '/api/paginas/idor-dir01/direccion', { cuerpo: { nuevaDireccion: 'idor-dir01-robada', actualizarEnlaces: false }, ambito: 'sitio' }));
+    afirmar('y la página conserva su dirección', (await existePagina('idor-dir01')) && !(await existePagina('idor-dir01-robada')));
+    niega('el Editor CON la clave no consulta el uso de la dirección', await llamar(m.ed1, 'GET', '/api/paginas/idor-dir01/direccion', { ambito: 'sitio' }));
+    niega('el Editor CON la clave no valida una dirección nueva', await llamar(m.ed1, 'GET', '/api/paginas/idor-dir01/direccion/validacion?nueva=idor-dir01-robada', { ambito: 'sitio' }));
+    estado(
+      'control: el Administrador (que aprueba) sí cambia la dirección (PATCH)',
+      await llamar(m.admin, 'PATCH', '/api/paginas/idor-dir01/direccion', { cuerpo: { nuevaDireccion: 'idor-dir01-aprobada', actualizarEnlaces: false }, ambito: 'sitio' }),
+      200
+    );
+  } finally {
+    await ejecutar('DELETE FROM roles_permisos WHERE rol_id = :r AND permiso_id = :p', { r: m.rolEditor, p: claveDireccionId });
+    invalidarPermisosDeRol(null);
+  }
   niega('el Editor no depura versiones', await llamar(m.ed1, 'POST', '/api/paginas/respaldos/depurar', { cuerpo: {} }));
   niega('el Editor no ve la cola de revisión', await llamar(m.ed1, 'GET', '/api/paginas/en-revision', { ambito: 'sitio' }));
 

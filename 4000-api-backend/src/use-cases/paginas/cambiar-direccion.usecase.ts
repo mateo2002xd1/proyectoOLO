@@ -352,8 +352,14 @@ export const cambiarDireccion = async (
 ): Promise<DireccionCambiada> => {
   // Antes de abrir nada: lo que no depende de la base.
   exigirAmbitoHabilitado(ambito);
-  if (!paginasPolicies.puedeEditar(actor.rol)) {
-    throw fallo('No tienes permisos para editar páginas.', 403);
+  // Reescribe lo publicado sin pasar por la aprobación (DIR-01): por eso es de quien aprueba y no
+  // de quien edita, aunque tenga la clave `secciones.cambiar-direccion`.
+  if (!paginasPolicies.puedePublicar(actor.rol)) {
+    throw fallo(
+      'Cambiar la dirección reescribe lo publicado sin pasar por la aprobación: ' +
+        'solo quien aprueba puede hacerlo.',
+      403
+    );
   }
 
   const execute = async (transaction: Transaction): Promise<DireccionCambiada> => {

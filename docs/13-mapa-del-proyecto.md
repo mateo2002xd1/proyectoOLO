@@ -389,9 +389,9 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | POST | `/api/paginas` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.crear'), validarCuerpo(crearSeccionSchema) | PaginaController.crearSeccion |
 | GET | `/api/paginas/:slug/eliminable` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar') | PaginaController.analizarEliminacion |
 | DELETE | `/api/paginas/:slug` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar'), validarCuerpo(eliminarSeccionSchema) | PaginaController.eliminarSeccion |
-| GET | `/api/paginas/:slug/direccion` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.cambiar-direccion') | PaginaController.consultarUsoDeDireccion |
-| GET | `/api/paginas/:slug/direccion/validacion` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.cambiar-direccion') | PaginaController.validarNuevaDireccion |
-| PATCH | `/api/paginas/:slug/direccion` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.cambiar-direccion'), validarCuerpo(cambiarDireccionSchema) | PaginaController.cambiarDireccion |
+| GET | `/api/paginas/:slug/direccion` | requireAuth, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion') | PaginaController.consultarUsoDeDireccion |
+| GET | `/api/paginas/:slug/direccion/validacion` | requireAuth, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion') | PaginaController.validarNuevaDireccion |
+| PATCH | `/api/paginas/:slug/direccion` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedePublicar'), requirePermission('secciones.cambiar-direccion'), validarCuerpo(cambiarDireccionSchema) | PaginaController.cambiarDireccion |
 | GET | `/api/paginas/:slug/editable` | requireAuth, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion() | PaginaController.obtenerEditable |
 | POST | `/api/paginas/:slug/borrador` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion(), validarCuerpo(guardarBorradorSchema) | PaginaController.guardarBorrador |
 | POST | `/api/paginas/:slug/subidas` | requireAuth, requierePermisoPagina('puedeEditar'), requierePermisoDeSeccion(), validarCuerpo(registrarSubidaSchema) | PaginaController.registrarSubida |
