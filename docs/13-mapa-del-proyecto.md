@@ -497,13 +497,13 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `docx-preview` | `^0.4.0` | producción |
 | `echarts` | `^6.1.0` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.4.0` | desarrollo |
+| `eslint-config-next` | `16.4.3` | desarrollo |
 | `file-type` | `^22.0.2` | producción |
 | `framer-motion` | `^12.42.2` | producción |
 | `handsontable` | `^18.0.0` | producción |
 | `jose` | `^6.2.3` | producción |
 | `lucide-react` | `^1.39.0` | producción |
-| `next` | `^16.3.0` | producción |
+| `next` | `^16.4.3` | producción |
 | `react` | `19.2.4` | producción |
 | `react-dom` | `19.2.4` | producción |
 | `tailwindcss` | `^4` | desarrollo |

@@ -40,6 +40,9 @@ const URL_DE_LA_API = process.env.BACKEND_URL || 'http://localhost:4000';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  experimental: {
+    agentUpgrade: 'security',
+  },
   // DEBE coincidir con `turbopack.root` de abajo -- Next avisa en build si no
   // coinciden y usa `outputFileTracingRoot`, lo que rompe la resolución de los
   // paquetes @olo/* (verificado con un build real: sin esto Turbopack no encontraba

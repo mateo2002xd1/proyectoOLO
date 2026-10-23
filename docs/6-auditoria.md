@@ -170,6 +170,20 @@ Salen con código 1 mientras haya hallazgos abiertos. Los de fuerza bruta usan 5
 **No probado.** La carga de Excel pasando por la cola de BullMQ (`setGlobalConcurrency(1)` de la 2.ª parte del 22-10 es la defensa real en producción; los hallazgos 8 y los de arriba aplican si dos cargas llegan a correr juntas: dos réplicas, un reintento, el script manual). Carga de **alertas de inversión** y de **tendencia ocupacional** (esta última ya lleva candado de celda). Subida/reemplazo de logo e icono del panel (escribe en disco). Restaurar versión anterior y depurar versiones. Todo a nivel de caso de uso: no se pasó por HTTP ni por el limitador de tasa, que en producción frena parte de las ráfagas de los hallazgos 5 y 6.
 
 **Para ti:** decidir qué hallazgos se corrigen (el 1, 2, 5, 6 y 7 son los que tienen consecuencia de seguridad o de integridad). Los scripts quedan sin commitear.
+## sesión 23-10-2026 (4.ª parte): Next.js 16.4.0 → 16.4.3 en 3000-sitio-web, por un aviso de seguridad publicado
+
+**Qué pidió el usuario:** aceptar la actualización que propone Next (la versión instalada tiene un aviso de seguridad publicado).
+
+**Qué se hizo** (en un worktree aparte, rama `chore/next-16.4.3`, para no tocar los cambios sin commitear de `dev`):
+
+- `3000-sitio-web/package.json` y `package-lock.json`: `next` de `^16.3.0` a `^16.4.3` (instalado: 16.4.3) y `eslint-config-next` de `16.4.0` a `16.4.3` (viaja en la misma versión que Next).
+- `3000-sitio-web/next.config.mjs`: `experimental.agentUpgrade: 'security'` (la opción existe en 16.4.3), que pide el propio asistente de actualización de Next.
+
+**Verificación:** `next --version` → 16.4.3; `npm run build` correcto con Turbopack; `npm run lint` da exactamente lo mismo que antes del cambio (1878 problemas, 28 errores de `no-explicit-any` ya existentes); `npm audit` ya no marca `next`.
+
+**No se verificó:** el sitio en ejecución (no se levantó `next dev`/`start` ni se probó el proxy) ni los PR abiertos (`gh` no está instalado). **La intranet (`3001-intranet`) no se tocó:** si usa la misma versión de Next, tiene el mismo aviso.
+
+**Nota del entorno:** un worktree nuevo no trae `packages/blocks-renderer/node_modules` (está en `.gitignore`) y el build falla con `Cannot find module 'react'` hasta correr `npm ci` en esa carpeta. No tiene que ver con Next.
 
 ---
 
