@@ -5,6 +5,110 @@
 
 ---
 
+## sesión 22-10-2026 (5.ª parte): una sola fuente de configuración, la cola de Redis perezosa, y reevaluación del logger y de las réplicas de la API
+
+**Qué pidió el usuario:** evaluar un criterio técnico sobre el patrón singleton (conexión a la base, logger, configuración: un solo objeto, un solo punto de acceso) contra el proyecto, aplicar lo que valiera la pena y, al terminar, reevaluar el logger único y las réplicas de la API.
+
+**Veredicto sobre el criterio.** La idea es buena y el proyecto ya la cumple sin una sola clase singleton: en Node un módulo se evalúa una vez, así que `export const sequelize`, `export const config` y `getRedis()` ya son instancias únicas. No se adoptó la clase con `getInstance()` ni un contenedor de inyección de dependencias: no dan ninguna garantía que el `import` no dé, y el aviso del criterio sobre las carreras entre hilos no aplica a un proceso de Node con un solo hilo. Lo que sí salió de revisarlo fueron dos fugas de la misma idea.
+
+**Qué cambió.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Config | `config/index.ts` | Dos claves nuevas: `dbSsl` (`DB_SSL !== 'false'`) y `redisUrl` (`REDIS_URL`, vacía si no está; sin valor por defecto a propósito, ver el aviso) |
+| Config | `config/database.ts` | `useSSL` sale de `config.dbSsl` |
+| Redis | `infrastructure/redis/index.ts` | `getRedis()` usa `config.redisUrl \|\| 'redis://localhost:6379'` |
+| Límites | `middlewares/rate-limit.middleware.ts` | `obtenerClienteDeLimites()` usa `config.redisUrl`; vacía sigue significando «almacén en memoria» |
+| Errores | `middlewares/error.middleware.ts` | `config.esProduccion` en lugar de `process.env.NODE_ENV` |
+| Sesión | `controllers/auth.controller.ts` | `secure: config.esProduccion` en la cookie del login |
+| Cola | `infrastructure/redis/queue.ts` | `heavyJobsQueue` (constante, abría Redis al importar) pasa a `getHeavyJobsQueue()` perezoso; el `Worker` pide `getRedis()` donde lo necesita |
+| Cola | `use-cases/{observatorio,observatorio/tendencia-ocupacional,alertas-inversion}/iniciar-carga*.usecase.ts` | Llaman a `getHeavyJobsQueue().add(...)` |
+| Verificación | `scripts/verificaciones/verificar-errores-sin-fuga.ts` | Alterna `config.esProduccion` y ya no `process.env.NODE_ENV` |
+
+> **Trampa para quien venga.** `config.esProduccion` se fija **al cargar el módulo**. Cambiar `process.env.NODE_ENV` durante una prueba ya no mueve el manejador de errores ni la cookie: hay que asignar `config.esProduccion`, como hace ahora `errores:verificar`. Y `redisUrl` **no** lleva valor por defecto porque los dos consumidores quieren cosas distintas sin la variable: la conexión compartida prueba `localhost:6379` y los limitadores cuentan en memoria (ver el comentario en `config/index.ts`).
+
+**Qué se dejó como estaba, y por qué.**
+- **`FILESYSTEM_DIR`** sigue leyéndose en `filesystem.ts` en cada llamada. Su comentario ya explica por qué: los scripts y el servidor cargan el `.env` en momentos distintos, y una constante de `config` podría quedarse con el valor de antes; además `config` aborta si falta `JWT_SECRET`, que un script de archivos no necesita.
+- **Las dos conexiones Redis** (la compartida de la caché y BullMQ, y la de los limitadores) siguen separadas: necesitan `maxRetriesPerRequest` distinto (`null` la primera porque BullMQ lo exige, `1` la segunda para fallar rápido).
+- **Clase singleton, contenedor de inyección y fusión de conexiones:** descartados por lo dicho arriba.
+
+### Reevaluación: logger único
+
+Medido en `src/` sin migraciones: **74 llamadas a `console.*` en 30 archivos** (52 `error`, 15 `log`, 7 `warn`). No hay un problema que un logger arregle ahora:
+
+- El riesgo que justificaría uno —volcar `sql`, valores o trazas— ya está cubierto: las llamadas que imprimen un error pasan por `describirErrorParaLog` (sin `stack` ni objeto entero, regla 95.3 BE), y `errorHandler` es el único punto que registra los fallos HTTP.
+- El despliegue no agrega logs (se leen con `docker logs`), así que un formato estructurado de pino no tendría quién lo consuma. Añadiría una dependencia y tocar 30 archivos sin cambiar ningún comportamiento visible.
+- Los niveles ya se reparten bien a mano: `error` para fallos, `warn` para degradaciones esperables (Redis caído, formato de carga ausente).
+
+**Veredicto: no adoptarlo ahora.** Lo que sí hay es **una fuga concreta**, aparte de la idea del logger: `domain-events/paginas/contenido-publicado.event.ts:50` imprime `resultado.reason` entero, sin `describirErrorParaLog`. Es la única llamada que vuelca un error sin pasar por él. No se tocó (no estaba en lo pedido); es un arreglo de una línea.
+
+**Cuándo sí:** si el despliegue pasa a recoger logs (Loki, un servicio de la institución) o hace falta correlacionar una petición entre la API y los BFF con un `request-id`.
+
+### Reevaluación: réplicas de la API
+
+Hoy hay **un solo contenedor** `api-backend` (sin `replicas` ni `--scale`), así que nada de esto es un fallo vigente. Revisado qué se rompería con N réplicas:
+
+| Pieza | ¿Aguanta N réplicas? | Por qué |
+|---|---|---|
+| Sesión | Sí | JWT en cookie, sin estado en el proceso |
+| Candados de edición | Sí | Viven en la base (`bloqueo-edicion.repository.ts`) |
+| Caché de respuestas y su invalidación | Sí | Redis compartido; `borrarClavesPorPatron` actúa sobre él |
+| Límites de tasa | Sí en producción | Redis (`REDIS_URL` siempre está); sin Redis cada réplica contaría aparte |
+| Pool de la base | Sí | `max: 5` por réplica; el Postgres del compose (`postgres:18-alpine`) admite 100 por defecto, así que 5×N sobra. Con Neon hay que mirar el tope de conexiones **del plan** (y usar el endpoint con pooler), y `min: 1` mantiene N conexiones abiertas |
+| Archivos subidos | Solo en el mismo equipo | Volumen `olo-app_filesystem` local; varias réplicas del mismo host lo comparten, varios equipos no |
+| Caché de `fuentes-futuras` | Aceptable | Variable de módulo por réplica, invalidada por `mtime` del archivo |
+| **Cola de trabajos pesados** | **No** | Ver abajo |
+| Cierre ordenado | **No** | Ver abajo |
+| nginx | A medias | `upstream api_backend { server api-backend:4000; }` resuelve el nombre al arrancar: tras `--scale` hay que reiniciar nginx |
+
+> **El problema real: el orden de las cargas de Excel se garantiza con «un solo worker».** `setupWorker()` se llama en `server.ts` dentro de **cada** proceso de la API, y el `Worker` no fija `concurrency` (queda en 1 por proceso). Con una réplica, las cargas hacen fila. Con dos, corren **a la vez**, y `iniciar-carga.usecase.ts` lo dice expresamente: sin la cola «dos cargas simultáneas no se ponen en fila —cada una vacía y recarga la tabla, así que se pisarían—». La corrección más barata es de una línea en el arranque, antes de levantar réplicas: `await getHeavyJobsQueue().setGlobalConcurrency(1)` (BullMQ 5.80.5 lo trae y se comprobó que existe), que limita a 1 los trabajos en curso en **toda** la cola sea cual sea el número de workers. La alternativa es un contenedor aparte que sea el único en llamar a `setupWorker()`.
+
+> **Segundo hallazgo, ya presente con una sola réplica.** `server.ts` al recibir SIGTERM cierra el servidor HTTP y los limitadores, pero **no** el `Worker`, la cola ni el pool de Sequelize. Si el cierre llega a mitad de una carga, BullMQ la da por «estancada» y la **vuelve a ejecutar** otra instancia (o la misma al reiniciar). Para la de «alertas de inversión», que agrega proyecto por proyecto en vez de vaciar y recargar, eso podría duplicar filas. Se arregla guardando el `Worker` que devuelve `setupWorker()` y llamando a `await worker.close()` en `apagar()`.
+
+**Veredicto: no hacer nada para las réplicas mientras haya una sola, pero esos dos puntos son requisitos previos para tener más de una**; el segundo conviene arreglarlo ya porque puede ocurrir en cada despliegue.
+
+**Verificación (lo que de verdad se ejecutó):**
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` en `4000-api-backend` | Sin errores |
+| `npm run errores:verificar` | «Todo correcto» (manejador en producción y en desarrollo, mensajes de carga, login y recuperación) |
+| `npm run sesion:verificar` | «Todo correcto» |
+| Importar `queue.ts` y `redis/index.ts` apuntando a un `REDIS_URL` inexistente, sin pedir nada | Ninguna conexión ni error de Redis en 800 ms; después `getHeavyJobsQueue()` devuelve la misma cola dos veces, `getRedis()` la misma conexión, y ambas se cierran limpias |
+| Finales de línea de los 12 archivos tocados | Sin mezcla (11 CRLF, `alertas-inversion/iniciar-carga.usecase.ts` LF como estaba) |
+
+**No** probado: una carga de Excel de punta a punta con Redis real (no estaba levantado), ni el arranque completo de la API contra la base; el cambio de `server.ts` no se hizo.
+
+**Pendiente al cierre:**
+- `setGlobalConcurrency(1)` y `worker.close()` en el apagado (arriba), antes de cualquier réplica; lo segundo, ya.
+- `contenido-publicado.event.ts:50`: pasar `resultado.reason` por `describirErrorParaLog`.
+- Reiniciar la API: ts-node no recarga solo y la configuración se lee al cargar.
+
+---
+
+## sesión 23-10-2026: pruebas de inyección SQL, Content-Type y confusión de tipos
+
+**Qué pidió el usuario:** probar la API contra inyección SQL, forzado del `Content-Type` de las cabeceras y confusión de tipos (*type confusion*). Sin informe en `auditorias/` pedido esta vez; se deja constancia aquí.
+
+**Cómo se probó.** Revisión de todo punto donde la API arma SQL (`sequelize.query`, `literal`, `sequelize.where`) y, aparte, tráfico real contra una copia de la API corriendo en el puerto 4100 con Postgres 18 y Redis desechables (migraciones 001-047 aplicadas, sin tocar Neon ni el dev del usuario): login real, payloads SQL clásicos en los filtros públicos, cabeceras `Content-Type` cambiadas o ausentes, cuerpos con tipos equivocados (objetos y arreglos donde se esperaba texto), y una subida de SVG con `<script>` disfrazada de PNG.
+
+**Qué se encontró.**
+
+| Punto | Resultado |
+|---|---|
+| Inyección SQL | **Ninguna encontrada.** Todo `sequelize.query` usa `:replacements`; lo que se arma con texto (el `WHERE` de tendencia ocupacional, `MODULO_CARGA`, `SQL_IDS_GUARDADOS_AUTOMATICOS`) son condiciones o constantes del código, nunca el valor de un campo. Probado en vivo: `q`, `departamento` y `periodo` del buscador de tendencia ocupacional con comillas, `UNION SELECT` y `DROP TABLE` — o Zod rechaza con 400, o el valor se busca como texto literal. La tabla `usuarios` sigue intacta tras el intento de `DROP` |
+| Confusión de `Content-Type` en subidas | **Ninguna encontrada.** `@olo/upload-policy` detecta el tipo real por *magic bytes* (`file-type`) y descarta lo que declara el cliente; un SVG con `<script>`/`onload` disfrazado de `image/png` se rechazó (SVG está excluido a propósito, con el motivo escrito en el código: ejecutaría JavaScript servido inline). Un PNG real sí pasó (control positivo) |
+| `Content-Type` fuera de `application/json` en un cuerpo JSON | **Hallazgo real:** `POST` y `DELETE /api/role-permissions` leen `req.body` sin pasar por `validarCuerpo` (Zod) — el único router de escritura del proyecto que no lo hace. Con `Content-Type: text/plain`, sin cabecera, o con `application/xml`, `express.json()` no parsea el cuerpo y `const { role_id, permission_id } = req.body` revienta: `500` con el mensaje real del `TypeError` **en desarrollo** (`NODE_ENV !== 'production'`, a propósito, ver `error.middleware.ts`); confirmado por código que en producción sale enmascarado (`MENSAJE_ERROR_INTERNO`, sin `code`) |
+| Confusión de tipos | **Mismo endpoint.** `role_id`/`permission_id` como objeto (`{"toString":"x"}`) o arreglo (`["a","b"]`) también revientan en `500`: Sequelize/`pg` los rechaza al intentar usarlos como parámetro (`Cannot convert object to primitive value`, `Argument passed to findByPk is invalid`) — no es inyección, es un `TypeError` sin atrapar. En el resto de la API, cada `z.string()`/`z.enum()` valida el tipo real antes de llegar a Sequelize y rechaza con 400 limpio |
+
+**Por qué no es más grave:** el endpoint exige sesión y los permisos `puedeAdministrarSeguridad` + `usuarios.permisos`; no es alcanzable por una cuenta sin privilegios ni sin sesión. El golpe es una petición mal formada que debería dar 400 y da 500, y en desarrollo enseña un mensaje de más (dentro de lo que el propio `error.middleware.ts` documenta como intencional para depurar).
+
+**Para corregir (no aplicado — no se pidió):** envolver `role_id`/`permission_id` en un esquema Zod (`z.object({ role_id: z.string().uuid(), permission_id: z.string().uuid() }).strict()`) con `validarCuerpo` en `role-permission.routes.ts`, igual que el resto de rutas de escritura.
+
+---
+
+---
+
 ## sesión 22-10-2026 (4.ª parte): lo que quedaba abierto del XSS
 
 **Qué pidió el usuario:** resolver lo que la parte anterior dejó sin cerrar: `script-src` sin nonce, YouTube y Power BI dentro del `sandbox`, pdf.js (cdnjs, sin integridad), y `class`/`id` del HTML editorial (XSS-09). Detalle en [`auditorias/2026-10-22-xss-almacenado-y-defensas.md`](../auditorias/2026-10-22-xss-almacenado-y-defensas.md) (sección «Seguimiento»).
