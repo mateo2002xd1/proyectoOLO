@@ -3,6 +3,8 @@ import { RolePermissionController } from '../controllers/role-permissions.contro
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoUsuario } from '../middlewares/permisos.middleware';
 import { requirePermission } from '../middlewares/require-permission.middleware';
+import { validarCuerpo } from '../middlewares/validar.middleware';
+import { asignarPermisoSchema } from '../validators/usuarios.validators';
 
 const router = Router();
 
@@ -100,7 +102,7 @@ router.get('/role/:roleId', RolePermissionController.getByRole);
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
  */
-router.post('/', RolePermissionController.assign);
+router.post('/', validarCuerpo(asignarPermisoSchema), RolePermissionController.assign);
 
 /**
  * @openapi
@@ -128,6 +130,6 @@ router.post('/', RolePermissionController.assign);
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
  */
-router.delete('/', RolePermissionController.revoke);
+router.delete('/', validarCuerpo(asignarPermisoSchema), RolePermissionController.revoke);
 
 export default router;

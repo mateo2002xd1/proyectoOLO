@@ -119,3 +119,20 @@ export const actualizarRolSchema = z
   .refine((datos) => Object.keys(datos).length > 0, {
     message: 'No se envió ningún campo para actualizar',
   });
+
+/**
+ * `POST` y `DELETE /api/role-permissions`: el par rol + permiso a conceder o revocar.
+ *
+ * Hasta el 2026-10-23 el controlador desestructuraba `req.body` directo, sin pasar por
+ * aquí: con un `Content-Type` que `express.json()` no parsea (`text/plain`, sin cabecera)
+ * `req.body` queda `undefined` y la desestructuración revienta en `500`; con `role_id` u
+ * `permission_id` como objeto o arreglo, Sequelize revienta igual al intentar usarlos como
+ * parámetro. Ninguno de los dos casos es una inyección —Sequelize nunca llega a construir
+ * SQL con ese valor—, pero sí un error sin atrapar donde debería haber un 400 limpio.
+ */
+export const asignarPermisoSchema = z
+  .object({
+    role_id: z.string().uuid('role_id debe ser un UUID.'),
+    permission_id: z.string().uuid('permission_id debe ser un UUID.'),
+  })
+  .strict();

@@ -425,8 +425,8 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getAll |
 | GET | `/api/role-permissions/role/:roleId` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getByRole |
-| POST | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.assign |
-| DELETE | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.revoke |
+| POST | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos'), validarCuerpo(asignarPermisoSchema) | RolePermissionController.assign |
+| DELETE | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos'), validarCuerpo(asignarPermisoSchema) | RolePermissionController.revoke |
 
 ### `routes/role.routes.ts`
 

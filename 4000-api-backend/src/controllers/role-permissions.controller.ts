@@ -62,11 +62,7 @@ export const RolePermissionController = {
   /** Quita un permiso a un rol y lo registra en la bitácora. */
   async revoke(req: Request, res: Response, next: NextFunction) {
     try {
-      const role_id = req.body?.role_id || req.query?.role_id;
-      const permission_id = req.body?.permission_id || req.query?.permission_id;
-      if (!role_id || !permission_id)
-        return res.status(400).json({ error: 'role_id y permission_id son requeridos' });
-
+      const { role_id, permission_id } = req.body;
       const result = await revokePermission(role_id, permission_id);
       await registrarPermisoDeRol(req, role_id, 'permiso_revocado', result.permiso);
       res.json(result);
