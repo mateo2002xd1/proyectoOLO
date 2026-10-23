@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../shared/errores';
 import { Request, Response, NextFunction } from 'express';
 import { guardarBorrador } from '../use-cases/paginas/guardar-borrador.usecase';
 import { enviarARevision, ErrorValidacionAccesibilidad } from '../use-cases/paginas/enviar-a-revision.usecase';
@@ -645,7 +646,7 @@ export const PaginaController = {
           slug: req.params.slug as string,
           ambito: ambitoExigidoDe(req),
           usuarioId: req.user?.id || '',
-        }).catch((err) => console.error('[Limpieza Eliminar Versión] Error limpiando subidas pendientes:', err));
+        }).catch((err) => console.error('[Limpieza Eliminar Versión] Error limpiando subidas pendientes:', describirErrorParaLog(err)));
       }
 
       res.json(result);

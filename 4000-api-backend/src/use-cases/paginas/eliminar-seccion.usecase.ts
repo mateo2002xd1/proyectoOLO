@@ -36,6 +36,7 @@
  * tienen ese colchón y su ruta simplemente deja de servir contenido hasta que alguien la
  * vuelva a crear.
  */
+import { describirErrorParaLog } from '../../shared/errores';
 import sequelize from '../../config/database';
 import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
@@ -125,7 +126,7 @@ async function limpiarArchivosDeSeccionEliminada(paginaId: string, ambito: Ambit
     eliminarDirectorioBackupCompleto(paginaId, ambito);
     await borrarArchivosHuerfanos(rutas, ambito);
   } catch (error) {
-    console.error(`[paginas] No se pudieron limpiar los archivos de la página ${paginaId}:`, error);
+    console.error(`[paginas] No se pudieron limpiar los archivos de la página ${paginaId}:`, describirErrorParaLog(error));
   }
 }
 

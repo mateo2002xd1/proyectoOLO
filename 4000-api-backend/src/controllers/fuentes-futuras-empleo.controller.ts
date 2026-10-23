@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../shared/errores';
 import { Request, Response } from 'express';
 import { consultarFuentesFuturasActual } from '../use-cases/observatorio/fuentes-futuras/consultar-fuentes-futuras-actual.usecase';
 import {
@@ -23,7 +24,7 @@ export const FuentesFuturasEmpleoController = {
     try {
       res.json(await consultarFuentesFuturasActual());
     } catch (error) {
-      console.error('[fuentes-futuras-empleo] Error al consultar los datos actuales:', error);
+      console.error('[fuentes-futuras-empleo] Error al consultar los datos actuales:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar los datos de fuentes futuras de empleo.' });
     }
   },
@@ -52,7 +53,7 @@ export const FuentesFuturasEmpleoController = {
       if (error instanceof ErrorDeSubida || error instanceof ErrorDeExcelFuentesFuturas) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[fuentes-futuras-empleo] Error al subir el archivo:', error);
+      console.error('[fuentes-futuras-empleo] Error al subir el archivo:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al procesar el archivo.' });
     }
   },
@@ -61,7 +62,7 @@ export const FuentesFuturasEmpleoController = {
     try {
       res.json(await listarCargasFuentesFuturas());
     } catch (error) {
-      console.error('[fuentes-futuras-empleo] Error al listar cargas:', error);
+      console.error('[fuentes-futuras-empleo] Error al listar cargas:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al listar las cargas.' });
     }
   },
@@ -74,7 +75,7 @@ export const FuentesFuturasEmpleoController = {
       if (error instanceof ErrorAlEliminarCarga) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[fuentes-futuras-empleo] Error al eliminar la carga:', error);
+      console.error('[fuentes-futuras-empleo] Error al eliminar la carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al eliminar la carga.' });
     }
   },

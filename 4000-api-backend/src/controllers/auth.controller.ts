@@ -78,7 +78,9 @@ export const AuthController = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        // Una jornada, como el JWT (`JWT_EXPIRES_IN`, 8h): con 7 días el navegador seguía
+        // mandando un token ya caducado.
+        maxAge: 8 * 60 * 60 * 1000,
       });
 
       const mustChangePassword = user?.must_change_password === true;

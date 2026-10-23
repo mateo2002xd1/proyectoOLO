@@ -9,6 +9,7 @@
  * la única puerta para borrar archivos de páginas. Qué rutas nombra un contenido lo dice
  * `shared/rutas-uploads-en-contenido.ts`.
  */
+import { describirErrorParaLog } from '../../shared/errores';
 import fs from 'fs';
 import path from 'path';
 import type { Ambito } from '../../shared/ambito';
@@ -393,7 +394,7 @@ export async function borrarDeUploads(rutas: Iterable<string>, ambito: Ambito): 
       await fs.promises.rm(rutaFisica, { force: true });
       borradas.push(ruta);
     } catch (error) {
-      console.error(`[storage] No se pudo borrar ${rutaFisica}:`, error);
+      console.error(`[storage] No se pudo borrar ${rutaFisica}:`, describirErrorParaLog(error));
     }
   }
 
@@ -412,7 +413,7 @@ export function eliminarDirectorioBackupCompleto(paginaId: string, ambito: Ambit
     try {
       fs.rmSync(dirBackup, { recursive: true, force: true });
     } catch (error) {
-      console.error(`[Storage] No se pudo eliminar el directorio de backup de la página ${paginaId}:`, error);
+      console.error(`[Storage] No se pudo eliminar el directorio de backup de la página ${paginaId}:`, describirErrorParaLog(error));
     }
   }
 }

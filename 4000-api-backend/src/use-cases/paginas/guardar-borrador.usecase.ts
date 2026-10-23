@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
@@ -97,7 +98,7 @@ export const guardarBorrador = async (
       slug,
       ambito,
       usuarioId: uuidONulo(userId) || userId,
-    }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', err));
+    }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', describirErrorParaLog(err)));
 
   if (tx) tx.afterCommit(() => { void limpiar(); });
   else void limpiar();

@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import { Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import { PaginaRepository } from '../../repositories/pagina.repository';
@@ -84,7 +85,7 @@ export const enviarARevision = async (
     slug,
     ambito,
     usuarioId: autorId || userId,
-  }).catch((err) => console.error('[Limpieza Enviar Revisión] Error limpiando subidas pendientes:', err));
+  }).catch((err) => console.error('[Limpieza Enviar Revisión] Error limpiando subidas pendientes:', describirErrorParaLog(err)));
 
   return {
     pagina,

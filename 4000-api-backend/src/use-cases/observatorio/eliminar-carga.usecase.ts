@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import fs from 'fs/promises';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
 import { resolverRutaDeCarga } from '../../infrastructure/storage/filesystem';
@@ -67,7 +68,7 @@ export async function eliminarArchivoSiQuedaSuelto(archivoId: string, cargaId: s
 
   const rutaAbsoluta = resolverRutaDeCarga(archivo.get('rutaRelativa') as string);
   await fs.unlink(rutaAbsoluta).catch((error) => {
-    console.error(`[observatorio] No se pudo borrar el archivo físico de la carga ${cargaId}:`, error);
+    console.error(`[observatorio] No se pudo borrar el archivo físico de la carga ${cargaId}:`, describirErrorParaLog(error));
   });
   return true;
 }

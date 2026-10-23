@@ -7,9 +7,10 @@ import './infrastructure/db/models';
 import { listarPendientes } from './infrastructure/db/migrations';
 import { setupWorker } from './infrastructure/redis/queue';
 import { cerrarClienteDeLimites } from './middlewares/rate-limit.middleware';
+import { describirErrorParaLog } from './shared/errores';
 
 process.on('unhandledRejection', (reason) => {
-  console.error('UNHANDLED REJECTION — crashing:', reason);
+  console.error('UNHANDLED REJECTION — crashing:', describirErrorParaLog(reason));
   process.exit(1);
 });
 
@@ -58,7 +59,7 @@ const start = async () => {
     process.on('SIGTERM', () => void apagar('SIGTERM'));
     process.on('SIGINT', () => void apagar('SIGINT'));
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('Failed to start server:', describirErrorParaLog(error));
     process.exit(1);
   }
 };

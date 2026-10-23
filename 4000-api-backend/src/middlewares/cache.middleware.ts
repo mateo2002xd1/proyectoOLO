@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../shared/errores';
 import { Request, Response, NextFunction } from 'express';
 import { getRedis, redisEstaListo } from '../infrastructure/redis';
 
@@ -99,7 +100,7 @@ export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions 
         // Only cache 2xx responses
         if (res.statusCode >= 200 && res.statusCode < 300 && isRedisReady()) {
           redis.setex(cacheKey, ttlSeconds, JSON.stringify(body)).catch((err) => {
-            console.error('Error setting cache:', err);
+            console.error('Error setting cache:', describirErrorParaLog(err));
           });
         }
         return originalJson(body);
@@ -108,7 +109,7 @@ export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions 
       res.setHeader('X-Cache', 'MISS');
       next();
     } catch (err) {
-      console.error('Redis cache error:', err);
+      console.error('Redis cache error:', describirErrorParaLog(err));
       next();
     }
   };

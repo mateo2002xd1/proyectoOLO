@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
@@ -159,7 +160,7 @@ export async function actualizarIdentidadPanel(
 const borrarArchivo = async (nombre: string | null | undefined) => {
   if (!nombre) return;
   await fs.unlink(path.join(directorioDeIdentidadDelPanel(), nombre)).catch((error: NodeJS.ErrnoException) => {
-    if (error.code !== 'ENOENT') console.error(`[Identidad del panel] No se pudo borrar ${nombre}:`, error);
+    if (error.code !== 'ENOENT') console.error(`[Identidad del panel] No se pudo borrar ${nombre}:`, describirErrorParaLog(error));
   });
 };
 

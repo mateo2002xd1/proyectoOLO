@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../../shared/errores';
 import fs from 'fs';
 import path from 'path';
 import { FuentesFuturasEmpleoRepository as Repo } from '../../../repositories/fuentes-futuras-empleo.repository';
@@ -71,7 +72,7 @@ export async function consultarFuentesFuturasActual(): Promise<RegistroFuenteFut
     cache = { ruta, mtime: mtimeMs, registros };
     return registros;
   } catch (error) {
-    console.warn('[fuentes-futuras-empleo] Error al leer el archivo Excel:', error);
+    console.warn('[fuentes-futuras-empleo] Error al leer el archivo Excel:', describirErrorParaLog(error));
     return [];
   }
 }

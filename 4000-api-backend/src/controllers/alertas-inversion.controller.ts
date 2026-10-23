@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../shared/errores';
 import { Request, Response } from 'express';
 import { iniciarCargaAlertasInversion, ErrorDeSubida } from '../use-cases/alertas-inversion/iniciar-carga.usecase';
 import { listarCargasAlertasInversion, obtenerCargaAlertasInversion } from '../use-cases/alertas-inversion/listar-cargas.usecase';
@@ -25,14 +26,14 @@ async function enviarFormato(res: Response, formato: string) {
     res.set('Cache-Control', 'private, no-cache');
     res.download(ruta, nombreDescarga, { cacheControl: false }, (error) => {
       if (!error) return;
-      console.error(`[alertas-inversion] Error al enviar el formato ${formato}:`, error);
+      console.error(`[alertas-inversion] Error al enviar el formato ${formato}:`, describirErrorParaLog(error));
       if (!res.headersSent) res.status(500).json({ error: 'Error al descargar el formato.' });
     });
   } catch (error) {
     if (error instanceof ErrorDeFormato) {
       return res.status(error.status).json({ error: error.message });
     }
-    console.error(`[alertas-inversion] Error al descargar el formato ${formato}:`, error);
+    console.error(`[alertas-inversion] Error al descargar el formato ${formato}:`, describirErrorParaLog(error));
     res.status(500).json({ error: 'Error al descargar el formato.' });
   }
 }
@@ -57,7 +58,7 @@ export const AlertasInversionController = {
       if (error instanceof ErrorDeSubida) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[alertas-inversion] Error al subir el archivo:', error);
+      console.error('[alertas-inversion] Error al subir el archivo:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al procesar el archivo.' });
     }
   },
@@ -66,7 +67,7 @@ export const AlertasInversionController = {
     try {
       res.json(await listarCargasAlertasInversion());
     } catch (error) {
-      console.error('[alertas-inversion] Error al listar cargas:', error);
+      console.error('[alertas-inversion] Error al listar cargas:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al listar las cargas.' });
     }
   },
@@ -77,7 +78,7 @@ export const AlertasInversionController = {
       if (!carga) return res.status(404).json({ error: 'Carga no encontrada.' });
       res.json(carga);
     } catch (error) {
-      console.error('[alertas-inversion] Error al consultar la carga:', error);
+      console.error('[alertas-inversion] Error al consultar la carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar la carga.' });
     }
   },
@@ -90,7 +91,7 @@ export const AlertasInversionController = {
       if (error instanceof ErrorAlEliminarCarga) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[alertas-inversion] Error al eliminar la carga:', error);
+      console.error('[alertas-inversion] Error al eliminar la carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al eliminar la carga.' });
     }
   },
@@ -110,7 +111,7 @@ export const AlertasInversionController = {
       if (error instanceof ErrorDeAltaManual) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[alertas-inversion] Error al crear el proyecto:', error);
+      console.error('[alertas-inversion] Error al crear el proyecto:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al crear el proyecto.' });
     }
   },
@@ -127,7 +128,7 @@ export const AlertasInversionController = {
       if (error instanceof ErrorAlActualizarSectores) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[alertas-inversion] Error al actualizar los sectores:', error);
+      console.error('[alertas-inversion] Error al actualizar los sectores:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al actualizar los sectores.' });
     }
   },
@@ -143,7 +144,7 @@ export const AlertasInversionController = {
       });
       res.json(proyectos);
     } catch (error) {
-      console.error('[alertas-inversion] Error al listar los proyectos:', error);
+      console.error('[alertas-inversion] Error al listar los proyectos:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al listar los proyectos.' });
     }
   },
@@ -152,7 +153,7 @@ export const AlertasInversionController = {
     try {
       res.json({ eliminados: await eliminarTodosLosProyectosInversion() });
     } catch (error) {
-      console.error('[alertas-inversion] Error al limpiar los proyectos:', error);
+      console.error('[alertas-inversion] Error al limpiar los proyectos:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al limpiar los proyectos.' });
     }
   },
@@ -165,7 +166,7 @@ export const AlertasInversionController = {
       if (error instanceof ErrorAlEliminarProyecto) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[alertas-inversion] Error al eliminar el proyecto:', error);
+      console.error('[alertas-inversion] Error al eliminar el proyecto:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al eliminar el proyecto.' });
     }
   },
@@ -183,7 +184,7 @@ export const AlertasInversionController = {
       });
       res.json(datos);
     } catch (error) {
-      console.error('[alertas-inversion] Error al consultar el gráfico:', error);
+      console.error('[alertas-inversion] Error al consultar el gráfico:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar el gráfico.' });
     }
   },
@@ -204,7 +205,7 @@ export const AlertasInversionController = {
       });
       res.json(datos);
     } catch (error) {
-      console.error('[alertas-inversion] Error al consultar el listado:', error);
+      console.error('[alertas-inversion] Error al consultar el listado:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar el listado.' });
     }
   },
@@ -214,7 +215,7 @@ export const AlertasInversionController = {
     try {
       res.json(await consultarOpcionesAlertasInversion());
     } catch (error) {
-      console.error('[alertas-inversion] Error al consultar las opciones:', error);
+      console.error('[alertas-inversion] Error al consultar las opciones:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar las opciones.' });
     }
   },

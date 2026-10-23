@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import { Queue, Worker, Job } from 'bullmq';
 import { crearLoggerDeErrorConThrottle, getRedis } from './index';
 import { procesarCargaObservatorio } from '../../use-cases/observatorio/procesar-carga.usecase';
@@ -65,7 +66,7 @@ export const setupWorker = () => {
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`El trabajo ${job?.id} ha fallado:`, err);
+    console.error(`El trabajo ${job?.id} ha fallado:`, describirErrorParaLog(err));
   });
 
   worker.on('error', crearLoggerDeErrorConThrottle('Worker Error'));

@@ -1,3 +1,4 @@
+import { describirErrorParaLog, mensajeSeguroDeCarga } from '../../shared/errores';
 import fs from 'fs/promises';
 import { importarAlertasInversionExcel, ProgresoImportacionAlertas } from './importar-excel.usecase';
 import { AlertasInversionRepository as Repo } from '../../repositories/alertas-inversion.repository';
@@ -22,7 +23,7 @@ export async function procesarCargaAlertasInversion(
     ultimaEscritura = ahora;
 
     Repo.actualizarProgreso(cargaId, progreso.porcentaje, progreso.filasProcesadas, progreso.filasTotales).catch(
-      (error) => console.error(`[alertas-inversion] No se pudo registrar el progreso de la carga ${cargaId}:`, error)
+      (error) => console.error(`[alertas-inversion] No se pudo registrar el progreso de la carga ${cargaId}:`, describirErrorParaLog(error))
     );
   };
 
@@ -38,12 +39,8 @@ export async function procesarCargaAlertasInversion(
 
     await Repo.marcarCargaCompletada(cargaId, resultado.filasCargadas, `${partes.join(', ')}.`);
   } catch (error) {
-    const mensaje = describirError(error);
-    console.error(`[alertas-inversion] Carga ${cargaId} falló:`, mensaje);
-    await Repo.marcarCargaError(cargaId, mensaje);
+    // Detalle completo al log; al panel solo lo que `mensajeSeguroDeCarga` deja pasar.
+    console.error(`[alertas-inversion] Carga ${cargaId} falló: ${describirErrorParaLog(error)}`);
+    await Repo.marcarCargaError(cargaId, mensajeSeguroDeCarga(error));
   }
-}
-
-function describirError(error: unknown): string {
-  return error instanceof Error ? error.message : 'Error desconocido al procesar el archivo.';
 }

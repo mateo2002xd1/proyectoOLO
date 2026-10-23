@@ -134,6 +134,12 @@ app.use('/api/observatorio', observatorioRoutes);
 app.use('/api/alertas-inversion', alertasInversionRoutes);
 app.use('/api/configuracion', configuracionRoutes);
 
+// Lo que ninguna ruta atendió. Sin esto Express responde con su HTML de fábrica
+// («Cannot GET /x»), que delata el framework y rompe el formato `{ error }` del resto.
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
 app.use(errorHandler);
 
 export { app };

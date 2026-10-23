@@ -1,3 +1,4 @@
+import { describirErrorParaLog, mensajeSeguroDeCarga } from '../../../shared/errores';
 import fs from 'fs/promises';
 import { ObservatorioRepository } from '../../../repositories/observatorio.repository';
 import { TendenciaOcupacionalRepository as Repo } from '../../../repositories/tendencia-ocupacional.repository';
@@ -26,7 +27,7 @@ export async function procesarCargaTendencia(cargaId: string, rutaAbsoluta: stri
       progreso.filasProcesadas,
       progreso.filasTotales
     ).catch((error) =>
-      console.error(`[tendencia-ocupacional] No se pudo registrar el progreso de la carga ${cargaId}:`, error)
+      console.error(`[tendencia-ocupacional] No se pudo registrar el progreso de la carga ${cargaId}:`, describirErrorParaLog(error))
     );
   };
 
@@ -46,6 +47,9 @@ export async function procesarCargaTendencia(cargaId: string, rutaAbsoluta: stri
       reportarProgreso
     );
   } catch (error) {
+    // `cargas_datos.mensaje` y la muestra del reporte se enseñan en el panel: ahí solo va lo que
+    // `mensajeSeguroDeCarga` deja pasar. El detalle completo queda en el log de más abajo.
+    const mensaje = mensajeSeguroDeCarga(error);
     const reporte: ReporteCarga =
       error instanceof ErrorDeCargaTendencia
         ? error.reporte
@@ -53,18 +57,17 @@ export async function procesarCargaTendencia(cargaId: string, rutaAbsoluta: stri
             errores: [
               hallazgoReporte('LECTURA', {
                 total: 1,
-                muestra: [{ mensaje: error instanceof Error ? error.message : 'Error desconocido al procesar el archivo.' }],
+                muestra: [{ mensaje }],
               }),
             ],
             advertencias: [],
           };
-    const mensaje = error instanceof Error ? error.message : 'Error desconocido al procesar el archivo.';
 
     if (!(error instanceof ErrorDeCargaTendencia)) {
-      console.error(`[tendencia-ocupacional] Carga ${cargaId} falló:`, error);
+      console.error(`[tendencia-ocupacional] Carga ${cargaId} falló:`, describirErrorParaLog(error));
     }
     await Repo.cerrarCargaFallida(cargaId, mensaje, reporte).catch((errorAlCerrar) =>
-      console.error(`[tendencia-ocupacional] No se pudo registrar el fallo de la carga ${cargaId}:`, errorAlCerrar)
+      console.error(`[tendencia-ocupacional] No se pudo registrar el fallo de la carga ${cargaId}:`, describirErrorParaLog(errorAlCerrar))
     );
   }
 }

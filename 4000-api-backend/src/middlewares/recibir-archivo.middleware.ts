@@ -26,6 +26,11 @@ export function recibirArchivo(limiteBytes: number = LIMITE_ABSOLUTO_BYTES): Req
       if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({ error: 'El archivo supera el tamaño máximo permitido.' });
       }
+      // Cualquier otro error de multer (campo inesperado, demasiados archivos…) es de la
+      // petición, no del servidor: sin esto salía como un 500 con el `code` de multer.
+      if (error instanceof multer.MulterError) {
+        return res.status(400).json({ error: 'La solicitud de subida de archivo no es válida.' });
+      }
       next(error);
     });
   };

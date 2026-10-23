@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../shared/errores';
 import { Request, Response } from 'express';
 import { iniciarCargaObservatorio, ErrorDeSubida } from '../use-cases/observatorio/iniciar-carga.usecase';
 import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases/observatorio/listar-cargas.usecase';
@@ -28,7 +29,7 @@ export const ObservatorioController = {
       if (error instanceof ErrorDeSubida) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[observatorio] Error al subir el archivo:', error);
+      console.error('[observatorio] Error al subir el archivo:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al procesar el archivo.' });
     }
   },
@@ -38,7 +39,7 @@ export const ObservatorioController = {
     try {
       res.json(await listarCargasObservatorio());
     } catch (error) {
-      console.error('[observatorio] Error al listar cargas:', error);
+      console.error('[observatorio] Error al listar cargas:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al listar las cargas.' });
     }
   },
@@ -50,7 +51,7 @@ export const ObservatorioController = {
       if (!carga) return res.status(404).json({ error: 'Carga no encontrada.' });
       res.json(carga);
     } catch (error) {
-      console.error('[observatorio] Error al consultar la carga:', error);
+      console.error('[observatorio] Error al consultar la carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar la carga.' });
     }
   },
@@ -64,7 +65,7 @@ export const ObservatorioController = {
       if (error instanceof ErrorAlEliminarCarga) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[observatorio] Error al eliminar la carga:', error);
+      console.error('[observatorio] Error al eliminar la carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al eliminar la carga.' });
     }
   },
@@ -77,14 +78,14 @@ export const ObservatorioController = {
       res.set('Cache-Control', 'private, no-cache');
       res.download(ruta, nombreDescarga, { cacheControl: false }, (error) => {
         if (!error) return;
-        console.error('[observatorio] Error al enviar el formato de carga:', error);
+        console.error('[observatorio] Error al enviar el formato de carga:', describirErrorParaLog(error));
         if (!res.headersSent) res.status(500).json({ error: 'Error al descargar el formato.' });
       });
     } catch (error) {
       if (error instanceof ErrorDeFormato) {
         return res.status(error.status).json({ error: error.message });
       }
-      console.error('[observatorio] Error al descargar el formato de carga:', error);
+      console.error('[observatorio] Error al descargar el formato de carga:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al descargar el formato.' });
     }
   },
@@ -94,7 +95,7 @@ export const ObservatorioController = {
     try {
       res.json(await consultarObservatorioActual());
     } catch (error) {
-      console.error('[observatorio] Error al consultar los datos actuales:', error);
+      console.error('[observatorio] Error al consultar los datos actuales:', describirErrorParaLog(error));
       res.status(500).json({ error: 'Error al consultar los datos.' });
     }
   },

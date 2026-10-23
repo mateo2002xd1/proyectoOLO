@@ -1,3 +1,4 @@
+import { describirErrorParaLog } from '../../shared/errores';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
@@ -21,7 +22,7 @@ export const descartarEdicion = async (
       slug,
       ambito,
       usuarioId: userId,
-    }).catch((err) => console.error('[Limpieza Descartar Edición] Error limpiando subidas pendientes:', err));
+    }).catch((err) => console.error('[Limpieza Descartar Edición] Error limpiando subidas pendientes:', describirErrorParaLog(err)));
   }
 
   // Liberar el bloqueo para que otro pueda editar (ya que el usuario salió)
