@@ -30,8 +30,9 @@ export async function POST(request: Request) {
 
   const data = await apiRes.json().catch(() => null);
   if (!apiRes.ok) {
-    // 423 es la cuenta bloqueada por intentos fallidos (§3) y 429 el limitador:
-    // ambos mensajes hay que mostrarlos tal cual o el usuario no entiende qué pasa.
+    // El 401 único de la API ya trae el aviso de la espera tras varios fallos, y el 429 es
+    // el limitador: ambos mensajes hay que mostrarlos tal cual o el usuario no entiende qué
+    // pasa. (El 423 «cuenta bloqueada» de antes delataba qué cuentas existen y se retiró.)
     return NextResponse.json(
       { error: data?.error ?? 'Una o más respuestas son incorrectas' },
       { status: apiRes.status || 500 }

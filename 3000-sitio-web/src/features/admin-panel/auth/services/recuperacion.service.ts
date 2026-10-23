@@ -19,10 +19,11 @@ export interface RespuestaDeUsuario {
 /**
  * Convierte una respuesta fallida en el mensaje a mostrar.
  *
- * Se usa el texto que manda el servidor cuando lo hay: los casos que de verdad
- * importan —cuenta bloqueada (423) y demasiados intentos (429)— traen una
- * explicación que el usuario necesita, y sustituirla por un genérico dejaría a
- * alguien reintentando sin entender por qué no avanza.
+ * Se usa el texto que manda el servidor cuando lo hay: el de «no fue posible verificar»
+ * (que ya avisa de la espera tras varios fallos) y el de demasiados intentos (429) traen
+ * una explicación que el usuario necesita, y sustituirla por un genérico dejaría a
+ * alguien reintentando sin entender por qué no avanza. El servidor ya no responde 423:
+ * el bloqueo se dice en general, sin confirmar que sea el de esta cuenta.
  */
 const mensajeDeError = async (res: Response, porDefecto: string): Promise<string> => {
   const data = await res.json().catch(() => null);
@@ -32,9 +33,10 @@ const mensajeDeError = async (res: Response, porDefecto: string): Promise<string
 /**
  * Preguntas configuradas para un correo.
  *
- * Devuelve lista vacía tanto si el correo no existe como si existe sin preguntas: el
- * backend no distingue los dos casos a propósito, para que esta pantalla no sirva
- * para averiguar qué cuentas hay.
+ * El backend devuelve siempre tres preguntas, exista o no la cuenta y las tenga o no
+ * configuradas (las que no son reales las inventa, siempre las mismas por correo): así
+ * esta pantalla no sirve para averiguar qué cuentas hay. La lista vacía ya no se da, pero
+ * se sigue tratando como «sin preguntas» por si un backend viejo la devolviera.
  */
 export const obtenerPreguntas = async (email: string): Promise<PreguntaDeUsuario[]> => {
   const res = await fetch('/api/security-questions/user-questions', {

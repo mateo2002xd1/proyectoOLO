@@ -16,6 +16,7 @@ import { RolePermissionRepository } from '../../repositories/role-permissions.re
 import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
 import { logAudit, logBloqueoDeCuenta } from '../auditoria/audit.usecase';
 import { tieneRol } from '../../shared/autorizacion';
+import { gastarComparacionDeRelleno } from '../../shared/anti-enumeracion';
 
 /** El "desde dónde" de un login, para la bitácora. Opcional: los scripts y pruebas
  *  que llaman a este caso de uso sin pasar por HTTP no tienen ninguno de los dos. */
@@ -102,9 +103,15 @@ export const permisosDeRol = async (rol: string | null | undefined): Promise<str
 /**
  * Inicia sesión: valida dominio y credenciales, aplica bloqueo y caducidad, firma el JWT con los
  * permisos del rol y deja el ingreso en la bitácora.
- * @throws {Error} 401 genérico ante credenciales inválidas; 403 si la cuenta está inactiva o caducada; 423 si está bloqueada.
+ * @throws {Error} 401 genérico ante credenciales inválidas (cuenta inexistente o contraseña errónea, sin
+ * distinguirlas); 403 si la cuenta está inactiva o caducada, y 423 si está bloqueada, pero **solo después de
+ * acertar la contraseña**: antes, esos tres mensajes delataban a cualquiera que probara un correo si la
+ * cuenta existía y en qué estado estaba.
  */
 export const loginUseCase = async (email: string, password: string, contexto?: ContextoDeLogin) => {
+  // Un cuerpo sin contraseña (o con una que no es texto) no debe hacer reventar bcrypt: sería un
+  // 500 distinto del 401 de siempre, y eso también delata.
+  if (typeof password !== 'string') password = '';
   const normalizedEmail = normalizarEmail(email ?? '');
 
   /**
@@ -138,13 +145,36 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
   }
 
   const user = await UserRepository.findByEmail(normalizedEmail);
-  if (!user) throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  if (!user) {
+    // Sin esto, un correo que no existe respondía al instante y uno que sí, tras ~250 ms de
+    // bcrypt: el tiempo delataba lo que el mensaje ya callaba.
+    await gastarComparacionDeRelleno(password);
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
+
+  /**
+   * La contraseña se comprueba **antes** de mirar el estado de la cuenta.
+   *
+   * Hasta el 2026-10-22 «Cuenta inactiva», «Cuenta bloqueada» y «Cuenta expirada» salían
+   * antes de comparar la contraseña, así que cualquiera que escribiera un correo
+   * institucional sabía si esa cuenta existía y en qué estado, sin conocer la clave. Ahora
+   * esos mensajes solo los ve quien acierta la contraseña —que ya es quien puede usarlos—;
+   * el resto recibe el mismo 401 que un usuario inexistente.
+   */
+  const valid = await compararPassword(password, user.password_hash || '');
+  const bloqueada = Boolean(user.locked_until && new Date(user.locked_until) > new Date());
+
+  if (!valid) {
+    // Con la cuenta ya bloqueada no se cuenta el fallo: alargaría el bloqueo a quien lo
+    // provoca un tercero, y antes tampoco se contaba (salía 423 sin llegar a comparar).
+    if (!bloqueada) await registrarFalloDeLogin(user, contexto);
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
+
+  if (bloqueada) throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
 
   if (user.status !== 'active')
     throw Object.assign(new Error('Cuenta inactiva o suspendida'), { status: 403 });
-
-  if (user.locked_until && new Date(user.locked_until) > new Date())
-    throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
 
   if (user.expiration_date && new Date(user.expiration_date) < new Date()) {
     await UserRepository.update(user.id, { status: 'inactive' });
@@ -162,12 +192,6 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
       camposModificados: [{ campo: 'status', antes: 'active', despues: 'inactive' }],
     });
     throw Object.assign(new Error('Cuenta expirada'), { status: 403 });
-  }
-
-  const valid = await compararPassword(password, user.password_hash || '');
-  if (!valid) {
-    await registrarFalloDeLogin(user, contexto);
-    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
   }
 
   // Temporal vencida (72 h). Va **después** de comprobar la contraseña: antes, cualquiera

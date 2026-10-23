@@ -9,6 +9,7 @@ import {
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-request';
 import { esErrorDePolitica, esErrorDePasswordRepetida } from '../shared/password-policy';
+import { describirErrorParaLog } from '../shared/errores';
 
 export const SecurityQuestionController = {
   /** Devuelve el catálogo de preguntas de seguridad disponibles. */
@@ -20,11 +21,10 @@ export const SecurityQuestionController = {
   async getQuestionKeysForUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
-      if (!email) return res.status(400).json({ error: 'El correo es obligatorio' });
+      if (typeof email !== 'string' || !email.trim()) return res.status(400).json({ error: 'El correo es obligatorio' });
       const questions = await getQuestionKeysForUser(email);
       res.json({ questions });
-    } catch (err: any) {
-      if (err.status === 404) return res.json({ questions: [] });
+    } catch (err) {
       next(err);
     }
   },
@@ -43,6 +43,7 @@ export const SecurityQuestionController = {
   async verifyAnswersCtrl(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, answers } = req.body;
+      if (typeof email !== 'string' || !email.trim()) return res.status(400).json({ error: 'El correo es obligatorio' });
       // Este es el paso en que la pantalla de recuperación comprueba las respuestas: aquí
       // se registra el acierto. Los fallos se registran siempre, dentro del caso de uso.
       const usuario = await verifyAnswers(email, answers, { origen: origenDeLaPeticion(req), registrarAcierto: true });
@@ -61,6 +62,7 @@ export const SecurityQuestionController = {
   async recoverPasswordCtrl(req: Request, res: Response, _next: NextFunction) {
     try {
       const { email, answers, newPassword } = req.body;
+      if (typeof email !== 'string' || !email.trim()) return res.status(400).json({ error: 'El correo es obligatorio' });
       const { message, usuarioId } = await recoverPassword(email, answers, newPassword, origenDeLaPeticion(req));
 
       // Quien recupera no tiene sesión, así que `datosDeAuditoria` deja el actor en
@@ -74,8 +76,6 @@ export const SecurityQuestionController = {
 
       res.json({ message });
     } catch (err: any) {
-      if (err.status === 423) return res.status(423).json({ error: err.message });
-
       // Un incumplimiento de la política se devuelve tal cual. El mensaje genérico
       // de abajo existe para no delatar si el correo existe o si las respuestas eran
       // correctas; esto habla solo de la contraseña que el usuario acaba de teclear,
@@ -88,7 +88,10 @@ export const SecurityQuestionController = {
       if (esErrorDePasswordRepetida(err)) return res.status(400).json({ error: err.message, code: err.code });
 
       const safeMessage = 'No fue posible recuperar la contraseña. Verifica los datos e intenta de nuevo.';
+      // El 423 de antes (cuenta bloqueada) ya no existe: `verifyAnswers` responde un 401 único
+      // para el bloqueo, el correo inexistente y la respuesta errónea.
       const status = (err.status === 400 || err.status === 401 || err.status === 404) ? 401 : 500;
+      if (status === 500) console.error(`[recover-password] ${describirErrorParaLog(err)}`);
       res.status(status).json({ error: safeMessage });
     }
   },

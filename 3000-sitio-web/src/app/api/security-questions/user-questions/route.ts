@@ -7,9 +7,12 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
  * BFF: qué preguntas tiene configuradas un usuario, por correo. Primer paso de la
  * recuperación de contraseña.
  *
- * El backend responde `{ questions: [] }` —no un 404— cuando el correo no existe, y
- * aquí se conserva ese comportamiento: distinguir «no existe» de «existe pero sin
- * preguntas» convertiría esta ruta en un detector de cuentas para cualquiera.
+ * El backend responde **siempre con tres preguntas**: las reales si la cuenta las tiene
+ * y, si el correo no existe o la cuenta no las configuró, unas inventadas que son siempre
+ * las mismas para ese correo. Antes devolvía `[]` para «no existe», pero las reales para
+ * «existe» y un 423 si estaba bloqueada: eso bastaba para saber qué correos tienen cuenta
+ * (y de paso entregaba su pregunta de seguridad). Contestar las inventadas falla en
+ * `/verify` con el mismo mensaje que cualquier respuesta errónea.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);

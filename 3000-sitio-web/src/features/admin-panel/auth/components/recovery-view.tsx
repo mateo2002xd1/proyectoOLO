@@ -48,9 +48,9 @@ export function RecoveryView() {
     try {
       const encontradas = await obtenerPreguntas(email);
 
-      // El backend devuelve lista vacía tanto si el correo no existe como si existe
-      // sin preguntas configuradas, para no delatar qué cuentas hay. Se responde con
-      // el mismo mensaje en ambos casos, que es justo lo que sostiene esa decisión.
+      // El backend ya no devuelve lista vacía: siempre manda tres preguntas, aunque el correo
+      // no exista o no tenga las suyas (entonces son inventadas y fallarán al verificar con el
+      // mismo mensaje de siempre). Este aviso queda por si un backend viejo la devolviera.
       if (encontradas.length === 0) {
         setErrors({
           general:

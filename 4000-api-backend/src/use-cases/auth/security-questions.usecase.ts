@@ -3,10 +3,24 @@ import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 import { nuevaPasswordSinRepetir, exigirPasswordValida } from '../../shared/password-policy';
 import { logBloqueoDeCuenta, logVerificacionDePreguntas } from '../auditoria/audit.usecase';
+import { elegirSiempreLasMismas, gastarComparacionDeRelleno } from '../../shared/anti-enumeracion';
 
 /** Respuestas incorrectas seguidas antes del bloqueo, y cuánto dura (§3). */
 const INTENTOS_MAXIMOS_PREGUNTAS = 3;
 const MINUTOS_BLOQUEO_PREGUNTAS = 30;
+
+/**
+ * Lo único que dice `verifyAnswers` cuando falla **después** de buscar la cuenta, sea cual
+ * sea el motivo: correo inexistente, cuenta bloqueada, sin preguntas, respuesta errónea o
+ * clave de pregunta que no es suya. Si cada caso tuviera su texto (como tenía: 404, 423, 400
+ * y 401), esta pantalla serviría para averiguar qué correos existen y cuáles están bloqueados.
+ * El aviso del bloqueo va dicho en general, sin confirmar que sea el caso de esta cuenta.
+ */
+export const MENSAJE_VERIFICACION_FALLIDA =
+  `No fue posible verificar los datos. Revisa el correo y las respuestas. Si fallaste varias veces, ` +
+  `espera ${MINUTOS_BLOQUEO_PREGUNTAS} minutos antes de reintentar o contacta al administrador.`;
+
+const errorDeVerificacion = () => Object.assign(new Error(MENSAJE_VERIFICACION_FALLIDA), { status: 401 });
 
 /** Desde dónde llega quien responde. No hay sesión: se recupera una cuenta sin entrar. */
 type OrigenDeLaPeticion = { ip?: string | null; userAgent?: string | null };
@@ -42,19 +56,22 @@ export const getCatalog = () => SECURITY_QUESTIONS_CATALOG;
 
 /**
  * Qué preguntas configuró una cuenta (sin respuestas), para pintar el paso de recuperación.
- * @throws {Error} 404 si el correo no existe; 423 si la cuenta está bloqueada.
+ *
+ * **Siempre devuelve tres**, exista o no el correo. Antes devolvía `[]` si no existía y las
+ * preguntas reales si sí —y un 423 si estaba bloqueada—, lo que confirmaba la cuenta y, de
+ * paso, regalaba su pregunta de seguridad a cualquiera. Para un correo sin cuenta, o con la
+ * cuenta sin sus tres preguntas, se inventan unas del catálogo que son **siempre las mismas**
+ * para ese correo (ver `elegirSiempreLasMismas`); contestarlas falla en `verifyAnswers` con
+ * el mismo mensaje que cualquier respuesta errónea. El bloqueo no se anuncia aquí.
  */
 export const getQuestionKeysForUser = async (email: string) => {
   const normalizedEmail = email.trim().toLowerCase();
   const user = await UserRepository.findByEmail(normalizedEmail);
+  const questions = user ? await SecurityQuestionRepository.findByUserId(user.id) : [];
 
-  if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
-
-  if (user.locked_until && new Date(user.locked_until) > new Date())
-    throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
-
-  const questions = await SecurityQuestionRepository.findByUserId(user.id);
-  if (!questions || questions.length === 0) return [];
+  if (!user || !questions || questions.length !== 3) {
+    return elegirSiempreLasMismas(normalizedEmail, SECURITY_QUESTIONS_CATALOG, 3);
+  }
 
   return questions.map((q: any) => ({
     key: q.question_key,
@@ -101,33 +118,48 @@ export const setupQuestions = async (userId: string, questionsData: any[]) => {
 
 /**
  * Comprueba las respuestas de seguridad de una cuenta y cuenta los fallos (bloquea al llegar al tope).
- * @throws {Error} 404 si el correo no existe; 423 si está bloqueada; 400 si faltan respuestas; 401 si alguna no coincide.
+ * @throws {Error} 400 si el cuerpo no trae tres respuestas con texto (no depende de la cuenta); y, una vez
+ * buscada la cuenta, siempre el mismo 401 (`MENSAJE_VERIFICACION_FALLIDA`) sea cual sea el motivo.
  */
 export const verifyAnswers = async (
   email: string,
   answersData: any[],
   opciones: OpcionesDeVerificacion = {}
 ) => {
+  // La forma del cuerpo se comprueba antes de tocar la base: no depende de la cuenta, así que
+  // su mensaje no delata nada.
+  if (!Array.isArray(answersData) || answersData.length !== 3)
+    throw Object.assign(new Error('Debe proporcionar respuestas a las 3 preguntas'), { status: 400 });
+  if (answersData.some((a) => typeof a?.key !== 'string' || typeof a?.answer !== 'string' || a.answer.trim().length < 1))
+    throw Object.assign(new Error('Las respuestas no pueden estar vacías'), { status: 400 });
+
   const normalizedEmail = email.trim().toLowerCase();
   const user = await UserRepository.findByEmail(normalizedEmail);
 
-  if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
+  // Desde aquí, todo fallo es el mismo 401. Los que salen sin comparar nada gastan antes el
+  // tiempo de un bcrypt, para que tampoco se distingan por lo que tardan.
+  if (!user) {
+    await gastarComparacionDeRelleno(answersData[0].answer);
+    throw errorDeVerificacion();
+  }
 
-  if (user.locked_until && new Date(user.locked_until) > new Date())
-    throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
+  if (user.locked_until && new Date(user.locked_until) > new Date()) {
+    await gastarComparacionDeRelleno(answersData[0].answer);
+    throw errorDeVerificacion();
+  }
 
   const storedQuestions = await SecurityQuestionRepository.findByUserId(user.id);
-  if (!storedQuestions || storedQuestions.length !== 3)
-    throw Object.assign(new Error('El usuario no tiene preguntas configuradas'), { status: 400 });
-
-  if (!Array.isArray(answersData) || answersData.length !== 3)
-    throw Object.assign(new Error('Debe proporcionar respuestas a las 3 preguntas'), { status: 400 });
+  if (!storedQuestions || storedQuestions.length !== 3) {
+    await gastarComparacionDeRelleno(answersData[0].answer);
+    throw errorDeVerificacion();
+  }
 
   for (const stored of storedQuestions) {
     const provided = answersData.find((a) => a.key === stored.question_key);
-    if (!provided) throw Object.assign(new Error('Falta una o más respuestas'), { status: 400 });
-    if (!provided.answer || typeof provided.answer !== 'string' || provided.answer.trim().length < 1)
-      throw Object.assign(new Error('Las respuestas no pueden estar vacías'), { status: 400 });
+    if (!provided) {
+      await gastarComparacionDeRelleno(answersData[0].answer);
+      throw errorDeVerificacion();
+    }
 
     const isValid = await bcrypt.compare(provided.answer.trim().toLowerCase(), stored.answer_hash);
     if (!isValid) {
@@ -151,7 +183,7 @@ export const verifyAnswers = async (
         });
       }
 
-      throw Object.assign(new Error('Una o más respuestas son incorrectas'), { status: 401 });
+      throw errorDeVerificacion();
     }
   }
 
