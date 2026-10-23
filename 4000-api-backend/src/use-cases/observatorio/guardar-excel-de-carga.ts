@@ -68,7 +68,7 @@ export async function validarYGuardarExcel(
   { requiereCola = true }: { requiereCola?: boolean } = {}
 ): Promise<{ archivoId: string; rutaAbsoluta: string }> {
   // Lo primero, antes de guardar el archivo o crear la carga. Con Redis caído,
-  // `heavyJobsQueue.add()` no falla: se queda esperando para siempre
+  // `getHeavyJobsQueue().add()` no falla: se queda esperando para siempre
   // (`maxRetriesPerRequest: null`, que BullMQ exige), así que sin esta comprobación la
   // subida se colgaba y dejaba en el historial una carga en «procesando 0 %» que no
   // avanzaba nunca. Así se rechaza en el acto, sin dejar nada a medias.

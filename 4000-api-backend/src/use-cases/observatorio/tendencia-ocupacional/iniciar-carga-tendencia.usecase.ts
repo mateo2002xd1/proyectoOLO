@@ -1,5 +1,5 @@
 import { TendenciaOcupacionalRepository as Repo } from '../../../repositories/tendencia-ocupacional.repository';
-import { heavyJobsQueue } from '../../../infrastructure/redis/queue';
+import { getHeavyJobsQueue } from '../../../infrastructure/redis/queue';
 import { ErrorDeSubida, validarYGuardarExcel } from '../guardar-excel-de-carga';
 import { mensajeCeldaOcupada } from './reporte-carga';
 
@@ -50,7 +50,7 @@ export async function iniciarCargaTendencia(
 
   const cargaId = await Repo.crearCarga({ archivoId, subidoPor, anio: celda.anio, periodoId: periodo.id });
 
-  await heavyJobsQueue.add('importar-tendencia-ocupacional', { cargaId, rutaAbsoluta });
+  await getHeavyJobsQueue().add('importar-tendencia-ocupacional', { cargaId, rutaAbsoluta });
 
   return { cargaId };
 }

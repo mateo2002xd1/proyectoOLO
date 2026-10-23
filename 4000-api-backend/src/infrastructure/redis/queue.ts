@@ -5,14 +5,28 @@ import { procesarCargaObservatorio } from '../../use-cases/observatorio/procesar
 import { procesarCargaTendencia } from '../../use-cases/observatorio/tendencia-ocupacional/procesar-carga-tendencia.usecase';
 import { procesarCargaAlertasInversion } from '../../use-cases/alertas-inversion/procesar-carga.usecase';
 
-// Misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
-// porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
-// propia conexión a partir de `REDIS_HOST`/`REDIS_PORT`, variables que nada en
-// el proyecto define (todo lo demás usa `REDIS_URL`), así que siempre caía en
-// el valor por defecto `127.0.0.1:6379` y nunca llegaba al Redis real.
-const connection = getRedis();
+let heavyJobsQueue: Queue | null = null;
 
-export const heavyJobsQueue = new Queue('heavy-jobs', { connection });
+/**
+ * La cola `heavy-jobs`, que se crea la primera vez que alguien la pide.
+ *
+ * Antes era una constante del módulo: importar `queue.ts` —cualquier use-case que
+ * encola, o una verificación— abría la conexión a Redis y creaba la cola aunque nadie la
+ * usara. Ahora se comporta como `getRedis()`, y quien solo importa no abre nada.
+ *
+ * Usa la misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
+ * porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
+ * propia conexión a partir de `REDIS_HOST`/`REDIS_PORT`, variables que nada en
+ * el proyecto define (todo lo demás usa `REDIS_URL`), así que siempre caía en
+ * el valor por defecto `127.0.0.1:6379` y nunca llegaba al Redis real.
+ */
+export const getHeavyJobsQueue = (): Queue => {
+  if (!heavyJobsQueue) {
+    heavyJobsQueue = new Queue('heavy-jobs', { connection: getRedis() });
+    heavyJobsQueue.on('error', crearLoggerDeErrorConThrottle('Queue Error'));
+  }
+  return heavyJobsQueue;
+};
 
 /**
  * Arranca el worker de la cola `heavy-jobs`: procesa las cargas de Excel del observatorio y de la
@@ -59,7 +73,7 @@ export const setupWorker = () => {
     // esperaba 5 s y se daba por buena. Se retiró porque nadie la usaba: un nombre que
     // no es de los de arriba es un error de quien encola, y así queda como fallido.
     throw new Error(`Trabajo desconocido en la cola heavy-jobs: "${job.name}"`);
-  }, { connection });
+  }, { connection: getRedis() });
 
   worker.on('completed', (job) => {
     console.log(`El trabajo ${job.id} ha finalizado con éxito.`);
@@ -73,5 +87,3 @@ export const setupWorker = () => {
 
   return worker;
 };
-
-heavyJobsQueue.on('error', crearLoggerDeErrorConThrottle('Queue Error'));

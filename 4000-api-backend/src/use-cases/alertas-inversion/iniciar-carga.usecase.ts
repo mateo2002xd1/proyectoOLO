@@ -1,5 +1,5 @@
 import { AlertasInversionRepository as Repo } from '../../repositories/alertas-inversion.repository';
-import { heavyJobsQueue } from '../../infrastructure/redis/queue';
+import { getHeavyJobsQueue } from '../../infrastructure/redis/queue';
 import { validarYGuardarExcel } from '../observatorio/guardar-excel-de-carga';
 
 export { ErrorDeSubida } from '../observatorio/guardar-excel-de-carga';
@@ -20,7 +20,7 @@ export async function iniciarCargaAlertasInversion(
   const carga = await Repo.crearCarga(archivoId, subidoPor);
   const cargaId = carga.get('id') as string;
 
-  await heavyJobsQueue.add('importar-alertas-inversion-excel', { cargaId, rutaAbsoluta, subidoPor });
+  await getHeavyJobsQueue().add('importar-alertas-inversion-excel', { cargaId, rutaAbsoluta, subidoPor });
 
   return { cargaId };
 }

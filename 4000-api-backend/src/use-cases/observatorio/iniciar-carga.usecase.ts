@@ -1,5 +1,5 @@
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
-import { heavyJobsQueue } from '../../infrastructure/redis/queue';
+import { getHeavyJobsQueue } from '../../infrastructure/redis/queue';
 import { validarYGuardarExcel } from './guardar-excel-de-carga';
 
 export { ErrorDeSubida } from './guardar-excel-de-carga';
@@ -25,7 +25,7 @@ export async function iniciarCargaObservatorio(
   const carga = await Repo.crearCarga(archivoId, subidoPor);
   const cargaId = carga.get('id') as string;
 
-  await heavyJobsQueue.add('importar-observatorio-excel', { cargaId, rutaAbsoluta });
+  await getHeavyJobsQueue().add('importar-observatorio-excel', { cargaId, rutaAbsoluta });
 
   return { cargaId };
 }
