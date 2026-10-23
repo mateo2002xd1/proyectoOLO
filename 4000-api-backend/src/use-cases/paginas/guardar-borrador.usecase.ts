@@ -1,10 +1,13 @@
 import { describirErrorParaLog } from '../../shared/errores';
 import { Transaction } from 'sequelize';
+import sequelize from '../../config/database';
+import { tomarCandadoDeAviso } from '../../shared/seccion-critica';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 import { uuidONulo } from '../../shared/uuid';
+import { exigirCandadoLibreOPropio } from './exigir-candado';
 
 /**
  * Guarda el contenido del editor (sanitizado) como borrador: crea la página si no existía, reutiliza
@@ -16,15 +19,29 @@ import { uuidONulo } from '../../shared/uuid';
  * editor abierto en dos pestañas: una envía y la otra, con cambios viejos, seguía
  * autoguardando.
  */
-export const guardarBorrador = async (
+const guardarBorradorEnTransaccion = async (
   slug: string,
   contenido: any,
   userId: string,
   ambito: Ambito,
-  tx?: Transaction,
+  tx: Transaction,
   { automatico = false }: { automatico?: boolean } = {}
 ) => {
-  let pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
+  // Solo escribe quien tiene el candado, o nadie lo tiene (ver `exigir-candado.ts`).
+  await exigirCandadoLibreOPropio(slug, ambito, userId);
+
+  // La fila de la página se bloquea hasta el fin de la transacción: dos guardados, o un guardado
+  // y una aprobación, a la vez, se ponen en fila y el segundo lee lo que dejó el primero. Sin
+  // esto los dos abrían la versión N+1 (500 por índice único) o un guardado entraba en una
+  // versión que se estaba aprobando y se publicaba sin revisar.
+  let pagina = await PaginaRepository.findBySlug(slug, ambito, tx, { bloquear: true });
+
+  if (!pagina) {
+    // Todavía no hay fila que bloquear: el candado de aviso hace de ella. Quien llega segundo
+    // espera, vuelve a mirar y ya encuentra la página que creó el primero.
+    await tomarCandadoDeAviso(`pagina:${ambito}:${slug}`, tx);
+    pagina = await PaginaRepository.findBySlug(slug, ambito, tx, { bloquear: true });
+  }
   const paginaAnterior = pagina ? pagina.toJSON() : null;
 
   if (!pagina) {
@@ -105,3 +122,19 @@ export const guardarBorrador = async (
 
   return { pagina, version, paginaAnterior, versionAnterior };
 };
+
+/**
+ * Guarda el borrador. El bloqueo de la página y la creación de la primera versión necesitan una
+ * transacción: sin ella (los scripts de siembra) se abre una aquí.
+ */
+export const guardarBorrador = (
+  slug: string,
+  contenido: any,
+  userId: string,
+  ambito: Ambito,
+  tx?: Transaction,
+  opciones: { automatico?: boolean } = {}
+) =>
+  tx
+    ? guardarBorradorEnTransaccion(slug, contenido, userId, ambito, tx, opciones)
+    : sequelize.transaction((t) => guardarBorradorEnTransaccion(slug, contenido, userId, ambito, t, opciones));

@@ -7,7 +7,17 @@ export const PaginaRepository = {
   // El slug solo identifica una página dentro de su ámbito: el sitio y la intranet
   // tienen cada uno su `/inicio`. Buscar por slug a secas devolvía la página de la
   // otra aplicación.
-  findBySlug: (slug: string, ambito: Ambito, tx?: Transaction) => Pagina.findOne({ where: { slug, ambito }, transaction: tx }),
+  //
+  // `bloquear` toma la fila de la página con `FOR UPDATE` hasta el fin de la transacción. Es
+  // el candado que serializa el ciclo editorial (guardar, enviar, aprobar, rechazar,
+  // descartar): quien lo pide espera a que termine el anterior y **lee después**, con lo que
+  // decide sobre el estado real y no sobre una foto vieja. Sin `tx` no hace nada.
+  findBySlug: (slug: string, ambito: Ambito, tx?: Transaction, opciones: { bloquear?: boolean } = {}) =>
+    Pagina.findOne({
+      where: { slug, ambito },
+      transaction: tx,
+      ...(opciones.bloquear && tx ? { lock: tx.LOCK.UPDATE } : {}),
+    }),
 
   /** Crea la fila de una página nueva. */
   crear: (data: any, tx?: Transaction) => Pagina.create(data, { transaction: tx }),

@@ -26,12 +26,23 @@ export async function restaurarVersionAnterior(
   contextoAuditoria?: ContextoAuditoria
 ) {
   const esUUID = esUuid(slugOId);
-  const pagina = esUUID
+  const encontrada = esUUID
     ? await Pagina.findByPk(slugOId)
     : await PaginaRepository.findBySlug(slugOId, ambito);
 
+  // Por UUID la búsqueda no mira el ámbito, y la guarda del candado de abajo sí lo usa: con
+  // el id de una página de la intranet y `X-Ambito: sitio` se restauraba la de la intranet
+  // mirando el candado de una página del sitio con el mismo slug. Un id de otro ámbito es
+  // una página que no existe aquí.
+  const pagina = encontrada && encontrada.ambito === ambito ? encontrada : null;
+
+  // 404 y no un `Error` sin estado (que el manejador convierte en 500): el id o la versión
+  // que no son de esta página son un objeto que no existe para quien pregunta, no un fallo.
   if (!pagina) {
-    throw new Error(`Página con identificador "${slugOId}" no encontrada en el ámbito "${ambito}"`);
+    throw Object.assign(
+      new Error(`Página con identificador "${slugOId}" no encontrada en el ámbito "${ambito}"`),
+      { status: 404 }
+    );
   }
 
   // 0. Verificar que nadie está editando la página en este momento
@@ -43,51 +54,68 @@ export async function restaurarVersionAnterior(
     throw error;
   }
 
-  // 1. Obtener la versión actualmente publicada de esta página
-  const versionPublicada = await PaginaVersion.findOne({
-    where: { paginaId: pagina.id, estado: 'publicado' },
-  });
+  // 1-4. Leer, decidir y escribir van en UNA transacción con la fila de la página bloqueada: antes
+  // se leía fuera, así que una aprobación o una restauración a la vez publicaban dos versiones
+  // (500 por el índice único) o restauraban sobre una foto vieja. Los archivos de disco se mueven
+  // dentro, con la página ya bloqueada.
+  const { versionPublicada, versionArchivada, resultadoArchivos } = await sequelize.transaction(async (t) => {
+    await Pagina.findByPk(pagina.id, { transaction: t, lock: t.LOCK.UPDATE });
 
-  // 2. Obtener la versión archivada usando las claves de la base de datos (paginaId, estado, numeroVersion o id)
-  const whereArchivada: any = {
-    paginaId: pagina.id,
-    estado: 'archivado',
-  };
-  if (criterioVersion?.versionId) {
-    whereArchivada.id = criterioVersion.versionId;
-  } else if (criterioVersion?.numeroVersion) {
-    whereArchivada.numeroVersion = criterioVersion.numeroVersion;
-  } else {
-    // Si no se especifica una versión puntual, se busca la última que estuvo publicada
-    whereArchivada.publicadoEn = { [Op.ne]: null };
-  }
+    // 1. Obtener la versión actualmente publicada de esta página
+    const versionPublicada = await PaginaVersion.findOne({
+      where: { paginaId: pagina.id, estado: 'publicado' },
+      transaction: t,
+    });
 
-  const versionArchivada = await PaginaVersion.findOne({
-    where: whereArchivada,
-    order: [['publicadoEn', 'DESC'], ['numeroVersion', 'DESC']],
-  });
+    // 2. Obtener la versión archivada usando las claves de la base de datos (paginaId, estado, numeroVersion o id)
+    const whereArchivada: any = {
+      paginaId: pagina.id,
+      estado: 'archivado',
+    };
+    if (criterioVersion?.versionId) {
+      whereArchivada.id = criterioVersion.versionId;
+    } else if (criterioVersion?.numeroVersion) {
+      whereArchivada.numeroVersion = criterioVersion.numeroVersion;
+    } else {
+      // Si no se especifica una versión puntual, se busca la última que estuvo publicada
+      whereArchivada.publicadoEn = { [Op.ne]: null };
+    }
 
-  if (!versionArchivada) {
-    throw new Error(`La página "${pagina.slug}" no tiene la versión anterior archivada solicitada para restaurar.`);
-  }
+    const versionArchivada = await PaginaVersion.findOne({
+      where: whereArchivada,
+      order: [['publicadoEn', 'DESC'], ['numeroVersion', 'DESC']],
+      transaction: t,
+      // La fila de la versión también se bloquea: `depurarVersiones` borra archivadas sin pasar por
+      // el bloqueo de la página, y si borraba esta entre que se leía y que la página la apuntaba, el
+      // commit fallaba con un 500 por la clave foránea. Con el bloqueo, o se restaura primero (y
+      // depurar ya no la ve archivada) o se depura primero (y esto responde 404).
+      lock: t.LOCK.UPDATE,
+    });
 
-  // 3. Sincronizar archivos de disco entre backup y uploads. Lo que la versión que se
-  // despublica deja de usar sale de `uploads/`, salvo que otra página lo enlace.
-  const usadasPorOtrasPaginas = versionPublicada
-    ? await PaginaRepository.rutasEnUso(extraerRutasUploads(versionPublicada.contenido), ambito, {
-        excluirPaginaId: pagina.id,
-      })
-    : undefined;
-  const resultadoArchivos = restaurarArchivosDesdeBackup({
-    paginaId: pagina.id,
-    versionRestaurarContenido: versionArchivada.contenido,
-    versionActualContenido: versionPublicada ? versionPublicada.contenido : null,
-    ambito,
-    conservarEnUploads: usadasPorOtrasPaginas,
-  });
+    if (!versionArchivada) {
+      throw Object.assign(
+        new Error(`La página "${pagina.slug}" no tiene la versión anterior archivada solicitada para restaurar.`),
+        { status: 404 }
+      );
+    }
 
-  // 4. Ejecutar el intercambio atómico en PostgreSQL
-  await sequelize.transaction(async (t) => {
+    // 3. Sincronizar archivos de disco entre backup y uploads. Lo que la versión que se
+    // despublica deja de usar sale de `uploads/`, salvo que otra página lo enlace.
+    const usadasPorOtrasPaginas = versionPublicada
+      ? await PaginaRepository.rutasEnUso(extraerRutasUploads(versionPublicada.contenido), ambito, {
+          excluirPaginaId: pagina.id,
+          tx: t,
+        })
+      : undefined;
+    const resultadoArchivos = restaurarArchivosDesdeBackup({
+      paginaId: pagina.id,
+      versionRestaurarContenido: versionArchivada.contenido,
+      versionActualContenido: versionPublicada ? versionPublicada.contenido : null,
+      ambito,
+      conservarEnUploads: usadasPorOtrasPaginas,
+    });
+
+    // 4. Ejecutar el intercambio atómico en PostgreSQL
     // Si hay una versión actualmente publicada, pasa a archivado
     if (versionPublicada) {
       await versionPublicada.update({ estado: 'archivado' }, { transaction: t });
@@ -122,6 +150,8 @@ export async function restaurarVersionAnterior(
       { versionPublicadaId: versionArchivada.id },
       { transaction: t }
     );
+
+    return { versionPublicada, versionArchivada, resultadoArchivos };
   });
 
   // 5. Invalidar caché en caliente (Redis + Next.js ISR)

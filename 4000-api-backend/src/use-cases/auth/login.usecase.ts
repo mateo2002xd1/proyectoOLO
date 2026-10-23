@@ -28,7 +28,8 @@ interface ContextoDeLogin {
 }
 
 /**
- * Anota un intento fallido y bloquea al llegar al tope (§3: 5 intentos, 15 minutos).
+ * Bloquea la cuenta si el intento fallido es el que llega al tope (§3: 5 intentos, 15 minutos).
+ * El intento ya está contado: lo reservó `UserRepository.reservarIntentoDeLogin` antes de comparar.
  *
  * Esto no existía. El login *leía* `bloqueado_hasta` pero nunca lo escribía, así que
  * la comprobación de más abajo no podía dispararse nunca: fallar mil veces no tenía
@@ -38,20 +39,13 @@ interface ContextoDeLogin {
  * El contador es `intentos_fallidos_login`, distinto del de las preguntas de
  * seguridad: son dos flujos con umbrales distintos (5/15min contra 3/30min).
  */
-const registrarFalloDeLogin = async (user: any, contexto?: ContextoDeLogin): Promise<void> => {
-  const intentos = (user.failed_login_attempts || 0) + 1;
-  const cambios: Record<string, unknown> = { failed_login_attempts: intentos };
-  let bloqueadoHasta: Date | null = null;
+const registrarFalloDeLogin = async (user: any, intento: number, contexto?: ContextoDeLogin): Promise<void> => {
+  if (intento < INTENTOS_MAXIMOS_LOGIN) return;
 
-  if (intentos >= INTENTOS_MAXIMOS_LOGIN) {
-    bloqueadoHasta = new Date(Date.now() + MINUTOS_BLOQUEO_LOGIN * 60 * 1000);
-    cambios.locked_until = bloqueadoHasta;
-    // Se reinicia junto con el bloqueo para que, al expirar, el usuario tenga otra
-    // tanda completa en vez de quedar bloqueado en cada intento siguiente.
-    cambios.failed_login_attempts = 0;
-  }
-
-  await UserRepository.update(user.id, cambios);
+  // Se reinicia el contador junto con el bloqueo para que, al expirar, el usuario tenga otra
+  // tanda completa en vez de quedar bloqueado en cada intento siguiente.
+  const bloqueadoHasta = new Date(Date.now() + MINUTOS_BLOQUEO_LOGIN * 60 * 1000);
+  await UserRepository.bloquearPorLogin(user.id, bloqueadoHasta);
 
   // El bloqueo queda en la bitácora; cada fallo suelto, no. Auditar todos los intentos
   // fallidos se descartó (6-auditoria.md, 19-09-2026): volumen, y qué hacer con correos
@@ -164,17 +158,40 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
    * esos mensajes solo los ve quien acierta la contraseña —que ya es quien puede usarlos—;
    * el resto recibe el mismo 401 que un usuario inexistente.
    */
+  let bloqueada = Boolean(user.locked_until && new Date(user.locked_until) > new Date());
+
+  // El intento se cuenta ANTES de comparar y lo numera la base (ver `reservarIntentoDeLogin`).
+  // Con la cuenta ya bloqueada no se cuenta: alargaría el bloqueo a quien lo provoca un tercero.
+  let intento: number | null = null;
+  if (!bloqueada) {
+    intento = await UserRepository.reservarIntentoDeLogin(user.id);
+    // `null`: otra petición la bloqueó entre la lectura de arriba y esta sentencia.
+    if (intento === null) bloqueada = true;
+  }
+
+  // Pasado el tope no se compara: es el exceso de una ráfaga simultánea. Se responde igual que
+  // un fallo, y se gasta el tiempo de un bcrypt para que tampoco se note por lo que tarda.
+  if (intento !== null && intento > INTENTOS_MAXIMOS_LOGIN) {
+    await gastarComparacionDeRelleno(password);
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
+
   const valid = await compararPassword(password, user.password_hash || '');
-  const bloqueada = Boolean(user.locked_until && new Date(user.locked_until) > new Date());
 
   if (!valid) {
-    // Con la cuenta ya bloqueada no se cuenta el fallo: alargaría el bloqueo a quien lo
-    // provoca un tercero, y antes tampoco se contaba (salía 423 sin llegar a comparar).
-    if (!bloqueada) await registrarFalloDeLogin(user, contexto);
+    if (intento !== null) await registrarFalloDeLogin(user, intento, contexto);
     throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
   }
 
   if (bloqueada) throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
+
+  // Un acierto cierra la racha, y se cierra aquí y no al final: el intento ya está contado y
+  // los rechazos de abajo (cuenta inactiva, caducada, temporal vencida) llegan con la contraseña
+  // buena. Si no se limpiara, esos intentos se acumularían hasta pasar el tope y dejar a la
+  // cuenta rechazando incluso la contraseña correcta, sin bloqueo que la libere.
+  if (intento !== null) {
+    await UserRepository.update(user.id, { failed_login_attempts: 0, locked_until: null });
+  }
 
   if (user.status !== 'active')
     throw Object.assign(new Error('Cuenta inactiva o suspendida'), { status: 403 });
@@ -201,12 +218,6 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
   // que probara el correo sabría que esa cuenta existe y no se ha estrenado.
   if (temporalVencida(user)) {
     throw Object.assign(new Error(MENSAJE_TEMPORAL_VENCIDA), { status: 403 });
-  }
-
-  // Un acierto cierra la racha. Si no se limpiara, los fallos se acumularían entre
-  // sesiones y acabarían bloqueando a alguien que sí sabe su contraseña.
-  if (user.failed_login_attempts > 0 || user.locked_until) {
-    await UserRepository.update(user.id, { failed_login_attempts: 0, locked_until: null });
   }
 
   await UserRepository.updateLastAccess(user.id);

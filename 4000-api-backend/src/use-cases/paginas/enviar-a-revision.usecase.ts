@@ -7,6 +7,7 @@ import { errorDeComentario, normalizarComentario } from '../../shared/comentario
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 import { uuidONulo } from '../../shared/uuid';
+import { exigirCandadoLibreOPropio } from './exigir-candado';
 
 /**
  * "Enviar a revisión" es el punto de la Fase 5 de `9-accesibilidad.md`: un
@@ -43,12 +44,19 @@ export const enviarARevision = async (
   const errorComentario = errorDeComentario(comentarioCambios);
   if (errorComentario) throw Object.assign(new Error(errorComentario), { status: 400 });
 
-  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
-  if (!pagina) throw new Error('Página no encontrada');
+  // Enviar a revisión también es decidir sobre el borrador compartido: lo hace quien lo tiene.
+  await exigirCandadoLibreOPropio(slug, ambito, userId);
+
+  // Se bloquea la fila de la página hasta el fin de la transacción: el ciclo editorial (guardar,
+  // enviar, aprobar, rechazar, descartar) va de uno en uno por página, y quien llega después lee
+  // el estado que dejó el anterior. Sin esto dos decisiones sobre la misma versión podían
+  // responder «ok» las dos y una se perdía sin avisar.
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx, { bloquear: true });
+  if (!pagina) throw Object.assign(new Error('Página no encontrada'), { status: 404 });
   const paginaAnterior = pagina.toJSON();
 
   const ultimaVersion = await PaginaRepository.findVersionPorEstado(pagina.id, 'borrador', tx);
-  if (!ultimaVersion) throw new Error('No hay borrador para enviar a revisión');
+  if (!ultimaVersion) throw Object.assign(new Error('No hay borrador para enviar a revisión'), { status: 409 });
   const versionAnterior = ultimaVersion.toJSON();
 
   // `Ambito` de la API ('sitio' | 'intranet') coincide 1:1 con el de

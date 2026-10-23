@@ -25,7 +25,11 @@ import { Transaction } from 'sequelize';
  * @throws {Error} 404 si la página o la versión no existen; 409 si es la versión publicada.
  */
 export const eliminarVersion = async (slug: string, versionId: string, ambito: Ambito, tx?: Transaction) => {
-  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
+  // Se bloquea la fila de la página hasta el fin de la transacción: el ciclo editorial (guardar,
+  // enviar, aprobar, rechazar, descartar) va de uno en uno por página, y quien llega después lee
+  // el estado que dejó el anterior. Sin esto dos decisiones sobre la misma versión podían
+  // responder «ok» las dos y una se perdía sin avisar.
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx, { bloquear: true });
   if (!pagina) throw Object.assign(new Error('Página no encontrada'), { status: 404 });
   const paginaAnterior = pagina.toJSON();
 

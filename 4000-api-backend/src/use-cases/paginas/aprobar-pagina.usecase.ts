@@ -1,4 +1,5 @@
 import { Transaction } from 'sequelize';
+import sequelize from '../../config/database';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
@@ -14,8 +15,12 @@ import { uuidONulo } from '../../shared/uuid';
  * contenido otra vez y emite `ContenidoPublicado` para vaciar las cachés.
  * @throws {Error} si la página no existe o no tiene versión en revisión.
  */
-export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito, tx?: Transaction) => {
-  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
+const aprobarEnTransaccion = async (slug: string, userId: string, ambito: Ambito, tx: Transaction) => {
+  // Se bloquea la fila de la página hasta el fin de la transacción: el ciclo editorial (guardar,
+  // enviar, aprobar, rechazar, descartar) va de uno en uno por página, y quien llega después lee
+  // el estado que dejó el anterior. Sin esto dos decisiones sobre la misma versión podían
+  // responder «ok» las dos y una se perdía sin avisar.
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx, { bloquear: true });
   if (!pagina) throw Object.assign(
     new Error('Página no encontrada. Puede que haya cambiado de dirección: actualiza la lista.'),
     { status: 404 }
@@ -23,7 +28,9 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   const paginaAnterior = pagina.toJSON();
 
   const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision', tx);
-  if (!versionEnRevision) throw new Error('No hay versión en revisión');
+  if (!versionEnRevision) {
+    throw Object.assign(new Error('No hay versión en revisión: puede que otra persona ya la haya decidido.'), { status: 409 });
+  }
   const versionAnterior = versionEnRevision.toJSON();
 
   // 1. Obtener la versión que estaba publicada antes de archivarla para respaldar sus recursos
@@ -75,14 +82,20 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   // Se espera antes de responder justamente por eso: la recarga viene inmediatamente
   // después de esta respuesta. No puede fallar la petición —lo de arriba ya está
   // escrito—, y de eso se encarga el emisor.
-  await emitirContenidoPublicado({
-    paginaId: pagina.id,
-    slug: pagina.slug,
-    ambito,
-    versionId: versionEnRevision.id,
-    publicadoPor: uuidONulo(userId),
-    fecha: new Date(),
-  });
+  //
+  // Se emite **después del commit** (`afterCommit` se espera dentro del propio `commit()`, así que
+  // la respuesta sigue saliendo después de vaciar las cachés): emitir antes dejaba que el front
+  // volviera a leer, con la transacción aún abierta, el contenido viejo y lo guardara de nuevo.
+  tx.afterCommit(() =>
+    emitirContenidoPublicado({
+      paginaId: pagina.id,
+      slug: pagina.slug,
+      ambito,
+      versionId: versionEnRevision.id,
+      publicadoPor: uuidONulo(userId),
+      fecha: new Date(),
+    })
+  );
 
   // `paginaAnterior` y `versionAnterior` son las copias tomadas ARRIBA, antes de que
   // `actualizarVersion` pusiera el estado en `publicado`: son lo único que conserva el
@@ -99,3 +112,13 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
     versionArchivada: versionPublicadaAnterior,
   };
 };
+
+/**
+ * Publica la versión en revisión. Corre siempre dentro de una transacción con la fila de la página
+ * bloqueada: el controlador la llama sin transacción, y sin ella el bloqueo de `aprobarEnTransaccion`
+ * no hacía nada y dos aprobaciones, o una aprobación y un rechazo, respondían las dos «200».
+ */
+export const aprobarPagina = (slug: string, userId: string, ambito: Ambito, tx?: Transaction) =>
+  tx
+    ? aprobarEnTransaccion(slug, userId, ambito, tx)
+    : sequelize.transaction((t) => aprobarEnTransaccion(slug, userId, ambito, t));

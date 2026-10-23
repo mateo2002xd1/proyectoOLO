@@ -1,5 +1,6 @@
 import { QueryTypes, type Transaction } from 'sequelize';
 import sequelize from '../config/database';
+import { tomarCandadoDeAviso } from '../shared/seccion-critica';
 
 /** Una fila de `configuracion` (migración 044). */
 export interface FilaConfiguracion {
@@ -20,6 +21,11 @@ export const ConfiguracionRepository = {
    * dos reemplazos a la vez dejarían uno de los archivos sin nadie que lo borre.
    */
   async leer(clave: string, tx?: Transaction): Promise<FilaConfiguracion | null> {
+    // Dentro de una transacción la clave se bloquea con un candado de aviso además del
+    // `FOR UPDATE`: la primera vez no hay fila que bloquear, y dos escrituras a la vez leían
+    // «no hay nada» y cada una guardaba solo lo suyo, perdiéndose el cambio de la otra.
+    if (tx) await tomarCandadoDeAviso(`configuracion:${clave}`, tx);
+
     const filas = await sequelize.query<FilaConfiguracion>(
       `SELECT id, clave, valor, updated_at
          FROM configuracion

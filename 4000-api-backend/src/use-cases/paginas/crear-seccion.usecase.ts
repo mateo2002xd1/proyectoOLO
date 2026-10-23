@@ -34,6 +34,7 @@ import {
   mensajeDeSlugInvalido,
 } from '@olo/slug-policy';
 import sequelize from '../../config/database';
+import { tomarCandadoDeAviso } from '../../shared/seccion-critica';
 import { Pagina, Permission, Role, RolePermission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { resolverHref } from '../../shared/extraer-textos-puck';
@@ -87,6 +88,11 @@ export const crearSeccion = async (
   const clavePermiso = claveDeSeccion(ambito, slug);
 
   const execute = async (transaction: Transaction) => {
+    // «Comprobar que no existe y crear» necesita que las dos peticiones se pongan en fila: la
+    // fila aún no existe, así que se bloquea la dirección con un candado de aviso. Sin él, dos
+    // personas creando «Bolsa de empleo» a la vez daban un 500 por el índice único en vez del 409.
+    await tomarCandadoDeAviso(`pagina:${ambito}:${slug}`, transaction);
+
     // El índice único es `(ambito, slug)`, así que esto solo choca dentro del mismo
     // ámbito: el sitio y la intranet pueden tener cada uno su «Bolsa de empleo».
     const yaExiste = await Pagina.findOne({ where: { slug, ambito }, transaction });

@@ -1,4 +1,4 @@
-import { Op, QueryTypes } from 'sequelize';
+import { Op, QueryTypes, UniqueConstraintError } from 'sequelize';
 import sequelize from '../config/database';
 import {
   CargaDatos,
@@ -117,7 +117,16 @@ export const AlertasInversionRepository = {
   async resolverOCrearEmpresa(nombre: string): Promise<{ registro: Empresa; creado: boolean }> {
     const existente = await Empresa.findOne({ where: mismoNombreNormalizado(nombre) });
     if (existente) return { registro: existente, creado: false };
-    return { registro: await Empresa.create({ nombre }), creado: true };
+    try {
+      return { registro: await Empresa.create({ nombre }), creado: true };
+    } catch (error) {
+      // Otra carga creó la misma empresa entre la búsqueda y el `INSERT`: el índice único hizo su
+      // trabajo, y lo que corresponde es usar la que ya existe (era un 500 en la carga que perdía).
+      if (!(error instanceof UniqueConstraintError)) throw error;
+      const ganadora = await Empresa.findOne({ where: mismoNombreNormalizado(nombre) });
+      if (!ganadora) throw error;
+      return { registro: ganadora, creado: false };
+    }
   },
 
   /** `municipios`: catálogo abierto, resuelve por departamento y nombre normalizado («Medellín» = «Medellin») o crea. */
@@ -126,7 +135,17 @@ export const AlertasInversionRepository = {
       where: { [Op.and]: [{ departamento_id: departamentoId }, mismoNombreNormalizado(nombre)] },
     });
     if (existente) return { registro: existente, creado: false };
-    return { registro: await Municipio.create({ departamento_id: departamentoId, nombre }), creado: true };
+    try {
+      return { registro: await Municipio.create({ departamento_id: departamentoId, nombre }), creado: true };
+    } catch (error) {
+      // Igual que con la empresa: si otra carga lo creó a la vez, se usa el que ya está.
+      if (!(error instanceof UniqueConstraintError)) throw error;
+      const ganador = await Municipio.findOne({
+        where: { [Op.and]: [{ departamento_id: departamentoId }, mismoNombreNormalizado(nombre)] },
+      });
+      if (!ganador) throw error;
+      return { registro: ganador, creado: false };
+    }
   },
 
   // --- Proyectos ---

@@ -9,6 +9,7 @@ import {
 } from '../../infrastructure/db/models';
 import { DepartamentosRepository } from '../../repositories/departamentos.repository';
 import { normalizarParaComparar } from '../../shared/normalizar-texto';
+import { tomarCandadoDeAviso } from '../../shared/seccion-critica';
 
 const MAX_ROWS_LIMIT = 100000;
 
@@ -324,6 +325,13 @@ export const importarProgramasExcel = async (
   const filasCombinadas = rowsData.length - filasFinales.length;
 
   const resultado = await sequelize.transaction(async (transaction: Transaction) => {
+    // Una carga de programas a la vez. `DELETE FROM programas_sobresalientes` solo ve lo ya
+    // confirmado: con dos cargas juntas la segunda no borraba lo que insertaba la primera y la tabla
+    // acababa con las filas de las dos. La cola (`heavy-jobs`, concurrencia 1) es la primera defensa;
+    // este candado cubre dos réplicas, un reintento o el script manual. El Excel ya se leyó arriba:
+    // la espera es solo por escribir.
+    await tomarCandadoDeAviso('carga:programas_sobresalientes', transaction);
+
     /**
      * Crea o actualiza las filas de un catálogo por su código y devuelve código → id, y
      * cuántos códigos no existían. El nombre (y el padre) que manda es el del último archivo.

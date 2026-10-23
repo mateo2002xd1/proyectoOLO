@@ -154,32 +154,40 @@ export const verifyAnswers = async (
     throw errorDeVerificacion();
   }
 
+  // Que falte una respuesta no es un intento: se descarta antes de contar.
+  if (storedQuestions.some((stored) => !answersData.some((a) => a.key === stored.question_key))) {
+    await gastarComparacionDeRelleno(answersData[0].answer);
+    throw errorDeVerificacion();
+  }
+
+  // El intento se cuenta ANTES de comparar y lo numera la base (ver `reservarIntentoDePreguntas`):
+  // con «leer el contador, sumar y escribir» una ráfaga de respuestas a la vez leía todas 0 y
+  // el bloqueo no llegaba nunca. Pasado el tope, el exceso se rechaza sin comparar.
+  const newCount = await UserRepository.reservarIntentoDePreguntas(user.id);
+  if (newCount === null || newCount > INTENTOS_MAXIMOS_PREGUNTAS) {
+    await gastarComparacionDeRelleno(answersData[0].answer);
+    throw errorDeVerificacion();
+  }
+
   for (const stored of storedQuestions) {
-    const provided = answersData.find((a) => a.key === stored.question_key);
-    if (!provided) {
-      await gastarComparacionDeRelleno(answersData[0].answer);
-      throw errorDeVerificacion();
-    }
+    const provided = answersData.find((a) => a.key === stored.question_key)!;
 
     const isValid = await bcrypt.compare(provided.answer.trim().toLowerCase(), stored.answer_hash);
     if (!isValid) {
-      const newCount = (user.failed_security_attempts || 0) + 1;
-      const updates: any = { failed_security_attempts: newCount };
-      const seBloquea = newCount >= INTENTOS_MAXIMOS_PREGUNTAS;
-      if (seBloquea) updates.locked_until = new Date(Date.now() + MINUTOS_BLOQUEO_PREGUNTAS * 60 * 1000);
-      await UserRepository.update(user.id, updates);
+      const bloqueadoHasta = newCount >= INTENTOS_MAXIMOS_PREGUNTAS ? new Date(Date.now() + MINUTOS_BLOQUEO_PREGUNTAS * 60 * 1000) : null;
+      if (bloqueadoHasta) await UserRepository.bloquearPorPreguntas(user.id, bloqueadoHasta);
 
       await logVerificacionDePreguntas(user, opciones.origen, {
         correctas: false,
         intento: newCount,
         maximo: INTENTOS_MAXIMOS_PREGUNTAS,
       });
-      if (seBloquea) {
+      if (bloqueadoHasta) {
         await logBloqueoDeCuenta(user.id, opciones.origen, {
           motivo: 'preguntas_seguridad',
           intentos: newCount,
           minutos: MINUTOS_BLOQUEO_PREGUNTAS,
-          hasta: updates.locked_until,
+          hasta: bloqueadoHasta,
         });
       }
 
@@ -187,9 +195,8 @@ export const verifyAnswers = async (
     }
   }
 
-  if (user.failed_security_attempts > 0 || user.locked_until) {
-    await UserRepository.update(user.id, { failed_security_attempts: 0, locked_until: null });
-  }
+  // El intento ya estaba contado: un acierto lo borra, y con él cualquier bloqueo vencido.
+  await UserRepository.update(user.id, { failed_security_attempts: 0, locked_until: null });
 
   if (opciones.registrarAcierto) {
     await logVerificacionDePreguntas(user, opciones.origen, { correctas: true });

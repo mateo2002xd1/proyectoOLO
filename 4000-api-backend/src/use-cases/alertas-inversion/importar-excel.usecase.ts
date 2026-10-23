@@ -4,6 +4,7 @@ import { AlertasInversionRepository as Repo } from '../../repositories/alertas-i
 import { normalizarParaComparar } from '../../shared/normalizar-texto';
 import { crearBuscadorDeSeccionPorDivision, divisionDeCodigo } from './ciiu-divisiones';
 import { ProyectoInversion, CiiuSeccion } from '../../infrastructure/db/models';
+import { enSeccionCritica } from '../../shared/seccion-critica';
 
 // Más bajo que el de Observatorio (100.000): cada fila aquí es una noticia distinta,
 // resuelta y escrita una por una (no hay "vaciar y recargar" en bloque posible, porque
@@ -144,7 +145,7 @@ async function resolverSeccionYClase(
  * rechaza si no calza, igual que en Observatorio); `ciudad` (municipio) es un
  * catálogo abierto que se completa solo.
  */
-export const importarAlertasInversionExcel = async (
+const importarAlertas = async (
   fileBuffer: Buffer,
   subidoPor: string | null,
   onProgreso?: OnProgresoImportacionAlertas
@@ -328,3 +329,17 @@ export const importarAlertasInversionExcel = async (
 
   return { filasCargadas, filasOmitidasPorDuplicado, nuevasEmpresas, nuevosMunicipios };
 };
+
+/**
+ * Importa el Excel de alertas, de una carga a la vez.
+ *
+ * Las fuentes ya registradas se leen al empezar y se comparan fila a fila, y `fuente_url` no tiene
+ * índice único: dos cargas con las mismas fuentes a la vez leían ambas «ninguna registrada» y
+ * cada proyecto quedaba dos veces. En fila, la segunda las ve y las omite como duplicadas.
+ */
+export const importarAlertasInversionExcel = (
+  fileBuffer: Buffer,
+  subidoPor: string | null,
+  onProgreso?: OnProgresoImportacionAlertas
+): Promise<ImportarAlertasResult> =>
+  enSeccionCritica('alertas-inversion:importar', () => importarAlertas(fileBuffer, subidoPor, onProgreso));

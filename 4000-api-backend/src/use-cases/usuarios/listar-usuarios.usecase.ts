@@ -13,6 +13,19 @@ import { SecurityQuestionRepository } from '../../repositories/security-question
 import { usuariosPolicies, puedeGestionarCuentaDeRol, errorCuentaReservada } from '../../policies/usuarios.policies';
 import { esDueno } from '../../shared/autorizacion';
 import { logAudit } from '../auditoria/audit.usecase';
+import { UniqueConstraintError } from 'sequelize';
+import { enSeccionCritica } from '../../shared/seccion-critica';
+
+/** La exclusión compartida por todo lo que crea, cambia o quita cuentas (ver `updateUser`). */
+const CLAVE_DE_ADMINISTRACION = 'usuarios:administracion';
+
+/** El índice único del correo es la última defensa: la violación es un correo repetido, no un fallo. */
+const traducirCorreoRepetido = (error: unknown): never => {
+  if (error instanceof UniqueConstraintError) {
+    throw Object.assign(new Error('El correo ya está registrado'), { status: 409 });
+  }
+  throw error;
+};
 
 /** Todas las cuentas con su rol, sin hash de contraseña. */
 export const getAllUsers = () => UserRepository.findAll();
@@ -31,7 +44,7 @@ export const getUserById = async (id: string) => {
  * Crea una cuenta con correo institucional y una contraseña temporal que obliga a cambiarla al entrar.
  * @throws {Error} 403 con el correo reservado; 409 si el correo ya existe; 404 si el rol no existe.
  */
-export const createUser = async (data: any, actor?: Actor) => {
+const crearUsuario = async (data: any, actor?: Actor) => {
   const { email, password, role_id, ...rest } = data;
   // Aquí sí se devuelve el motivo real: quien crea usuarios es un administrador
   // autenticado, así que decirle que el dominio no vale no revela nada a nadie.
@@ -65,6 +78,9 @@ export const createUser = async (data: any, actor?: Actor) => {
   userJson.temporaryPassword = temporaryPassword;
   return userJson;
 };
+
+/** Crea una cuenta; si otra petición registró el mismo correo a la vez, responde 409 como en fila. */
+export const createUser = (data: any, actor?: Actor) => crearUsuario(data, actor).catch(traducirCorreoRepetido);
 
 /**
  * Quién pide el cambio. Se pasa desde el controlador; los llamadores internos que ya
@@ -102,7 +118,7 @@ const contarAdministradoresActivos = async (excluirId?: string) => {
  * degrada al último administrador activo. También resetea contraseña o preguntas si se pide.
  * @throws {Error} 404 si no existe; 403 si el cambio no está permitido; 409 si dejaría el sistema sin administrador.
  */
-export const updateUser = async (id: string, data: any, actor?: Actor) => {
+const actualizarUsuario = async (id: string, data: any, actor?: Actor) => {
   const { password, email, reset_password, reset_security_questions, ...rest } = data;
 
   const user = await UserRepository.findById(id);
@@ -270,10 +286,21 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
 };
 
 /**
+ * Actualiza una cuenta, de una en una con las demás altas, bajas y cambios de cuentas.
+ *
+ * La regla del último administrador («cuenta cuántos quedan y después cambia») solo es cierta si
+ * nadie cambia otra cuenta entre las dos cosas: dos administradores que se inactivaban, degradaban
+ * o eliminaban entre sí a la vez veían cada uno al otro como el que quedaba y dejaban el sistema
+ * sin ninguno. Por eso las operaciones que pueden quitar un administrador entran de una en una.
+ */
+export const updateUser = (id: string, data: any, actor?: Actor) =>
+  enSeccionCritica(CLAVE_DE_ADMINISTRACION, () => actualizarUsuario(id, data, actor)).catch(traducirCorreoRepetido);
+
+/**
  * Elimina una cuenta, salvo la maestra, la propia o la del último administrador activo.
  * @throws {Error} 404 si no existe; 403 en los casos protegidos; 409 si es el último administrador o tiene contenido asociado.
  */
-export const deleteUser = async (id: string, actor?: Actor) => {
+const eliminarUsuario = async (id: string, actor?: Actor) => {
   const user = await UserRepository.findById(id);
   if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
 
@@ -309,6 +336,10 @@ export const deleteUser = async (id: string, actor?: Actor) => {
   
   return { message: 'Usuario eliminado' };
 };
+
+/** Elimina una cuenta, de una en una con las demás operaciones que pueden quitar un administrador. */
+export const deleteUser = (id: string, actor?: Actor) =>
+  enSeccionCritica(CLAVE_DE_ADMINISTRACION, () => eliminarUsuario(id, actor));
 
 /**
  * Inactiva las cuentas activas cuya fecha de caducidad ya pasó (el rol administrador queda exento).

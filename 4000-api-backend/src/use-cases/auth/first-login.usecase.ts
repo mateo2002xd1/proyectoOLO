@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 import { compararPassword, nuevaPasswordSinRepetir, BCRYPT_ROUNDS } from '../../shared/password-policy';
+import { enSeccionCritica } from '../../shared/seccion-critica';
 
 /** Lo que quedó pendiente de configurar, para que quien llama sepa qué pedir. */
 export interface EstadoPrimerIngreso {
@@ -82,7 +83,7 @@ const prepararPreguntas = async (userId: string, securityQuestions: any[]) => {
  *
  * Es idempotente: si no queda nada pendiente no falla, informa.
  */
-export const firstLoginUseCase = async (
+const completarPrimerIngreso = async (
   userId: string,
   tempPassword: string,
   newPassword: string,
@@ -140,3 +141,22 @@ export const firstLoginUseCase = async (
     configuroPreguntas: debeConfigurarPreguntas,
   };
 };
+
+/**
+ * El primer ingreso de una cuenta, de uno en uno por cuenta.
+ *
+ * Borra las tres preguntas y las vuelve a crear, y cambia la contraseña: con dos pestañas
+ * enviando a la vez las dos borraban, las dos insertaban y el índice único de
+ * (cuenta, pregunta) hacía fallar a una con un 500, o se mezclaban las respuestas. En fila, la
+ * segunda ya encuentra la cuenta sin nada pendiente y responde lo que esta función promete:
+ * que no falla y que informa de que no había nada que hacer.
+ */
+export const firstLoginUseCase = (
+  userId: string,
+  tempPassword: string,
+  newPassword: string,
+  securityQuestions: any[]
+) =>
+  enSeccionCritica(`primer-ingreso:${userId}`, () =>
+    completarPrimerIngreso(userId, tempPassword, newPassword, securityQuestions)
+  );
