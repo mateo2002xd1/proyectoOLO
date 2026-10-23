@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
 import { UserRepository } from '../repositories/usuarios.repository';
+import { permisosDeRol } from '../shared/permisos-de-rol';
 import jwt from 'jsonwebtoken';
 import {
   MINUTOS_DE_INACTIVIDAD_API,
@@ -174,6 +175,11 @@ async function autenticar(req: Request, res: Response, next: NextFunction, admit
       // caduca aunque la configuración ya esté hecha.
       must_change_password: Boolean((user as any).must_change_password),
       must_setup_security_questions: Boolean((user as any).must_setup_security_questions),
+      // Las claves también salen de la base (con la caché corta y la invalidación de
+      // `permisos-de-rol.ts`), no del token: las policies leen `req.user.permisos`, y con las del
+      // token revocar un permiso no surtía efecto hasta que caducaba la sesión, 8 horas (SES-02).
+      // Y el token ya no las lleva todas (ver `permisosParaElToken`).
+      permisos: await permisosDeRol((user as any).role?.name),
     };
 
     // Una sesión abierta con la temporal no sobrevive a su vencimiento: sin esto, quien

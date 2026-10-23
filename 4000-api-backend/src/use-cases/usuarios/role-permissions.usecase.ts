@@ -1,7 +1,7 @@
 import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
 import { RoleRepository } from '../../repositories/roles.repository';
 import { PermissionRepository } from '../../repositories/permisos.repository';
-import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import { esRolProtegido } from '../../shared/roles-protegidos';
 
 /** El 403 de los roles cuyos permisos fija el sistema (ver `roles-protegidos.ts`). */

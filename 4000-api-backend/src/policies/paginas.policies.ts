@@ -13,6 +13,7 @@
  * también. Comparar literal dejaría fuera a todo el mundo.
  */
 import { rolDeActor, permisosDeActor, tieneRol, type ActorDePolicy } from '../shared/autorizacion';
+import { tienePermisoDeEdicion } from '../shared/permisos-de-rol';
 
 const ROLES_QUE_VEN = ['superadmin', 'administrador', 'editor', 'director/subdirector'];
 const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
@@ -26,7 +27,7 @@ export const paginasPolicies = {
   /** Editar páginas: los roles que editan o cualquier permiso `editar.*`, `secciones.*` o `editor.*`. */
   puedeEditar: (actor?: ActorDePolicy) =>
     tieneRol(rolDeActor(actor), ROLES_QUE_EDITAN) ||
-    !!permisosDeActor(actor)?.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')),
+    tienePermisoDeEdicion(permisosDeActor(actor) ?? []),
 
   /** Aprobar una versión en revisión y publicarla. */
   puedePublicar: (actor?: ActorDePolicy) => tieneRol(rolDeActor(actor), ROLES_QUE_APRUEBAN),

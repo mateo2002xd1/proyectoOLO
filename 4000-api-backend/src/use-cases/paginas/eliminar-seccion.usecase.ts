@@ -41,7 +41,7 @@ import sequelize from '../../config/database';
 import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { buscarReferencias, type ReferenciaAEnlace } from './referencias-a-pagina';
-import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
 import { eliminarDirectorioBackupCompleto } from '../../infrastructure/storage/backup-uploads.service';

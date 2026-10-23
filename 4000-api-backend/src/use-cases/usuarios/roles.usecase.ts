@@ -1,6 +1,6 @@
 import { RoleRepository } from '../../repositories/roles.repository';
 import { User } from '../../infrastructure/db/models';
-import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import { esRolProtegido } from '../../shared/roles-protegidos';
 
 /** El 403 de los roles que define el sistema (ver `roles-protegidos.ts`). */

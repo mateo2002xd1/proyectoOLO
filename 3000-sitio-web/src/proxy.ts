@@ -25,9 +25,12 @@ export async function proxy(request: NextRequest) {
   // Todo lo que decide acceso sale del token verificado, no de las cookies legibles.
   const permisos = sesion?.permisos || [];
   const hasAccesoPanel = permisos.includes('acceso.panel');
-  const hasPermisosEdicion = permisos.some((p: string) => 
-    p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')
-  );
+  // `edita` lo calcula la API con todas las claves del rol; las `editar.*` de una sección creada
+  // desde el editor ya no viajan en el token. Las del catálogo fijo se siguen mirando por
+  // compatibilidad con las sesiones abiertas antes del cambio.
+  const hasPermisosEdicion =
+    sesion?.edita === true ||
+    permisos.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.'));
   
   const mustChangePassword = sesion?.debeCambiarPassword ?? false;
   const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
@@ -164,7 +167,8 @@ export async function proxy(request: NextRequest) {
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/login/first-login')) {
+    // El paso exacto o lo que cuelga de él: `/login/first-login-x` no es el primer ingreso.
+    if (pathname !== '/login/first-login' && !pathname.startsWith('/login/first-login/')) {
       return primerIngreso();
     }
   }

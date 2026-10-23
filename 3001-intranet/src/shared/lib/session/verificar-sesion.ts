@@ -32,7 +32,14 @@ export interface SesionVerificada {
   correo: string;
   debeCambiarPassword: boolean;
   debeConfigurarPreguntas: boolean;
+  /** Claves de permiso **fijas** del catálogo (las de las secciones creadas a mano no viajan en el token). */
   permisos: string[];
+  /**
+   * Si el rol tiene alguna clave de edición, también de una sección creada desde el editor. La API
+   * la calcula al iniciar sesión: el token ya no lleva todas las claves `editar.*`. Esta app decide
+   * por `acceso.intranet` y pregunta a `/api/me` lo demás; el campo está por igualdad con el sitio web.
+   */
+  edita: boolean;
 }
 
 /**
@@ -76,6 +83,7 @@ export async function verificarSesion(token: string | undefined): Promise<Sesion
       debeCambiarPassword: Boolean(payload.must_change_password),
       debeConfigurarPreguntas: Boolean(payload.must_setup_security_questions),
       permisos: Array.isArray(payload.permisos) ? payload.permisos : [],
+      edita: payload.edita === true,
     };
   } catch {
     // Sin detalle en el registro a propósito: distinguir «firma inválida» de

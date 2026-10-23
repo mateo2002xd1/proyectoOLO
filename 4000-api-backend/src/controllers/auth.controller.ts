@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
-import { loginUseCase, permisosDeRol } from '../use-cases/auth/login.usecase';
+import { loginUseCase } from '../use-cases/auth/login.usecase';
+import { permisosDeRol } from '../shared/permisos-de-rol';
 import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-login.usecase';
 import { UserRepository } from '../repositories/usuarios.repository';
 import { tieneConfiguracionPendiente } from '../middlewares/auth.middleware';
@@ -102,7 +103,8 @@ export const AuthController = {
    * Quién es quien pregunta, y **qué puede hacer**.
    *
    * `permisos` se añadió porque los frontends no tenían forma honesta de decidir qué
-   * pintar: el token lleva el rol, no las claves, así que un botón como «Nueva
+   * pintar: el token lleva el rol y solo las claves fijas del catálogo (no las de las secciones
+   * creadas a mano), así que un botón como «Nueva
    * sección» —que exige `secciones.crear`— solo se podía enseñar adivinando por rol.
    * Adivinar de menos esconde acciones a quien sí puede; adivinar de más pinta
    * botones que responden 403. Ahora se pregunta.

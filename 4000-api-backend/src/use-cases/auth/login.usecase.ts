@@ -12,8 +12,8 @@ import {
   temporalVencida,
 } from '../../shared/password-policy';
 import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
-import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
+import { permisosDeRol, permisosParaElToken, tienePermisoDeEdicion } from '../../shared/permisos-de-rol';
 import { logAudit, logBloqueoDeCuenta } from '../auditoria/audit.usecase';
 import { tieneRol } from '../../shared/autorizacion';
 import { gastarComparacionDeRelleno } from '../../shared/anti-enumeracion';
@@ -85,16 +85,6 @@ const esLaCuentaMaestra = (emailNormalizado: string, password: string): boolean 
   igualEnTiempoConstante(config.localAuth.password, password);
 
 /**
- * Las claves de permiso de un rol, tal como las recibe el frontend.
- *
- * Superadmin recibe el catálogo entero: su bypass vive en `resolverPermisos` y no en la
- * tabla `roles_permisos`, así que sin esto el panel le enseñaría menos de lo que puede
- * hacer. Lo usan el login (para el token) y `GET /api/me` (para refrescarlos).
- */
-export const permisosDeRol = async (rol: string | null | undefined): Promise<string[]> =>
-  tieneRol(rol, ['superadmin']) ? CLAVES_DEL_CATALOGO : RolePermissionRepository.getPermissionsByRole(rol ?? '');
-
-/**
  * Inicia sesión: valida dominio y credenciales, aplica bloqueo y caducidad, firma el JWT con los
  * permisos del rol y deja el ingreso en la bitácora.
  * @throws {Error} 401 genérico ante credenciales inválidas (cuenta inexistente o contraseña errónea, sin
@@ -133,6 +123,7 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
       must_setup_security_questions: false,
       must_change_password: false,
       permisos: CLAVES_DEL_CATALOGO,
+      edita: true,
     };
     const token = jwt.sign(payload as any, config.jwtSecret, {
       algorithm: config.jwtAlgoritmo,
@@ -239,6 +230,8 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
     }
   }
 
+  const permisos = await permisosDeRol(user.role?.name);
+
   const payload = {
     id: user.id,
     email: user.email,
@@ -248,7 +241,11 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
     role_id: user.role_id,
     must_setup_security_questions: user.must_setup_security_questions,
     must_change_password: user.must_change_password,
-    permisos: await permisosDeRol(user.role?.name),
+    // Solo las claves fijas del catálogo, y `edita` para el borde del sitio: las `editar.*` de las
+    // secciones creadas a mano crecen con los datos y acababan por no caber en la cookie (SES-01).
+    // La lista completa va en la respuesta de abajo y en `GET /api/me`.
+    permisos: permisosParaElToken(permisos),
+    edita: tienePermisoDeEdicion(permisos),
   };
 
   const token = jwt.sign(payload as any, config.jwtSecret, {
@@ -278,5 +275,5 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
       : [],
   });
 
-  return { token, user: payload };
+  return { token, user: { ...payload, permisos } };
 };

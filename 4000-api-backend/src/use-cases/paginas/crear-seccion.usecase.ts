@@ -38,7 +38,7 @@ import { tomarCandadoDeAviso } from '../../shared/seccion-critica';
 import { Pagina, Permission, Role, RolePermission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { resolverHref } from '../../shared/extraer-textos-puck';
-import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import type { Ambito } from '../../shared/ambito';
 
 /** Error con `status`, que es como el manejador de errores decide el código HTTP. */

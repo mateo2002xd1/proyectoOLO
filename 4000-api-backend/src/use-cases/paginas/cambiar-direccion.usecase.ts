@@ -68,7 +68,7 @@ import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/model
 import { claveDeSeccion, esSeccionDeFabrica } from '../../shared/catalogo-permisos';
 import { reemplazarEnlaces } from '../../shared/enlaces-en-contenido';
 import { resolverHref, rutaLlevaAPagina } from '../../shared/extraer-textos-puck';
-import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
 import { paginasPolicies } from '../../policies/paginas.policies';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';

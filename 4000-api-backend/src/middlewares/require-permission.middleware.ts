@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { RolePermissionRepository } from '../repositories/role-permissions.repository';
-import { marcarGuardia, normalizarRol, tieneRol } from '../shared/autorizacion';
+import { marcarGuardia, tieneRol } from '../shared/autorizacion';
 import { claveDeSeccion } from '../shared/catalogo-permisos';
 import { esSeccionConocida } from '../use-cases/paginas/secciones.usecase';
 import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
+import { permisosDeRol } from '../shared/permisos-de-rol';
 
 /**
  * Comprobación de permisos contra `roles_permisos`.
@@ -11,55 +11,9 @@ import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
  * Este middleware llevaba escrito desde el principio **sin que ninguna ruta lo usara**:
  * era el hallazgo de auditoría «RBAC definido en base de datos pero nunca aplicado en
  * código». Ahora es quien decide qué secciones puede editar cada rol.
- */
-
-const cache = new Map<string, { perms: string[]; expires: number }>();
-
-/**
- * TTL corto, y solo como red.
  *
- * El mecanismo principal para que un cambio de permisos surta efecto **de inmediato** es
- * `invalidarPermisosDeRol`, que se llama al escribir. Este vencimiento existe para el
- * caso de varias instancias de la API: una caché en memoria no se entera de lo que
- * escribió otro proceso, así que sin él la otra instancia podría quedarse con permisos
- * viejos indefinidamente. Con un solo proceso —lo que hay hoy— no llega a usarse.
- *
- * Antes eran cinco minutos. Para un control de acceso es demasiado: revocar un permiso y
- * que la persona siguiera usándolo un rato no se puede explicar ni en el panel.
+ * Las claves de cada rol, su caché y su invalidación viven en `shared/permisos-de-rol.ts`.
  */
-const TTL_MS = 30 * 1000;
-
-/**
- * Olvida los permisos cacheados de un rol, o de todos si no se indica ninguno.
- *
- * La llaman los dos únicos caminos que tocan `roles_permisos` —asignar y revocar— y las
- * operaciones sobre roles que dejan la clave huérfana (renombrar, borrar). Es lo que
- * hace que el cambio se note en la petición siguiente y no al cabo de un rato.
- */
-export function invalidarPermisosDeRol(rol?: string | null): void {
-  if (rol == null) {
-    cache.clear();
-    return;
-  }
-  cache.delete(rol);
-  // El nombre del rol viaja en el JWT tal cual está en la tabla, pero un renombrado
-  // podría dejar variantes; limpiar por comparación laxa evita dejar una entrada viva
-  // con otro uso de mayúsculas.
-  const normalizado = normalizarRol(rol);
-  for (const clave of cache.keys()) {
-    if (normalizarRol(clave) === normalizado) cache.delete(clave);
-  }
-}
-
-/** Permisos de un rol, de la caché o de la base. */
-const permisosDe = async (rol: string): Promise<string[]> => {
-  const entrada = cache.get(rol);
-  if (entrada && entrada.expires >= Date.now()) return entrada.perms;
-
-  const perms = await RolePermissionRepository.getPermissionsByRole(rol);
-  cache.set(rol, { perms, expires: Date.now() + TTL_MS });
-  return perms;
-};
 
 /**
  * Resuelve rol y permisos de la petición, o responde el error que corresponda.
@@ -85,7 +39,7 @@ const resolverPermisos = async (
 
   if (tieneRol(rol, ['superadmin'])) return 'superadmin';
 
-  return { perms: await permisosDe(rol) };
+  return { perms: await permisosDeRol(rol) };
 };
 
 /** Exige un permiso de clave fija. */
