@@ -1,12 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/session/auth-cookies';
-import { desplazarAElemento } from '@olo/blocks-renderer';
-import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/editor';
 import { hrefDelMenu } from '@/shared/lib/rutas-del-menu';
-import { BuscadorSitio } from './buscador-sitio';
 import { TAMANOS_TEXTO_MENU } from './tamanos-texto-menu';
 import { estiloDeFranjaGov } from './tinta-de-franja';
 import { SEPARACIONES_FRANJA, enlaceDeGovCo, rellenoDeImagenDeFranja } from './disposicion-de-franja';
@@ -15,7 +11,7 @@ import type { CSSProperties, ReactNode } from 'react';
 
 export interface NavItem {
   label: ReactNode;
-  href: string;
+  href?: string;
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavItem[];
@@ -171,62 +167,9 @@ const getSessionSnapshot = () =>
   EDITABLE_ROLES.includes((getCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase());
 const getSessionServerSnapshot = () => false;
 
-/* Separación mínima entre el logo y el menú, y entre el menú y la píldora del buscador.
-   Es poca porque cada enlace ya trae su relleno: el texto queda a 16 px de los dos. */
-const HOLGURA_MENU_PX = 8;
-/* Por debajo de esto no se puede escribir cómodamente en la píldora: antes de
-   estrecharla más se ocultan los últimos enlaces del menú. */
-const ANCHO_MINIMO_PILDORA_PX = 144;
-const ANCHO_MAXIMO_PILDORA_PX = 352;
-
-interface MenuAnteElBuscador {
-  corrimiento: number;
-  /** Enlaces del menú que se ven; los de después se desvanecen (`data-tapado`). */
-  visibles: number;
-  /** Ancho de la píldora abierta; sin él, el de `--olo-buscador-ancho` en el CSS. */
-  anchoPildora?: number;
-}
-
-const MENU_EN_SU_SITIO: MenuAnteElBuscador = { corrimiento: 0, visibles: Infinity };
-
-/* Con el buscador abierto, la píldora crecía sobre el menú y cortaba la palabra que
-   quedaba debajo. Ahora el menú se corre hasta el logo y la píldora ocupa el hueco que
-   queda entre el último enlace y la lupa. Si ese hueco no llega al mínimo, los últimos
-   enlaces se ocultan enteros. `corrimientoActual` se descuenta porque las medidas ya
-   traen aplicado el `translateX` del menú. */
-function moverMenuAnteElBuscador(
-  cabecera: HTMLElement,
-  corrimientoActual: number,
-): MenuAnteElBuscador {
-  const menu = cabecera.querySelector<HTMLElement>('.olo-nav');
-  const logo = cabecera.querySelector<HTMLElement>('.olo-logo-group');
-  const medida = cabecera.querySelector<HTMLElement>('.olo-buscador__medida');
-  // Por debajo de `lg` el menú está oculto: no hay nada que mover.
-  if (!menu || !logo || !medida || menu.offsetParent === null) return MENU_EN_SU_SITIO;
-
-  const finPildora = medida.getBoundingClientRect().right;
-  const inicioMenu = menu.getBoundingClientRect().left + corrimientoActual;
-  const corrimiento = Math.max(
-    0,
-    Math.floor(inicioMenu - (logo.getBoundingClientRect().right + HOLGURA_MENU_PX)),
-  );
-  const finales = Array.from(menu.children).map(
-    (enlace) => enlace.getBoundingClientRect().right + corrimientoActual - corrimiento,
-  );
-  const hueco = (visibles: number) =>
-    finPildora - ((finales[visibles - 1] ?? inicioMenu - corrimiento) + HOLGURA_MENU_PX);
-
-  let visibles = finales.length;
-  while (visibles > 0 && hueco(visibles) < ANCHO_MINIMO_PILDORA_PX) visibles--;
-  const anchoPildora = Math.floor(Math.min(hueco(visibles), ANCHO_MAXIMO_PILDORA_PX));
-  return { corrimiento, visibles, anchoPildora };
-}
-
-function estiloDeLaCabecera(colorFondo?: string, anchoPildora?: number): CSSProperties | undefined {
-  const estilo: Record<string, string> = {};
-  if (colorFondo?.trim()) estilo.backgroundColor = colorFondo;
-  if (anchoPildora !== undefined) estilo['--olo-buscador-ancho-ajustado'] = `${anchoPildora}px`;
-  return Object.keys(estilo).length > 0 ? (estilo as CSSProperties) : undefined;
+function estiloDeLaCabecera(colorFondo?: string): CSSProperties | undefined {
+  if (colorFondo?.trim()) return { backgroundColor: colorFondo };
+  return undefined;
 }
 
 export function Header({
@@ -252,89 +195,7 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const abrirBuscador = useCallback(() => setIsSearchOpen(true), []);
-  const cerrarBuscador = useCallback(() => setIsSearchOpen(false), []);
   const cabeceraRef = useRef<HTMLElement>(null);
-  const [menuMedido, setMenuMedido] = useState(MENU_EN_SU_SITIO);
-  const corrimientoRef = useRef(0);
-  // Cerrado, el menú vuelve a su sitio sin esperar a ninguna medida.
-  const menuAnteBuscador = isSearchOpen ? menuMedido : MENU_EN_SU_SITIO;
-
-  // Se mide antes de pintar, para que el menú se corra a la vez que crece la píldora.
-  useLayoutEffect(() => {
-    if (!isSearchOpen) return;
-    const recalcular = () => {
-      if (!cabeceraRef.current) return;
-      const siguiente = moverMenuAnteElBuscador(cabeceraRef.current, corrimientoRef.current);
-      corrimientoRef.current = siguiente.corrimiento;
-      setMenuMedido(siguiente);
-    };
-    recalcular();
-    window.addEventListener('resize', recalcular);
-    return () => {
-      window.removeEventListener('resize', recalcular);
-      corrimientoRef.current = 0;
-    };
-  }, [isSearchOpen]);
-  const [indiceBusqueda, setIndiceBusqueda] = useState<PaginaIndiceBusqueda[]>([]);
-
-  useEffect(() => {
-    let activo = true;
-    obtenerIndiceBusqueda()
-      .then((datos) => {
-        if (activo && datos && datos.length > 0) {
-          setIndiceBusqueda(datos);
-        }
-      })
-      .catch((err) => {
-        console.warn('No se pudo cargar el índice de búsqueda en Header:', err);
-      });
-    return () => {
-      activo = false;
-    };
-  }, []);
-
-  const irA = useCallback(
-    (href: string, blockId?: string, texto?: string) => {
-      setIsSearchOpen(false);
-
-      if (typeof window === 'undefined') {
-        router.push(href);
-        return;
-      }
-
-      const limpiarRuta = (r: string) => {
-        const limpia = (r || '').split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
-        return limpia === '/inicio' ? '/' : limpia;
-      };
-
-      const rutaActual = limpiarRuta(pathname || window.location.pathname);
-      const rutaDestino = limpiarRuta(href);
-
-      // Si ya estamos en la misma página, desplazarse de inmediato sin recarga
-      if (rutaActual === rutaDestino) {
-        setTimeout(() => {
-          desplazarAElemento({ blockId, texto });
-        }, 50);
-        return;
-      }
-
-      // Si es una página distinta, navegar pasando el anchor y el texto
-      const url = new URL(href, window.location.origin);
-      if (blockId) {
-        url.hash = blockId;
-      }
-      if (texto) {
-        url.searchParams.set('resaltar', texto.slice(0, 120));
-      }
-
-      router.push(url.pathname + url.search + url.hash);
-    },
-    [router, pathname]
-  );
   const hasSession = useSyncExternalStore(
     subscribeToCookies,
     getSessionSnapshot,
@@ -504,7 +365,7 @@ export function Header({
         className="olo-header"
         id="main-header"
         data-block-id={block.id}
-        style={estiloDeLaCabecera(colorFondo, menuAnteBuscador.anchoPildora)}
+        style={estiloDeLaCabecera(colorFondo)}
       >
         <div className="olo-header-inner" {...separacion}>
           <div className="olo-logo-group">
@@ -537,22 +398,15 @@ export function Header({
           <nav
             className="olo-nav"
             aria-label="Navegacion principal"
-            style={
-              menuAnteBuscador.corrimiento > 0
-                ? { transform: `translateX(-${menuAnteBuscador.corrimiento}px)` }
-                : undefined
-            }
           >
             {navLinks.map((link, index) => {
               const dropdownKey = typeof link.label === 'string' ? link.label : `nav-item-${index}`;
-              const tapado = index >= menuAnteBuscador.visibles || undefined;
               if (link.children && link.children.length > 0) {
                 const isOpen = openDropdown === dropdownKey;
                 return (
                   <div
                     key={`nav-link-${index}`}
                     className="olo-nav-item"
-                    data-tapado={tapado}
                     style={estiloDelEnlace(link)}
                     ref={(node) => {
                       if (node) dropdownRefs.current.set(dropdownKey, node);
@@ -610,7 +464,6 @@ export function Header({
                   key={`nav-link-${index}`}
                   href={hrefDelMenu(link)}
                   className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
-                  data-tapado={tapado}
                   style={estiloDelEnlace(link)}
                 >
                   {link.label}
@@ -622,13 +475,6 @@ export function Header({
           {separacion['data-separacion'] && <span className="olo-header-separador olo-header-separador--acciones" aria-hidden="true" />}
 
           <div className="olo-nav-actions">
-            <BuscadorSitio
-              abierto={isSearchOpen}
-              onAbrir={abrirBuscador}
-              onCerrar={cerrarBuscador}
-              indice={indiceBusqueda}
-              onNavigate={irA}
-            />
             {/* Link para intranet cambiar en produccion */}
             <a
               href={INTRANET_URL}

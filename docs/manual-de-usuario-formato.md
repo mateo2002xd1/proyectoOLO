@@ -111,7 +111,7 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
     * *Rechazar:* Devuelve la versión al editor responsable con las observaciones y justificación de los cambios requeridos.
     * *Descartar / Eliminar (ícono de basurero):* Elimina definitivamente el borrador no procedente o enviado por error. Esta acción exige registrar obligatoriamente el motivo para la bitácora de auditoría y depura los archivos e imágenes huérfanas sin alterar la versión publicada.
     *(Ver procedimiento operativo de revisión en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).*
-  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores (ver [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual), [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso) y [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro)).
+  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas, cambiar su dirección web y eliminar páginas dinámicas creadas por los editores (ver [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual), [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso), [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro) y [Sección 3.4.3.6: Cambio de dirección de una página (botón «Editar dirección»)](#3436-cambio-de-dirección-de-una-página-botón-editar-dirección)).
   * *Carga masiva de información en Excel:* Importa y procesa actualizaciones masivas de datos ocupacionales, estadísticas e indicadores del observatorio mediante archivos en formato `.xlsx` (ver paso a paso en [Sección 3.4.2.8: Carga Masiva de Datos en Excel](#3428-actualizaciones-y-carga-masiva-de-datos-en-excel)).
   * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen (ver paso a paso en [Sección 3.4.2.6: Bitácora de Auditoría](#3426-auditoría-y-bitácora-de-eventos)).
 
@@ -132,7 +132,7 @@ Corresponde al rol técnico general facultado para la producción, maquetación 
 * **Funciones y facultades principales:**
   * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho (ver paso a paso en [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual)).
   * *Cobertura total de edición:* Accede a la edición de cualquier página del portal o de la Intranet a través del botón flotante en pantalla (opción **«Editar página»**), disponiendo de permisos plenos sobre todos los contenidos existentes, sin importar qué editor los haya creado originalmente.
-  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **«Nueva página»** (definiendo título y ruta URL) y **«Eliminar página»** (con validaciones de seguridad y protección contra enlaces rotos). (Ver paso a paso de creación en [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso) y de eliminación en [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro)).
+  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **«Nueva página»** (definiendo título y ruta URL), **«Editar dirección»** (para cambiar su dirección web y actualizar enlaces dependientes) y **«Eliminar página»** (con validaciones de seguridad y protección contra enlaces rotos). (Ver paso a paso de creación en [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso), de eliminación en [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro) y de cambio de dirección en [Sección 3.4.3.6: Cambio de dirección de una página (botón «Editar dirección»)](#3436-cambio-de-dirección-de-una-página-botón-editar-dirección)).
   * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **«Guardar borrador»** sin alterar el portal público, y traslada los cambios terminados mediante **«Enviar a revisión»** hacia la sección **«Páginas en revisión»** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador (ver paso a paso en [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual)).
 
 * **Límites operativos y restricciones de seguridad:**
@@ -215,7 +215,7 @@ Por este motivo, **los únicos roles cuyos permisos son personalizables y editab
 | **Editar páginas asignadas del Sitio Web e Intranet** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Modificar cabecera y pie de página del portal** | Permitido | Permitido | No (Por defecto) | Sin acceso |
 | **Crear nuevas páginas en el portal** | Permitido | Permitido | Según asignación manual | Sin acceso |
-| **Cambiar la dirección web de una página** | Permitido | Permitido | Sin acceso | Sin acceso |
+| **Cambiar la dirección web de una página** | Permitido | Sin acceso | Según asignación manual | Sin acceso |
 | **Eliminar páginas creadas por usuarios** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Eliminar páginas base del sistema (de fábrica)** | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) |
 | **Guardar borradores y enviar a revisión** | Permitido | Permitido | Permitido | Sin acceso |
@@ -393,7 +393,7 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
     * **"Editar página":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
     * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página («Menú y pie de página») en el editor visual.
     * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
-    * **"Editar dirección":** Disponible solo para Superadmin y Administrador (quien aprueba contenido): reescribe enlaces de lo ya publicado sin pasar por la revisión. No se muestra en la portada.
+    * **"Editar dirección":** Muestra un ícono de eslabón de cadena: abre la ventana modal para modificar la dirección web de la página actual y actualiza automáticamente los botones, menús y enlaces del portal que apunten a ella. Se encuentra disponible si el usuario es Administrador o si su rol cuenta con el permiso para cambiar la dirección de las páginas.
     * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
   * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante de edición completo se oculta automáticamente.
   * **Coexistencia y coordinación con el botón «Subir»:** Si el usuario se desplaza verticalmente y se activa el botón «Subir», el sistema detecta la presencia del botón flotante de edición y desplaza automáticamente el botón «Subir» hacia su izquierda, evitando que ambos controles se solapen o interfieran entre sí.
@@ -1369,7 +1369,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
 > *Lista de roles en formato acordeón en dispositivos móviles, con el rol Editor desplegado y su botón de eliminación deshabilitado.*
 
 3. **Creación de Roles Derivados (Botón "Nuevo Editor"):** En la cabecera superior del módulo, hacer clic en el botón **"Nuevo Editor"** para abrir la ventana modal de configuración. Se deben diligenciar los siguientes campos:
-   * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres).
+   * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres). La plataforma valida tanto en la interfaz como en el servidor backend que todo rol hijo cumpla estrictamente con la convención de nomenclatura `Editor [Nombre]`, bloqueando cualquier intento de crear o renombrar roles fuera de este estándar.
    * **Descripción:** Cuadro de texto para especificar las funciones o el alcance operativo del rol (hasta 200 caracteres).
    * **Permisos:** Se debe hacer clic en el botón **"Añadir permisos"**, el cual abre la ventana modal de permisos y actualiza el contador de permisos elegidos (ej. *«3 seleccionados»*). *(Nota: Para consultar la definición y el alcance de las 5 secciones de control de permisos que componen la plataforma, remitirse a la [Sección 3.2.2.3: Estructura y Ámbitos de los Permisos (Las 5 Secciones de Control)](#3223-estructura-y-ámbitos-de-los-permisos-las-5-secciones-de-control)).*
    
@@ -1405,7 +1405,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
      2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
      3. **Páginas del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
      4. **Páginas de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
-     5. **Qué puede hacer dentro del editor:** Facultades de acción estructural dentro del lienzo de trabajo interactivo (crear nuevas páginas o eliminar páginas dinámicas creadas).
+     5. **Qué puede hacer dentro del editor:** Presenta los interruptores para activar las herramientas visuales del botón flotante de edición: **Crear páginas nuevas** (muestra el botón con ícono de suma para diseñar una nueva sección), **Eliminar páginas** (muestra el botón con ícono de papelera para retirar páginas creadas) y **Cambiar la dirección de las páginas** (muestra el botón con ícono de eslabón para modificar la dirección de acceso y actualizar automáticamente los menús y enlaces del portal que lleven a ella). Cada opción del menú flotante se muestra únicamente si el rol tiene activo el permiso respectivo.
    * **Interruptores deslizantes e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
      * **«se añade»:** Indica que el permiso está siendo incorporado al rol.
      * **«se quita»:** Indica que el permiso está siendo revocado del rol.
@@ -1526,7 +1526,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
    Si la versión contiene inconsistencias o requiere ajustes:
    * **Apertura de la ventana modal de rechazo:** El Administrador presiona el botón **"Rechazar"** (con ícono de equis en computadores) de la página a evaluar. El sistema abre la ventana modal *«Rechazar versión [N] de [Página]»* para registrar las observaciones; el borrador pasa a estado rechazado conservando todos sus cambios, de modo que al volver a editar la página se retoma para ajustar y reenviarlo a revisión.
    * **Registro obligatorio de observaciones:** En el campo de texto (*«Explica la razón…»*), el Administrador redacta claramente el motivo del rechazo (hasta 100 caracteres con contador visible).
-     * **Validación de seguridad:** El botón de confirmación **"Rechazar"** permanece inactivo mientras el campo esté vacío; es obligatorio escribir las observaciones para habilitarlo.
+     * **Obligatoriedad del motivo:** El botón de confirmación **"Rechazar"** permanece inactivo mientras el campo esté vacío o contenga únicamente espacios en blanco, impidiendo devolver un borrador sin dejar constancia escrita de las observaciones para el editor.
    * **Confirmación del rechazo:** Al presionar **"Rechazar"**, el borrador queda en estado rechazado con las observaciones registradas, sale de la bandeja de revisión y queda disponible para que al editar la página se ajuste el motivo de rechazo y se vuelva a enviar.
 
 > **[Captura: Modal Rechazo con Observaciones]**
@@ -1539,7 +1539,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
    Si el borrador no procede, es un duplicado o fue remitido por error y debe anularse definitivamente:
    * **Apertura de la advertencia destructiva:** El Administrador presiona el botón **"Eliminar"** (con ícono de papelera en computadores) del borrador que se requiere anular. El sistema abre la ventana modal *«Eliminar versión [N] de [Página]»*, advirtiendo que los cambios no publicados se perderán de manera permanente e irreversible.
    * **Registro obligatorio del motivo:** En el campo de texto (*«Explica la razón…»*), registrar la justificación por la cual se descarta la versión (hasta 100 caracteres).
-     * **Validación de seguridad:** El botón de confirmación **"Eliminar"** en la ventana modal permanece deshabilitado e inactivo mientras el campo se encuentre vacío. Es obligatorio ingresar el motivo para habilitar la confirmación.
+     * **Obligatoriedad de la justificación:** El botón de confirmación **"Eliminar"** en la ventana modal permanece inactivo mientras el campo se encuentre vacío o contenga únicamente espacios en blanco, garantizando que jamás se descarten versiones sin justificar el motivo para la bitácora de auditoría.
    * **Confirmación del descarte:** Al presionar el botón **"Eliminar"** dentro de la ventana modal, la versión se elimina permanentemente de la plataforma y el motivo queda registrado de forma automática en la bitácora de auditoría.
 
 > **[Captura: Confirmación Descarte]**
@@ -2068,11 +2068,11 @@ El botón flotante permite a los usuarios con facultades editoriales gestionar c
    * **Editar página (Ícono de lápiz sobre documento):** Abre de inmediato la página actual en el Editor Visual para modificar sus textos, imágenes y estructura de bloques. Se muestra si el usuario tiene asignado el permiso para editar esa página específica o si cuenta con el rol de Administrador.
    * **Menú y pie (Ícono de capas):** Abre el Editor Visual para estructurar los elementos globales que comparten todas las páginas del portal (barra superior, menú de navegación principal e información del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
    * **Nueva página (Ícono de suma "+"):** Despliega la ventana modal de creación, solicitando el nombre deseado y generando automáticamente su dirección web de acceso. Requiere el permiso de creación correspondiente o el rol de Administrador.
-   * **Editar dirección (Ícono de eslabón de cadena):** Abre la ventana modal para cambiar la dirección web de la página actual y actualizar los enlaces del portal que apuntaban a la anterior (ver [Sección 3.4.3.5.1](#34351-cambio-de-dirección-de-una-página-botón-editar-dirección)). No aparece en la portada. Solo lo ofrece el sistema a Superadmin y Administrador.
+   * **Editar dirección (Ícono de eslabón de cadena):** Abre la ventana modal para cambiar la dirección web de la página actual y actualizar los botones, menús y enlaces del portal que lleven a ella (ver [Sección 3.4.3.6: Cambio de dirección de una página (botón «Editar dirección»)](#3436-cambio-de-dirección-de-una-página-botón-editar-dirección)). No aparece en la portada ni en páginas fijas del portal. Se encuentra disponible en ambos entornos (**Sitio Web** e **Intranet**) si el usuario cuenta con el permiso para cambiar la dirección de las páginas o si tiene el rol de Administrador.
    * **Eliminar página (Ícono de papelera):** Ubicado en la parte superior del menú desplegado con estilo de advertencia. Inicia el procedimiento de retiro seguro y comprobación previa de enlaces activos. Solo aparece en páginas dinámicas creadas por editores y requiere el permiso para eliminar páginas o el rol de Administrador.
 
 > **[Captura: Menú Flotante de Edición Desplegado]**
-> *Menú de herramientas editoriales desplegado verticalmente mostrando las opciones de Editar página, Menú y pie, Nueva página y Eliminar página con sus etiquetas flotantes.*
+> *Menú de herramientas editoriales desplegado verticalmente mostrando las opciones de Editar página, Menú y pie, Nueva página, Editar dirección y Eliminar página con sus etiquetas flotantes.*
 >
 > **[Captura: Menú Flotante de Edición Desplegado (Móvil)]**
 > *Menú flotante desplegable adaptado a pantalla móvil. (Móvil).*
@@ -2104,6 +2104,14 @@ En la plataforma, una pantalla se divide visualmente en dos componentes fundamen
      * *Menú principal de navegación:* Estructura jerárquica de enlaces primarios, botones de acción y menús desplegables multinivel organizados por temáticas.
      * *Pie de página del portal:* Franjas de contacto, logotipos del SENA y del Estado, políticas de tratamiento de datos, enlaces de interés y derechos de autor.
    * **Comportamiento en pantalla:** Al seleccionar **«Menú y pie»**, el Editor Visual enfoca su lienzo de trabajo exclusivamente en los bloques correspondientes a la cabecera y al pie de página, permitiendo ordenar enlaces, agregar nuevos ítems de menú y actualizar datos de contacto.
+   * **Definición dinámica de las direcciones web (URLs) por el menú:** La dirección de cada página del portal la define de forma dinámica su posición en el árbol de navegación de «Menú y pie», eliminando la necesidad de programar rutas fijas en el código:
+     * *Páginas en el primer nivel del menú:* Poseen una dirección web directa (ej. `/inicio`, `/ape`, `/publicaciones`).
+     * *Páginas agrupadas en menús desplegables:* Toda página que cuelga de un desplegable adopta automáticamente como prefijo el tramo generado por el título del desplegable: `/{desplegable}/{pagina}` (por ejemplo, al agrupar la Clasificación CUOC bajo el menú «Clasificación de las Ocupaciones», su dirección canónica pasa a ser `/clasificacion-de-las-ocupaciones/clasificacion-cuoc`). Si un ciudadano o usuario escribe la dirección simple `/clasificacion-cuoc`, el sistema detecta su jerarquía y lo redirige automáticamente a la dirección canónica completa.
+     * *Páginas dentro de esta página («Páginas internas»):* Al editar las propiedades de una página hija dentro de un desplegable, se dispone del campo **«Páginas dentro de esta página»** (`internas`). Permite declarar páginas secundarias que dependen jerárquicamente de esa sección (por ejemplo, una página de `/resultado` para búsquedas) sin que se muestren como botones en el menú principal; su dirección pública se compone automáticamente de tres tramos organizados (por ejemplo: `/tema/pagina-principal/pagina-interna`).
+     * *Migas de pan automáticas:* Los eslabones de navegación (breadcrumbs) en la parte superior del contenido toman su estructura y los títulos actualizados directamente de las páginas publicadas en base de datos, guiando al usuario por la jerarquía canónica de navegación.
+     * *Pantalla de página no encontrada:* Si se ingresa a una dirección que no existe o que cambió de ubicación, el sistema despliega una pantalla institucional integrada que orienta al visitante a volver al inicio o utilizar el buscador.
+     * *Configuración de espaciado y protección del logotipo:* En el bloque de cabecera se dispone de controles para calibrar la separación visual entre el logotipo y los enlaces del menú (`Separación logo-menú`), así como entre el menú y las acciones de la derecha (`Separación menú-acciones`). El sistema incorpora reglas de maquetación que impiden que el logotipo del SENA y del Observatorio se reduzca o distorsione al agrandar el menú.
+     * *Tolerancia a enlaces vacíos en edición:* Durante la configuración del menú, si un enlace nuevo aún no cuenta con su URL (`href`) diligenciada, el sistema le asigna automáticamente un ancla segura (`#`), permitiendo continuar con la maquetación sin interrupciones.
    * **Requisitos de acceso:** Requiere contar expresamente con el permiso **«Menú y pie del sitio web»** o **«Menú y pie de la intranet»** (según el portal en el que se opere) dentro del grupo *Editar*, o contar con el rol de Administrador.
 
 > **[Captura: Acceso a Edición de Menú y Pie]**
@@ -2434,7 +2442,7 @@ El procedimiento para crear una nueva página dinámica en el portal se realiza 
 
 #### 3.4.3.5. Eliminación de Páginas (Procedimiento Seguro)
 
-La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de páginas dinámicas que evita la generación de enlaces rotos y previene eliminaciones accidentales:
+La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de páginas dinámicas que evita la generación de enlaces rotos y previene eliminaciones accidentales (aplicable tanto en el **Sitio Web** como en la **Intranet**):
 
 1. **Acceso desde el botón flotante:**
    Navegar hacia la página que se desea eliminar. Hacer clic en el botón flotante de edición y seleccionar la opción **«Eliminar página»** (ícono de papelera con estilo de advertencia).
@@ -2486,11 +2494,12 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 > **[Captura: Confirmación de Eliminación de Página (Móvil)]**
 > *Notificación de eliminación segura en dispositivo móvil. (Móvil).*
 
-##### 3.4.3.5.1. Cambio de dirección de una página (botón «Editar dirección»)
+#### 3.4.3.6. Cambio de dirección de una página (botón «Editar dirección»)
 
-Permite cambiarle la dirección web a una página ya creada sin dejar enlaces rotos dentro del portal:
+Permite cambiarle la dirección web a una página ya creada sin dejar enlaces rotos dentro del portal (disponible en ambos entornos, **Sitio Web** e **Intranet**):
 
 1. **Acceso:** Navegar a la página, abrir el botón flotante de edición y elegir **«Editar dirección»** (ícono de eslabón de cadena).
+   *(Nota: Esta opción se encuentra visible para usuarios con rol de Administrador o usuarios cuyo rol tenga asignado el permiso para cambiar la dirección de las páginas).*
 2. **Escribir la nueva dirección:** El campo acepta el nombre como se escribe normalmente (*Resultado final*): se convierte solo a minúsculas y guiones (*resultado-final*). El sistema comprueba mientras se escribe que la dirección sea válida y esté libre; si no lo está (por ejemplo, ya existe otra página con esa dirección o es una dirección reservada del sistema), lo explica en un mensaje de color rojo.
 3. **Revisar el uso de la dirección actual:** Si otras páginas enlazan a la dirección actual (el menú, el pie de página, botones o textos con enlaces), un mensaje amarillo lo advierte y lista dónde están, con los nombres del editor (bloque y campo). También cuenta lo que está en borrador o pendiente de revisión, para que al aprobarlo no vuelva a publicarse el enlace viejo. Si no hay enlaces, un mensaje verde confirma que la dirección está disponible.
 4. **Confirmar:** El botón dice **«Actualizar enlaces y cambiar»** cuando hay enlaces (al pulsarlo se reescriben todos a la dirección nueva, en el mismo paso). En ese caso es blanco con borde amarillo —el color del mensaje de aviso— y se rellena de amarillo claro al pasar el cursor; cuando no hay enlaces dice **«Cambiar dirección»** y es el botón azul de siempre. Los dos botones del diálogo miden lo mismo. Si mientras tanto alguien enlazó la página o abrió el editor, el sistema lo avisa y actualiza la lista sin cerrar el diálogo.
@@ -2503,11 +2512,11 @@ Permite cambiarle la dirección web a una página ya creada sin dejar enlaces ro
 
 > **Importante:** los enlaces que están **fuera del portal** (correos, otros sitios, marcadores del navegador) hacia la dirección anterior dejan de funcionar; el sistema no deja una redirección. El diálogo lo recuerda siempre. También se actualizan los enlaces que hubiera en versiones rechazadas o archivadas, para que restaurar una versión anterior no traiga enlaces rotos. El cambio queda registrado en la bitácora de auditoría: una entrada en la página cuya dirección cambió (la anterior y la nueva) y otra en cada página cuyos enlaces se actualizaron.
 
-#### 3.4.3.6. Componentes del Sitio Web Público en el Editor Visual
+#### 3.4.3.7. Componentes del Sitio Web Público en el Editor Visual
 
 Este apartado describe los bloques de contenido prediseñados disponibles para maquetar y estructurar las páginas del Sitio Web Público del Observatorio Laboral y Ocupacional (OLO):
 
-##### 3.4.3.6.1. Bloque «Buscador de Ocupaciones»
+##### 3.4.3.7.1. Bloque «Buscador de Ocupaciones»
 Permite integrar la herramienta de consulta de clasificaciones laborales CNO y CUOC en cualquier página del portal (como `/clasificacion`):
 * **Ubicación en el editor:** Se encuentra en el panel lateral de bloques, dentro de la categoría *Sitio Web*, bajo el nombre **«Buscador de Ocupaciones»**.
 * **Opciones configurables:**
@@ -2519,14 +2528,14 @@ Permite integrar la herramienta de consulta de clasificaciones laborales CNO y C
 > **[Captura: Bloque Buscador de Ocupaciones en el Editor Visual]**
 > *Configuración del bloque Buscador de Ocupaciones en el editor visual mostrando el campo de texto de ayuda en el panel lateral.*
 
-##### 3.4.3.6.1.1. Bloque «Resultados de ocupaciones»
+##### 3.4.3.7.1.1. Bloque «Resultados de ocupaciones»
 Muestra solo los resultados de una búsqueda de ocupaciones, sin la barra de búsqueda: la lista (cuando la dirección trae `?buscar=…`) y la ficha completa de la ocupación que se elija. Es el bloque de la página de resultados, para tener los buscadores en un sitio (por ejemplo la página de la Clasificación Nacional de Ocupaciones y la portada) y la lista en otro.
 * **Ubicación en el editor:** Panel lateral de bloques, categoría *Sitio Web*, **«Resultados de ocupaciones»**.
 * **Opciones configurables:** el mismo interruptor **«Buscador de ocupaciones» (Activo / Apagado)** del bloque «Buscador de Ocupaciones». Cuenta el de la página de resultados elegida en «Menú y pie».
 * **Comportamiento en la página:** Sin búsqueda en la dirección muestra «No hay ninguna búsqueda. Usa el buscador de ocupaciones para consultar el catálogo.». Con el buscador apagado, «El buscador de ocupaciones no está disponible.».
 * **Cómo ponerla bajo la Clasificación Nacional de Ocupaciones:** crear la página (por ejemplo «Resultado», con este bloque); en «Menú y pie», dentro de la hija «Clasificación Nacional de Ocupaciones», añadirla en **«Páginas dentro de esta página»** con `/resultado` (no sale en el menú y su dirección queda `/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones/resultado`); y escribir `/resultado` en **«Página de resultados del buscador de ocupaciones»**, en la cabecera.
 
-##### 3.4.3.6.2. Bloque «Alertas de Inversión»
+##### 3.4.3.7.2. Bloque «Alertas de Inversión»
 Permite presentar y explorar los proyectos de inversión empresarial registrados en el país, alimentándose automáticamente de la información cargada en el sistema:
 * **Ubicación en el editor:** Disponible en el panel lateral de bloques como **«Alertas de Inversión»**.
 * **Opciones configurables:**
@@ -2537,7 +2546,7 @@ Permite presentar y explorar los proyectos de inversión empresarial registrados
 > **[Captura: Bloque Alertas de Inversión en el Editor Visual]**
 > *Configuración del bloque Alertas de Inversión en el editor visual con opciones de título y descripción.*
 
-##### 3.4.3.6.3. Bloque «Video Embebido»
+##### 3.4.3.7.3. Bloque «Video Embebido»
 Permite reproducir videos institucionales desde el canal oficial del SENA en YouTube, con opciones para ambientar visualmente la sección:
 * **Opciones configurables en el panel lateral:**
   * **Enlace del video:** Dirección web del video en YouTube que se desea reproducir.
@@ -2549,7 +2558,7 @@ Permite reproducir videos institucionales desde el canal oficial del SENA en You
 > **[Captura: Bloque Video Embebido con Imagen de Fondo]**
 > *Panel lateral del editor visual mostrando las opciones de enlace, transparencia e imagen de fondo para el bloque de video.*
 
-##### 3.4.3.6.4. Bloque «Dato OLO de la Semana»
+##### 3.4.3.7.4. Bloque «Dato OLO de la Semana»
 Componente interactivo diseñado para destacar cifras clave, boletines e infografías del mercado de trabajo:
 * **Fondo visual independiente:** Permite asignar una imagen temática de fondo a cada una de las infografías publicadas.
 * **Transición fluida:** Al cambiar entre infografías, la imagen y los colores de fondo cambian suavemente para ofrecer una experiencia visual moderna y atractiva para la ciudadanía.
@@ -2557,7 +2566,52 @@ Componente interactivo diseñado para destacar cifras clave, boletines e infogra
 > **[Captura: Bloque Dato OLO de la Semana]**
 > *Presentación del bloque Dato OLO de la semana en el editor visual con infografías y transiciones visuales.*
 
-#### 3.4.3.7. Catálogo de Componentes de la Intranet
+##### 3.4.3.7.5. Bloque «Buscador del Sitio Web»
+Componente modular e interactivo que permite incorporar una barra de búsqueda institucional en cualquier página del portal (por ejemplo en la portada `/inicio` o en páginas temáticas), estructurado bajo las especificaciones de diseño accesible de la **Página 20 del Kit UI GOV.CO**:
+* **Ubicación en el catálogo:** Se encuentra disponible en el catálogo de componentes del Editor Visual bajo la categoría *Contenido Principal*, con el nombre **«Buscador del Sitio Web»**.
+* **Arquitectura desacoplada y dinámica:** No depende de rutas fijas ni preconfiguradas en el código fuente. Se enlaza de manera flexible con la dirección web de resultados que el editor o administrador cree en la plataforma mediante la herramienta flotante **«Nueva página»**.
+* **Protección del entorno editorial (`esEdicion = true`):** Al maquetar en el Editor Visual, presionar Enter en el teclado o pulsar el botón con la lupa no ejecuta la navegación externa hacia otra página, protegiendo al editor contra la pérdida involuntaria de cambios no guardados.
+* **Campos configurables en el panel lateral de Puck:**
+  * **Página de resultados:** Ruta relativa hacia la página creada con «Nueva página» donde se desplegarán las coincidencias encontradas (ej: `/buscador-general`, `/consulta`).
+  * **Texto del campo (placeholder):** Texto orientativo visible en la caja de texto mientras no se haya escrito ninguna palabra.
+  * **Texto de instrucción o ayuda:** Mensaje explicativo situado en la parte inferior de la barra de búsqueda.
+  * **Ancho máximo:** Selector de anchura horizontal del contenedor (*Restringido (576 px)*, *Medio (768 px)* o *Ancho completo (100%)*).
+  * **Configuración cromática en acordeones independientes:** Cada elemento visual cuenta con su propio selector de color interactivo provisto de previsualización en miniatura y botón de limpieza («X») para restablecerlo individualmente:
+    * *Color de fondo del buscador:* Tonalidad de fondo de la cápsula de entrada.
+    * *Color de borde en reposo:* Contorno exterior de la cápsula en estado inactivo.
+    * *Color de borde activo (hover/foco):* Contorno y anillo de resalte al pasar el cursor o interactuar con el campo.
+    * *Color de la letra (texto escrito):* Tonalidad tipográfica de las palabras digitadas en el campo.
+    * *Color del texto sugerido (placeholder):* Tonalidad del mensaje orientativo inicial.
+    * *Color de fondo del botón de buscar:* Tono del botón circular integrado.
+    * *Color del icono de la lupa:* Tonalidad del símbolo de lupa dentro del botón.
+    * *Color del botón borrar («X»):* Tono del control circular interactivo de borrado.
+    * *Color del texto de instrucción o ayuda:* Tonalidad del mensaje explicativo inferior.
+
+> **[Captura: Bloque Buscador del Sitio Web en el Editor Visual]**
+> *Configuración del bloque Buscador del Sitio Web en el panel lateral de Puck con campo de página de resultados, selectores de color en acordeón y opciones de ancho.*
+
+##### 3.4.3.7.6. Bloque «Resultados de Búsqueda del Sitio»
+Componente modular diseñado para desplegarse en la página de destino creada por el usuario editorial (por ejemplo `/buscador-general` o `/consulta`), encargado de renderizar y organizar las coincidencias del portal web:
+* **Ubicación en el catálogo:** Se encuentra en la categoría *Contenido Principal* del Editor Visual con el nombre **«Resultados de Búsqueda del Sitio»**.
+* **Flexibilidad editorial de maquetación:** Puede combinarse libremente con cualquier otro bloque del editor; por ejemplo, anteponer un bloque de **`TextoRico`** con orientaciones institucionales y ubicar abajo el bloque de **`Resultados de Búsqueda del Sitio`** con su barra de refinamiento superior.
+* **Exclusión dinámica de la página actual:** El motor de consulta local valida en tiempo real la ruta de la página en la que se encuentra montado el componente, excluyéndola automáticamente del listado de resultados para impedir enlaces redundantes o circulares hacia la misma vista.
+* **Modo de previsualización en edición (`esEdicion = true`):** En el lienzo del editor muestra tarjetas de ejemplo estructuradas para que el editor pueda calibrar los contrastes cromáticos y la jerarquía visual sin requerir una consulta activa en la barra de direcciones.
+* **Campos configurables en el panel lateral de Puck:**
+  * **Título de la sección:** Encabezado principal visible en la cabecera del listado de resultados.
+  * **Resultados por página:** Límite numérico (de 1 a 50) de coincidencias mostradas antes de activar los controles de paginación.
+  * **Mostrar barra de búsqueda:** Selector conmutador tipo radio (*Sí* / *No*) para exhibir u ocultar la barra de refinamiento superior.
+  * **Configuración cromática en acordeones independientes:** Controles organizados con previsualización en miniatura y botón de limpieza («X») para ajustes individuales:
+    * *Barra superior:* Color de fondo, borde en reposo, borde activo (hover/foco), texto, placeholder, fondo del botón de buscar, icono de lupa y botón de borrado («X»).
+    * *Sección de resultados:* Color del título principal y color del texto del conteo de coincidencias.
+    * *Tabla de resultados:* Color de borde y divisiones, fondo de cabecera de columnas, texto de cabecera y fondo de fila al pasar el cursor.
+    * *Badges y tipografía:* Color de fondo y texto de la pastilla identificadora (*Página* / *Sección*), color del título de coincidencia, color de la ruta o enlace y color del extracto de texto coincidente.
+    * *Resaltado de coincidencias:* Color de fondo y color de texto para las palabras clave coincidentes.
+    * *Paginación:* Color de fondo del botón indicador de la página activa.
+
+> **[Captura: Bloque Resultados de Búsqueda del Sitio]**
+> *Vista del bloque Resultados de Búsqueda del Sitio en el Editor Visual con opciones en acordeón, tabla semántica, badges identificadores y controles de paginación.*
+
+#### 3.4.3.8. Catálogo de Componentes de la Intranet
 
 Este apartado reúne la documentación, especificaciones técnicas, campos configurables y directrices de uso de los componentes visuales prediseñados exclusivos para la Intranet del Observatorio Laboral y Ocupacional (OLO).
 
@@ -2567,86 +2621,98 @@ Este apartado reúne la documentación, especificaciones técnicas, campos confi
 
 ### 3.4.4. Consultas Ciudadanas, Búsquedas y Visualizadores de Información
 
-Esta sección describe los procedimientos para la localización de contenidos en el portal público, la consulta de tableros analíticos en la Intranet, la visualización de documentos y la descarga directa de información oficial.
+Esta sección describe los procedimientos para la localización de contenidos en el portal público, la consulta de tableros analíticos en la Intranet, la visualización de documentos y la descarga directa de información oficial. Para consultar el catálogo completo de situaciones de validación, solución de incidencias y contingencias ciudadanas correspondientes a estos módulos, remitirse a las [Secciones 3.5.1.21 a 3.5.1.25](#35121-validaciones-y-solución-de-problemas-en-el-buscador-global-del-portal-público).
 
 #### 3.4.4.1. Búsquedas y Filtros en el Portal Público
 
-##### 3.4.4.1.1. Uso del Buscador Global Desplegable
-El sistema cuenta con un motor de búsqueda global accesible directamente desde la cabecera superior del portal público. El proceso para realizar una consulta es el siguiente:
+##### 3.4.4.1.1. Uso del Buscador Modular del Sitio Web (Kit UI GOV.CO)
 
-1. **Despliegue del buscador:** En la barra superior de navegación, el usuario debe hacer clic sobre el botón con ícono de lupa. Al interactuar con él, el campo de búsqueda se despliega de manera fluida hacia la izquierda con bordes redondeados, corriendo armónicamente los enlaces del menú principal hacia el logotipo institucional para no tapar los textos de navegación.
+El portal público incorpora un sistema de búsqueda ciudadana integral y desacoplado, concebido bajo los estándares de accesibilidad e interacción de la **Página 20 del Kit UI GOV.CO**:
+* **Enfoque ciudadano y cabecera despejada:** La cabecera principal del portal permanece limpia para la navegación institucional y el acceso a la Intranet, mientras que la búsqueda se ubica estratégicamente en la portada y páginas informativas, canalizando las consultas hacia la pantalla de resultados del observatorio.
+* **Flujo de interacción ciudadana paso a paso:**
+  1. **Aproximación y enfoque ergonómico:** La barra de búsqueda presenta un contorno neutral accesible y un texto de instrucción inferior. Al interactuar mediante clic o navegación secuencial por teclado con la tecla **Tab**, se enciende el anillo exterior de enfoque de alto contraste.
+  2. **Digitación y borrado inmediato («X» / Escape):** Al escribir el primer carácter, se activa el estado dinámico emergiendo un botón circular con ícono de equis (**«X»**). El usuario puede pulsar dicho botón o presionar la tecla **Escape** (**Esc**) para borrar instantáneamente la consulta sin perder el cursor dentro del campo.
+  3. **Ejecución de la búsqueda:** Al presionar **Enter** o hacer clic en el botón circular de la lupa, la plataforma ejecuta la navegación fluida como aplicación de página única (SPA) sin recargar la pantalla completa, trasladando la consulta hacia la página de resultados mediante el parámetro `?busqueda=[termino]`. Esta consulta es independiente y no altera los filtros del catálogo de ocupaciones CNO.
+  4. **Exploración de la tabla de resultados:** En la pantalla de destino, el listado despliega las coincidencias organizadas en dos columnas semánticas (*Página / Sección* y *Contenido coincidente*):
+     * *Pastillas de categoría:* Distintivos visuales (*Página*, *Sección*) que indican el origen jerárquico del resultado.
+     * *Resaltado contextual:* Las palabras coincidentes se enfatizan con fondo verde institucional (`#7DB828`/30) y tipografía en azul oscuro (`#001631`).
+     * *Exclusión de la página actual:* El listado omite dinámicamente la misma página de resultados para evitar enlaces redundantes o confusos.
+     * *Accesibilidad en tiempo real:* Las tecnologías de asistencia anuncian el número de coincidencias mediante la región accesible (`aria-live="polite"`).
+  5. **Refinamiento sin retroceso:** Mediante la barra de búsqueda superior incorporada en la propia pantalla de resultados, el ciudadano puede afinar su consulta o ingresar nuevos términos de forma directa, actualizando el listado al instante sin devolverse a la portada.
+  6. **Paginación ágil y estados sin coincidencia:** Cuando los resultados superan el límite configurado, se activan los botones de paginación para desplazarse fluidamente entre páginas sin refrescar el sitio web. Si ningún contenido coincide con el término, el sistema presenta un panel empático con recomendaciones prácticas de redacción y sugerencias de exploración.
 
-> **[Captura: Paso 1]**
-> *Despliegue interactivo del buscador en la cabecera desde el ícono de lupa.*
+> **[Captura: Buscador Modular del Sitio Web en Portada]**
+> *Barra de búsqueda modular en portada con estados de enfoque, botón de borrado rápido y botón integrado de lupa.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Despliegue interactivo del buscador en la cabecera en dispositivo móvil. (Móvil).*
+> **[Captura: Página de Resultados de Búsqueda Modular]**
+> *Pantalla de resultados con barra de búsqueda superior, anuncios accesibles, tarjetas resaltadas y paginación.*
 
-2. **Ingreso de términos:** Digitar las palabras clave relacionadas con la temática, contenido, boletín, indicador o documento que se desea localizar.
+##### 3.4.4.1.2. Módulos de Consulta Especializada y Filtrado Interactivo
 
-> **[Captura: Paso 2]**
-> *Ingreso de términos clave en el campo blanco de búsqueda desplegado.*
+Para el análisis detallado del mercado de trabajo, la inversión y la pertinencia de la formación, la plataforma incorpora módulos especializados con herramientas de segmentación y filtrado dinámico:
+
+*(Nota: Para consultar las posibles situaciones de validación, ausencia de registros coincidentes por combinación de filtros, interacción territorial y solución de problemas en los módulos de consulta analítica, remitirse a la [Sección 3.5.1.22: Validaciones y Solución de Problemas en Módulos de Consulta Especializada y Filtrado Interactivo](#35122-validaciones-y-solución-de-problemas-en-módulos-de-consulta-especializada-y-filtrado-interactivo)).*
+
+1. **Visualizador de Alertas de Inversión Empresarial:**
+   Permite explorar las iniciativas y proyectos de inversión nacional y extranjera anunciados en Colombia, examinando su impacto sobre el empleo y el desarrollo productivo:
+   * **Filtros interactivos de cabecera:**
+     * **Sector Económico:** Menú desplegable que permite filtrar por sectores de la Clasificación Industrial Internacional Uniforme (CIIU), identificados con su letra y nombre oficial (por ejemplo: *C · Industrias manufactureras* o *J · Información y comunicaciones*), además de la opción *«Todos»*.
+     * **Departamento:** Menú desplegable para filtrar los proyectos según la división territorial del país (con opción *«Todos»*).
+     * **Año de vigencia:** Selector anual para consultar las alertas registradas en periodos específicos.
+   * **Gráfico interactivo de barras por sector:** Presenta la distribución porcentual y cuantitativa de los proyectos. Al hacer clic sobre cualquier barra del gráfico, el sistema filtra de inmediato el listado inferior para enfocar los proyectos exclusivos de ese sector productivo.
+   * **Listado detallado de proyectos:** Tarjetas informativas que detallan el nombre del proyecto, empresa inversionista, sector, ubicación geográfica (departamento y municipio), monto estimado de inversión en pesos colombianos (`COP`), empleos directos proyectados, estado de ejecución y un botón de enlace directo para corroborar la información en la fuente digital verificable.
+   * **Paginación integrada:** Controles numéricos para recorrer cómodamente el listado de proyectos sin sobrecargar la pantalla.
+
+> **[Captura: Módulo Alertas de Inversión]**
+> *Visualizador de alertas de inversión empresarial mostrando los filtros de sector, departamento y año, gráfico de barras interactivo y listado de proyectos.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Ingreso de términos clave en el campo de búsqueda en pantalla móvil. (Móvil).*
+> **[Captura: Módulo Alertas de Inversión (Móvil)]**
+> *Visualizador de alertas de inversión adaptado a dispositivos móviles con filtros apilados y tarjetas legibles. (Móvil).*
 
-3. **Exploración de resultados en vivo:** El sistema evalúa la consulta en tiempo real (por frase exacta, frase difusa o coincidencia de palabras significativas) y despliega automáticamente una lista flotante debajo del campo con los resultados coincidentes, resaltando los términos encontrados y el contexto de origen. El usuario puede desplazarse entre los resultados usando las flechas de dirección del teclado (*Arriba* / *Abajo*) y presionar la tecla *Enter*, o bien hacer clic con el ratón sobre cualquier ítem para navegar de inmediato a la sección o página correspondiente.
+2. **Visualizador de Programas de Formación Sobresalientes (SENA):**
+   Módulo analítico que presenta los programas de formación profesional con mayores tasas de inserción y vinculación laboral en el país:
+   * **Selección geográfica dual:** Permite escoger el departamento de consulta de dos formas interactivas:
+     * **Mapa interactivo de Colombia:** Representación cartográfica donde el usuario hace clic directamente sobre cualquier departamento para cargar sus estadísticas laborales.
+     * **Lista desplegable:** Selector estándar para elegir el departamento por nombre directo.
+   * **Filtros de segmentación analítica:**
+     * **Nivel de formación académica:** Permite filtrar por tipo de titulación (Técnico, Tecnólogo, Operario, Especialización Tecnológica, etc.).
+     * **Sexo / Género:** Permite segmentar los indicadores por *Hombre*, *Mujer* o *Todos*.
+     * **Programa de formación:** Selector específico para consultar el comportamiento de un programa curricular concreto.
+   * **Tabla de resultados y tasa de vinculación:** Muestra el ranking de programas ordenados por su porcentaje de inserción laboral formal, contrastando el total de egresados certificados frente a los vinculados efectivamente al mercado de trabajo.
+   * **Botón «Limpiar filtros»:** Permite restablecer todos los selectores a su valor global para reiniciar la exploración.
 
-> **[Captura: Paso 3]**
-> *Lista flotante de resultados en vivo desplegada debajo del buscador con términos resaltados y acceso directo.*
+> **[Captura: Módulo Programas Sobresalientes]**
+> *Panel de programas sobresalientes del SENA con mapa interactivo de Colombia, filtros de nivel y género, y tabla de tasas de inserción laboral.*
 >
-> **[Captura: Paso 3 (Móvil)]**
-> *Lista de resultados desplegada en dispositivo móvil con acceso directo a la página encontrada. (Móvil).*
+> **[Captura: Módulo Programas Sobresalientes (Móvil)]**
+> *Visualizador de programas sobresalientes en pantalla móvil con selector de lista y tabla de resultados adaptada. (Móvil).*
 
-*(Nota de uso: Para cerrar el buscador sin seleccionar un resultado, el usuario puede presionar la tecla **Escape**, hacer clic en cualquier punto exterior fuera de la lista o volver a pulsar sobre la lupa sin texto ingresado; el foco de navegación regresará de inmediato a la lupa de la cabecera).*
+3. **Visualizador de Tendencia Ocupacional y Percentiles Salariales:**
+   Permite examinar la demanda de ocupaciones y las escalas de remuneración vigentes:
+   * **Cobertura geográfica:** Selector nacional y departamental mediante mapa interactivo de tendencias.
+   * **Filtros de corte temporal:** Menú desplegable para seleccionar el **Año** y el **Periodo de corte** (Trimestres `T1`–`T4`, Semestres `S1`–`S2`, o corte `ANUAL`), seleccionando automáticamente el periodo de mayor cobertura con datos vigentes.
+   * **Nivel ocupacional:** Filtro por jerarquía de competencia (Dirección, Profesional, Técnico, Asistencial u Operativo).
+   * **Tabla de percentiles:** Despliega las matrices de salarios organizadas por percentiles (`P10`, `P25`, `P50` o mediana salarial, `P75` y `P90`), identificando las ocupaciones de mayor y menor demanda en el aparato productivo.
 
-##### 3.4.4.1.2. Búsqueda con Filtros Avanzados y Consulta de Información
-Para consultas específicas en catálogos y listados, el sistema ofrece herramientas de segmentación y filtrado dinámico:
-
-1. **Apertura de filtros:** En la vista correspondiente, se debe ubicar el panel lateral (o menú desplegable en dispositivos móviles) de "Filtros Avanzados".
-
-> **[Captura: Paso 1]**
-> *Panel de filtros avanzados en la vista de consulta.*
+> **[Captura: Módulo Tendencia Ocupacional]**
+> *Matriz de tendencia ocupacional y percentiles salariales con filtros de año, periodo de corte y tabla salarial.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Panel de filtros avanzados en la vista de consulta. (Móvil).*
-
-2. **Selección de criterios:** Se pueden marcar casillas o seleccionar opciones en menús desplegables para filtrar por categorías, áreas temáticas, niveles o palabras clave. El listado de resultados se actualizará dinámicamente según las opciones seleccionadas.
-
-> **[Captura: Paso 2]**
-> *Selección de criterios específicos en el panel de filtros.*
->
-> **[Captura: Paso 2 (Móvil)]**
-> *Selección de criterios específicos en el panel de filtros. (Móvil).*
-
-3. **Visualización de detalles y fichas informativas:** Al hacer clic sobre cualquiera de los registros listados, el sistema despliega su vista en detalle o ficha técnica con la información completa del elemento seleccionado.
-
-> **[Captura: Paso 3]**
-> *Vista en detalle o ficha informativa del registro seleccionado.*
->
-> **[Captura: Paso 3 (Móvil)]**
-> *Vista en detalle o ficha informativa del registro seleccionado. (Móvil).*
-
-4. **Descargas y visualización de documentos (Visor de PDF):** Si el usuario requiere consultar o conservar un respaldo formal de la información, puede utilizar los botones de **"Descargar Documento"** o **"Exportar PDF"** disponibles en la interfaz, o bien explorar el documento directamente mediante el visor de PDFs integrado.
-
-> **[Captura: Paso 4]**
-> *Botón de descarga o exportación dentro de la ficha de información.*
->
-> **[Captura: Paso 4 (Móvil)]**
-> *Botón de descarga o exportación dentro de la ficha de información. (Móvil).*
+> **[Captura: Módulo Tendencia Ocupacional (Móvil)]**
+> *Matriz de tendencia ocupacional adaptada a pantalla táctil móvil. (Móvil).*
 
 ##### 3.4.4.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
-El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible en la página que lleve el bloque de diseño `BuscadorOcupaciones` (hoy, la de la Clasificación Nacional de Ocupaciones, dentro del menú «Clasificación de las Ocupaciones»); el buscador de la portada lleva a esa página con la consulta ya hecha.
 
-El buscador permite consultar directamente las ocupaciones oficiales en tiempo real, garantizando respuestas ágiles y una navegación fluida al explorar los catálogos ocupacionales.
+El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible en la página que lleve el bloque de diseño `BuscadorOcupaciones` (por ejemplo, en la sección de Clasificación Ocupacional dentro del menú del portal); el buscador de la portada orienta hacia esa página con la consulta ya realizada.
+
+*(Nota: Para consultar las posibles situaciones de validación de códigos de 4 y 5 dígitos, límites de caracteres, ausencia de coincidencias y contingencias en la navegación de correlativas cruzadas, remitirse a la [Sección 3.5.1.23: Validaciones y Solución de Problemas en la Consulta y Exploración del Catálogo Oficial de Ocupaciones (CNO y CUOC)](#35123-validaciones-y-solución-de-problemas-en-la-consulta-y-exploración-del-catálogo-oficial-de-ocupaciones-cno-y-cuoc)).*
 
 El procedimiento paso a paso para la consulta ciudadana y exploración ocupacional es el siguiente:
 
 1. **Ingreso de términos de búsqueda o código oficial:**
    * En la interfaz del buscador, el usuario dispone de un campo de búsqueda centralizado donde puede consultar de dos formas distintas:
      * **Por palabras clave, oficios o habilidades:** Ingresar términos representativos de la profesión, labor o funciones requeridas (por ejemplo, *«desarrollador de software»*, *«soldador»*, *«enfermería»*). El sistema admite hasta un máximo de 120 caracteres de consulta.
-     * **Por código ocupacional oficial:** Ingresar directamente el código numérico asignado a la ocupación. Si se consulta en la CNO, debe digitarse un código exacto de **4 dígitos numéricos** (ej. `2173`); si se consulta en la CUOC, debe digitarse un código exacto de **5 dígitos numéricos** (ej. `25120`). La plataforma valida la estructura del código antes de enviar la solicitud, rechazando patrones incorrectos para evitar llamadas innecesarias al servicio central.
-   * Para iniciar la consulta, presionar la tecla *Enter* o pulsar el botón con ícono de lupa o rótulo **«Buscar»**. El sistema realiza la búsqueda exclusivamente tras la confirmación del usuario, evitando disparos repetitivos por pulsación de teclado y optimizando el consumo de red.
+     * **Por código ocupacional oficial:** Ingresar directamente el código numérico asignado a la ocupación. Si se consulta en la CNO, debe digitarse un código exacto de **4 dígitos numéricos** (ej. `2173`); si se consulta en la CUOC, debe digitarse un código exacto de **5 dígitos numéricos** (ej. `25120`). La plataforma valida la estructura del código antes de procesar la solicitud, evitando patrones incorrectos para una navegación fluida.
+   * Para iniciar la consulta, presionar la tecla *Enter* o pulsar el botón con ícono de lupa o rótulo **«Buscar»**. El sistema realiza la búsqueda exclusivamente tras la confirmación del usuario, evitando disparos repetitivos por pulsación de teclado y optimizando la fluidez de la pantalla.
 
 > **[Captura: Buscador de Ocupaciones - Ingreso de Criterios]**
 > *Campo de búsqueda interactivo del catálogo ocupacional con opciones de consulta por denominación o código numérico.*
@@ -2668,7 +2734,7 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 > *Visualización de tarjetas de resultados del catálogo ocupacional en pantalla móvil. (Móvil).*
 
 3. **Apertura de la Ficha Técnica Ocupacional:**
-   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema abre la ficha en la misma página, debajo del buscador. Los resultados y la ficha no son ventanas emergentes: cada uno tiene su propia dirección (`?buscar=…` y `?buscar=…&ocupacion=…`), de modo que se puede copiar el enlace, recargar la página y volver con el botón «atrás» del navegador. Al abrir cada vista, el foco pasa a su encabezado para que los lectores de pantalla anuncien el cambio.
+   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema abre la ficha en la misma página, debajo del buscador. Los resultados y la ficha no son ventanas emergentes: cada vista tiene su propia dirección web de consulta (usando los parámetros de búsqueda de la página), de modo que el ciudadano puede copiar el enlace directo, recargar la página y volver a la vista anterior con el botón «atrás» del explorador. Al abrir cada vista, el foco pasa a su encabezado para que los lectores de pantalla anuncien el cambio de inmediato.
    * La ficha técnica proporciona el desglose integral del perfil ocupacional oficial:
      * **Encabezado y Código:** Título formal, código de clasificación e indicador de tipo (`CNO` o `CUOC`).
      * **Descripción general:** Resumen contextual de la ocupación, su propósito en el mercado laboral y el nivel de cualificación correspondiente.
@@ -2684,11 +2750,11 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 > *Ficha técnica ocupacional desplegada en dispositivo móvil con navegación vertical optimizada. (Móvil).*
 
 4. **Navegación por Correlativas Cruzadas (CNO ↔ CUOC):**
-   * En la parte complementaria de la ficha técnica, el sistema renderiza dinámicamente la sección de homologación bidireccional entre sistemas clasificatorios:
+   * En la parte complementaria de la ficha técnica, el sistema presenta de forma dinámica la sección de homologación bidireccional entre sistemas clasificatorios:
      * **Al consultar una ocupación CNO (código de 4 dígitos):** Se presenta el bloque **«Correlativa CUOC»**, el cual lista los códigos numéricos de 5 dígitos y nombres de las ocupaciones equivalentes según la Clasificación Única de Ocupaciones para Colombia.
      * **Al consultar una ocupación CUOC (código de 5 dígitos):** El bloque se titula automáticamente **«Correlativa CNO»**, mostrando las ocupaciones equivalentes de 4 dígitos en la Clasificación Nacional de Ocupaciones.
-   * **Navegación interactiva:** Cada ocupación listada en las correlativas funciona como un enlace directo interactivo; al pulsarlo, el visor actualiza inmediatamente la ficha en pantalla para presentar en detalle la ocupación correlativa seleccionada, permitiendo al usuario transitar fluidamente entre ambos catálogos sin reiniciar la búsqueda.
-   * Para regresar al listado de resultados, hacer clic en el enlace «Volver a los resultados» situado sobre el título de la ficha o usar el botón «atrás» del navegador.
+   * **Navegación interactiva:** Cada ocupación listada en las correlativas funciona como un enlace directo interactivo; al pulsarlo, la pantalla actualiza inmediatamente la ficha para presentar en detalle la ocupación correlativa seleccionada, permitiendo transitar fluidamente entre ambos catálogos sin reiniciar la búsqueda.
+   * Para regresar al listado de resultados, hacer clic en el enlace interactivo **«Volver a los resultados»** situado sobre el título de la ficha o utilizar el botón «atrás» del navegador.
 
 > **[Captura: Sección de Correlativas Cruzadas CNO y CUOC]**
 > *Bloque de homologación bidireccional con enlaces directos entre la ocupación CNO y sus equivalentes en la CUOC.*
@@ -2700,8 +2766,12 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 
 #### 3.4.4.2. Visualizadores y Tableros Analíticos en Pantalla
 
+Esta sección agrupa los componentes interactivos maquetables en el editor visual para la exhibición de tableros directivos, documentos normativos, recursos audiovisuales e indicadores coyunturales del mercado de trabajo.
+
+*(Nota: Para consultar las posibles situaciones de validación, documentos en blanco, restricciones de reproducción multimedia, credenciales en tableros analíticos y soporte en visualizadores en pantalla, remitirse a la [Sección 3.5.1.24: Validaciones y Solución de Problemas en Visualizadores Multimedia, Documentos y Descargas Directas](#35124-validaciones-y-solución-de-problemas-en-visualizadores-multimedia-documentos-y-descargas-directas)).*
+
 ##### 3.4.4.2.1. Uso de tableros BI en la Intranet (Power BI)
-En las páginas de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página.
+En las páginas de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página, así como activar la modalidad de pantalla completa para exposiciones o comités directivos.
 
 > **[Captura: Tablero BI]**
 > *Tablero de Power BI embebido en una página de la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis.*
@@ -2710,7 +2780,7 @@ En las páginas de la Intranet que integren este componente maquetable, los dire
 > *Tablero de Power BI embebido en una página de la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis. (Móvil).*
 
 ##### 3.4.4.2.2. Visor de PDFs y Documentos Normativos
-El componente de visor de documentos permite a los usuarios leer y revisar archivos PDF oficiales (boletines, resoluciones, manuales o informes) directamente dentro de la interfaz del portal, con controles integrados de navegación de páginas y opción de lectura inmersiva.
+El componente de visor de documentos permite a los usuarios leer y revisar archivos PDF oficiales (boletines, resoluciones, manuales o informes) directamente dentro de la interfaz del portal, con controles integrados de navegación de páginas, cambio de escala (zoom), visualización a pantalla completa y botones para la descarga directa del archivo original.
 
 > **[Captura: Visor de PDF]**
 > *Visor de documentos y publicaciones en PDF integrado en la página.*
@@ -2719,7 +2789,7 @@ El componente de visor de documentos permite a los usuarios leer y revisar archi
 > *Visor de documentos y publicaciones en PDF integrado en la página. (Móvil).*
 
 ##### 3.4.4.2.3. Visor de Videos y Recursos Multimedia
-A través del bloque de recursos visuales, los usuarios pueden reproducir contenidos audiovisuales, cápsulas informativas y videos del OLO directamente en la página, con controles de reproducción estándar y adaptabilidad a dispositivos móviles.
+A través del bloque de video embebido y recursos visuales, los usuarios pueden reproducir contenidos audiovisuales, cápsulas informativas y videos institucionales del OLO alojados en YouTube directamente en la página, con controles de reproducción estándar, ambientación estética mediante imágenes de fondo y niveles de transparencia calibrados para una óptima lectura.
 
 > **[Captura: Visor de Videos]**
 > *Bloque de recursos audiovisuales con reproductor de video del observatorio.*
@@ -2727,16 +2797,42 @@ A través del bloque de recursos visuales, los usuarios pueden reproducir conten
 > **[Captura: Visor de Videos (Móvil)]**
 > *Bloque de recursos audiovisuales con reproductor de video del observatorio. (Móvil).*
 
+##### 3.4.4.2.4. Dato OLO de la Semana e Indicadores Clave
+Componente informativo diseñado para resaltar infografías y cifras coyunturales del mercado de trabajo. Permite recorrer diferentes datos destacados con fondos temáticos personalizados y transiciones visuales suaves que dinamizan la experiencia ciudadana.
+
+> **[Captura: Dato OLO de la Semana]**
+> *Presentación interactiva de infografías y datos clave del mercado laboral.*
+>
+> **[Captura: Dato OLO de la Semana (Móvil)]**
+> *Visualización del Dato OLO de la semana adaptado a pantalla móvil. (Móvil).*
+
+##### 3.4.4.2.5. Cinta Continua de Publicaciones y Boletines
+Despliega en movimiento continuo horizontal las portadas, títulos y enlaces de los últimos boletines y publicaciones emitidos por el observatorio. Cuenta con controles accesibles para pausar o reanudar el desplazamiento según la preferencia de lectura del visitante.
+
+> **[Captura: Cinta Continua de Publicaciones]**
+> *Cinta interactiva de publicaciones y boletines con controles de pausa y avance.*
+>
+> **[Captura: Cinta Continua de Publicaciones (Móvil)]**
+> *Cinta de publicaciones adaptada a pantallas táctiles móviles. (Móvil).*
+
 ---
 
 #### 3.4.4.3. Descarga Directa de Archivos y Boletines
-En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"** o enlaces de descarga directa. Los archivos se suministran en formatos estandarizados (como PDF o planillas), listos para su consulta y archivo fuera de línea.
+
+En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"**, **"Exportar PDF"** o enlaces de descarga directa. Los archivos se suministran en formatos estándar listos para su consulta y uso fuera de línea:
+* **Planillas estructuradas de datos (`.xlsx`):** Formato oficial para la descarga de plantillas oficiales de percentiles salariales, matrices de proyectos de inversión y reportes estadísticos.
+* **Documentos digitales (`.pdf`):** Formato oficial para boletines informativos, resoluciones normativas, fichas técnicas y manuales institucionales.
+* **Imágenes y gráficos (`.png` / `.jpg`):** Formatos estándar para logotipos e infografías descargables.
+
+*(Nota: Para consultar las posibles situaciones de validación, bloqueos de ventanas emergentes en el navegador y solución de problemas al descargar archivos oficiales en formatos .xlsx, .pdf o imágenes, remitirse a la [Sección 3.5.1.24: Validaciones y Solución de Problemas en Visualizadores Multimedia, Documentos y Descargas Directas](#35124-validaciones-y-solución-de-problemas-en-visualizadores-multimedia-documentos-y-descargas-directas)).*
 
 ---
 
 #### 3.4.4.4. Panel de Preferencias de Accesibilidad e Inclusión Ciudadana
 
 Para garantizar el cumplimiento de los lineamientos de accesibilidad web (WCAG 2.1 nivel AA y Resolución 1519 de 2020 de MinTIC) y facilitar una experiencia de navegación inclusiva para personas con baja visión, daltonismo, dislexia o dificultades motoras y cognitivas, el Sitio Web Público integra un **Panel de Accesibilidad («Personaliza tu experiencia»)** interactivo, adaptable y persistente.
+
+*(Nota: Para consultar las posibles situaciones de validación, compatibilidad de síntesis de voz, persistencia de preferencias en el navegador y solución de problemas en los ajustes de inclusión, remitirse a la [Sección 3.5.1.25: Validaciones y Solución de Problemas en el Panel de Preferencias de Accesibilidad e Inclusión Ciudadana](#35125-validaciones-y-solución-de-problemas-en-el-panel-de-preferencias-de-accesibilidad-e-inclusión-ciudadana)).*
 
 ##### 3.4.4.4.1. Apertura y Navegación del Panel
 1. **Pestaña lateral fija:** En el margen lateral derecho de todas las páginas del portal público se ubica permanentemente una pestaña azul institucional con el ícono universal de accesibilidad.
@@ -2792,9 +2888,10 @@ En la parte inferior del panel se ubica la sección **«Opciones avanzadas»**, 
 4. **Guía de lectura:** Activa una franja o regla horizontal flotante que acompaña el desplazamiento vertical del puntero del ratón, sirviendo de guía visual para leer renglón por renglón sin saltar de línea.
 5. **Cursor grande:** Sustituye el cursor habitual por un puntero ampliado de gran tamaño y contorno contrastado para ubicarlo con facilidad en pantallas amplias o de alta resolución.
 
-##### 3.4.4.4.5. Restablecimiento y Persistencia
+##### 3.4.4.4.5. Restablecimiento, Persistencia y Botón «Volver arriba»
 * **Botón «Restablecer configuración»:** Ubicado de manera fija en el pie del panel, permite revertir al instante todas las preferencias activas a su valor predeterminado original con un solo clic.
-* **Persistencia automática sin cookies invasivas:** Todas las preferencias configuradas por el usuario se guardan de manera segura en la memoria de su propio navegador, de modo que al navegar entre diferentes páginas del observatorio o volver en visitas posteriores, sus ajustes de accesibilidad se mantienen aplicados sin necesidad de iniciar sesión ni reconfigurarlos.
+* **Persistencia automática sin cookies invasivas:** Todas las preferencias configuradas por el usuario se guardan de manera segura en la memoria de su propio navegador (`localStorage`), de modo que al navegar entre diferentes páginas del observatorio o volver en visitas posteriores, sus ajustes de accesibilidad se mantienen aplicados sin necesidad de iniciar sesión ni reconfigurarlos.
+* **Botón flotante «Volver arriba»:** Al desplazarse hacia abajo en páginas extensas del portal, se dibuja automáticamente en la esquina inferior un botón flotante circular; al pulsarlo o activarlo mediante teclado, desplaza la vista suavemente hasta el inicio de la página, facilitando el retorno a los menús de navegación.
 
 > **[Captura: Panel de Accesibilidad]**
 > *Panel de preferencias de accesibilidad desplegado en el portal público mostrando las 8 tarjetas principales, el selector de daltonismo, las opciones avanzadas y el botón de restablecimiento.*
@@ -3639,6 +3736,19 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 > **[Captura: Botón Guardar Deshabilitado sin Cambios (Móvil)]**
 > *Pie de la ventana modal mostrando el mensaje informativo de ausencia de cambios en dispositivo móvil. (Móvil).*
 
+##### 6. Rechazo al Crear o Modificar un Rol sin el Prefijo Obligatorio «Editor »
+* **Situación:** Al enviar el formulario de creación o edición de un rol desde el Panel Administrativo, el sistema arroja una alerta de error y bloquea el guardado.
+* **Causa técnica y operativa:** Para preservar la jerarquía de gobierno y evitar la creación no autorizada de roles administrativos o directivos ficticios, el servidor backend (`usuarios.validators.ts`) exige de manera estricta que todo rol derivado comience obligatoriamente con el prefijo `Editor ` (ej. *«Editor Regional Antioquia»* o *«Editor Estadísticas»*).
+* **Acción correctiva:**
+  1. Verificar que el campo del nombre del rol incluya el prefijo exacto **«Editor »** seguido del nombre de la función o sección asignada.
+  2. En la interfaz de creación, el prefijo viene fijado de forma protegida para asegurar que la denominación cumpla con este estándar institucional.
+
+> **[Captura: Validación de Prefijo Obligatorio en Rol]**
+> *Mensaje de validación exigiendo el prefijo estándar «Editor » en la denominación del nuevo rol.*
+>
+> **[Captura: Validación de Prefijo Obligatorio en Rol (Móvil)]**
+> *Mensaje de validación del prefijo de rol en pantalla móvil. (Móvil).*
+
 #### 3.5.1.10. Validaciones y Solución de Problemas en la Aprobación y Publicación de Contenidos (Páginas en Revisión)
 
 El flujo editorial de revisión y paso a producción (cuyo procedimiento operativo se detalla en la [Sección 3.4.2.5: Aprobación y Publicación de Contenidos: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)) incorpora reglas estrictas de control y validación para evitar publicaciones incompletas, descartes no justificados o inconsistencias en la bitácora de auditoría. A continuación se presentan las principales situaciones, sus causas y las acciones correctivas correspondientes:
@@ -4232,6 +4342,35 @@ La plataforma separa claramente los contenidos particulares de cada pantalla del
 > **[Captura: Comparativa de Navegación entre Sitio Web e Intranet (Móvil)]**
 > *Diferenciación de menús entre ambos portales en pantalla móvil. (Móvil).*
 
+##### 5. La Dirección de una Página Cambió de Forma Automática al Agruparla en un Menú Desplegable
+* **Situación:** Una página que anteriormente se accedía desde una URL plana directa (ej. `/clasificacion-cuoc`) ahora muestra en la barra de navegación del explorador una ruta anidada con carpeta (ej. `/clasificacion-de-las-ocupaciones/clasificacion-cuoc`).
+* **Causa técnica y operativa:** Arquitectura dinámica de URLs por menú. Las direcciones canónicas de las páginas no son estáticas ni fijas en el código: se recalculan automáticamente según la estructura del menú en «Menú y pie». Al colocar un enlace como hijo dentro de un menú desplegable, el sistema le antepone de forma transparente el tramo slugificado del desplegable. Además, si un visitante o motor de búsqueda ingresa escribiendo la dirección plana o antigua, el sistema lo redirige de forma canónica y automática a la nueva dirección con desplegable.
+* **Acción correctiva:**
+  1. Si se desea mantener la estructura jerárquica por temas, no se requiere ninguna acción; es el comportamiento estándar de organización del portal.
+  2. Si expresamente se requiere que la página vuelva a tener una dirección directa en la raíz (ej. `/clasificacion-cuoc`), se debe ingresar a **«Menú y pie»**, retirar el enlace de adentro del desplegable y ubicarlo en el primer nivel del menú principal.
+
+> **[Captura: Redirección Canónica a Ruta con Desplegable]**
+> *Barra del navegador evidenciando la redirección canónica automática desde la ruta simple a la jerarquía del desplegable.*
+>
+> **[Captura: Redirección Canónica a Ruta con Desplegable (Móvil)]**
+> *Visualización de la ruta jerárquica en dispositivo móvil. (Móvil).*
+
+##### 6. Configuración de «Páginas dentro de esta página» (Páginas Internas Subordinadas)
+* **Situación:** Se requiere crear una página subordinada (por ejemplo, una página dedicada exclusivamente a mostrar resultados de una búsqueda ocupacional o detalle técnico) que dependa de una sección principal pero que no deba figurar como un botón visible en el menú principal de navegación.
+* **Causa técnica y operativa:** Para no sobrecargar visualmente la barra de navegación con enlaces secundarios, el editor de «Menú y pie» admite **páginas internas**. Estas se organizan bajo la ruta de una página del menú (por ejemplo: `/tema/pagina-principal/pagina-interna`) pero no se muestran en los botones del menú visible a la ciudadanía.
+* **Acción correctiva:**
+  1. Crear la página normalmente desde el botón flotante (*«Nueva página»*, ej. con título *"Resultado"* y dirección `/resultado`).
+  2. Ingresar a **«Menú y pie»** y pulsar el bloque de la cabecera para abrir sus propiedades en el panel lateral.
+  3. Desplegar los enlaces del menú y ubicar la página de la que debe depender (ej. *"Clasificación Nacional de Ocupaciones"*).
+  4. En el campo **«Páginas dentro de esta página»**, pulsar *«Añadir»*, ingresar el nombre de la página y su dirección (`/resultado`).
+  5. Al guardar y publicar, la página adoptará la ruta completa de tres tramos (`/clasificacion-de-las-ocupaciones/clasificacion-nacional-de-ocupaciones/resultado`) y las migas de pan automáticas enlazarán a su página padre de manera coherente.
+
+> **[Captura: Configuración de Páginas Internas en Menú y Pie]**
+> *Campo «Páginas dentro de esta página» en el inspector lateral de la cabecera en Menú y pie.*
+>
+> **[Captura: Configuración de Páginas Internas en Menú y Pie (Móvil)]**
+> *Configuración de páginas internas anidadas en pantalla móvil. (Móvil).*
+
 ---
 
 #### 3.5.1.19. Validaciones y Solución de Problemas en la Estructura y Funcionalidades del Editor Visual
@@ -4407,6 +4546,306 @@ El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación
 
 ---
 
+#### 3.5.1.21. Validaciones y Solución de Problemas en el Buscador Modular del Portal Público
+
+El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1](#34375-bloque-buscador-del-sitio-web)) incorpora las directrices de accesibilidad de la Página 20 del Kit UI GOV.CO y un esquema de navegación desacoplado. A continuación se presentan las situaciones de interacción más frecuentes, sus motivos y los pasos para su solución:
+
+##### 1. Búsqueda sin Coincidencias («No se encontraron resultados»)
+* **Situación:** En la página de resultados, el sistema despliega el mensaje *«No se encontraron resultados para «[término]»»* con recomendaciones de búsqueda.
+* **Causa:** Errores mecanográficos, empleo de oraciones excesivamente largas o búsqueda de temáticas que aún no cuentan con páginas públicas autorizadas en el observatorio.
+* **Acción correctiva:**
+  1. Revisar la ortografía del término ingresado en la barra de búsqueda superior.
+  2. Simplificar la consulta empleando una o dos palabras clave (ej: *«boletín»*, *«inversión»*, *«clasificación»*).
+  3. Si se trata de una página aprobada recientemente, refrescar la ventana para que el índice local de páginas recargue las publicaciones vigentes.
+
+> **[Captura: Sin Coincidencias en Buscador Modular]**
+> *Pantalla de resultados informando empáticamente la ausencia de coincidencias y ofreciendo sugerencias de reformulación.*
+>
+> **[Captura: Sin Coincidencias en Buscador Modular (Móvil)]**
+> *Mensaje informativo de ausencia de resultados adaptado a pantalla móvil. (Móvil).*
+
+##### 2. Uso del Botón de Borrado Rápido («X») y Tecla Escape
+* **Situación:** El visitante ingresó un texto largo y desea borrarlo completamente sin tener que presionar la tecla de retroceso reiteradamente.
+* **Causa:** Estado visual interactivo *Active* (Página 20 Kit UI GOV.CO).
+* **Acción correctiva:**
+  1. Al escribir el primer carácter, emerge automáticamente un botón circular blanco con una equis (**«X»**) en el extremo derecho del campo.
+  2. Hacer clic sobre dicho botón circular o presionar la tecla **Escape** (**Esc**); el texto se borrará en su totalidad y el foco permanecerá en la caja de texto listo para escribir una nueva consulta.
+
+> **[Captura: Botón de Borrado Rápido en Buscador]**
+> *Botón circular de borrado con ícono de equis visible durante el ingreso de texto en el buscador.*
+>
+> **[Captura: Botón de Borrado Rápido en Buscador (Móvil)]**
+> *Botón interactivo de borrado rápido en dispositivo móvil. (Móvil).*
+
+##### 3. El Buscador no Navega al Probarlo Dentro del Editor Visual («Protección de Borrador»)
+* **Situación:** El editor insertó el bloque «Buscador del Sitio Web», digitó una palabra y presionó Enter o el botón de lupa, pero la pantalla no redirige a la página de resultados.
+* **Causa:** Protección intencional del Editor Visual (`esEdicion = true`). En modo de maquetación, las acciones de navegación externa se deshabilitan para evitar que el usuario abandone involuntariamente su sesión de edición y pierda cambios en borrador.
+* **Acción correctiva:** Para comprobar la redirección hacia la página de resultados, utilizar el botón de vista previa o salir del modo edición guardando previamente los cambios.
+
+##### 4. Error al Navegar a la Página de Resultados (Página no encontrada)
+* **Situación:** Al ejecutar una búsqueda en el portal público, el navegador abre una página no encontrada o en blanco.
+* **Causa:** La propiedad `Página de resultados` en el inspector del bloque «Buscador del Sitio Web» apunta a una dirección que no ha sido creada con el botón «Nueva página» o cuyo slug fue modificado.
+* **Acción correctiva:**
+  1. Abrir el editor de la página donde reside el buscador.
+  2. Seleccionar el bloque «Buscador del Sitio Web» y consultar el panel lateral de propiedades.
+  3. En la casilla **«Página de resultados»**, verificar que la ruta relativa coincida exactamente con la página creada para los resultados (ej: `/buscador-general` o `/consulta`) y que dicha página contenga el bloque «Resultados de Búsqueda del Sitio».
+
+---
+
+#### 3.5.1.22. Validaciones y Solución de Problemas en Módulos de Consulta Especializada y Filtrado Interactivo
+
+Los módulos de consulta especializada ([Sección 3.4.4.1.2](#34412-módulos-de-consulta-especializada-y-filtrado-interactivo)) integran visualizadores analíticos ciudadanos: **Alertas de Inversión Empresarial**, **Programas Sobresalientes (SENA)** y **Tendencia Ocupacional y Percentiles Salariales**. Estos paneles ofrecen herramientas de segmentación geográfica, sectorial y temporal. A continuación se presentan las situaciones habituales de interacción y sus procedimientos de resolución:
+
+##### 1. Combinación de Filtros sin Registros Coincidentes («No se encontraron resultados»)
+* **Situación:** Tras seleccionar un sector económico, un departamento y un año específico (en Alertas de Inversión), o una titulación y género concretos (en Programas Sobresalientes), las tarjetas informativas o tablas estadísticas quedan vacías, exhibiendo el mensaje: *«No se encontraron resultados para los filtros seleccionados»*.
+* **Causa:** La combinación simultánea de múltiples parámetros es demasiado restrictiva y no existen proyectos, programas o registros estadísticos que cumplan todos los criterios requeridos al mismo tiempo para esa vigencia.
+* **Acción correctiva:**
+  1. Ampliar el alcance de la consulta modificando uno de los filtros a su valor general (*«Todos»*), como el selector de departamento o sector.
+  2. En el panel de Programas Sobresalientes, pulsar el botón interactivo **«Limpiar filtros»** para restablecer de inmediato todos los selectores a los valores nacionales base.
+  3. Probar con un año de corte diferente o una vigencia inmediata anterior donde exista un mayor volumen de información consolidada.
+
+> **[Captura: Estado sin Registros por Filtros Restrictivos]**
+> *Visualizador analítico mostrando el mensaje de ausencia de resultados tras aplicar una combinación estricta de filtros.*
+>
+> **[Captura: Estado sin Registros por Filtros Restrictivos (Móvil)]**
+> *Aviso de filtros sin coincidencias adaptado a pantalla de dispositivo móvil. (Móvil).*
+
+##### 2. Interacción con el Mapa Territorial No Filtra o Departamento sin Datos
+* **Situación:** El usuario hace clic sobre un departamento en el mapa cartográfico interactivo de Colombia pero la tabla de programas o proyectos no se actualiza, o se presenta un aviso informando que no hay datos disponibles en ese territorio.
+* **Causa:** El departamento presionado no cuenta con proyectos de inversión anunciados para esa vigencia, o ningún programa del centro de formación de esa regional superó el umbral de vinculación laboral evaluado en el periodo.
+* **Acción correctiva:**
+  1. Comprobar en el selector desplegable alternativo si el departamento figura con datos disponibles.
+  2. Si el departamento seleccionado en el mapa no cuenta con registros, hacer clic sobre otro territorio vecino o elegir *«Todos»* en la lista para ver el panorama general del país.
+  3. En teléfonos móviles o tabletas, asegurar una pulsación táctil firme sobre la silueta departamental correspondiente.
+
+> **[Captura: Interacción Territorial en Mapa de Consulta]**
+> *Mapa interactivo departamental destacando la región seleccionada y su correspondencia con la tabla inferior.*
+>
+> **[Captura: Interacción Territorial en Mapa de Consulta (Móvil)]**
+> *Mapa y selector geográfico en visualización táctil móvil. (Móvil).*
+
+##### 3. Desactivación del Filtro Sectorial Aplicado desde el Gráfico de Barras
+* **Situación:** En el módulo de Alertas de Inversión, el usuario hizo clic sobre una de las barras del gráfico de distribución y el listado de proyectos quedó fijado exclusivamente a ese sector productivo, impidiendo ver proyectos de otras ramas de la economía.
+* **Causa:** El gráfico de barras opera como un filtro interactivo directo que bloquea la selección al sector pulsado.
+* **Acción correctiva:**
+  1. Hacer clic nuevamente sobre la misma barra del gráfico para liberar la selección interactiva.
+  2. Desplegar el selector superior de **Sector Económico** y elegir manualmente la opción *«Todos»*.
+  3. Verificar que la lista de proyectos vuelva a mostrar todas las actividades económicas registradas.
+
+> **[Captura: Filtrado Sectorial por Clic en Gráfica]**
+> *Gráfico de barras de inversión empresarial con un sector resaltado y el listado enfocado en dicha actividad económica.*
+>
+> **[Captura: Filtrado Sectorial por Clic en Gráfica (Móvil)]**
+> *Gráfica sectorial y tarjetas de proyectos en vista móvil. (Móvil).*
+
+##### 4. Periodos de Corte No Disponibles para un Año Determinado (Tendencia Ocupacional)
+* **Situación:** Al seleccionar un año de vigencia en la matriz de percentiles y demanda ocupacional, los trimestres disponibles en el menú de periodos varían o no se visualiza el corte esperado.
+* **Causa:** La disponibilidad de periodos de medición (`T1`–`T4`, `S1`–`S2` o `ANUAL`) corresponde de forma estricta a los cortes analíticos oficiales publicados por el observatorio para cada año. La plataforma selecciona de manera automática el periodo con corte más representativo para la vigencia elegida.
+* **Acción correctiva:**
+  1. Abrir el menú desplegable **Periodo de corte** para consultar las mediciones efectivamente publicadas para el año de interés.
+  2. Si el trimestre deseado aún se encuentra en etapa de recolección y análisis, consultar el corte consolidado anual o el periodo inmediatamente previo para obtener la referencia salarial y de demanda.
+
+> **[Captura: Selector de Periodo de Corte en Tendencia]**
+> *Menú de selección temporal con los trimestres y cortes anuales disponibles para la consulta salarial.*
+>
+> **[Captura: Selector de Periodo de Corte en Tendencia (Móvil)]**
+> *Selectores de año y periodo adaptados a la interfaz móvil. (Móvil).*
+
+---
+
+#### 3.5.1.23. Validaciones y Solución de Problemas en la Consulta y Exploración del Catálogo Oficial de Ocupaciones (CNO y CUOC)
+
+El módulo especializado de consulta del catálogo ocupacional ([Sección 3.4.4.1.3](#34413-consulta-y-exploración-en-el-catálogo-oficial-de-ocupaciones-cno-y-cuoc)) permite buscar perfiles, competencias, habilidades y correlativas cruzadas en las dos clasificaciones oficiales de Colombia (CNO y CUOC). A continuación se exponen las situaciones operativas, validaciones y procedimientos de contingencia:
+
+##### 1. Validación de Longitud de Código Numérico (Distinto a 4 o 5 Dígitos)
+* **Situación:** El usuario digita un código numérico incompleto o excedido (por ejemplo, `21`, `450` o `778899`) y pulsa Buscar, pero la plataforma señala que el código no corresponde a los estándares oficiales o no arroja resultados.
+* **Causa:** Regla estructural de codificación nacional. En Colombia, la Clasificación Nacional de Ocupaciones (**CNO**) exige un código formal de exactamente **4 dígitos numéricos**, mientras que la Clasificación Única de Ocupaciones para Colombia (**CUOC**) exige una codificación normalizada de exactamente **5 dígitos numéricos**.
+* **Acción correctiva:**
+  1. Si se consulta en la CNO, revisar que el código tenga exactamente **4 dígitos** (ejemplo: `2173`).
+  2. Si se consulta en la CUOC, verificar que el código cuente exactamente con **5 dígitos** (ejemplo: `25120`).
+  3. Si no se conoce el código oficial con exactitud, no ingresar números aproximados; en su lugar, escribir palabras clave del oficio, profesión o funciones laborales en lenguaje natural (ej. *«desarrollador»*, *«auxiliar contable»*).
+
+> **[Captura: Validación de Código Ocupacional]**
+> *Formulario del catálogo ocupacional indicando la estructura requerida de 4 dígitos para CNO o 5 dígitos para CUOC.*
+>
+> **[Captura: Validación de Código Ocupacional (Móvil)]**
+> *Validación de longitud de código en pantalla de dispositivo móvil. (Móvil).*
+
+##### 2. Límite de Caracteres en el Campo de Búsqueda (Hasta 120 Caracteres)
+* **Situación:** El ciudadano intenta copiar y pegar un párrafo extenso de una convocatoria laboral o una lista larga de funciones y el campo de búsqueda corta el texto, bloqueando la escritura adicional.
+* **Causa:** Control de seguridad y optimización del motor de búsqueda. El campo de consulta admite un máximo estricto de 120 caracteres para asegurar tiempos de respuesta ágiles y búsquedas semánticamente precisas.
+* **Acción correctiva:**
+  1. Extraer los términos esenciales o la labor principal requerida (ej. *«técnico en sistemas de telecomunicaciones»*).
+  2. Suprimir frases introductorias o requerimientos genéricos como *«requiero empleo formal urgente en la ciudad de Cali»*.
+
+> **[Captura: Control de Longitud en Consulta Ocupacional]**
+> *Campo de búsqueda ocupacional mostrando el texto conciso dentro del margen de 120 caracteres.*
+>
+> **[Captura: Control de Longitud en Consulta Ocupacional (Móvil)]**
+> *Campo de consulta ocupacional con límite de caracteres en pantalla móvil. (Móvil).*
+
+##### 3. Búsqueda sin Coincidencias en el Catálogo Oficial («No se encontró la ocupación»)
+* **Situación:** Al enviar la consulta por denominación, el sistema despliega el mensaje informativo: *«No se encontraron ocupaciones que coincidan con la búsqueda»*.
+* **Causa:** Uso de jerga informal, expresiones coloquiales no reconocidas en el catálogo nacional, anglicismos sin traducción formal o términos con errores ortográficos notables.
+* **Acción correctiva:**
+  1. Emplear el nombre formal u oficial de la ocupación en español (por ejemplo, buscar *«conductor de vehículo pesado»* en lugar de modismos locales).
+  2. Probar con la disciplina o área ocupacional de base (ej. *«enfermería»*, *«electricidad»*, *«soldadura»*).
+  3. Aunque el sistema es insensible a mayúsculas y acentos, verificar que no existan letras ausentes o trocadas en la palabra digitada.
+
+> **[Captura: Catálogo Ocupacional sin Coincidencias]**
+> *Vista de resultados del catálogo informando que la búsqueda no produjo coincidencias e invitando a probar términos más generales.*
+>
+> **[Captura: Catálogo Ocupacional sin Coincidencias (Móvil)]**
+> *Aviso de ocupación no encontrada en pantalla de dispositivo móvil. (Móvil).*
+
+##### 4. Navegación en Correlativas Cruzadas (CNO ↔ CUOC) y Retorno a Resultados
+* **Situación:** El ciudadano se encuentra explorando una ficha técnica y pulsa sobre una de las ocupaciones listadas en el bloque de equivalencias correlativas. La pantalla actualiza la ficha para mostrar la ocupación equivalente, pero el usuario no sabe cómo regresar a su lista de resultados previa.
+* **Causa:** La plataforma transita de forma dinámica e integrada entre ambas clasificaciones en la misma página para enriquecer la experiencia de homologación.
+* **Acción correctiva:**
+  1. Hacer clic sobre el enlace interactivo **«Volver a los resultados»** ubicado en la cabecera de la ficha técnica.
+  2. Utilizar el botón **Atrás** del navegador web; el sistema actualiza de manera transparente los parámetros de la página conservando el historial de navegación para que el usuario no pierda su búsqueda original.
+  3. Para compartir el perfil ocupacional con otra persona o guardarlo como referencia, copiar la dirección completa que aparece en la barra superior del navegador web.
+
+> **[Captura: Navegación de Correlativas y Retorno]**
+> *Ficha técnica con bloque de ocupaciones correlativas cruzadas y botón destacado de retorno a la lista de resultados.*
+>
+> **[Captura: Navegación de Correlativas y Retorno (Móvil)]**
+> *Navegación de equivalencias correlativas en dispositivo móvil. (Móvil).*
+
+---
+
+#### 3.5.1.24. Validaciones y Solución de Problemas en Visualizadores Multimedia, Documentos y Descargas Directas
+
+Esta sección reúne las directrices de soporte para la visualización de tableros directivos de Power BI en la Intranet, visores de documentos PDF, reproductores de video institucional y mecanismos de descarga directa de archivos ([Secciones 3.4.4.2](#3442-visualizadores-y-tableros-analíticos-en-pantalla) y [3.4.4.3](#3443-descarga-directa-de-archivos-y-boletines)):
+
+##### 1. Visor de PDF no Carga el Documento o se Muestra en Blanco
+* **Situación:** Al ingresar a una página con visor de boletines o normatividad, el recuadro del documento permanece en blanco, muestra un ícono de archivo dañado o indica que el complemento de lectura no pudo iniciarse.
+* **Causa:** Conexión a internet inestable durante la transferencia del archivo digital, extensiones de bloqueo de contenido activas en el navegador, o restricciones de seguridad locales para la visualización de marcos de lectura.
+* **Acción correctiva:**
+  1. Recargar la página web presionando la tecla **F5** (o **Ctrl + F5** en equipos de escritorio).
+  2. Hacer clic directamente en el botón **«Descargar Documento»** o **«Exportar PDF»** ubicado junto al visor; esto descargará el archivo original en el equipo para abrirlo con el lector predeterminado (Adobe Acrobat, Edge, Chrome u otro).
+  3. Desactivar temporalmente bloqueadores estrictos de publicidad o extensiones que interfieran con la carga de documentos incrustados.
+
+> **[Captura: Visor de PDF con Opción de Descarga Directa]**
+> *Visor de documentos en pantalla con su botón complementario para la descarga del archivo en formato PDF.*
+>
+> **[Captura: Visor de PDF con Opción de Descarga Directa (Móvil)]**
+> *Visor de documentos y botón de descarga adaptados a pantalla móvil. (Móvil).*
+
+##### 2. Video Institucional de YouTube No Reproduce o Muestra Restricción
+* **Situación:** El reproductor audiovisual incrustado en la página muestra un recuadro gris o negro con el aviso: *«Este video no está disponible»* o *«El propietario del video no permite reproducirlo en otros sitios web»*.
+* **Causa:** El contenido audiovisual fue configurado en la plataforma de YouTube con restricciones de inserción externa, fue marcado como privado o se encuentra temporalmente deshabilitado por su titular.
+* **Acción correctiva:**
+  1. Hacer clic sobre el título del video o el logotipo de YouTube ubicado en el reproductor para visualizar el contenido directamente en el portal oficial de YouTube en una pestaña separada.
+  2. Reportar la situación al equipo de gestión editorial del observatorio para que actualicen el enlace con una versión habilitada para inserción pública.
+
+> **[Captura: Aviso de Restricción en Reproductor Multimedia]**
+> *Pantalla del reproductor audiovisual orientando al usuario a ver el video en la plataforma de origen.*
+>
+> **[Captura: Aviso de Restricción en Reproductor Multimedia (Móvil)]**
+> *Aviso de reproducción audiovisual en pantalla de dispositivo móvil. (Móvil).*
+
+##### 3. Tablero Analítico de Power BI en la Intranet Solicita Inicio de Sesión
+* **Situación:** Al ingresar a una sección interna de la Intranet maquetada con tablero directivo de Power BI, el componente no presenta gráficos y despliega el mensaje: *«Inicia sesión para ver este informe»* o *«No tienes permisos para consultar este contenido»*.
+* **Causa:** Los tableros directivos del observatorio se encuentran resguardados en el entorno corporativo seguro de Microsoft 365 y requieren autenticación con cuenta institucional activa del SENA.
+* **Acción correctiva:**
+  1. Presionar el botón **«Iniciar sesión»** visible dentro del marco de Power BI e ingresar con el correo corporativo `@sena.edu.co` y la contraseña institucional.
+  2. Si tras iniciar sesión persiste el mensaje de falta de permisos, solicitar al Administrador del OLO la confirmación de la asignación del rol y licencias correspondientes en el espacio de trabajo directivo.
+
+> **[Captura: Solicitud de Autenticación en Tablero Power BI]**
+> *Marco de Power BI en la Intranet solicitando validación de identidad institucional para desplegar las métricas.*
+>
+> **[Captura: Solicitud de Autenticación en Tablero Power BI (Móvil)]**
+> *Pantalla de inicio de sesión de Power BI adaptada a dispositivo móvil. (Móvil).*
+
+##### 4. Bloqueo al Descargar Archivos Oficiales (`.xlsx` o `.pdf`)
+* **Situación:** El usuario hace clic sobre un botón de descarga de matrices de inversión, plantillas de salarios o boletines informativos y el navegador no inicia la descarga del archivo.
+* **Causa:** El navegador web tiene activado el bloqueo estricto de descargas automáticas o ventanas emergentes (*pop-ups*) para sitios recién visitados.
+* **Acción correctiva:**
+  1. Observar la barra superior de direcciones del explorador; si aparece un ícono con una marca roja indicando *«Ventana emergente bloqueada»*, hacer clic sobre él y seleccionar *«Permitir siempre ventanas emergentes y descargas en este sitio»*.
+  2. Hacer clic derecho sobre el botón de descarga y elegir en el menú contextual la opción **«Guardar enlace como...»** para indicar la carpeta de destino en la computadora.
+
+> **[Captura: Notificación de Descarga Bloqueada por Navegador]**
+> *Aviso del navegador en la barra de direcciones solicitando autorización para descargar el archivo solicitado.*
+>
+> **[Captura: Notificación de Descarga Bloqueada por Navegador (Móvil)]**
+> *Permiso de descarga de archivo en navegador móvil. (Móvil).*
+
+##### 5. Pausar la Animación Continua en la Cinta de Publicaciones
+* **Situación:** La cinta horizontal de publicaciones y boletines avanza de forma continua y el usuario requiere detener el desplazamiento para leer con detenimiento un título o portada.
+* **Causa:** Animación fluida continua configurada por defecto para la muestra visual de publicaciones.
+* **Acción correctiva:**
+  1. Posicionar el puntero del ratón encima de cualquier portada o tarjeta informativa; la animación se pausará de forma automática mientras el cursor permanezca sobre la cinta.
+  2. En el Panel de Accesibilidad lateral, encender el interruptor **«Pausar animación»** para congelar el movimiento en todo el sitio web durante toda la sesión.
+
+> **[Captura: Cinta Continua con Pausa Activa]**
+> *Cinta de publicaciones del observatorio pausada al ubicar el cursor sobre una de las portadas institucionales.*
+>
+> **[Captura: Cinta Continua con Pausa Activa (Móvil)]**
+> *Cinta de publicaciones en pausa en pantalla táctil de dispositivo móvil. (Móvil).*
+
+---
+
+#### 3.5.1.25. Validaciones y Solución de Problemas en el Panel de Preferencias de Accesibilidad e Inclusión Ciudadana
+
+El Panel de Accesibilidad («Personaliza tu experiencia») ([Sección 3.4.4.4](#3444-panel-de-preferencias-de-accesibilidad-e-inclusión-ciudadana)) garantiza la inclusión digital ciudadana mediante herramientas de adaptación visual, motora y cognitiva. A continuación se presentan las contingencias operativas, advertencias y directrices de solución:
+
+##### 1. Advertencia «Tu navegador no puede leer en voz alta» en el Lector de Pantalla
+* **Situación:** Al presionar la tarjeta interactiva del «Lector de pantalla», el botón no se enciende o exhibe una indicación en texto atenuado advirtiendo: *«tu navegador no puede leer en voz alta»*.
+* **Causa:** El navegador web no cuenta con compatibilidad para la tecnología de síntesis de voz (*Web Speech API*), o el sistema operativo del computador o teléfono no dispone de un sintetizador de voz en español instalado y habilitado.
+* **Acción correctiva:**
+  1. Utilizar navegadores web modernos con soporte completo de síntesis de voz, tales como Google Chrome, Microsoft Edge, Safari o Mozilla Firefox actualizados.
+  2. En equipos con Windows, ingresar a *Configuración > Hora e idioma > Voz* y asegurarse de tener instalado el paquete de voz en español.
+  3. Si la persona utiliza un software lector de pantalla especializado externo (como JAWS, NVDA o VoiceOver), no es necesario encender este lector en el panel, puesto que toda la plataforma incluye etiquetas semánticas y descripciones accesibles nativas.
+
+> **[Captura: Aviso de Compatibilidad de Lector de Pantalla]**
+> *Tarjeta del lector de pantalla en el panel de accesibilidad indicando la limitación técnica del navegador.*
+>
+> **[Captura: Aviso de Compatibilidad de Lector de Pantalla (Móvil)]**
+> *Aviso de compatibilidad de voz en pantalla de dispositivo móvil. (Móvil).*
+
+##### 2. Preferencias de Accesibilidad No Persisten tras Reiniciar el Navegador
+* **Situación:** El usuario configuró alto contraste, escala de fuente grande y filtros de daltonismo, pero al cerrar el navegador y regresar al portal en días posteriores, el sitio web aparece nuevamente con los estilos por defecto.
+* **Causa:** La navegación se llevó a cabo en modo incógnito o privado, el explorador está configurado para vaciar el almacenamiento local al salir, o se utilizan programas de limpieza automática de memoria temporal.
+* **Acción correctiva:**
+  1. Navegar en ventanas habituales del explorador (sin modo incógnito), permitiendo que el navegador resguarde los ajustes de forma persistente en la memoria local de su dispositivo sin requerir registro ni contraseñas.
+  2. En la configuración de privacidad del navegador, cerciorarse de no tener activa la opción de *«Borrar cookies y datos de sitios web al cerrar todas las ventanas»*.
+
+> **[Captura: Persistencia Local de Ajustes de Accesibilidad]**
+> *Panel de accesibilidad conservando las preferencias personalizadas del ciudadano en visitas recurrentes.*
+>
+> **[Captura: Persistencia Local de Ajustes de Accesibilidad (Móvil)]**
+> *Ajustes de accesibilidad conservados en navegador de dispositivo móvil. (Móvil).*
+
+##### 3. Guía de Lectura Desplazada o Cursor Grande No Visible en Marcos Embebidos
+* **Situación:** Al activar la «Guía de lectura» o el «Cursor grande», la franja horizontal flotante o el puntero ampliado no siguen el ratón al pasar sobre el reproductor de videos o tableros analíticos.
+* **Causa:** Los componentes incrustados de plataformas externas capturan los eventos del ratón dentro de su recuadro delimitado.
+* **Acción correctiva:**
+  1. Mover el cursor hacia las áreas de texto, párrafos, menús o columnas principales de la página para continuar la lectura guiada sin inconvenientes.
+  2. Para revisar documentos extensos con guía visual, emplear el botón de descarga del documento PDF y utilizar la herramienta de lectura del visor local de la computadora.
+
+> **[Captura: Uso de la Guía de Lectura Horizontal]**
+> *Regla visual horizontal acompañando la lectura renglón por renglón sobre los contenidos del portal.*
+>
+> **[Captura: Uso de la Guía de Lectura Horizontal (Móvil)]**
+> *Herramienta de guía de lectura en interfaz de dispositivo móvil. (Móvil).*
+
+##### 4. Restablecimiento Inmediato de Ajustes Visuales Acumulados
+* **Situación:** Tras activar y combinar múltiples funciones (alto contraste, saturación reducida, espaciados ampliados y filtros de daltonismo), el ciudadano desea retornar de forma inmediata a la apariencia gráfica original del observatorio.
+* **Causa:** Concurrencia de múltiples modificaciones visuales activas en la misma sesión.
+* **Acción correctiva:**
+  1. Desplegar el Panel de Accesibilidad haciendo clic sobre la pestaña azul del lateral derecho.
+  2. Bajar hasta el pie del panel y hacer clic en el botón **«Restablecer configuración»**.
+  3. De manera instantánea, todos los tamaños de texto, colores, tipografías, separaciones de renglón y filtros visuales regresarán a los valores institucionales estándar.
+
+> **[Captura: Botón de Restablecimiento en Panel de Accesibilidad]**
+> *Pie del panel de accesibilidad destacando el botón de restablecimiento inmediato de toda la configuración.*
+>
+> **[Captura: Botón de Restablecimiento en Panel de Accesibilidad (Móvil)]**
+> *Botón de restablecimiento de ajustes en vista móvil. (Móvil).*
+
+---
+
 ### 3.5.2. Preguntas Frecuentes
 
 #### 3.5.2.1. Problemas de acceso por bloqueo
@@ -4485,4 +4924,14 @@ El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación
 * **Formatos de descarga estándar:** Todas las plantillas oficiales y reportes que descargas se guardan en formato estándar `.xlsx` (Excel), abriendo sin problemas en Microsoft Excel, LibreOffice u otros visores compatibles.
 * **Imágenes del portal:** Las imágenes y logotipos cargados en el sistema conservan su formato original (como `.png` o `.jpg`) manteniendo su calidad visual en el portal.
 
-
+#### 3.5.2.10. Cambio de dirección de una página web («Editar dirección») y resolución de dependencias
+**Situación:** Al intentar cambiar la dirección de una página mediante la opción «Editar dirección», el sistema presenta mensajes de advertencia o no permite confirmar el cambio.
+**Posibles causas y reglas aplicadas:**
+1. **Dirección del sistema protegida:** La página actual es la portada (`/inicio`), la plantilla (`/menu-y-pie`) o una sección fija de la plataforma (como las páginas analíticas de la Intranet). El sistema muestra una tarjeta de aviso con un mensaje de advertencia indicando que esa dirección la usa el sistema y no se puede modificar, ofreciendo únicamente el botón **«Entendido»**.
+2. **Dirección nueva no válida u ocupada:** Lo escrito contiene caracteres no permitidos, tiene menos de 2 caracteres, o ya está en uso por otra página. El sistema lo informa en una tarjeta de color rojo en tiempo real mientras se escribe.
+3. **Página en edición concurrente:** Alguien tiene abierta la página o alguna de las páginas que la enlazan en el Editor Visual. El sistema identifica quién la tiene abierta y exige esperar a que cierre el editor para evitar sobrescrituras accidentales.
+4. **Presencia de enlaces dependientes:** Si existen enlaces hacia la página en el menú, pie u otras páginas, el sistema despliega una tarjeta amarilla detallando su ubicación exacta (bloque y campo del editor). El botón adopta estilo de advertencia (**«Actualizar enlaces y cambiar»**) para registrar el consentimiento explícito y reescribir atómicamente todos los hipervínculos internos en un solo paso.
+**Acción:** 
+* Escribir una dirección libre y válida.
+* Si hay enlaces dependientes, revisar el listado del diálogo y pulsar **«Actualizar enlaces y cambiar»**; el sistema actualizará los enlaces internos de forma automática tanto en el **Sitio Web** como en la **Intranet**.
+* Recordar que los enlaces externos (correos, marcadores de navegador) hacia la dirección anterior dejarán de funcionar al no haber redirección.
