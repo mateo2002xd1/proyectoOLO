@@ -29,6 +29,11 @@ import { config } from '../config';
 import { crearLoggerDeErrorConThrottle } from '../infrastructure/redis';
 import { tieneRol } from '../shared/autorizacion';
 
+/** Cuánto espera cada comando de límites a Redis antes de dejar pasar la petición. Ver abajo (RED-01). */
+const COMANDO_TIMEOUT_MS = 300;
+/** Lo máximo que espera la reconexión entre un intento y el siguiente. */
+const ESPERA_MAXIMA_DE_RECONEXION_MS = 2000;
+
 /**
  * Conexión propia para los límites, separada de la que usan BullMQ y la caché.
  *
@@ -54,6 +59,15 @@ import { tieneRol } from '../shared/autorizacion';
  * rápido si de verdad no hay Redis: `maxRetriesPerRequest: 1` vacía la cola con error
  * en cuanto se agota el primer reintento, así que una caída real se sigue notando igual
  * que antes.
+ *
+ * **`commandTimeout` y la reconexión corta (RED-01).** `maxRetriesPerRequest` cuenta
+ * reintentos, no tiempo: con Redis caído una petición esperaba al siguiente intento de
+ * reconexión, y con la espera creciendo hasta 10 s cada petición de la API tardaba 0,4 s, 2 s,
+ * 4 s, 6 s… «Falla rápido» era cierto solo para un Redis que nunca llegó a conectar. Visto
+ * apagando Redis a mitad de una prueba (`npm run limites:redis`). Ahora cada comando tiene
+ * `COMANDO_TIMEOUT_MS` para contestar —pasado eso, `passOnStoreError` deja pasar la petición—,
+ * y la reconexión no espera más de `ESPERA_MAXIMA_DE_RECONEXION_MS`, para que el límite
+ * vuelva a contar poco después de que Redis vuelva.
  */
 let clienteDeLimites: Redis | null | undefined;
 
@@ -70,13 +84,33 @@ function obtenerClienteDeLimites(): Redis | null {
   const cliente = new Redis(url, {
     maxRetriesPerRequest: 1,
     enableOfflineQueue: true,
-    retryStrategy: (intentos) => Math.min(intentos * 500, 10000),
+    commandTimeout: COMANDO_TIMEOUT_MS,
+    retryStrategy: (intentos) => Math.min(intentos * 200, ESPERA_MAXIMA_DE_RECONEXION_MS),
   });
   cliente.on('error', crearLoggerDeErrorConThrottle('Rate limit Redis'));
 
   clienteDeLimites = cliente;
   return cliente;
 }
+
+/** Estados de ioredis en los que la conexión ya se perdió y está intentando volver (o se rindió). */
+const ESTADOS_DE_CONEXION_PERDIDA = new Set(['reconnecting', 'close', 'end']);
+
+/**
+ * Si el Redis de los límites **se cayó**, el limitador se salta en vez de esperar a que
+ * `COMANDO_TIMEOUT_MS` venza en cada petición.
+ *
+ * Es el mismo criterio de `passOnStoreError` (perder el límite es mejor que perder la API), pero
+ * sin cobrarlo: una petición pasa por hasta tres limitadores en cadena, y con Redis caído el
+ * tiempo de espera se pagaba en cada uno (~1 s por petición, RED-01). Sin Redis configurado el
+ * almacén es el de memoria y esto nunca se salta.
+ *
+ * **No se salta mientras la conexión se está abriendo** (`wait`, `connecting`, `connect`): una
+ * réplica recién arrancada no puede tener la conexión lista en el primer milisegundo, y saltarse
+ * el límite ahí dejaba esa ventana sin protección. Esos comandos esperan en la cola, acotados por
+ * `COMANDO_TIMEOUT_MS`. Lo vigila el escenario 3 de `npm run limites:redis`.
+ */
+const redisDeLimitesSeCayo = (): boolean => clienteDeLimites != null && ESTADOS_DE_CONEXION_PERDIDA.has(clienteDeLimites.status);
 
 /**
  * Almacén compartido en Redis, o el de memoria si no hay Redis configurado.
@@ -150,7 +184,7 @@ export function crearLimitador({
     // Con Redis caído se deja pasar la petición en vez de devolver 500. Perder el
     // límite es malo; convertir una caída de Redis en una caída de la API es peor.
     passOnStoreError: true,
-    ...(skip ? { skip } : {}),
+    skip: (req, res) => redisDeLimitesSeCayo() || (skip ? skip(req, res) : false),
   });
 }
 
