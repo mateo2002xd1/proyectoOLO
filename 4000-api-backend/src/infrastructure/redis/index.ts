@@ -1,6 +1,7 @@
 // Conexión a Redis compartida por la caché de respuestas y la cola de trabajos (BullMQ).
 
 import Redis from 'ioredis';
+import { config } from '../../config';
 
 let redis: Redis | null = null;
 
@@ -20,7 +21,7 @@ export const crearLoggerDeErrorConThrottle = (etiqueta: string, intervaloMs = 30
 /** La conexión compartida a Redis, que se abre la primera vez que alguien la pide. */
 export const getRedis = () => {
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    redis = new Redis(config.redisUrl || 'redis://localhost:6379', {
       maxRetriesPerRequest: null, // Required by BullMQ
       retryStrategy: (times) => Math.min(times * 500, 10000),
     });

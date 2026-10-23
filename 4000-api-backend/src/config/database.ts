@@ -8,7 +8,7 @@ if (isNeon) {
   neon.neonConfig.webSocketConstructor = ws;
 }
 
-const useSSL = process.env.DB_SSL !== 'false';
+const useSSL = config.dbSsl;
 
 const sequelize = new Sequelize(config.databaseUrl, {
   dialect: 'postgres',

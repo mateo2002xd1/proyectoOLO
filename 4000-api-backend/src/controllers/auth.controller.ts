@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { config } from '../config';
 import { loginUseCase, permisosDeRol } from '../use-cases/auth/login.usecase';
 import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-login.usecase';
 import { UserRepository } from '../repositories/usuarios.repository';
@@ -76,7 +77,7 @@ export const AuthController = {
 
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: config.esProduccion,
         sameSite: 'lax',
         // Una jornada, como el JWT (`JWT_EXPIRES_IN`, 8h): con 7 días el navegador seguía
         // mandando un token ya caducado.

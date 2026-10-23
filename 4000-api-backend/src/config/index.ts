@@ -86,6 +86,21 @@ export const config = {
    */
   host: process.env.HOST || '127.0.0.1',
   databaseUrl: process.env.DATABASE_URL || '',
+  /**
+   * SSL con un Postgres normal. Va activo salvo que `DB_SSL` diga exactamente `false`
+   * (un Postgres local o el de Docker, que no lo hablan). No afecta a Neon: su conector va
+   * por WebSocket. Ver `config/database.ts`.
+   */
+  dbSsl: process.env.DB_SSL !== 'false',
+  /**
+   * Redis, tal cual está en el entorno: vacío si no hay `REDIS_URL`.
+   *
+   * Cada consumidor decide qué hacer sin ella, y no es lo mismo a propósito: la conexión
+   * compartida (caché y cola, `infrastructure/redis`) prueba `redis://localhost:6379`, y los
+   * limitadores (`rate-limit.middleware.ts`) cuentan en memoria. Por eso aquí no hay un
+   * valor por defecto: pondría a los dos de acuerdo en algo que no quieren.
+   */
+  redisUrl: process.env.REDIS_URL || '',
   jwtSecret: process.env.JWT_SECRET!,
   // Una jornada, no una semana. Es el tiempo que un token robado sigue sirviendo, y
   // quien entra al panel administra usuarios y lee la bitácora. El uso diario no lo

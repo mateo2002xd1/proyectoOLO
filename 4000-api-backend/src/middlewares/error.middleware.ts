@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { config } from '../config';
 import { describirErrorParaLog, esErrorDeDominio, MENSAJE_ERROR_INTERNO } from '../shared/errores';
 
 /**
@@ -29,7 +30,7 @@ export function errorHandler(err: any, req: Request, res: Response, _next: NextF
   let message: string;
   if (esJsonRoto) message = 'El cuerpo de la petición no es un JSON válido.';
   else if (dominio) message = err.message;
-  else if (process.env.NODE_ENV !== 'production') message = err?.message || MENSAJE_ERROR_INTERNO;
+  else if (!config.esProduccion) message = err?.message || MENSAJE_ERROR_INTERNO;
   else message = MENSAJE_ERROR_INTERNO;
 
   const code = dominio && !esJsonRoto && typeof err.code === 'string' ? err.code : undefined;

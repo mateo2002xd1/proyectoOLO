@@ -25,6 +25,7 @@ import type { Request, Response } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import Redis from 'ioredis';
+import { config } from '../config';
 import { crearLoggerDeErrorConThrottle } from '../infrastructure/redis';
 import { tieneRol } from '../shared/autorizacion';
 
@@ -60,7 +61,7 @@ let clienteDeLimites: Redis | null | undefined;
 function obtenerClienteDeLimites(): Redis | null {
   if (clienteDeLimites !== undefined) return clienteDeLimites;
 
-  const url = process.env.REDIS_URL;
+  const url = config.redisUrl;
   if (!url) {
     clienteDeLimites = null;
     return null;

@@ -16,6 +16,7 @@ process.env.JWT_SECRET ||= 'secreto-solo-para-esta-verificacion';
 import bcrypt from 'bcryptjs';
 import type { Request, Response } from 'express';
 import { DatabaseError, UniqueConstraintError } from 'sequelize';
+import { config } from '../../src/config';
 import { errorHandler } from '../../src/middlewares/error.middleware';
 import {
   describirErrorParaLog,
@@ -87,10 +88,12 @@ const conCodigo = (mensaje: string, code: string, status?: number) =>
   Object.assign(new Error(mensaje), { code, ...(status ? { status } : {}) });
 
 const verificarManejador = (): void => {
-  const entorno = process.env.NODE_ENV;
+  // El manejador lee `config.esProduccion`, que se fija al cargar el módulo: cambiar
+  // `process.env.NODE_ENV` aquí ya no lo movería.
+  const eraProduccion = config.esProduccion;
 
   console.log('\n=== Manejador de errores · producción ===');
-  process.env.NODE_ENV = 'production';
+  config.esProduccion = true;
 
   let r = responder(conCodigo("ENOSPC: no space left on device, write '/filesystem/sitio/uploads/x.png'", 'ENOSPC'));
   comprobar('error de disco → 500 genérico', r.respuesta, { status: 500, cuerpo: { error: MENSAJE_ERROR_INTERNO } });
@@ -132,7 +135,7 @@ const verificarManejador = (): void => {
   comprobarQue('`esErrorDeDominio` rechaza un status no entero', !esErrorDeDominio(Object.assign(new Error('x'), { status: '404' })));
 
   console.log('\n=== Manejador de errores · desarrollo (se conserva el mensaje para depurar) ===');
-  process.env.NODE_ENV = 'development';
+  config.esProduccion = false;
   r = responder(new TypeError("Cannot read properties of undefined (reading 'id')"));
   comprobar('fuera de producción el mensaje real sí sale', r.respuesta, {
     status: 500,
@@ -141,7 +144,7 @@ const verificarManejador = (): void => {
   r = responder(conCodigo('connect ECONNREFUSED', 'ECONNREFUSED'));
   comprobarQue('ni siquiera en desarrollo sale el `code` del sistema', r.respuesta.cuerpo.code === undefined);
 
-  process.env.NODE_ENV = entorno;
+  config.esProduccion = eraProduccion;
 };
 
 // ── 2. Mensajes de las cargas de Excel ───────────────────────────────────────
