@@ -63,13 +63,32 @@ export function useProgramasSobresalientes() {
   }
 
   const departamentosConDatos = useMemo<DepartamentoConDatos[]>(() => {
-    const vistos = new Map<string, string>();
+    const vistos = new Map<
+      string,
+      { nombre: string; certificados: number; vinculados: number; sumaTasas: number; filas: number }
+    >();
     for (const registro of todosLosRegistros) {
-      if (!vistos.has(registro.codigoDane)) vistos.set(registro.codigoDane, registro.departamento);
+      const acumulado = vistos.get(registro.codigoDane) ?? {
+        nombre: registro.departamento,
+        certificados: 0,
+        vinculados: 0,
+        sumaTasas: 0,
+        filas: 0,
+      };
+      acumulado.certificados += registro.certificados;
+      acumulado.vinculados += registro.vinculados;
+      acumulado.sumaTasas += registro.tasaVinculacion;
+      acumulado.filas += 1;
+      vistos.set(registro.codigoDane, acumulado);
     }
-    return Array.from(vistos, ([codigoDane, nombre]) => ({ codigoDane, nombre })).sort((a, b) =>
-      a.nombre.localeCompare(b.nombre, 'es'),
-    );
+    // La tasa del departamento pondera cada registro por sus egresados (vinculados / certificados);
+    // el promedio simple de las tasas solo sirve de respaldo cuando no hay egresados que ponderar.
+    return Array.from(vistos, ([codigoDane, a]) => ({
+      codigoDane,
+      nombre: a.nombre,
+      egresados: a.certificados,
+      tasaVinculacion: a.certificados > 0 ? (a.vinculados / a.certificados) * 100 : a.sumaTasas / a.filas,
+    })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }, [todosLosRegistros]);
 
   /** Registros del departamento activo (o de todos, si no hay ninguno elegido en el mapa). */

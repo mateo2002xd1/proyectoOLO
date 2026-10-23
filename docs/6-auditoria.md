@@ -5,6 +5,27 @@
 
 ---
 
+## sesión 23-10-2026 (6.ª parte): el mapa de «Programas + sobresalientes» pasa a ECharts
+
+**Qué pidió el usuario:** que el mapa de programas sobresalientes use ECharts para ser más interactivo y verse como una imagen de referencia (regiones de color, línea guía y cifra grande a la derecha). Eligió: **por departamento**, con la **tasa de vinculación** como número, y que el **clic siga filtrando** la tabla.
+
+**Qué se hizo** (`3000-sitio-web/src/shared/lib/programas-sobresalientes/`):
+
+- `lib/opcion-mapa-departamentos.ts` (nuevo, función pura): arma el SVG del mapa con los 33 departamentos que ya existían (`geography/departamentos-colombia.ts`, cada `<path name="<código DANE>">`) y la opción de ECharts: `geo` + serie `map` (colores, resaltado, globo con tasa y egresados), `lines` y `scatter` en las mismas coordenadas del SVG para las líneas guía y las cifras de los cuatro departamentos con mayor tasa. Escala de cuatro verdes por tasa; sin registros, gris.
+- `components/mapa-departamentos.tsx`: de `<path>` a mano a `GraficoEcharts`. Conserva lo que ya tenía: el `stopPropagation` del editor Puck y la selección por clic (un segundo clic la suelta). Los departamentos sin datos no responden al clic.
+- `hooks/use-programas-sobresalientes.ts` y `types.ts`: `DepartamentoConDatos` trae ahora `tasaVinculacion` (vinculados / certificados del departamento, ponderada por egresados; promedio simple solo si no hay egresados) y `egresados`.
+- `shared/ui/molecules/grafico-echarts.tsx`: solo se añadieron **tipos** (mapa, scatter, lines, geo) a `OpcionGrafico`; los módulos de ECharts del mapa se registran en `mapa-departamentos.tsx`, así el resto del panel no los carga.
+
+**Accesibilidad:** el lienzo no se recorre con el teclado (el SVG anterior sí, con `role="button"` por departamento). Para no perderlo hay una lista de botones, uno por departamento con registros, con `aria-pressed`, oculta con `not-focus-within:sr-only` (visible al enfocarla). `role="img"` con descripción en el lienzo.
+
+**Verificación:** `tsc --noEmit` y `eslint` limpios en lo tocado; el mapa renderizado con ECharts real en Chrome headless a 390, 440 y 1000 px (con y sin departamento elegido); el registro recortado de ECharts (solo `MapChart`, `LinesChart`, `ScatterChart`, `GeoComponent`) renderiza el mapa en Node; el clic simulado con ratón devuelve el código DANE del departamento.
+
+**No se verificó:** la página real con datos del servidor ni el editor Puck con el bloque dentro (no se levantó la app); el globo (tooltip) con el cursor; Poppins dentro del lienzo (en las pruebas cayó a la letra de respaldo).
+
+**Decisiones que conviene saber:** la tasa del mapa se calcula con **todos** los registros, no con los filtros de modalidad, género o programa (igual que antes la lista de departamentos con datos); si se quiere que el mapa reaccione a esos filtros, hay que recalcularla con los registros filtrados. Bogotá, D.C. es un recinto pequeño dentro de Cundinamarca: al simular el clic en su centroide cayó en Cundinamarca. La geometría y el orden de dibujo son los del SVG anterior, pero no se comparó cómo se comportaba antes.
+
+---
+
 ## sesión 23-10-2026 (5.ª parte): arreglo de las condiciones de carrera, pruebas de lo que faltaba (restaurar, alertas, tendencia, cola, logo, HTTP) y tres hallazgos más
 
 **Qué pidió el usuario:** arreglar lo grave y los demás fallos de la parte anterior, y volver a probar lo que había quedado sin probar. Resultado: los 17 hallazgos de la 4.ª parte quedan cerrados (uno se reclasifica como no-defecto), se encontraron y cerraron tres más, y los cinco scripts `probar-carreras-*` pasan en verde.
@@ -13455,3 +13476,37 @@ Comprobado:
 2. **Abrir la intranet con tu cuenta**: inicio, una sección, el buscador del menú. Si algo sale vacío o te manda al login, es esta entrega.
 3. Abrir una misma página con dos cuentas de Editor: la segunda debe quedar en solo lectura con el nombre de la primera.
 4. Sigue pendiente de decidir: `/respaldos` y `/publicadas` solo piden sesión (un Director las lista).
+
+## Sesión 23-10-2026: auditorias/ no se sube
+
+Pedido: «esa carpeta `auditorias/` no debe subirse al github, implementa una forma que no se siga subiendo».
+
+**Por qué se seguía subiendo.** `.gitignore` ya tenía `auditorias/`, pero **4 informes estaban rastreados** desde commits anteriores y git sigue subiendo lo que ya rastrea aunque su carpeta esté ignorada. Además, `.gitignore` no frena un `git add -f`.
+
+| Capa | Qué hace | Estado |
+|---|---|---|
+| Índice | `git rm -r --cached auditorias`: los 4 informes dejan de rastrearse; los archivos **se conservan en disco** | Hecho, falta el commit (queda preparado) |
+| `.githooks/pre-commit` | Bloquea el commit si el índice añade o cambia algo de `auditorias/` (también un `git add -f`). Borrar del índice sí se permite | Hecho |
+| `.githooks/pre-push` (nuevo) | Rechaza subir commits que añadan o cambien archivos de `auditorias/`, aunque se hayan hecho con `--no-verify` | Hecho |
+
+**Lo ya subido y lo que no.** De los 5 commits que tocan la carpeta, **solo `52d89bf6`** (informe de off-by-slash, 19-10) está en GitHub: `OLO/dev`, `OLO/mateo`, `UST/main` y `BACKUP/main`. Los otros 4 (`13ca718d`, `f140ecfd`, `6aadfb06`, `25593a1e`: fuga en errores, XSS y SQLi) **siguen solo en la máquina de ingdave**. Por eso `git rm --cached` no basta para ellos: el siguiente `git push` de `dev` subiría esos commits con los informes dentro de su historia. El `pre-push` lo detecta y **bloquea el push de `dev` hasta que se saquen** (simulado con `dev` real: bloquea esos 4 y los nombra).
+
+**Pendiente de decidir (no se tocó ningún historial):**
+1. *Los 4 commits locales.* Opción recomendada: reescribirlos sin la carpeta en un **clon desechable**, que deja una rama nueva `dev-limpia` y no toca `dev` ni el árbol de trabajo (27 commits locales y 27 archivos sin commitear de otras sesiones hacen arriesgado reescribir en sitio):
+   ```
+   cp -r auditorias ../auditorias-copia
+   git clone . ../olo-limpio && cd ../olo-limpio && git checkout dev
+   git filter-branch -f --index-filter "git rm -r --cached --ignore-unmatch -q auditorias" 8bf47e75..dev
+   git push ../OLO-proyect dev:dev-limpia
+   ```
+   Después se revisa `dev-limpia` y se adopta como `dev`. Los commits desde `13ca718d` (23) cambian de hash.
+2. *El informe ya publicado (`52d89bf6`).* Quitarlo de GitHub exige reescribir la historia y forzar el push en 4 remotos, y aun así GitHub puede conservar copias en caché y en forks. Se deja como está salvo que se decida lo contrario.
+3. *Las referencias.* Varios archivos citan estos informes como evidencia (`verificar-errores-sin-fuga.ts`, `verificar-xss-contenido.ts`, `anti-enumeracion.ts`, `errores.ts`, `sanitizar-contenido.ts`, `2-convenciones`, `3-seguridad`, y esta bitácora). Tras dejar de versionarlos apuntan a un archivo que solo existe en la máquina de quien lo generó. Si el equipo necesita la evidencia, debe vivir en `docs/`.
+
+**Límites.** Los hooks solo funcionan donde `core.hooksPath` es `.githooks` (`sincronizar-paquetes-locales.mjs` lo pone al instalar, si el clon no tiene otros). No hay CI ni regla del lado de GitHub que lo respalde: quien borre el hook o use otro cliente puede subirla. Ni `.gitignore` ni los hooks retiran lo que ya está publicado.
+
+Comprobado:
+- **19 de 19** en un repositorio desechable con remoto local, usando los hooks reales: el `.gitignore` evita `git add -A`; el `pre-commit` bloquea `git add -f` y modificar uno ya rastreado; el `pre-push` bloquea un commit hecho con `--no-verify` y el remoto no lo recibe; tras sacarlo del historial el push pasa; dejar de rastrear (borrar del índice) pasa; commits y pushes normales, rama nueva y borrar rama remota siguen pasando.
+- Con el repositorio real, solo se simuló el `pre-push` con `dev` contra `OLO/dev` (no se subió nada).
+
+**No** probado: el comportamiento en Linux/macOS (el modo ejecutable del hook nuevo se fija con `git update-index --chmod=+x`, porque en Windows `core.fileMode` está en `false`).

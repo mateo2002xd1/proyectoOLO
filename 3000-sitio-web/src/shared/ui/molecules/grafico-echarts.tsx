@@ -10,11 +10,20 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ComposeOption } from 'echarts/core';
-import type { BarSeriesOption, LineSeriesOption, PieSeriesOption, TreeSeriesOption } from 'echarts/charts';
+import type {
+  BarSeriesOption,
+  LineSeriesOption,
+  LinesSeriesOption,
+  MapSeriesOption,
+  PieSeriesOption,
+  ScatterSeriesOption,
+  TreeSeriesOption,
+} from 'echarts/charts';
 import type {
   TooltipComponentOption,
   GridComponentOption,
   LegendComponentOption,
+  GeoComponentOption,
 } from 'echarts/components';
 
 // Solo se registran los charts y componentes que el panel usa: import selectivo
@@ -37,6 +46,12 @@ export type OpcionGrafico = ComposeOption<
   | LineSeriesOption
   | PieSeriesOption
   | TreeSeriesOption
+  // El mapa de «Programas + sobresalientes» (`mapa-departamentos.tsx`): solo sus tipos; sus
+  // series y su componente se registran en ese archivo, que es el único que los usa.
+  | MapSeriesOption
+  | ScatterSeriesOption
+  | LinesSeriesOption
+  | GeoComponentOption
   | TooltipComponentOption
   | GridComponentOption
   | LegendComponentOption

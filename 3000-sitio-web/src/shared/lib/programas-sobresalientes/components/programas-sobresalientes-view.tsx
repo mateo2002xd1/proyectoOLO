@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useProgramasSobresalientes } from '../hooks/use-programas-sobresalientes';
 import { FiltrosProgramasSobresalientes } from './filtros-programas-sobresalientes';
 import { MapaDepartamentos } from './mapa-departamentos';
@@ -74,11 +74,6 @@ export function ProgramasSobresalientesView({
     if (modoSeleccionDepartamento) setModoSeleccion(modoSeleccionDepartamento);
   }
 
-  const codigosConDatos = useMemo(
-    () => new Set(departamentosConDatos.map((d) => d.codigoDane)),
-    [departamentosConDatos],
-  );
-
   const departamentoActivo =
     filtros.codigoDane === 'todos'
       ? null
@@ -140,7 +135,7 @@ export function ProgramasSobresalientesView({
         <div className="flex flex-col gap-6 2xl:flex-row 2xl:items-start">
           <div className="w-full 2xl:sticky 2xl:top-[104px] 2xl:w-[440px] 2xl:flex-shrink-0">
             <MapaDepartamentos
-              codigosConDatos={codigosConDatos}
+              departamentos={departamentosConDatos}
               codigoSeleccionado={filtros.codigoDane}
               onSeleccionar={seleccionarDepartamento}
             />

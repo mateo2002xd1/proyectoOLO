@@ -53,6 +53,10 @@ export interface RegistroConDepartamento extends RegistroFormacion {
 export interface DepartamentoConDatos {
   codigoDane: string;
   nombre: string;
+  /** Porcentaje (0-100): vinculados / certificados de todos sus registros; el color del mapa. */
+  tasaVinculacion: number;
+  /** Suma de certificados de sus registros. */
+  egresados: number;
 }
 
 /**
