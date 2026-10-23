@@ -55,7 +55,7 @@ export interface BuscadorSitioBloqueProps {
 
 /**
  * Bloque Modular «Buscador del Sitio Web»
- * Diseñado conforme a los estándares de la Página 20 del Kit UI GOV.CO:
+ * Diseñado conforme a las directrices de accesibilidad digital y diseño institucional GOV.CO:
  * - 4 estados visuales: Default, Active (botón "X" de borrado), Focus (anillo de alto contraste) y Disabled.
  * - Soporte 100% accesible para teclado (Enter, Escape, Tab) y lectores de pantalla.
  * - Desacoplado: redirige dinámicamente hacia la página de resultados elegida sin rutas quemadas.

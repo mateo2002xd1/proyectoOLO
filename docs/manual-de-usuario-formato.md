@@ -2567,7 +2567,7 @@ Componente interactivo diseñado para destacar cifras clave, boletines e infogra
 > *Presentación del bloque Dato OLO de la semana en el editor visual con infografías y transiciones visuales.*
 
 ##### 3.4.3.7.5. Bloque «Buscador del Sitio Web»
-Componente modular e interactivo que permite incorporar una barra de búsqueda institucional en cualquier página del portal (por ejemplo en la portada `/inicio` o en páginas temáticas), estructurado bajo las especificaciones de diseño accesible de la **Página 20 del Kit UI GOV.CO**:
+Componente modular e interactivo que permite incorporar una barra de búsqueda institucional en cualquier página del portal (por ejemplo en la portada `/inicio` o en páginas temáticas), estructurado bajo los lineamientos oficiales de diseño web y accesibilidad ciudadana de GOV.CO (Resolución 1519 de 2020 del MinTIC y estándares WCAG 2.1):
 * **Ubicación en el catálogo:** Se encuentra disponible en el catálogo de componentes del Editor Visual bajo la categoría *Contenido Principal*, con el nombre **«Buscador del Sitio Web»**.
 * **Arquitectura desacoplada y dinámica:** No depende de rutas fijas ni preconfiguradas en el código fuente. Se enlaza de manera flexible con la dirección web de resultados que el editor o administrador cree en la plataforma mediante la herramienta flotante **«Nueva página»**.
 * **Protección del entorno editorial (`esEdicion = true`):** Al maquetar en el Editor Visual, presionar Enter en el teclado o pulsar el botón con la lupa no ejecuta la navegación externa hacia otra página, protegiendo al editor contra la pérdida involuntaria de cambios no guardados.
@@ -2623,31 +2623,111 @@ Este apartado reúne la documentación, especificaciones técnicas, campos confi
 
 Esta sección describe los procedimientos para la localización de contenidos en el portal público, la consulta de tableros analíticos en la Intranet, la visualización de documentos y la descarga directa de información oficial. Para consultar el catálogo completo de situaciones de validación, solución de incidencias y contingencias ciudadanas correspondientes a estos módulos, remitirse a las [Secciones 3.5.1.21 a 3.5.1.25](#35121-validaciones-y-solución-de-problemas-en-el-buscador-global-del-portal-público).
 
-#### 3.4.4.1. Búsquedas y Filtros en el Portal Público
+#### 3.4.4.1. Búsquedas y Filtros en la Plataforma
 
-##### 3.4.4.1.1. Uso del Buscador Modular del Sitio Web (Kit UI GOV.CO)
+##### 3.4.4.1.1. Buscadores y Filtros en el Portal Público
 
-El portal público incorpora un sistema de búsqueda ciudadana integral y desacoplado, concebido bajo los estándares de accesibilidad e interacción de la **Página 20 del Kit UI GOV.CO**:
-* **Enfoque ciudadano y cabecera despejada:** La cabecera principal del portal permanece limpia para la navegación institucional y el acceso a la Intranet, mientras que la búsqueda se ubica estratégicamente en la portada y páginas informativas, canalizando las consultas hacia la pantalla de resultados del observatorio.
-* **Flujo de interacción ciudadana paso a paso:**
-  1. **Aproximación y enfoque ergonómico:** La barra de búsqueda presenta un contorno neutral accesible y un texto de instrucción inferior. Al interactuar mediante clic o navegación secuencial por teclado con la tecla **Tab**, se enciende el anillo exterior de enfoque de alto contraste.
-  2. **Digitación y borrado inmediato («X» / Escape):** Al escribir el primer carácter, se activa el estado dinámico emergiendo un botón circular con ícono de equis (**«X»**). El usuario puede pulsar dicho botón o presionar la tecla **Escape** (**Esc**) para borrar instantáneamente la consulta sin perder el cursor dentro del campo.
-  3. **Ejecución de la búsqueda:** Al presionar **Enter** o hacer clic en el botón circular de la lupa, la plataforma ejecuta la navegación fluida como aplicación de página única (SPA) sin recargar la pantalla completa, trasladando la consulta hacia la página de resultados mediante el parámetro `?busqueda=[termino]`. Esta consulta es independiente y no altera los filtros del catálogo de ocupaciones CNO.
-  4. **Exploración de la tabla de resultados:** En la pantalla de destino, el listado despliega las coincidencias organizadas en dos columnas semánticas (*Página / Sección* y *Contenido coincidente*):
-     * *Pastillas de categoría:* Distintivos visuales (*Página*, *Sección*) que indican el origen jerárquico del resultado.
-     * *Resaltado contextual:* Las palabras coincidentes se enfatizan con fondo verde institucional (`#7DB828`/30) y tipografía en azul oscuro (`#001631`).
-     * *Exclusión de la página actual:* El listado omite dinámicamente la misma página de resultados para evitar enlaces redundantes o confusos.
-     * *Accesibilidad en tiempo real:* Las tecnologías de asistencia anuncian el número de coincidencias mediante la región accesible (`aria-live="polite"`).
-  5. **Refinamiento sin retroceso:** Mediante la barra de búsqueda superior incorporada en la propia pantalla de resultados, el ciudadano puede afinar su consulta o ingresar nuevos términos de forma directa, actualizando el listado al instante sin devolverse a la portada.
-  6. **Paginación ágil y estados sin coincidencia:** Cuando los resultados superan el límite configurado, se activan los botones de paginación para desplazarse fluidamente entre páginas sin refrescar el sitio web. Si ningún contenido coincide con el término, el sistema presenta un panel empático con recomendaciones prácticas de redacción y sugerencias de exploración.
+El portal público del Observatorio Laboral y Ocupacional (OLO) dispone de herramientas de consulta estructuradas bajo los lineamientos oficiales de diseño e interacción ciudadana de GOV.CO y la normativa de accesibilidad digital (Resolución 1519 de 2020 del MinTIC y estándares internacionales WCAG 2.1 nivel AA). Estas herramientas permiten a cualquier visitante localizar contenidos informativos, explorar indicadores de empleabilidad y consultar el catálogo de ocupaciones a través de tres componentes especializados:
 
-> **[Captura: Buscador Modular del Sitio Web en Portada]**
-> *Barra de búsqueda modular en portada con estados de enfoque, botón de borrado rápido y botón integrado de lupa.*
->
-> **[Captura: Página de Resultados de Búsqueda Modular]**
-> *Pantalla de resultados con barra de búsqueda superior, anuncios accesibles, tarjetas resaltadas y paginación.*
+###### 3.4.4.1.1.1. Uso del Buscador Global Desplegable
 
-##### 3.4.4.1.2. Módulos de Consulta Especializada y Filtrado Interactivo
+El portal público del Observatorio Laboral y Ocupacional (OLO) dispone de un buscador general accesible e intuitivo, estructurado bajo los lineamientos oficiales de diseño e interacción ciudadana de GOV.CO y la normativa de accesibilidad digital (Resolución 1519 de 2020 del MinTIC y estándares internacionales WCAG 2.1 nivel AA), que permite localizar con rapidez noticias, boletines, secciones informativas y páginas oficiales en todo el sitio web.
+
+*(Nota: Para consultar las posibles situaciones de validación, búsquedas sin coincidencias en vivo y solución de problemas al interactuar con el buscador, remitirse a la [Sección 3.5.1.21: Validaciones y Solución de Problemas en el Buscador Global del Portal Público](#35121-validaciones-y-solución-de-problemas-en-el-buscador-global-del-portal-público)).*
+
+* **Propósito y alcance en el portal:** Permite encontrar cualquier contenido publicado en la plataforma pública del observatorio. Se encuentra disponible en la portada principal y en páginas temáticas, facilitando una localización ágil y centralizada sin recargar la barra de menús principales.
+
+* **Independencia del catálogo ocupacional:** Es una herramienta separada del buscador de ocupaciones (CNO y CUOC). Mientras el catálogo ocupacional se especializa en funciones laborales, competencias y salarios, este buscador general rastrea los artículos, convocatorias, publicaciones y páginas de todo el portal.
+
+* **Procedimiento paso a paso para la búsqueda ciudadana:**
+
+  1. **Aproximación y enfoque visual:**  
+     La barra se presenta como un campo amplio con bordes redondeados, un texto orientador o sugerido en su interior (por ejemplo: *«Buscar en el sitio web…»*) y un mensaje explicativo de apoyo en la parte inferior (por ejemplo: *«Escribe tu búsqueda y presiona Enter para buscar»*). Cabe destacar que ambos textos son configurables y pueden ser adaptados por el equipo editorial según los requerimientos o la temática de la página. Al interactuar con el campo o seleccionarlo mediante navegación por teclado, se enciende un anillo exterior de resalte de alto contraste que facilita su visibilidad a personas con baja visión o dificultades visuales.
+
+  > **[Captura: Buscador del Sitio Web en Portada]**
+  > *Barra de búsqueda del portal público con estados de enfoque, botón de borrado rápido y botón de lupa.*
+  >
+  > **[Captura: Buscador del Sitio Web en Portada (Móvil)]**
+  > *Barra de búsqueda adaptada a pantallas de dispositivos móviles. (Móvil).*
+
+  2. **Digitación y botón de borrado rápido («X»):**  
+     Al comenzar a escribir en el campo, se activa automáticamente en el extremo derecho un botón circular con una equis (**«X»**). Si el usuario desea corregir o limpiar el término escrito, basta con pulsar este botón para vaciar el campo de forma inmediata y mantener el cursor listo para una nueva búsqueda, sin tener que eliminar los caracteres uno a uno.
+
+  > **[Captura: Ingreso de Términos y Botón Borrar]**
+  > *Campo de búsqueda con texto digitado y botón interactivo de borrado rápido desplegado.*
+  >
+  > **[Captura: Ingreso de Términos y Botón Borrar (Móvil)]**
+  > *Control de borrado rápido en pantalla móvil. (Móvil).*
+
+  3. **Realización de la consulta:**  
+     Una vez digitado el término, el ciudadano puede presionar la tecla **Enter** en su teclado o hacer clic en el botón circular con la lupa situado a la derecha. El sistema procesa la búsqueda de inmediato y traslada al usuario a la pantalla de resultados de forma ágil y continua, sin parpadeos ni recargas completas de la ventana del navegador.
+
+  > **[Captura: Ejecución de Consulta desde Botón de Lupa]**
+  > *Acción de envío de búsqueda mediante el botón interactivo de lupa.*
+  >
+  > **[Captura: Ejecución de Consulta desde Botón de Lupa (Móvil)]**
+  > *Envío de la consulta ciudadana en dispositivo móvil. (Móvil).*
+
+  4. **Búsqueda flexible sin distinción de mayúsculas ni acentos:**  
+     El motor de búsqueda comprende los términos sin importar si el usuario los escribe en mayúsculas, minúsculas o sin tildes (por ejemplo, escribir *«inversion»*, *«Inversión»* o *«INVERSIÓN»* arroja exactamente las mismas coincidencias).
+
+  > **[Captura: Coincidencias con Búsqueda Flexible]**
+  > *Demostración de resultados idénticos ante términos con o sin acentos ortográficos.*
+  >
+  > **[Captura: Coincidencias con Búsqueda Flexible (Móvil)]**
+  > *Búsqueda flexible en pantalla móvil. (Móvil).*
+
+  5. **Exploración de la tabla de resultados:**  
+     En la pantalla de resultados, la información se presenta de manera ordenada y accesible:
+
+     * **Título y contador de coincidencias:** En la cabecera se informa de manera clara la cantidad de resultados encontrados (por ejemplo: *«5 resultados encontrados para «inversión»»*).
+
+     * **Lectura automática para personas con discapacidad visual:** Los programas lectores de pantalla anuncian en voz alta el número total de coincidencias en cuanto se completa la búsqueda.
+
+     * **Estructura en dos columnas:**
+       * **Columna «Página / Sección»:** Muestra una etiqueta o pastilla distintiva que indica si la coincidencia corresponde a una **Página** principal o a una **Sección** específica del observatorio, acompañada del título del contenido y su dirección web. Al hacer clic sobre el título o la fila, se accede directamente a ese contenido.
+       * **Columna «Contenido coincidente»:** Presenta el fragmento de texto o párrafo donde se localizó la coincidencia, destacando las palabras buscadas con un fondo verde suave y texto azul oscuro para identificarlas fácilmente durante la lectura.
+
+     * **Exclusión de la propia página de resultados:** El sistema evita de manera automática mostrar enlaces que lleven a la misma página donde el ciudadano ya se encuentra parado, garantizando que todos los resultados conduzcan a contenidos informativos nuevos y útiles.
+
+  > **[Captura: Pantalla de Resultados de Búsqueda del Sitio Web]**
+  > *Listado de resultados con barra de refinamiento superior, tabla de dos columnas, etiquetas identificadoras y términos resaltados.*
+  >
+  > **[Captura: Pantalla de Resultados de Búsqueda del Sitio Web (Móvil)]**
+  > *Presentación vertical de la tabla de resultados adaptada a teléfonos móviles. (Móvil).*
+
+  6. **Ajuste o cambio de búsqueda sin retroceder:**  
+     En la parte superior de la pantalla de resultados se dispone de una barra de búsqueda para que el ciudadano pueda corregir una palabra o consultar un tema totalmente nuevo sin necesidad de devolverse a la portada ni pulsar el botón «Atrás» del navegador.
+
+  > **[Captura: Barra de Refinamiento en Pantalla de Resultados]**
+  > *Barra de búsqueda superior en la pantalla de resultados para ajustar términos sin retroceder a la portada.*
+  >
+  > **[Captura: Barra de Refinamiento en Pantalla de Resultados (Móvil)]**
+  > *Barra de refinamiento de búsqueda adaptada a pantalla móvil. (Móvil).*
+
+  7. **Navegación entre páginas de resultados (Paginación):**  
+     Si la consulta genera un número amplio de coincidencias, se activan en la parte inferior los controles de paginación (*«Anterior»*, números de página y *«Siguiente»*), permitiendo recorrer cómodamente todos los registros.
+
+  > **[Captura: Controles de Paginación en Resultados]**
+  > *Botones interactivos de paginación inferior para recorrer la totalidad de contenidos encontrados.*
+  >
+  > **[Captura: Controles de Paginación en Resultados (Móvil)]**
+  > *Controles numéricos de paginación en interfaz móvil. (Móvil).*
+
+  8. **Orientación cuando no hay coincidencias:**  
+     Si ninguna página coincide con el término consultado, la pantalla no queda vacía; muestra el mensaje *«No hay contenidos que coincidan con «[término]»»* y brinda recomendaciones prácticas:
+     * Verificar la ortografía de las palabras digitadas.
+     * Probar con términos más generales o palabras sinónimas (por ejemplo: *empleo*, *ocupaciones*, *informes*).
+     * Revisar el menú superior de navegación o el Mapa del Sitio para explorar las secciones disponibles.
+
+  > **[Captura: Búsqueda sin Coincidencias en el Sitio Web]**
+  > *Mensaje orientador cuando no se encuentran resultados, ofreciendo recomendaciones de redacción.*
+  >
+  > **[Captura: Búsqueda sin Coincidencias en el Sitio Web (Móvil)]**
+  > *Mensaje orientador sin coincidencias adaptado a pantalla móvil. (Móvil).*
+
+
+###### 3.4.4.1.1.2. Módulos de Consulta Especializada y Filtrado Interactivo
 
 Para el análisis detallado del mercado de trabajo, la inversión y la pertinencia de la formación, la plataforma incorpora módulos especializados con herramientas de segmentación y filtrado dinámico:
 
@@ -2700,9 +2780,9 @@ Para el análisis detallado del mercado de trabajo, la inversión y la pertinenc
 > **[Captura: Módulo Tendencia Ocupacional (Móvil)]**
 > *Matriz de tendencia ocupacional adaptada a pantalla táctil móvil. (Móvil).*
 
-##### 3.4.4.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
+###### 3.4.4.1.1.3. Consulta y Exploración en el Catálogo Oficial de Ocupaciones (CNO y CUOC)
 
-El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible en la página que lleve el bloque de diseño `BuscadorOcupaciones` (por ejemplo, en la sección de Clasificación Ocupacional dentro del menú del portal); el buscador de la portada orienta hacia esa página con la consulta ya realizada.
+El portal público incorpora un motor de búsqueda y consulta especializada en las clasificaciones ocupacionales oficiales de Colombia: la **Clasificación Nacional de Ocupaciones (CNO)** y la **Clasificación Única de Ocupaciones para Colombia (CUOC)**. Este módulo se encuentra disponible en las páginas dedicadas a la clasificación ocupacional (a través del menú «Clasificación de las Ocupaciones») y en el bloque destacado de la portada «¿Sabes qué es una ocupación?», permitiendo a los ciudadanos explorar directamente los perfiles laborales.
 
 *(Nota: Para consultar las posibles situaciones de validación de códigos de 4 y 5 dígitos, límites de caracteres, ausencia de coincidencias y contingencias en la navegación de correlativas cruzadas, remitirse a la [Sección 3.5.1.23: Validaciones y Solución de Problemas en la Consulta y Exploración del Catálogo Oficial de Ocupaciones (CNO y CUOC)](#35123-validaciones-y-solución-de-problemas-en-la-consulta-y-exploración-del-catálogo-oficial-de-ocupaciones-cno-y-cuoc)).*
 
@@ -2734,7 +2814,7 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 > *Visualización de tarjetas de resultados del catálogo ocupacional en pantalla móvil. (Móvil).*
 
 3. **Apertura de la Ficha Técnica Ocupacional:**
-   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema abre la ficha en la misma página, debajo del buscador. Los resultados y la ficha no son ventanas emergentes: cada vista tiene su propia dirección web de consulta (usando los parámetros de búsqueda de la página), de modo que el ciudadano puede copiar el enlace directo, recargar la página y volver a la vista anterior con el botón «atrás» del explorador. Al abrir cada vista, el foco pasa a su encabezado para que los lectores de pantalla anuncien el cambio de inmediato.
+   * Al hacer clic sobre cualquier tarjeta de ocupación en la lista de resultados, el sistema abre la ficha técnica en la misma página, justo debajo del buscador. La ficha no se abre en una ventana emergente separada: cuenta con una dirección web propia para que el ciudadano pueda copiar el enlace directo, guardarlo en sus favoritos, recargar la página o volver a la lista anterior con el botón «Atrás» del navegador. Al abrirse, el foco de la pantalla se ubica en el título principal para que los lectores de pantalla comiencen a leer la información de inmediato.
    * La ficha técnica proporciona el desglose integral del perfil ocupacional oficial:
      * **Encabezado y Código:** Título formal, código de clasificación e indicador de tipo (`CNO` o `CUOC`).
      * **Descripción general:** Resumen contextual de la ocupación, su propósito en el mercado laboral y el nivel de cualificación correspondiente.
@@ -2762,13 +2842,64 @@ El procedimiento paso a paso para la consulta ciudadana y exploración ocupacion
 > **[Captura: Sección de Correlativas Cruzadas CNO y CUOC (Móvil)]**
 > *Visualización de las ocupaciones correlativas adaptada a pantallas táctiles móviles. (Móvil).*
 
+##### 3.4.4.1.2. Buscador Interno de la Intranet Institucional
+
+La Intranet del Observatorio Laboral y Ocupacional cuenta con un motor de búsqueda interno exclusivo para directivos, investigadores y funcionarios autorizados. Este buscador permite localizar con inmediatez contenidos alojados en páginas privadas, tableros analíticos, matrices de pertinencia, encuestas laborales y secciones analíticas:
+
+* **Propósito y alcance en la Intranet:** A diferencia del portal público, este buscador rastrea las páginas corporativas internas del observatorio. Permite a los funcionarios encontrar análisis estratégicos, indicadores de empleabilidad y resultados de encuestas sin necesidad de explorar manualmente los menús de navegación.
+
+* **Procedimiento paso a paso para la búsqueda interna:**
+
+  1. **Apertura del buscador en la barra superior:**  
+     En la cabecera superior derecha de la Intranet, junto al control de cierre de sesión, se encuentra permanentemente el botón con el ícono de lupa (**«Buscar»**). Al hacer clic sobre él o seleccionarlo mediante navegación por teclado, se despliega una ventana modal interactiva a pantalla completa con fondo azul oscuro institucional y efecto de desenfoque, enfocando la atención del usuario en la consulta e inhabilitando temporalmente el desplazamiento de la página de fondo.
+
+  > **[Captura: Botón de Búsqueda en Cabecera de la Intranet]**
+  > *Cabecera de la Intranet destacando el botón con ícono de lupa para abrir el buscador interno.*
+  >
+  > **[Captura: Botón de Búsqueda en Cabecera de la Intranet (Móvil)]**
+  > *Botón de búsqueda en la barra de navegación de la Intranet adaptado a dispositivo móvil. (Móvil).*
+
+  2. **Ingreso de términos y búsqueda en vivo:**  
+     El cursor se sitúa de forma automática dentro del campo central con el texto de guía *«Buscar en la intranet»*. A medida que el usuario escribe, el motor evalúa en tiempo real contra el índice de contenidos institucionales. La búsqueda es insensible a mayúsculas y acentos, y analiza frases exactas, frases compuestas y palabras significativas (de 3 o más letras), mostrando las coincidencias de inmediato sin necesidad de recargar la página.
+
+  > **[Captura: Modal de Búsqueda en Pantalla Completa de la Intranet]**
+  > *Ventana modal a pantalla completa con campo de texto centrado y despliegue en tiempo real de coincidencias.*
+  >
+  > **[Captura: Modal de Búsqueda en Pantalla Completa de la Intranet (Móvil)]**
+  > *Buscador a pantalla completa en la Intranet adaptado a pantalla de dispositivo móvil. (Móvil).*
+
+  3. **Exploración de coincidencias y contexto:**  
+     Bajo el campo de texto se despliega una lista vertical con las secciones coincidentes. Cada ítem presenta el título de la página de origen en tipografía destacada y un extracto del párrafo o encabezado donde se ubican las palabras consultadas. El funcionario puede desplazarse por la lista con las flechas de dirección del teclado (*Arriba* / *Abajo*) o con el ratón.
+
+  4. **Navegación inteligente con autodesplazamiento y resaltado:**  
+     Al seleccionar un resultado (haciendo clic sobre él o presionando **Enter**), la ventana de búsqueda se cierra automáticamente y el sistema traslada al usuario a la página de destino. Si la coincidencia se encuentra en una sección específica, la pantalla se desplaza de manera suave hasta el bloque exacto y resalta temporalmente el fragmento de texto con un fondo contrastado para facilitar su identificación inmediata.
+
+  > **[Captura: Navegación y Resaltado Automático en Intranet]**
+  > *Página de destino en la Intranet con desplazamiento automático al bloque y texto coincidente resaltado.*
+  >
+  > **[Captura: Navegación y Resaltado Automático en Intranet (Móvil)]**
+  > *Vista de sección interna en dispositivo móvil con autodesplazamiento hacia el contenido localizado. (Móvil).*
+
+  5. **Mecanismos de cierre:**  
+     Para salir de la ventana de búsqueda sin navegar hacia ningún contenido, el usuario dispone de tres alternativas: hacer clic en el botón circular con la equis (**«X»**) ubicado en la esquina superior derecha, presionar la tecla **Escape** en el teclado, o hacer clic en cualquier área libre fuera de la caja central. Al cerrarse, la pantalla restaura de inmediato el desplazamiento normal de la página.
+
+##### 3.4.4.1.3. Buscador Global del Panel Administrativo (Gobernanza y Gestión Operativa)
+
+Para garantizar una experiencia clara y ordenada entre los diferentes entornos del sistema, es fundamental distinguir la naturaleza del buscador del Panel Administrativo frente a los buscadores del Sitio Web y la Intranet:
+
+* **Buscador de contenidos vs. Localizador de gobernanza:** Mientras los buscadores del Portal Público y de la Intranet rastrean contenidos informativos (artículos, páginas, tableros analíticos e indicadores), el **Buscador Global del Panel Administrativo** opera como un localizador de gobernanza y navegación operativa para funcionarios con perfiles de gestión (Superadministrador, Administrador y Editor).
+
+* **Localización por sinónimos funcionales:** El buscador administrativo no busca textos dentro de tablas, sino que localiza pantallas de gestión a través de sinónimos técnicos y operativos (por ejemplo, buscar *«bitácora»* sugiere el módulo de Auditoría; buscar *«cuentas»* o *«permisos»* sugiere Usuarios y Roles; y buscar *«copias»* conduce a Respaldos).
+
+* **Consulta del procedimiento operativo:** Para revisar la explicación completa, el paso a paso de uso y las capturas de pantalla de esta herramienta de administración, remitirse a la [Sección 3.4.2.2: Buscador Global del Panel Administrativo](#3422-buscador-global-del-panel-administrativo).
+
 ---
 
 #### 3.4.4.2. Visualizadores y Tableros Analíticos en Pantalla
 
-Esta sección agrupa los componentes interactivos maquetables en el editor visual para la exhibición de tableros directivos, documentos normativos, recursos audiovisuales e indicadores coyunturales del mercado de trabajo.
-
 *(Nota: Para consultar las posibles situaciones de validación, documentos en blanco, restricciones de reproducción multimedia, credenciales en tableros analíticos y soporte en visualizadores en pantalla, remitirse a la [Sección 3.5.1.24: Validaciones y Solución de Problemas en Visualizadores Multimedia, Documentos y Descargas Directas](#35124-validaciones-y-solución-de-problemas-en-visualizadores-multimedia-documentos-y-descargas-directas)).*
+
+Esta sección agrupa los componentes interactivos maquetables en el editor visual para la exhibición de tableros directivos, documentos normativos, recursos audiovisuales e indicadores coyunturales del mercado de trabajo.
 
 ##### 3.4.4.2.1. Uso de tableros BI en la Intranet (Power BI)
 En las páginas de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página, así como activar la modalidad de pantalla completa para exposiciones o comités directivos.
@@ -2819,85 +2950,188 @@ Despliega en movimiento continuo horizontal las portadas, títulos y enlaces de 
 
 #### 3.4.4.3. Descarga Directa de Archivos y Boletines
 
-En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"**, **"Exportar PDF"** o enlaces de descarga directa. Los archivos se suministran en formatos estándar listos para su consulta y uso fuera de línea:
-* **Planillas estructuradas de datos (`.xlsx`):** Formato oficial para la descarga de plantillas oficiales de percentiles salariales, matrices de proyectos de inversión y reportes estadísticos.
-* **Documentos digitales (`.pdf`):** Formato oficial para boletines informativos, resoluciones normativas, fichas técnicas y manuales institucionales.
-* **Imágenes y gráficos (`.png` / `.jpg`):** Formatos estándar para logotipos e infografías descargables.
-
 *(Nota: Para consultar las posibles situaciones de validación, bloqueos de ventanas emergentes en el navegador y solución de problemas al descargar archivos oficiales en formatos .xlsx, .pdf o imágenes, remitirse a la [Sección 3.5.1.24: Validaciones y Solución de Problemas en Visualizadores Multimedia, Documentos y Descargas Directas](#35124-validaciones-y-solución-de-problemas-en-visualizadores-multimedia-documentos-y-descargas-directas)).*
+
+En las distintas páginas del portal público y de la Intranet, la información oficial y los reportes analíticos disponen de mecanismos accesibles de descarga directa para su consulta y tratamiento fuera de línea.
+
+* **Formatos oficiales suministrados:**
+
+  * **Planillas estructuradas de datos (`.xlsx`):** Formato estándar para la descarga de plantillas oficiales de percentiles salariales, matrices de proyectos de inversión y reportes estadísticos consolidados.
+
+  * **Documentos digitales (`.pdf`):** Formato estándar para boletines informativos, resoluciones normativas, fichas técnicas y manuales institucionales.
+
+  * **Imágenes y gráficos (`.png` / `.jpg`):** Formatos estándar para logotipos oficiales, piezas infográficas y esquemas descargables.
+
+* **Procedimiento paso a paso para la descarga de archivos:**
+
+  1. **Localización del botón o enlace de descarga:**  
+     En las secciones informativas, tablas estadísticas o visores de documentos, identificar el botón de acción principal rotulado como **«Descargar Documento»**, **«Descargar Plantilla»** o **«Exportar PDF»**, identificado con un ícono de flecha orientada hacia abajo o el distintivo del tipo de archivo.
+
+  2. **Ejecución de la descarga:**  
+     Hacer clic sobre el botón correspondiente o activarlo mediante navegación por teclado. El navegador web iniciará la transferencia inmediata del archivo hacia la carpeta de descargas del equipo o dispositivo móvil, conservando su nombre oficial y extensión sin alteraciones.
+
+  3. **Apertura y consulta fuera de línea:**  
+     Una vez completada la transferencia, el usuario puede abrir el archivo de forma local en aplicaciones de hoja de cálculo (como Microsoft Excel o LibreOffice) o en visores de documentos PDF sin requerir conexión continua a internet.
+
+> **[Captura: Opciones de Descarga Directa de Archivos]**
+> *Botones estandarizados de descarga para archivos Excel, documentos PDF y recursos gráficos en páginas informativas.*
+>
+> **[Captura: Opciones de Descarga Directa de Archivos (Móvil)]**
+> *Botones de descarga y exportación directa adaptados a la interfaz de dispositivos móviles. (Móvil).*
 
 ---
 
 #### 3.4.4.4. Panel de Preferencias de Accesibilidad e Inclusión Ciudadana
 
-Para garantizar el cumplimiento de los lineamientos de accesibilidad web (WCAG 2.1 nivel AA y Resolución 1519 de 2020 de MinTIC) y facilitar una experiencia de navegación inclusiva para personas con baja visión, daltonismo, dislexia o dificultades motoras y cognitivas, el Sitio Web Público integra un **Panel de Accesibilidad («Personaliza tu experiencia»)** interactivo, adaptable y persistente.
-
 *(Nota: Para consultar las posibles situaciones de validación, compatibilidad de síntesis de voz, persistencia de preferencias en el navegador y solución de problemas en los ajustes de inclusión, remitirse a la [Sección 3.5.1.25: Validaciones y Solución de Problemas en el Panel de Preferencias de Accesibilidad e Inclusión Ciudadana](#35125-validaciones-y-solución-de-problemas-en-el-panel-de-preferencias-de-accesibilidad-e-inclusión-ciudadana)).*
 
-##### 3.4.4.4.1. Apertura y Navegación del Panel
-1. **Pestaña lateral fija:** En el margen lateral derecho de todas las páginas del portal público se ubica permanentemente una pestaña azul institucional con el ícono universal de accesibilidad.
-2. **Despliegue del panel:** Al pulsar la pestaña con el ratón o activarla con el teclado, se abre el panel lateral manteniendo visible la página de fondo para que el usuario aprecie en tiempo real los cambios aplicados en pantalla. El foco de navegación ingresa automáticamente al panel para continuar la interacción mediante teclado o lectores de pantalla.
-3. **Mecanismos de cierre:** El panel se cierra haciendo clic sobre el botón con ícono de equis (**X**) en la cabecera, presionando la tecla **Escape** o haciendo clic en cualquier área fuera del panel. Al cerrarse, el foco regresa a la pestaña lateral sin perder la posición de lectura.
+Para garantizar el cumplimiento de los lineamientos de accesibilidad digital del Estado colombiano (Resolución 1519 de 2020 de MinTIC y estándares internacionales WCAG 2.1 nivel AA), el portal público del OLO incorpora un **Panel de Accesibilidad («Personaliza tu experiencia»)** interactivo, adaptable y persistente, diseñado para facilitar la lectura y navegación a personas con baja visión, daltonismo, dislexia o dificultades motoras y cognitivas.
+
+##### 3.4.4.4.1. Apertura, Cierre y Navegación del Panel
+* **Paso 1: Localización de la pestaña flotante de acceso:** En el margen lateral derecho de todas las páginas del portal público se ubica permanentemente una pestaña azul con el ícono universal de accesibilidad (silueta humana estilizada con brazos abiertos).
+* **Paso 2: Apertura interactiva:** Hacer clic con el ratón sobre la pestaña o presionar la tecla **Enter** / **Espacio** al seleccionarla mediante el teclado (**Tab**). El panel se despliega suavemente desde el lateral derecho manteniendo visible la página web de fondo, lo que permite al ciudadano observar en tiempo real cómo cambia la pantalla al ajustar cada preferencia.
+* **Paso 3: Navegación accesible:** Al abrirse el panel, el cursor y el foco del teclado se sitúan automáticamente en su interior para que la persona pueda recorrer las opciones cómodamente con la tecla **Tab** o con lectores de pantalla.
+* **Paso 4: Mecanismos de cierre:** Para cerrar el panel en cualquier momento, se dispone de tres opciones:
+  1. Pulsar el botón circular con la cruz (**«X»**) ubicado en la esquina superior derecha del panel.
+  2. Presionar la tecla **Escape** (**Esc**) en el teclado.
+  3. Hacer clic en cualquier zona vacía fuera del panel lateral.
+  Al cerrarse, el foco del teclado regresa suavemente a la pestaña lateral sin perder la posición de lectura.
+
+> **[Captura: Pestaña Flotante de Accesibilidad en Portada]**
+> *Pestaña lateral de accesibilidad visible permanentemente sobre el borde derecho del portal público.*
+>
+> **[Captura: Pestaña Flotante de Accesibilidad en Portada (Móvil)]**
+> *Botón flotante de accesibilidad adaptado en el margen derecho de dispositivos móviles. (Móvil).*
 
 ##### 3.4.4.4.2. Controles Principales de Personalización (Cuadrícula Superior)
-La zona superior del panel presenta ocho tarjetas interactivas organizadas en dos columnas:
+La parte superior del panel reúne ocho tarjetas de configuración directa organizadas en dos columnas. Cada una atiende una necesidad de accesibilidad específica:
 
 1. **Lector de pantalla:**
-   * **Función:** Activa la síntesis de voz integrada del navegador para leer en voz alta los textos del sitio web y anunciar los cambios de configuración.
-   * **Comportamiento:** Si el navegador no dispone de soporte de voz, el botón se muestra atenuado informando: *«tu navegador no puede leer en voz alta»*. Al encenderlo, anuncia verbalmente *«Lector de pantalla activado»*.
+   * **Función:** Emplea la voz integrada del sistema para leer en voz alta los textos del sitio web y confirmar auditivamente los cambios de configuración que el usuario realice.
+   * **Paso a paso de uso:**
+     1. Hacer clic sobre la tarjeta con el ícono de ondas sonoras (**«Lector de pantalla»**).
+     2. Si el navegador dispone de voz, el botón se encenderá con fondo azul oscuro y anunciará auditivamente: *«Lector de pantalla activado»*.
+     3. Al hacer clic nuevamente, la voz anunciará *«Lector de pantalla desactivado»* y el botón retornará a su estado inactivo.
+     4. Si el navegador no cuenta con tecnología de voz disponible, el botón permanecerá atenuado informando de forma clara: *«tu navegador no puede leer en voz alta»*.
+
 2. **Tamaño del texto (Escala tipográfica - «AA»):**
-   * **Función:** Incrementa progresivamente el tamaño de las fuentes tipográficas en todo el portal público sin deformar los bloques ni desbordar la pantalla.
-   * **Niveles de ajuste:** Cuenta con un indicador visual de 4 barras. Al hacer clic sobre la tarjeta, el tamaño cicla ordenadamente entre:
-     * *Normal:* 1 barra activa (tamaño base por defecto).
-     * *Grande:* 2 barras activas.
-     * *Más grande:* 3 barras activas.
-     * *Máximo:* 4 barras activas (máxima escala legible).
+   * **Función:** Incrementa el tamaño de las letras en todo el portal web de manera armónica, sin desbordar los marcos ni dañar la estructura de las páginas.
+   * **Paso a paso de uso:** Cuenta con una barra indicadora de 4 segmentos. Cada clic sobre la tarjeta avanza progresivamente al siguiente nivel:
+     * *Normal:* 1 segmento activo (tamaño tipográfico base).
+     * *Grande:* 2 segmentos activos (incremento del 15% en los textos).
+     * *Más grande:* 3 segmentos activos (incremento del 30% en los textos).
+     * *Máximo:* 4 segmentos activos (máxima ampliación recomendada para lectura cómoda).
+     Al hacer clic en el nivel máximo, el selector regresa al nivel *Normal*.
+
 3. **Alto contraste:**
-   * **Función:** Invierte la paleta cromática a un fondo negro puro con textos y títulos en blanco de máxima luminosidad y enlaces o elementos destacados en amarillo, garantizando óptima visibilidad para personas con baja visión o fatiga ocular.
-4. **Saturación:**
-   * **Función:** Modifica la intensidad del color de todos los elementos visuales e imágenes de la página.
-   * **Niveles de ajuste:** Indicador de 3 barras que cicla entre:
-     * *Saturación normal:* 0 barras (color estándar).
-     * *Saturación baja:* 1 barra activa (tonalidades suaves).
-     * *Saturación alta:* 2 barras activas (colores intensificados y contrastados).
-     * *Sin color:* 3 barras activas (modo monocromático / escala de grises completa).
+   * **Función:** Transforma la combinación de colores de todo el sitio web a un fondo negro puro con textos en blanco brillante y enlaces destacados en amarillo, eliminando sombras y facilitando la lectura a personas con baja visión o fatiga ocular.
+   * **Paso a paso de uso:** Pulsar una vez sobre la tarjeta con el ícono de contraste (**«Alto contraste»**) para activar la visualización oscura; pulsar nuevamente para retornar a la paleta estándar.
+4. **Color / Saturación:**
+   * **Función:** Gradúa la viveza e intensidad de los colores y fotografías del portal web para personas fotosensibles o con sobrecarga visual.
+   * **Paso a paso de uso:** Posee un indicador visual de 3 segmentos que avanza con cada pulsación:
+     * *Saturación normal:* 0 segmentos (colores naturales de la página).
+     * *Saturación baja:* 1 segmento activo (paleta atenuada y tonos suaves).
+     * *Saturación alta:* 2 segmentos activos (colores intensos con mayor diferenciación visual).
+     * *Sin color:* 3 segmentos activos (modo monocromático en blanco y negro / escala de grises completa).
+
 5. **Pausar animación:**
-   * **Función:** Detiene inmediatamente las animaciones CSS, transiciones continuas y desplazamientos automáticos de cintas de publicaciones y carruseles, previniendo mareos, distracciones o malestares vestibulares.
+   * **Función:** Congela inmediatamente el movimiento automático de carruseles, cintas deslizantes de publicaciones y transiciones visuales, evitando mareos, distracciones o molestias vestibulares.
+   * **Paso a paso de uso:** Hacer clic sobre la tarjeta con el símbolo de pausa (**«Pausar animación»**). Todos los elementos dinámicos quedarán estáticos de inmediato. Al pulsar nuevamente, el movimiento se reanuda con suavidad.
+
 6. **Fuente dislexia:**
-   * **Función:** Reemplaza la tipografía institucional del portal por la fuente especializada *OpenDyslexic*, diseñada con bases más gruesas y asimétricas en cada carácter para evitar la rotación involuntaria y la confusión de letras similares (como *b*, *d*, *p* y *q*).
-7. **Interlineado:**
-   * **Función:** Regula la distancia vertical entre las líneas de texto en párrafos y bloques informativos para evitar que las líneas se mezclen durante la lectura.
-   * **Niveles de ajuste:** Indicador de 3 barras que alterna entre *Interlineado normal*, *Interlineado amplio*, *Interlineado más amplio* e *Interlineado máximo*.
-8. **Interletrado:**
-   * **Función:** Ajusta la separación horizontal entre caracteres individuales para mejorar la claridad de palabras en personas con dificultades de procesamiento visual.
-   * **Niveles de ajuste:** Indicador de 3 barras que cicla entre *Interletrado normal*, *Interletrado amplio*, *Interletrado más amplio* e *Interletrado máximo*.
+   * **Función:** Sustituye la tipografía de todo el portal por la fuente especializada *OpenDyslexic*, caracterizada por letras con base más pesada y trazos asimétricos que previenen la inversión involuntaria de caracteres similares (como la *p*, *q*, *b* y *d*).
+   * **Paso a paso de uso:** Hacer clic en la tarjeta (**«Fuente dislexia»**) para cambiar la tipografía en tiempo real; hacer clic de nuevo para retornar a la fuente institucional.
+
+7. **Espacio entre líneas (Interlineado):**
+   * **Función:** Aumenta la distancia vertical entre renglones en todos los párrafos del portal, evitando que las líneas se confundan o se amontonen durante la lectura prolongada.
+   * **Paso a paso de uso:** Dispone de un indicador de 3 segmentos que alterna sucesivamente entre:
+     * *Interlineado normal* (separación estándar).
+     * *Interlineado amplio* (1 segmento activo).
+     * *Interlineado más amplio* (2 segmentos activos).
+     * *Interlineado máximo* (3 segmentos activos con amplia separación entre renglones).
+     
+8. **Espacio entre letras (Interletrado):**
+   * **Función:** Expande el espacio horizontal entre cada letra individual para facilitar el reconocimiento de palabras en personas con dificultades de procesamiento visual.
+   * **Paso a paso de uso:** Cuenta con un indicador de 3 segmentos que cicla ordenadamente entre:
+     * *Interletrado normal* (espaciado tipográfico base).
+     * *Interletrado amplio* (1 segmento activo).
+     * *Interletrado más amplio* (2 segmentos activos).
+     * *Interletrado máximo* (3 segmentos activos con amplia separación entre caracteres).
+
+> **[Captura: Panel de Accesibilidad - Cuadrícula Superior]**
+> *Vista de las 8 tarjetas principales del panel de accesibilidad con indicadores de nivel activo y estados de selección.*
+>
+> **[Captura: Panel de Accesibilidad - Cuadrícula Superior (Móvil)]**
+> *Tarjetas principales de accesibilidad adaptadas a la pantalla de un teléfono móvil. (Móvil).*
+>
+> **[Captura: Portal con Modo Alto Contraste y Escala de Texto Grande]**
+> *Página pública mostrando la transformación visual de alto contraste y tipografía ampliada.*
+>
+> **[Captura: Portal con Modo Alto Contraste y Escala de Texto Grande (Móvil)]**
+> *Vista móvil del portal público en modalidad de alto contraste con texto de mayor tamaño. (Móvil).*
 
 ##### 3.4.4.4.3. Filtros Especializados de Daltonismo
-Debajo de la cuadrícula principal se encuentra la sección de **Daltonismo**:
-1. **Interruptor general:** Al activar el interruptor deslizante con ícono de ojo, se despliega una cuadrícula interactiva con tres filtros de compensación cromática:
-   * **Protanopía:** Filtro adaptado para personas con deficiencia o ceguera en la percepción de tonos rojos.
-   * **Deuteranopía:** Filtro adaptado para dificultades en la percepción de tonos verdes (la variante más común).
-   * **Tritanopía:** Filtro adaptado para dificultades en la percepción de tonos azules y amarillos.
-2. **Selección y repliegue:** Al seleccionar cualquiera de las tres opciones (mediante botón radial), el filtro SVG se aplica al instante en todo el portal. Al apagar el interruptor general, la corrección se desactiva y el menú se repliega de forma compacta.
+Ubicada debajo de las tarjetas principales, esta sección permite adaptar la gama cromática del sitio web a las variantes reconocidas de daltonismo:
+* **Paso 1: Activación del menú de daltonismo:** Hacer clic sobre el interruptor deslizante (**«Daltonismo»**) identificado con un ícono de ojo. Al encenderlo, se despliega una cuadrícula interactiva con tres modalidades de ajuste.
+* **Paso 2: Selección del tipo de compensación cromática:** Seleccionar mediante botón de opción (*radio button*) el filtro adecuado según la necesidad visual del ciudadano:
+  1. **Deuteranopía:** Diseñado para personas con dificultad para percibir los tonos verdes (la variación más común entre la población). Se activa de forma automática al encender el interruptor general.
+  2. **Protanopía:** Diseñado para personas con dificultad o ausencia en la percepción de tonos rojos.
+  3. **Tritanopía:** Diseñado para personas con dificultad para distinguir tonos azules y amarillos.
+* **Paso 3: Aplicación visual:** Al marcar cualquiera de las opciones, la corrección de color se aplica de forma instantánea a toda la página web (textos, gráficos, fotografías y botones).
+* **Paso 4: Desactivación:** Para apagar la corrección de color, basta con pulsar nuevamente el interruptor general de Daltonismo; el menú se replegará de inmediato y el portal volverá a sus colores habituales.
 
-##### 3.4.4.4.4. Opciones Avanzadas (Interruptores Deslizantes)
-En la parte inferior del panel se ubica la sección **«Opciones avanzadas»**, compuesta por cinco interruptores independientes para refinar la lectura:
-1. **Resaltar títulos:** Aplica un contorno visual resaltado a todos los encabezados y títulos de la página, facilitando la identificación de la estructura del contenido.
-2. **Resaltar enlaces:** Destaca con color de fondo y subrayado continuo todos los hipervínculos navegables, asegurando que ningún botón o enlace pase desapercibido.
-3. **Texto en negrita:** Convierte todas las fuentes tipográficas del portal a peso en negrita (*bold*), otorgando mayor solidez y grosor a los trazos de lectura.
-4. **Guía de lectura:** Activa una franja o regla horizontal flotante que acompaña el desplazamiento vertical del puntero del ratón, sirviendo de guía visual para leer renglón por renglón sin saltar de línea.
-5. **Cursor grande:** Sustituye el cursor habitual por un puntero ampliado de gran tamaño y contorno contrastado para ubicarlo con facilidad en pantallas amplias o de alta resolución.
+> **[Captura: Filtros Especializados de Daltonismo]**
+> *Sección de daltonismo desplegada con interruptor activo y botones radiales para Protanopía, Deuteranopía y Tritanopía.*
+>
+> **[Captura: Filtros Especializados de Daltonismo (Móvil)]**
+> *Selector de modalidades de daltonismo adaptado en vista móvil. (Móvil).*
+
+##### 3.4.4.4.4. Opciones Avanzadas de Apoyo a la Lectura
+En la zona inferior del panel se ubica la sección **«Opciones avanzadas»**, provista de cinco interruptores deslizantes independientes que facilitan la exploración visual y motora:
+1. **Resaltar títulos:**
+   * **Función:** Coloca un contorno contrastado alrededor de todos los títulos y encabezados de la página, permitiendo escanear con la vista la estructura jerárquica del contenido de forma ágil.
+   * **Paso de uso:** Activar el interruptor deslizante con el ícono de encabezado (**«Resaltar títulos»**).
+2. **Resaltar enlaces:**
+   * **Función:** Enfatiza todos los hipervínculos navegables con un fondo contrastado y un subrayado continuo, asegurando que ningún botón, menú o enlace pase inadvertido.
+   * **Paso de uso:** Activar el interruptor deslizante (**«Resaltar enlaces»**).
+3. **Texto en negrita:**
+   * **Función:** Convierte todas las tipografías del portal a grosor en negrita, otorgando mayor fuerza visual y definición a las letras.
+   * **Paso de uso:** Activar el interruptor deslizante (**«Texto en negrita»**).
+4. **Guía de lectura:**
+   * **Función:** Despliega una franja o regla horizontal semitransparente que acompaña verticalmente los movimientos del puntero del ratón a lo largo de la pantalla, sirviendo de apoyo visual para leer renglón por renglón sin saltarse de línea ni perder el hilo de lectura.
+   * **Paso de uso:** Activar el interruptor (**«Guía de lectura»**). La regla aparecerá de inmediato en la pantalla siguiendo el cursor.
+5. **Cursor grande:**
+   * **Función:** Reemplaza la flecha estándar del ratón por un cursor ampliado de gran tamaño y contorno de alto contraste, ideal para localizar rápidamente el puntero en pantallas grandes o de alta resolución.
+   * **Paso de uso:** Activar el interruptor (**«Cursor grande»**).
+
+> **[Captura: Opciones Avanzadas del Panel de Accesibilidad]**
+> *Listado de interruptores avanzados para resaltar títulos, enlaces, texto en negrita, guía de lectura y cursor ampliado.*
+>
+> **[Captura: Opciones Avanzadas del Panel de Accesibilidad (Móvil)]**
+> *Opciones avanzadas presentadas en dispositivo móvil con interruptores táctiles de fácil activación. (Móvil).*
+>
+> **[Captura: Guía de Lectura y Cursor Grande en Acción]**
+> *Muestra visual en el portal público de la regla flotante de lectura y el cursor ampliado sobre un artículo.*
+>
+> **[Captura: Guía de Lectura y Cursor Grande en Acción (Móvil)]**
+> *Demostración de apoyos de lectura visual adaptados a pantalla táctil. (Móvil).*
 
 ##### 3.4.4.4.5. Restablecimiento, Persistencia y Botón «Volver arriba»
-* **Botón «Restablecer configuración»:** Ubicado de manera fija en el pie del panel, permite revertir al instante todas las preferencias activas a su valor predeterminado original con un solo clic.
-* **Persistencia automática sin cookies invasivas:** Todas las preferencias configuradas por el usuario se guardan de manera segura en la memoria de su propio navegador (`localStorage`), de modo que al navegar entre diferentes páginas del observatorio o volver en visitas posteriores, sus ajustes de accesibilidad se mantienen aplicados sin necesidad de iniciar sesión ni reconfigurarlos.
-* **Botón flotante «Volver arriba»:** Al desplazarse hacia abajo en páginas extensas del portal, se dibuja automáticamente en la esquina inferior un botón flotante circular; al pulsarlo o activarlo mediante teclado, desplaza la vista suavemente hasta el inicio de la página, facilitando el retorno a los menús de navegación.
+* **Paso a paso para restablecer las preferencias:** En el pie del panel de accesibilidad se encuentra de forma fija el botón **«Restablecer configuración»** con un ícono de flecha circular. Si el usuario activó múltiples herramientas y desea volver a la vista inicial del observatorio, basta con hacer clic sobre este botón; al instante, todos los interruptores se apagarán, los niveles volverán a su escala base y la página web recuperará su aspecto original.
+* **Persistencia automática sin registros ni contraseñas:** Todas las elecciones de accesibilidad realizadas por el ciudadano se conservan de forma segura en el almacenamiento local del propio navegador web. Gracias a esto, el visitante puede navegar entre diferentes secciones del portal o regresar días después desde el mismo equipo sin tener que volver a configurar sus preferencias.
+* **Uso del botón flotante «Volver arriba»:** Al desplazarse hacia abajo en páginas extensas del portal web, se dibuja automáticamente en la esquina inferior un botón circular flotante con una flecha orientada hacia arriba. Al hacer clic sobre él o activarlo mediante teclado, la pantalla se desplaza de manera suave e inmediata hasta el encabezado superior de la página, evitando tener que desplazar la rueda del ratón durante largos trayectos.
 
-> **[Captura: Panel de Accesibilidad]**
-> *Panel de preferencias de accesibilidad desplegado en el portal público mostrando las 8 tarjetas principales, el selector de daltonismo, las opciones avanzadas y el botón de restablecimiento.*
+> **[Captura: Panel de Accesibilidad - Vista Integral con Botón Restablecer]**
+> *Panel de preferencias completo mostrando la cabecera fija, cuerpo desplazable y botón inferior de restablecimiento.*
 >
-> **[Captura: Panel de Accesibilidad (Móvil)]**
-> *Panel de preferencias de accesibilidad adaptado a pantalla móvil con cabecera y pie fijos y cuerpo desplazable. (Móvil).*
+> **[Captura: Panel de Accesibilidad - Vista Integral con Botón Restablecer (Móvil)]**
+> *Vista completa del panel de accesibilidad en formato vertical para dispositivos móviles. (Móvil).*
+>
+> **[Captura: Botón Flotante Volver Arriba en Navegación]**
+> *Botón circular en la esquina inferior de la pantalla para el retorno rápido al inicio de la página.*
+>
+> **[Captura: Botón Flotante Volver Arriba en Navegación (Móvil)]**
+> *Botón flotante de retorno superior visible en la esquina inferior de un dispositivo móvil. (Móvil).*
 
 ---
 
@@ -4548,7 +4782,7 @@ El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación
 
 #### 3.5.1.21. Validaciones y Solución de Problemas en el Buscador Modular del Portal Público
 
-El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1](#34375-bloque-buscador-del-sitio-web)) incorpora las directrices de accesibilidad de la Página 20 del Kit UI GOV.CO y un esquema de navegación desacoplado. A continuación se presentan las situaciones de interacción más frecuentes, sus motivos y los pasos para su solución:
+El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1.1](#34375-bloque-buscador-del-sitio-web)) incorpora las directrices de accesibilidad digital de GOV.CO (Resolución 1519 de 2020 de MinTIC) y un esquema de navegación desacoplado. A continuación se presentan las situaciones de interacción más frecuentes, sus motivos y los pasos para su solución:
 
 ##### 1. Búsqueda sin Coincidencias («No se encontraron resultados»)
 * **Situación:** En la página de resultados, el sistema despliega el mensaje *«No se encontraron resultados para «[término]»»* con recomendaciones de búsqueda.
@@ -4564,12 +4798,12 @@ El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1](#3437
 > **[Captura: Sin Coincidencias en Buscador Modular (Móvil)]**
 > *Mensaje informativo de ausencia de resultados adaptado a pantalla móvil. (Móvil).*
 
-##### 2. Uso del Botón de Borrado Rápido («X») y Tecla Escape
+##### 2. Uso del Botón de Borrado Rápido («X»)
 * **Situación:** El visitante ingresó un texto largo y desea borrarlo completamente sin tener que presionar la tecla de retroceso reiteradamente.
-* **Causa:** Estado visual interactivo *Active* (Página 20 Kit UI GOV.CO).
+* **Causa:** Comportamiento interactivo diseñado para facilitar la corrección rápida al escribir en el campo de búsqueda.
 * **Acción correctiva:**
   1. Al escribir el primer carácter, emerge automáticamente un botón circular blanco con una equis (**«X»**) en el extremo derecho del campo.
-  2. Hacer clic sobre dicho botón circular o presionar la tecla **Escape** (**Esc**); el texto se borrará en su totalidad y el foco permanecerá en la caja de texto listo para escribir una nueva consulta.
+  2. Hacer clic sobre dicho botón circular; el texto se borrará en su totalidad y el cursor permanecerá en la caja de texto listo para escribir una nueva consulta.
 
 > **[Captura: Botón de Borrado Rápido en Buscador]**
 > *Botón circular de borrado con ícono de equis visible durante el ingreso de texto en el buscador.*
@@ -4594,7 +4828,7 @@ El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1](#3437
 
 #### 3.5.1.22. Validaciones y Solución de Problemas en Módulos de Consulta Especializada y Filtrado Interactivo
 
-Los módulos de consulta especializada ([Sección 3.4.4.1.2](#34412-módulos-de-consulta-especializada-y-filtrado-interactivo)) integran visualizadores analíticos ciudadanos: **Alertas de Inversión Empresarial**, **Programas Sobresalientes (SENA)** y **Tendencia Ocupacional y Percentiles Salariales**. Estos paneles ofrecen herramientas de segmentación geográfica, sectorial y temporal. A continuación se presentan las situaciones habituales de interacción y sus procedimientos de resolución:
+Los módulos de consulta especializada ([Sección 3.4.4.1.1.2](#344112-módulos-de-consulta-especializada-y-filtrado-interactivo)) integran visualizadores analíticos ciudadanos: **Alertas de Inversión Empresarial**, **Programas Sobresalientes (SENA)** y **Tendencia Ocupacional y Percentiles Salariales**. Estos paneles ofrecen herramientas de segmentación geográfica, sectorial y temporal. A continuación se presentan las situaciones habituales de interacción y sus procedimientos de resolución:
 
 ##### 1. Combinación de Filtros sin Registros Coincidentes («No se encontraron resultados»)
 * **Situación:** Tras seleccionar un sector económico, un departamento y un año específico (en Alertas de Inversión), o una titulación y género concretos (en Programas Sobresalientes), las tarjetas informativas o tablas estadísticas quedan vacías, exhibiendo el mensaje: *«No se encontraron resultados para los filtros seleccionados»*.
@@ -4655,7 +4889,7 @@ Los módulos de consulta especializada ([Sección 3.4.4.1.2](#34412-módulos-de-
 
 #### 3.5.1.23. Validaciones y Solución de Problemas en la Consulta y Exploración del Catálogo Oficial de Ocupaciones (CNO y CUOC)
 
-El módulo especializado de consulta del catálogo ocupacional ([Sección 3.4.4.1.3](#34413-consulta-y-exploración-en-el-catálogo-oficial-de-ocupaciones-cno-y-cuoc)) permite buscar perfiles, competencias, habilidades y correlativas cruzadas en las dos clasificaciones oficiales de Colombia (CNO y CUOC). A continuación se exponen las situaciones operativas, validaciones y procedimientos de contingencia:
+El módulo especializado de consulta del catálogo ocupacional ([Sección 3.4.4.1.1.3](#344113-consulta-y-exploración-en-el-catálogo-oficial-de-ocupaciones-cno-y-cuoc)) permite buscar perfiles, competencias, habilidades y correlativas cruzadas en las dos clasificaciones oficiales de Colombia (CNO y CUOC). A continuación se exponen las situaciones operativas, validaciones y procedimientos de contingencia:
 
 ##### 1. Validación de Longitud de Código Numérico (Distinto a 4 o 5 Dígitos)
 * **Situación:** El usuario digita un código numérico incompleto o excedido (por ejemplo, `21`, `450` o `778899`) y pulsa Buscar, pero la plataforma señala que el código no corresponde a los estándares oficiales o no arroja resultados.
@@ -4773,7 +5007,7 @@ Esta sección reúne las directrices de soporte para la visualización de tabler
 
 ##### 5. Pausar la Animación Continua en la Cinta de Publicaciones
 * **Situación:** La cinta horizontal de publicaciones y boletines avanza de forma continua y el usuario requiere detener el desplazamiento para leer con detenimiento un título o portada.
-* **Causa:** Animación fluida continua configurada por defecto para la muestra visual de publicaciones.
+* **Causa:** Animación fluida continua configurada de manera estándar para la muestra visual de publicaciones.
 * **Acción correctiva:**
   1. Posicionar el puntero del ratón encima de cualquier portada o tarjeta informativa; la animación se pausará de forma automática mientras el cursor permanezca sobre la cinta.
   2. En el Panel de Accesibilidad lateral, encender el interruptor **«Pausar animación»** para congelar el movimiento en todo el sitio web durante toda la sesión.
@@ -4805,7 +5039,7 @@ El Panel de Accesibilidad («Personaliza tu experiencia») ([Sección 3.4.4.4](#
 > *Aviso de compatibilidad de voz en pantalla de dispositivo móvil. (Móvil).*
 
 ##### 2. Preferencias de Accesibilidad No Persisten tras Reiniciar el Navegador
-* **Situación:** El usuario configuró alto contraste, escala de fuente grande y filtros de daltonismo, pero al cerrar el navegador y regresar al portal en días posteriores, el sitio web aparece nuevamente con los estilos por defecto.
+* **Situación:** El usuario configuró alto contraste, escala de fuente grande y filtros de daltonismo, pero al cerrar el navegador y regresar al portal en días posteriores, el sitio web aparece nuevamente con los estilos estándar iniciales.
 * **Causa:** La navegación se llevó a cabo en modo incógnito o privado, el explorador está configurado para vaciar el almacenamiento local al salir, o se utilizan programas de limpieza automática de memoria temporal.
 * **Acción correctiva:**
   1. Navegar en ventanas habituales del explorador (sin modo incógnito), permitiendo que el navegador resguarde los ajustes de forma persistente en la memoria local de su dispositivo sin requerir registro ni contraseñas.
