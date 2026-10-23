@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { directivaFrameSrc, directivaScriptSrc } from "@olo/url-policy";
 
 const API_URL = process.env.API_BACKEND_URL || "http://127.0.0.1:4000";
 
@@ -19,7 +20,7 @@ const API_URL = process.env.API_BACKEND_URL || "http://127.0.0.1:4000";
  */
 const CSP_DIRECTIVAS = [
   // Scripts: solo del mismo origen; no inline, no eval
-  "script-src 'self'",
+  "script-src 'self' https://cdnjs.cloudflare.com",
   // Estilos: permite inline (requerido por Puck/Tailwind en dev) pero solo del mismo origen
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   // Fuentes
@@ -28,8 +29,9 @@ const CSP_DIRECTIVAS = [
   "img-src 'self' data: blob: https://img.youtube.com",
   // Conexiones XHR/fetch: solo al backend local
   `connect-src 'self' ${API_URL}`,
-  // Iframes: Power BI, dominios SENA y YouTube (bloques TasaVideo/RecursosVisuales)
-  "frame-src 'self' https://app.powerbi.com https://*.sena.edu.co https://www.youtube.com",
+  // Iframes: la lista única de `@olo/url-policy` (Power BI, dominios SENA y YouTube), la misma que
+  // valida cada `iframe` al guardar y al pintar (bloques TasaDashboards, TasaVideo, RecursosVisuales)
+  `frame-src ${directivaFrameSrc()}`,
   // Protección de clickjacking: solo mismo origen
   "frame-ancestors 'self'",
   // Formularios: solo al mismo origen
@@ -41,6 +43,36 @@ const CSP_DIRECTIVAS = [
   // navegador cuando faltan.
   "worker-src 'self'",
   "manifest-src 'self'",
+].join('; ');
+
+/**
+ * Content-Security-Policy que **sí bloquea** (XSS-02, auditoría del 2026-10-22).
+ *
+ * Hasta ahora la intranet solo mandaba la política de arriba en `Report-Only`: registraba violaciones y no
+ * bloqueaba nada, aunque los comentarios del código la contaban como la segunda capa contra XSS.
+ *
+ * Lo que se aplica es lo que no necesita nonce y no rompe nada:
+ *  - `frame-src`: solo la propia página y los hosts de `@olo/url-policy` (la misma lista que
+ *    valida cada `iframe` al guardar y al pintar). Un marco a un sitio ajeno queda bloqueado
+ *    aunque se cuele.
+ *  - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`.
+ *  - `script-src`: la propia intranet y `cdnjs.cloudflare.com` (pdf.js), sin ningún otro origen. Con `'unsafe-inline'`
+ *    **no** bloquea un script en línea ni un `javascript:`; eso lo cierran la validación por valor de
+ *    `sanitizar-contenido.ts` y `enlaceSeguro`/`iframeSeguro` al pintar.
+ *
+ * Por qué no `script-src` estricto con nonce: la intranet sirve páginas estáticas y con ISR, que se
+ * generan una vez y no pueden llevar un nonce distinto por petición; con nonce habría que volverlas
+ * todas dinámicas. La intranet manda además la política estricta en `Report-Only` para medir
+ * cuánto del código propio depende de scripts en línea antes de decidir (ver `CSP_DIRECTIVAS`).
+ */
+const CSP_APLICADA = [
+  `script-src ${directivaScriptSrc()}${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  `frame-src ${directivaFrameSrc()}`,
+  "worker-src 'self' blob:",
 ].join('; ');
 
 const nextConfig: NextConfig = {
@@ -61,6 +93,7 @@ const nextConfig: NextConfig = {
     "@olo/password-policy",
     "@olo/slug-policy",
     "@olo/upload-policy",
+    "@olo/url-policy",
   ],
   turbopack: {
     root: path.resolve(process.cwd(), "..")
@@ -71,6 +104,11 @@ const nextConfig: NextConfig = {
         // Aplica a todas las rutas de la intranet
         source: "/(.*)",
         headers: [
+          {
+            // La que bloquea (ver `CSP_APLICADA`).
+            key: "Content-Security-Policy",
+            value: CSP_APLICADA,
+          },
           {
             // Report-Only: registra violaciones sin bloquear. Cambiar a
             // 'Content-Security-Policy' cuando se confirme compatibilidad en staging.

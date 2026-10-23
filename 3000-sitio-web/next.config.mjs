@@ -1,7 +1,38 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { directivaFrameSrc, directivaScriptSrc } from '@olo/url-policy';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Content-Security-Policy que **sí bloquea** (XSS-02, auditoría del 2026-10-22).
+ *
+ * Hasta ahora el sitio no mandaba CSP en sus páginas (solo en `/sw.js`), aunque la documentación y los
+ * comentarios del código la contaban como la segunda capa contra XSS.
+ *
+ * Lo que se aplica es lo que no necesita nonce y no rompe nada:
+ *  - `frame-src`: solo la propia página y los hosts de `@olo/url-policy` (la misma lista que
+ *    valida cada `iframe` al guardar y al pintar). Un marco a un sitio ajeno queda bloqueado
+ *    aunque se cuele.
+ *  - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`.
+ *  - `script-src`: el propio sitio y `cdnjs.cloudflare.com` (pdf.js), sin ningún otro origen. Con `'unsafe-inline'`
+ *    **no** bloquea un script en línea ni un `javascript:`; eso lo cierran la validación por valor de
+ *    `sanitizar-contenido.ts` y `enlaceSeguro`/`iframeSeguro` al pintar.
+ *
+ * Por qué no `script-src` estricto con nonce: el sitio sirve páginas estáticas y con ISR, que se
+ * generan una vez y no pueden llevar un nonce distinto por petición; con nonce habría que volverlas
+ * todas dinámicas. La intranet manda además la política estricta en `Report-Only` para medir
+ * cuánto del código propio depende de scripts en línea antes de decidir (ver `CSP_DIRECTIVAS`).
+ */
+const CSP = [
+  `script-src ${directivaScriptSrc()}${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  `frame-src ${directivaFrameSrc()}`,
+  "worker-src 'self' blob:",
+].join('; ');
 
 /** La API vista desde este servidor: la misma que `shared/lib/api/url-de-la-api.ts`. */
 const URL_DE_LA_API = process.env.BACKEND_URL || 'http://localhost:4000';
@@ -25,12 +56,19 @@ const nextConfig = {
     '@olo/password-policy',
     '@olo/slug-policy',
     '@olo/upload-policy',
+    '@olo/url-policy',
   ],
   turbopack: {
     root: path.resolve(__dirname, '..')
   },
   async headers() {
     return [
+      {
+        // Todas las rutas. El `/sw.js` de abajo repite la clave con una política más estricta y, al
+        // ir después, es la que queda.
+        source: '/(.*)',
+        headers: [{ key: 'Content-Security-Policy', value: CSP }],
+      },
       {
         /**
          * El service worker de la PWA (`public/sw.js`). Sin caché: una versión vieja
