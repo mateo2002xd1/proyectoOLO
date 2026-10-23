@@ -432,9 +432,9 @@ const probarCuentas = async (m: Mundo) => {
     afirmar('…y sigue siendo Administrador', (await rolDe(m.admin.id)) === 'Administrador');
   }
   {
+    // Decidido 2026-10-23: los Administradores se administran entre sí (solo el Superadmin es intocable).
     const r = await llamar(m.admin, 'PATCH', `/api/users/${m.admin2.id}`, { cuerpo: { reset_password: true } });
-    if (r.status === 200) aviso('un Administrador restablece la contraseña de otro Administrador', 'permitido hoy; decidir si los administradores se administran entre sí');
-    else ok('un Administrador no restablece la contraseña de otro Administrador', `HTTP ${r.status}`);
+    estado('un Administrador sí restablece la contraseña de otro Administrador (decidido)', r, 200);
   }
 };
 
@@ -538,11 +538,11 @@ const probarPaginas = async (m: Mundo) => {
   niega('DELETE /inicio/versiones/<versión de clasificacion> no borra', borra);
   afirmar('…y la versión ajena sigue en la base', (await consulta('SELECT 1 FROM paginas_versiones WHERE id = :id', { id: versionSecreta })).length === 1);
   const restaura = await llamar(m.admin, 'POST', '/api/paginas/inicio/restaurar', { cuerpo: { versionId: versionSecreta }, ambito: 'sitio' });
-  afirmar('POST /inicio/restaurar con la versión de otra página no la publica', ![200, 201].includes(restaura.status), `HTTP ${restaura.status}`);
+  estado('POST /inicio/restaurar con la versión de otra página es 404 (no 500) y no la publica', restaura, 404);
   const idClasif = (await consulta<{ id: string }>("SELECT id FROM paginas WHERE slug = 'clasificacion' AND ambito = 'sitio'"))[0]?.id;
   if (idClasif) {
     const porUuid = await llamar(m.admin, 'POST', `/api/paginas/${idClasif}/restaurar`, { cuerpo: {}, ambito: 'intranet' });
-    afirmar('restaurar por UUID no alcanza una página de otro ámbito', ![200, 201].includes(porUuid.status), `HTTP ${porUuid.status}`);
+    estado('restaurar por UUID no alcanza una página de otro ámbito (404)', porUuid, 404);
   }
 
   // 4. Aprobación y gestión de secciones
@@ -568,19 +568,29 @@ const probarPaginas = async (m: Mundo) => {
   afirmar('ed2 no libera el candado de ed1 con DELETE', (await dueno()) === m.ed1.id);
   await llamar(m.ed2, 'POST', '/api/paginas/inicio/descartar-edicion', { ambito: 'sitio' });
   afirmar('ed2 no libera el candado de ed1 con descartar-edicion', (await dueno()) === m.ed1.id);
-  const pisa = await llamar(m.ed2, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe('pisado') }, ambito: 'sitio' });
-  if (pisa.status === 200 || pisa.status === 201) aviso('ed2 guarda borrador en una página con el candado de ed1', 'la edición es colaborativa por decisión de producto; el candado solo avisa al abrir');
-  else ok('ed2 no guarda sobre una página con candado ajeno', `HTTP ${pisa.status}`);
+  // Un solo borrador compartido, un solo editor a la vez: el servidor lo hace cumplir al guardar.
+  const MARCA_PISADO = 'TEXTO-PISADO-POR-ED2';
+  const pisa = await llamar(m.ed2, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe(MARCA_PISADO) }, ambito: 'sitio' });
+  estado('ed2 no guarda borrador sobre el candado de ed1', pisa, 409);
+  afirmar('…el 409 es PAGE_LOCKED y dice quién edita', pisa.json?.code === 'PAGE_LOCKED' && /Idor ed1/.test(pisa.json?.error ?? ''), pisa.json?.error);
+  afirmar('…y el contenido de ed2 no llegó a la base', (await consulta('SELECT 1 FROM paginas_versiones WHERE contenido::text LIKE :m', { m: `%${MARCA_PISADO}%` })).length === 0);
+  estado('ed2 tampoco autoguarda sobre el candado de ed1', await llamar(m.ed2, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe(MARCA_PISADO), automatico: true }, ambito: 'sitio' }), 409);
+  estado('ed2 tampoco envía a revisión sobre el candado de ed1', await llamar(m.ed2, 'PATCH', '/api/paginas/inicio/enviar-revision', { cuerpo: { comentario: 'Intento sobre candado ajeno', contenido: contenidoDe(MARCA_PISADO) }, ambito: 'sitio' }), 409);
+  estado('control: ed1, que tiene el candado, sí guarda', await llamar(m.ed1, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe('texto-de-ed1') }, ambito: 'sitio' }), [200, 201]);
   estado('control: un Administrador sí fuerza el candado', await llamar(m.admin, 'POST', '/api/paginas/inicio/bloqueo', { cuerpo: { forzar: true }, ambito: 'sitio' }), 200);
   afirmar('…y pasa a ser suyo', (await dueno()) === m.admin.id);
+  estado('…y ed1, que lo perdió, ya no guarda (candado perdido)', await llamar(m.ed1, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe(MARCA_PISADO) }, ambito: 'sitio' }), 409);
+  await ejecutar('DELETE FROM bloqueos_edicion');
+  estado('control: sin candado vigente (caducado o nunca pedido) se guarda', await llamar(m.ed2, 'POST', '/api/paginas/inicio/borrador', { cuerpo: { contenido: contenidoDe('texto-de-ed2') }, ambito: 'sitio' }), [200, 201]);
 
   // 6. Quién edita qué: lectura del candado y de los respaldos
   console.log('\n  [Lecturas con solo sesión]');
   await ejecutar('DELETE FROM bloqueos_edicion');
   await llamar(m.super, 'POST', '/api/paginas/clasificacion/bloqueo', { cuerpo: {}, ambito: 'sitio' });
   const veBloqueo = await llamar(m.ed1, 'GET', '/api/paginas/clasificacion/bloqueo', { ambito: 'sitio' });
-  if (veBloqueo.status === 200 && /Idor|super/i.test(veBloqueo.texto)) aviso('un Editor sin permiso sobre «clasificacion» ve quién la tiene abierta', 'a propósito (lo usa la restauración de respaldos); solo nombre');
-  else ok('un Editor sin permiso sobre la sección no ve quién la edita', `HTTP ${veBloqueo.status}`);
+  // Decidido 2026-10-23: quien edita puede ver el nombre de quien tiene abierta una página, aunque
+  // no tenga el permiso de esa sección; ayuda a coordinarse y lo usa la restauración de respaldos.
+  afirmar('un Editor ve quién tiene abierta una página (decidido: ayuda al flujo de trabajo)', veBloqueo.status === 200 && /Idor|super/i.test(veBloqueo.texto), `HTTP ${veBloqueo.status}`);
   niega('el Director no consulta candados', await llamar(m.director, 'GET', '/api/paginas/clasificacion/bloqueo', { ambito: 'sitio' }));
   const resp = await llamar(m.director, 'GET', '/api/paginas/respaldos?ambito=sitio', { ambito: 'sitio' });
   if (resp.status === 200) aviso('el Director lista los respaldos de versiones', 'GET /api/paginas/respaldos solo exige sesión; revisa si debe');
@@ -709,7 +719,7 @@ const publicar = async (m: Mundo, slug: string, ambito: 'sitio' | 'intranet', te
 };
 
 const probarLecturaPublica = async (m: Mundo) => {
-  seccion('F. Lectura pública: ¿el ámbito elegido por quien pregunta abre la intranet?');
+  seccion('F. Lectura pública: el ámbito lo elige quien pregunta, así que la intranet exige sesión');
   await limpiarLimites();
 
   const MARCA_INTRANET = 'CONTENIDO-SOLO-INTRANET-IDOR';
@@ -717,25 +727,39 @@ const probarLecturaPublica = async (m: Mundo) => {
   afirmar('control: se publicó una página de la intranet', await publicar(m, 'matriz', 'intranet', MARCA_INTRANET));
   afirmar('control: se publicó una página del sitio', await publicar(m, 'inicio', 'sitio', MARCA_SITIO));
 
+  // El sitio sigue siendo público.
   const sitio = await llamar(null, 'GET', '/api/paginas/publica/inicio', { ambito: 'sitio' });
   afirmar('control: sin sesión, la página publicada del sitio es pública', sitio.status === 200 && sitio.texto.includes(MARCA_SITIO), `HTTP ${sitio.status}`);
+  estado('control: …y su índice de búsqueda', await llamar(null, 'GET', '/api/paginas/indice-busqueda', { ambito: 'sitio' }), 200);
+  estado('control: …y sus títulos', await llamar(null, 'GET', '/api/paginas/titulos', { ambito: 'sitio' }), 200);
+  estado('control: …y registrar una visita', await llamar(null, 'POST', '/api/paginas/visitas/registrar', { cuerpo: { slug: 'inicio', ambito: 'sitio' }, ambito: 'sitio' }), 200);
   afirmar('sin sesión y sin cabecera, la página de la intranet no existe (404)', (await llamar(null, 'GET', '/api/paginas/publica/matriz')).status === 404);
-  estado('control: con sesión de la intranet, la página se lee', await llamar(m.ed1, 'GET', '/api/paginas/publica/matriz', { ambito: 'intranet' }), 200);
 
-  const lecturas: Array<[string, string]> = [
-    ['/api/paginas/publica/matriz', 'el contenido de una página'],
-    ['/api/paginas/indice-busqueda', 'el índice de búsqueda con sus textos'],
-    ['/api/paginas/titulos', 'los slugs y títulos'],
+  // Con sesión, la intranet se lee: se calienta también la caché por ámbito.
+  const lecturas: Array<[string, string, (texto: string) => boolean]> = [
+    ['/api/paginas/publica/matriz', 'el contenido de una página', (t) => t.includes(MARCA_INTRANET)],
+    ['/api/paginas/indice-busqueda', 'el índice de búsqueda con sus textos', (t) => t.includes(MARCA_INTRANET)],
+    ['/api/paginas/titulos', 'los slugs y títulos', (t) => /matriz/.test(t)],
   ];
+  for (const [ruta, que, contiene] of lecturas) {
+    const conSesion = await llamar(m.ed1, 'GET', ruta, { ambito: 'intranet' });
+    afirmar(`control: con sesión, la intranet entrega ${que}`, conSesion.status === 200 && contiene(conSesion.texto), `HTTP ${conSesion.status}`);
+    estado(`control: …también al Director (ve la intranet) — ${que}`, await llamar(m.director, 'GET', ruta, { ambito: 'intranet' }), 200);
+  }
+
+  // Sin sesión, nada; y la caché que acaba de llenarse con sesión no se sirve a quien no la tiene.
   for (const [ruta, que] of lecturas) {
     const r = await llamar(null, 'GET', ruta, { ambito: 'intranet' });
-    const filtra = r.status === 200 && (ruta.endsWith('/titulos') ? /matriz/.test(r.texto) : r.texto.includes(MARCA_INTRANET));
-    if (filtra) {
-      abierto(`sin sesión, X-Ambito: intranet entrega ${que}`, `GET ${ruta.replace('/api/paginas', '')} → HTTP 200`);
-    } else {
-      ok(`sin sesión, X-Ambito: intranet no entrega ${que}`, `HTTP ${r.status}`);
-    }
+    estado(`sin sesión, X-Ambito: intranet no entrega ${que} (aunque esté en caché)`, r, 401);
   }
+  niega('una cuenta sin acceso a la intranet (solo-sitio) tampoco la lee', await llamar(m.soloSitio, 'GET', '/api/paginas/publica/matriz', { ambito: 'intranet' }));
+  niega('…ni el índice de búsqueda', await llamar(m.soloSitio, 'GET', '/api/paginas/indice-busqueda', { ambito: 'intranet' }));
+
+  // Visitas: el ámbito puede ir en el cuerpo o en la cabecera.
+  estado('sin sesión no se registran visitas de la intranet (cabecera)', await llamar(null, 'POST', '/api/paginas/visitas/registrar', { cuerpo: { slug: 'matriz' }, ambito: 'intranet' }), 401);
+  estado('…ni con el ámbito solo en el cuerpo', await llamar(null, 'POST', '/api/paginas/visitas/registrar', { cuerpo: { slug: 'matriz', ambito: 'intranet' } }), 401);
+  const visita = await llamar(m.ed1, 'POST', '/api/paginas/visitas/registrar', { cuerpo: { slug: 'matriz', ambito: 'intranet' }, ambito: 'intranet' });
+  afirmar('control: con sesión sí se registra', visita.status === 200 && visita.json?.ok === true, `HTTP ${visita.status}`);
 };
 
 const probarSesionYDatosPropios = async (m: Mundo) => {

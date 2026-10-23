@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PaginaController } from '../controllers/pagina.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { cacheInterceptor } from '../middlewares/cache.middleware';
-import { requierePermisoPagina } from '../middlewares/permisos.middleware';
+import { requierePermisoPagina, requiereSesionSiEsIntranet } from '../middlewares/permisos.middleware';
 import { limitadorDeEscritura, limitadorDeVisitas, limitadorDeVisitasPorPagina } from '../middlewares/rate-limit.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
 import {
@@ -43,7 +43,9 @@ const router = Router();
  *     summary: Página publicada (público)
  *     description: |
  *       Devuelve el contenido **publicado** de una página, que es lo que pintan el
- *       sitio y la intranet. No exige sesión.
+ *       sitio y la intranet. **En el sitio no exige sesión; con `X-Ambito: intranet` sí**
+ *       (cuenta con acceso a la intranet): el ámbito lo elige quien pregunta, y sin esto
+ *       la intranet se leía sin cuenta.
  *
  *       **El ámbito entra en la clave de caché**, y tiene que hacerlo: el sitio y la
  *       intranet comparten la tabla y ambos tienen su `/inicio`, así que sin separar
@@ -70,17 +72,21 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
  */
 // El ámbito entra en la clave de caché: `/publica/inicio` devuelve una página
 // distinta según la pida el sitio o la intranet.
 router.get(
   '/publica/:slug',
+  requiereSesionSiEsIntranet(),
   cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
   PaginaController.obtenerPublica
 );
 
 router.get(
   '/indice-busqueda',
+  requiereSesionSiEsIntranet(),
   cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
   PaginaController.obtenerIndiceBusqueda
 );
@@ -95,7 +101,8 @@ router.get(
  *       Slug y título de cada página con una versión publicada en el ámbito, sin su
  *       contenido. Es lo que el sitio necesita en cada visita para rotular las migas de
  *       pan; el índice de búsqueda trae lo mismo con todo el texto y sería excesivo.
- *       No exige sesión. Respuesta cacheada 5 minutos por ámbito; aprobar una página
+ *       No exige sesión en el sitio; con `X-Ambito: intranet` sí (401/403). Respuesta
+ *       cacheada 5 minutos por ámbito; aprobar una página
  *       invalida la entrada.
  *     security: []
  *     parameters:
@@ -112,10 +119,13 @@ router.get(
  *                 properties:
  *                   slug: { type: string }
  *                   titulo: { type: string }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
  */
 // El ámbito entra en la clave de caché, igual que en las dos de arriba.
 router.get(
   '/titulos',
+  requiereSesionSiEsIntranet(),
   cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
   PaginaController.obtenerTitulos
 );
@@ -124,6 +134,8 @@ router.post(
   '/visitas/registrar',
   limitadorDeVisitas,
   limitadorDeVisitasPorPagina,
+  // El ámbito puede venir en el cuerpo además de la cabecera (ver el controlador).
+  requiereSesionSiEsIntranet((req) => (req.body?.ambito === 'intranet' ? 'intranet' : req.header(AMBITO_HEADER))),
   PaginaController.registrarVisita
 );
 

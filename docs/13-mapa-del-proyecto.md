@@ -382,10 +382,10 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|
-| GET | `/api/paginas/publica/:slug` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerPublica |
-| GET | `/api/paginas/indice-busqueda` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerIndiceBusqueda |
-| GET | `/api/paginas/titulos` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerTitulos |
-| POST | `/api/paginas/visitas/registrar` | 🔓 limitadorDeVisitas, limitadorDeVisitasPorPagina | PaginaController.registrarVisita |
+| GET | `/api/paginas/publica/:slug` | 🔓 requiereSesionSiEsIntranet(), cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerPublica |
+| GET | `/api/paginas/indice-busqueda` | 🔓 requiereSesionSiEsIntranet(), cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerIndiceBusqueda |
+| GET | `/api/paginas/titulos` | 🔓 requiereSesionSiEsIntranet(), cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerTitulos |
+| POST | `/api/paginas/visitas/registrar` | 🔓 limitadorDeVisitas, limitadorDeVisitasPorPagina, función en línea | PaginaController.registrarVisita |
 | POST | `/api/paginas` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.crear'), validarCuerpo(crearSeccionSchema) | PaginaController.crearSeccion |
 | GET | `/api/paginas/:slug/eliminable` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar') | PaginaController.analizarEliminacion |
 | DELETE | `/api/paginas/:slug` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar'), validarCuerpo(eliminarSeccionSchema) | PaginaController.eliminarSeccion |

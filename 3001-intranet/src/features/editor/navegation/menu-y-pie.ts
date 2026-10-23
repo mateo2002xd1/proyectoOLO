@@ -64,11 +64,15 @@ function propsDelBloque(props: Record<string, unknown>): Record<string, unknown>
  * Nunca lanza. Esto envuelve TODAS las secciones de la intranet: si la API está
  * caída, la página debe seguir teniendo menú y pie en vez de quedarse sin
  * navegación o, peor, romper el árbol entero desde el layout.
+ *
+ * `opciones` lleva la sesión (`cabecerasConSesion()`) que la API exige para leer lo publicado de
+ * la intranet. Las pasa quien llama, que es un componente de servidor: este archivo también
+ * lo importan componentes de cliente (por `SLUG_PLANTILLA`), y `next/headers` no entra ahí.
  */
-export async function obtenerPlantilla(): Promise<Plantilla> {
+export async function obtenerPlantilla(opciones?: RequestInit): Promise<Plantilla> {
   let pagina;
   try {
-    pagina = await obtenerPaginaPublicada(SLUG_PLANTILLA);
+    pagina = await obtenerPaginaPublicada(SLUG_PLANTILLA, opciones);
   } catch {
     return PLANTILLA_POR_DEFECTO;
   }

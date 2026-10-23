@@ -1,11 +1,13 @@
 import { cache } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import {
   ClientPuckRender,
   obtenerPaginaPublicada,
   SLUG_PLANTILLA,
 } from '@/features/editor';
+import { ApiError } from '@/shared/lib/api/api-client';
+import { cabecerasConSesion } from '@/shared/lib/session/sesion';
 
 /**
  * Páginas de la intranet creadas desde el editor visual.
@@ -31,8 +33,23 @@ import {
  * bajo `ambito='intranet'` — el cliente HTTP manda esa cabecera.
  */
 
-/** Una sola llamada por request aunque la pidan `generateMetadata` y la página. */
-const obtenerPaginaCacheada = cache(obtenerPaginaPublicada);
+/**
+ * Una sola llamada por request aunque la pidan `generateMetadata` y la página.
+ *
+ * La API exige la sesión también para leer lo publicado de la intranet, y desde el servidor
+ * hay que reenviarla. Si la API la rechaza (cuenta desactivada o cerrada por inactividad
+ * mientras el token firmado aún vale para el proxy) se vuelve al acceso, igual que el cierre
+ * por inactividad del navegador, en vez de mostrar una pantalla de error.
+ */
+const obtenerPaginaCacheada = cache(async (slug: string) => {
+  try {
+    return await obtenerPaginaPublicada(slug, await cabecerasConSesion());
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirect('/login?logout=1');
+    if (error instanceof ApiError && error.status === 403) redirect('/login?error=acceso_denegado');
+    throw error;
+  }
+});
 
 function slugDesdeParams(puckPath: string[]): string {
   return puckPath.join('-');

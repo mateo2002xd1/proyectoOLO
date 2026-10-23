@@ -16,7 +16,7 @@
  */
 
 import { redirect } from "next/navigation";
-import { obtenerSesion, permisosDeLaSesion } from "@/shared/lib/session/sesion";
+import { cabecerasConSesion, obtenerSesion, permisosDeLaSesion } from "@/shared/lib/session/sesion";
 import {
   AvisoSeccionNueva,
   obtenerPlantilla,
@@ -69,9 +69,9 @@ export default async function EditorPage({
   // aquí: el editor no puede dejar de abrir porque el panel de contexto falló.
   const esPlantilla = slug === SLUG_PLANTILLA;
   const [plantilla, paginaDeReferencia] = await Promise.all([
-    esPlantilla ? Promise.resolve(null) : obtenerPlantilla(),
+    esPlantilla ? Promise.resolve(null) : obtenerPlantilla(await cabecerasConSesion()),
     esPlantilla
-      ? obtenerPaginaPublicada(slugDeOrigen(volver)).catch(() => null)
+      ? obtenerPaginaPublicada(slugDeOrigen(volver), await cabecerasConSesion()).catch(() => null)
       : Promise.resolve(null),
   ]);
 

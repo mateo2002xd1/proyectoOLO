@@ -32,6 +32,27 @@ const API_BASE_URL =
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
+/**
+ * La URL de la API para una ruta.
+ *
+ * En el servidor la petición va directa a la API y `path` puede llevar valores de la URL
+ * (`/paginas/${slug}/editable`). `fetch` resuelve `..`, `%2e%2e` y `\` antes de enviar, así que
+ * un `slug` de `..` movería la petición a otra ruta de la API con la sesión de quien mira. Si la URL
+ * resuelta no conserva la ruta escrita, se rechaza. En el navegador no se comprueba: la petición
+ * es del propio usuario y la reescritura de Next conserva lo escrito.
+ */
+function urlDe(path: string): string {
+  const url = `${API_BASE_URL}${path}`;
+  if (typeof window !== 'undefined') return url;
+
+  const base = new URL(API_BASE_URL);
+  const escrita = base.pathname.replace(/\/$/, '') + path.split(/[?#]/, 1)[0];
+  if (new URL(url).pathname !== escrita) {
+    throw new ApiError(400, 'Ruta no válida.');
+  }
+  return url;
+}
+
 async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
   const { timeout = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options as RequestInit & { timeout?: number };
   
@@ -99,7 +120,7 @@ export const apiClient = {
   baseUrl: API_BASE_URL,
 
   async get<T>(path: string, options?: RequestInit & { timeout?: number }): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(urlDe(path), {
       ...options,
       method: 'GET',
       credentials: 'include',
@@ -109,7 +130,7 @@ export const apiClient = {
   },
 
   async post<T>(path: string, body?: unknown, options?: RequestInit & { timeout?: number }): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(urlDe(path), {
       ...options,
       method: 'POST',
       credentials: 'include',
@@ -120,7 +141,7 @@ export const apiClient = {
   },
 
   async put<T>(path: string, body?: unknown, options?: RequestInit & { timeout?: number }): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(urlDe(path), {
       ...options,
       method: 'PUT',
       credentials: 'include',
@@ -131,7 +152,7 @@ export const apiClient = {
   },
 
   async patch<T>(path: string, body?: unknown, options?: RequestInit & { timeout?: number }): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(urlDe(path), {
       ...options,
       method: 'PATCH',
       credentials: 'include',
@@ -142,7 +163,7 @@ export const apiClient = {
   },
 
   async delete<T>(path: string, options?: RequestInit & { timeout?: number }): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(urlDe(path), {
       ...options,
       method: 'DELETE',
       credentials: 'include',

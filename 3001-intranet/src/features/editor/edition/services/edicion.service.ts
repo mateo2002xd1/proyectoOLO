@@ -31,7 +31,7 @@ export async function obtenerVersionEditable(
   versionId?: string
 ): Promise<VersionEditable> {
   const query = versionId ? `?versionId=${encodeURIComponent(versionId)}` : '';
-  const res = await apiClient.get<Partial<VersionEditable>>(`/paginas/${slug}/editable${query}`, opciones);
+  const res = await apiClient.get<Partial<VersionEditable>>(`/paginas/${encodeURIComponent(slug)}/editable${query}`, opciones);
   return {
     slug: res.slug ?? slug,
     titulo: res.titulo ?? slug,

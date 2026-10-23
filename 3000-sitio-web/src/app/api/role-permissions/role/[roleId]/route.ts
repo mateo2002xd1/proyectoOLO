@@ -9,5 +9,5 @@ export async function GET(
   { params }: { params: Promise<{ roleId: string }> }
 ) {
   const { roleId } = await params;
-  return proxyToBackend(`/api/role-permissions/role/${roleId}`, request);
+  return proxyToBackend(`/api/role-permissions/role/${encodeURIComponent(roleId)}`, request);
 }

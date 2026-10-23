@@ -44,13 +44,15 @@ export default async function PreviewPage({
   if (!ROLES_CON_ACCESO.includes((sesion.role ?? '').trim().toLowerCase())) {
     notFound();
   }
+  // `.` y `..` son segmentos de ruta: `encodeURIComponent` no los toca y `fetch` los resolvería.
+  if (slug === '.' || slug === '..') notFound();
 
   // Si viene versionId, busca esa versión específica (por ej. respaldo archivado);
   // de lo contrario, busca la última versión editable para la cola de revisión.
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
   const url = versionId
-    ? `${BACKEND_URL}/api/paginas/${slug}/editable?versionId=${encodeURIComponent(versionId)}`
-    : `${BACKEND_URL}/api/paginas/${slug}/editable`;
+    ? `${BACKEND_URL}/api/paginas/${encodeURIComponent(slug)}/editable?versionId=${encodeURIComponent(versionId)}`
+    : `${BACKEND_URL}/api/paginas/${encodeURIComponent(slug)}/editable`;
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, 'X-Ambito': 'sitio' },
     cache: 'no-store',

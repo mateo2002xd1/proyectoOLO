@@ -15,6 +15,7 @@
 import React from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/intranet-topbar-wrapper';
 import { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
+import { cabecerasConSesion } from '@/shared/lib/session/sesion';
 import { obtenerPlantilla } from './menu-y-pie';
 
 export async function MarcoSecciones({
@@ -27,7 +28,7 @@ export async function MarcoSecciones({
    *  previa no lo tiene y deja la barra como está. */
   cerrarSesionEnFlotante?: boolean;
 }>) {
-  const plantilla = await obtenerPlantilla();
+  const plantilla = await obtenerPlantilla(await cabecerasConSesion());
 
   return (
     <>

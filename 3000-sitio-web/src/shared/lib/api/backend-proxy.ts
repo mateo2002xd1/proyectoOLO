@@ -59,6 +59,18 @@ export async function proxyToBackend(path: string, request: Request) {
 
   try {
     const url = new URL(path, BACKEND_URL);
+    // `new URL` resuelve `..`, `%2e%2e` y `\` y acepta `//host` o un esquema como si fueran
+    // otro servidor. Los llamadores arman `path` con valores de la URL (`/api/users/${id}`),
+    // así que aquí se exige que la petición salga hacia la API y llegue a la ruta escrita:
+    // si resolver la URL la movió, alguien la estaba empujando a otra parte.
+    const rutaEscrita = path.split(/[?#]/, 1)[0];
+    if (
+      url.origin !== new URL(BACKEND_URL).origin ||
+      !url.pathname.startsWith('/api/') ||
+      url.pathname !== rutaEscrita
+    ) {
+      return NextResponse.json({ error: 'Ruta no válida.' }, { status: 400 });
+    }
     const body =
       method !== 'GET' && method !== 'HEAD' ? await request.arrayBuffer() : undefined;
     const res = await fetch(url.toString(), {

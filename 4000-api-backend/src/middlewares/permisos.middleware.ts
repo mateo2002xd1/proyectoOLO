@@ -5,6 +5,8 @@ import { usuariosPolicies, type PermisoUsuario } from '../policies/usuarios.poli
 import { observatorioPolicies, type PermisoObservatorio } from '../policies/observatorio.policies';
 import { alertasInversionPolicies, type PermisoAlertasInversion } from '../policies/alertas-inversion.policies';
 import { marcarGuardia } from '../shared/autorizacion';
+import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
+import { requireAuth } from './auth.middleware';
 
 /**
  * Construye el middleware que exige un permiso de una familia de policies.
@@ -45,6 +47,41 @@ const construirGuardia = <P extends string>(
  * Va siempre después de `requireAuth`, que es quien pone `req.user`.
  */
 export const requierePermisoPagina = construirGuardia<PermisoPagina>('paginas', paginasPolicies);
+
+/**
+ * Las lecturas «públicas» de páginas lo son solo en el sitio: en la intranet exigen sesión.
+ *
+ * `/paginas/publica/:slug`, `/indice-busqueda`, `/titulos` y el registro de visitas están
+ * antes de `requireAuth` porque el sitio es público. Pero el ámbito lo elige quien
+ * pregunta, con una cabecera, así que `X-Ambito: intranet` sin sesión devolvía el
+ * contenido publicado de la intranet, su índice de búsqueda con los textos y los títulos
+ * de todas sus páginas (y el registro de visitas confirmaba qué páginas existían y cuántas
+ * visitas tenían). Los adjuntos de la intranet ya exigían sesión; el contenido no.
+ *
+ * Con ámbito `sitio` (o sin cabecera, que cae ahí) no hace nada. Con `intranet` exige
+ * sesión y poder ver la intranet (`puedeVer`), igual que `/api/archivos/intranet`.
+ *
+ * Va **antes** de la caché de la ruta: la caché va por ámbito y no por persona, y una
+ * respuesta guardada para la intranet solo debe poder servirse a quien ya pasó por aquí.
+ * Marca la respuesta `private, no-store` para que ningún proxy la guarde.
+ *
+ * `leerAmbito` existe porque el registro de visitas acepta el ámbito también en el cuerpo.
+ */
+export const requiereSesionSiEsIntranet = (
+  leerAmbito: (req: Request) => unknown = (req) => req.header(AMBITO_HEADER)
+) =>
+  marcarGuardia(
+    (req: Request, res: Response, next: NextFunction) => {
+      if (resolverAmbito(leerAmbito(req)) !== 'intranet') return next();
+
+      res.setHeader('Cache-Control', 'private, no-store');
+      void requireAuth(req, res, (error?: unknown) => {
+        if (error) return next(error);
+        return requierePermisoPagina('puedeVer')(req, res, next);
+      });
+    },
+    'paginas.sesionSiEsIntranet'
+  );
 
 /**
  * Exige permiso de auditoría sobre el rol del usuario autenticado.

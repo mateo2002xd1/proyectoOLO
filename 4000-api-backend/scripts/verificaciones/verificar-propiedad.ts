@@ -118,8 +118,8 @@ const verificarPolicies = async () => {
  * La clave es `MÉTODO ruta`; el valor, dónde vive la comprobación y qué hace.
  */
 const COMPROBACION_FUERA_DE_LA_RUTA: Record<string, string> = {
-  'GET /api/paginas/publica/:slug':
-    'ruta pública por diseño (RF-10): solo devuelve la versión publicada',
+  'GET /api/configuracion/identidad-panel/archivos/:nombre':
+    'pública por diseño: el navegador pide el logo y el icono sin sesión (pantalla de acceso); `resolverArchivoDeIdentidad` solo sirve nombres UUID + .png/.jpg de una carpeta fija, nunca otra ruta',
 };
 
 type Capa = {

@@ -21,10 +21,17 @@ import type { PaginaIndiceBusqueda, PaginaPublicada } from "../../model/pagina.t
  * Solo devuelve la versión aprobada: un borrador o algo pendiente de revisión no
  * se ve aquí. Si la página no existe o todavía no tiene versión publicada, es
  * `null` — no es un error, es que no hay nada que mostrar.
+ *
+ * **Exige la sesión de quien mira**: la API ya no entrega contenido de la intranet sin
+ * cuenta. En el navegador la cookie viaja sola; desde un componente de servidor hay que
+ * pasar `opciones` con `cabecerasConSesion()`, o la API responde 401.
  */
-export async function obtenerPaginaPublicada(slug: string): Promise<PaginaPublicada | null> {
+export async function obtenerPaginaPublicada(
+  slug: string,
+  opciones?: RequestInit
+): Promise<PaginaPublicada | null> {
   try {
-    return await apiClient.get<PaginaPublicada>(`/paginas/publica/${slug}`);
+    return await apiClient.get<PaginaPublicada>(`/paginas/publica/${slug}`, opciones);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -47,8 +54,9 @@ export async function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
  * Registra una visita en el backend de forma segura y no bloqueante.
  *
  * Es la misma petición que hace sitio-web (`registrarVisita` en su
- * `publicacion.service.ts`): `fetch` directo, sin cookies, y con `keepalive` para que
- * no se pierda si la persona cambia de página enseguida.
+ * `publicacion.service.ts`): `fetch` directo y con `keepalive` para que no se pierda si la
+ * persona cambia de página enseguida. A diferencia del sitio, en la intranet lleva la
+ * cookie de sesión (mismo origen): la API no cuenta visitas de la intranet sin cuenta.
  */
 export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet' = 'intranet'): Promise<void> {
   try {
@@ -61,6 +69,7 @@ export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet'
         'X-Ambito': ambito,
       },
       body: JSON.stringify({ slug, ambito }),
+      credentials: 'same-origin',
       keepalive: true,
     });
   } catch {
