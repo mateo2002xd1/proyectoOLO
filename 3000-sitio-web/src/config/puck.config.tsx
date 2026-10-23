@@ -566,8 +566,8 @@ const puckConfigBase: Config = {
       // Al abrir una cabecera de antes se pasa una sola vez y `intranetText` queda
       // vacío: si no, borrar el texto del campo lo volvería a rellenar con el viejo.
       // Además, la tarjeta de la franja GOV.CO: grupo ⇄ props sueltas.
-      resolveData: ({ props }: { props: Record<string, any> }) => {
-        const boton = props.botonIntranet ?? {};
+      resolveData: ({ props }: { props: Record<string, unknown> }) => {
+        const boton = (props.botonIntranet ?? {}) as { texto?: string };
         const migrar = !boton.texto && typeof props.intranetText === 'string' && props.intranetText;
         const conBoton = migrar
           ? { ...props, intranetText: '', botonIntranet: { ...boton, texto: props.intranetText } }
@@ -698,7 +698,7 @@ const puckConfigBase: Config = {
       // Una portada guardada antes de la tarjeta «Textos» los trae sueltos (y una de
       // antes del rediseño, sin titular ni descripción): se pasan a la tarjeta al abrirla
       // en el editor, completando lo que falte, para que se vean y se puedan corregir.
-      resolveData: ({ props }: { props: Record<string, any> }) => {
+      resolveData: ({ props }: { props: Record<string, unknown> }) => {
         if (props.textos) return { props };
         const { tituloSeccion, descripcion, titulo, ...resto } = props;
         return {
@@ -889,9 +889,9 @@ const puckConfigBase: Config = {
       // Una portada guardada antes del rediseño trae una sola imagen en `imagenSrc`; la
       // primera versión del carrusel, `imagenes`, `colorFondo` y `radioEsquinas` sueltos.
       // Se pasan a `galeria` al abrirla, para que se puedan editar.
-      resolveData: ({ props }: { props: Record<string, any> }) => {
+      resolveData: ({ props }: { props: Record<string, unknown> }) => {
         if (props.galeria !== undefined) return { props };
-        const anteriores: Record<string, any>[] = Array.isArray(props.imagenes)
+        const anteriores: Record<string, unknown>[] = Array.isArray(props.imagenes)
           ? props.imagenes
           : props.imagenSrc
             ? [{ imagen: props.imagenSrc, alt: props.imagenAlt ?? '' }]
@@ -1339,7 +1339,7 @@ const puckConfigBase: Config = {
       },
       // Una portada guardada antes del rediseño no trae `tarjetas`: se le ponen las del
       // diseño al abrirla, para que se puedan editar.
-      resolveData: ({ props }: { props: Record<string, any> }) =>
+      resolveData: ({ props }: { props: Record<string, unknown> }) =>
         props.tarjetas !== undefined
           ? { props }
           : {
@@ -1609,9 +1609,12 @@ const puckConfigBase: Config = {
       },
       // La primera versión tenía dos tarjetas fijas (`tarjeta1`, `tarjeta2`). Un bloque
       // guardado así pasa a la lista al abrirlo; las vacías se descartan.
-      resolveData: ({ props }: { props: Record<string, any> }) => {
+      resolveData: ({ props }: { props: Record<string, unknown> }) => {
         if (Array.isArray(props.tarjetas) && props.tarjetas.length > 0) return { props };
-        const viejas = [props.tarjeta1, props.tarjeta2].filter((t) => t && (t.imagen || t.titulo));
+        const viejas = [props.tarjeta1, props.tarjeta2].filter((t) => {
+          const tarjeta = t as { imagen?: unknown; titulo?: unknown } | undefined;
+          return tarjeta && (tarjeta.imagen || tarjeta.titulo);
+        });
         if (viejas.length === 0) return { props };
         const { tarjeta1: _t1, tarjeta2: _t2, ...resto } = props;
         return { props: { ...resto, tarjetas: viejas } };

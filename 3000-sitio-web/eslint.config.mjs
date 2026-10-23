@@ -39,6 +39,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // pdf.js de terceros, ya minificado: no es código del proyecto y no tiene arreglo posible.
+    "public/assets/pdfjs/**",
   ]),
 ]);
 

@@ -14,10 +14,10 @@
  * GOV.CO de la cabecera (`puck.config.tsx`).
  */
 export function resolverGruposDeProps(
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   clavesPorGrupo: Record<string, string[]>
-): Record<string, any> {
-  const resultado: Record<string, any> = { ...props };
+): Record<string, unknown> {
+  const resultado: Record<string, unknown> = { ...props };
   for (const [grupo, claves] of Object.entries(clavesPorGrupo)) {
     const valores = props[grupo] ?? Object.fromEntries(claves.map((clave) => [clave, props[clave]]));
     resultado[grupo] = valores;

@@ -266,6 +266,6 @@ const CLAVES_POR_GRUPO: Record<string, string[]> = Object.fromEntries(
 );
 
 /** `resolveData` del bloque: grupos ⇄ props sueltas (ver `grupos-de-props.ts`). */
-export function resolverGruposDelPie({ props }: { props: Record<string, any> }) {
+export function resolverGruposDelPie({ props }: { props: Record<string, unknown> }) {
   return { props: resolverGruposDeProps(props, CLAVES_POR_GRUPO) };
 }
