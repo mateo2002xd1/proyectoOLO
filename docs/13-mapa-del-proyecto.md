@@ -14,11 +14,11 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 51 | 2 | 47 | — | 33 |
-| `3001-intranet` | 36 | 2 | 14 | — | 27 |
-| `4000-api-backend` | 35 | — | — | 100 | 43 |
+| `3000-sitio-web` | 51 | 2 | 47 | — | 34 |
+| `3001-intranet` | 36 | 2 | 14 | — | 28 |
+| `4000-api-backend` | 35 | — | — | 100 | 44 |
 
-Paquetes compartidos: 7 · migraciones: 47 · modelos: 23.
+Paquetes compartidos: 8 · migraciones: 47 · modelos: 23.
 
 ## Carpetas sin descripción (4)
 
@@ -186,7 +186,9 @@ packages/                                      lo que las dos apps comparten con
 │   └── src/
 ├── slug-policy/                               formato válido de un slug
 │   └── src/
-└── upload-policy/                             controles de subida: bytes mágicos, lista blanca, UUID, límites
+├── upload-policy/                             controles de subida: bytes mágicos, lista blanca, UUID, límites
+│   └── src/
+└── url-policy/                                qué direcciones puede llevar el contenido: enlaces, imágenes, hosts de iframe, redirecciones
     └── src/
 
 scripts/                                       herramientas del repo que no son de una app
@@ -469,6 +471,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/slug-policy` | `packages/slug-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/upload-policy` | `packages/upload-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
+| `@olo/url-policy` | `packages/url-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 
 ### 3000-sitio-web
 
@@ -487,6 +490,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
+| `@olo/url-policy` | `file:../packages/url-policy` | producción |
 | `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
@@ -523,6 +527,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
+| `@olo/url-policy` | `file:../packages/url-policy` | producción |
 | `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
@@ -549,6 +554,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
+| `@olo/url-policy` | `file:../packages/url-policy` | producción |
 | `@types/bcryptjs` | `^2.4.6` | desarrollo |
 | `@types/cookie-parser` | `^1.4.10` | desarrollo |
 | `@types/cors` | `^2.8.17` | desarrollo |

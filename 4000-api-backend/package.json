@@ -43,6 +43,7 @@
     "email:verificar": "ts-node scripts/verificaciones/verificar-politica-email.ts",
     "sesion:verificar": "ts-node scripts/verificaciones/verificar-cookie-de-sesion.ts",
     "errores:verificar": "ts-node scripts/verificaciones/verificar-errores-sin-fuga.ts",
+    "xss:verificar": "ts-node scripts/verificaciones/verificar-xss-contenido.ts",
     "seed:generar": "ts-node scripts/semillas/generar-seed-contenido.ts",
     "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts",
     "contenido:revisar": "ts-node scripts/puntuales/revisar-contenido-guardado.ts"
@@ -53,6 +54,7 @@
     "@olo/password-policy": "file:../packages/password-policy",
     "@olo/slug-policy": "file:../packages/slug-policy",
     "@olo/upload-policy": "file:../packages/upload-policy",
+    "@olo/url-policy": "file:../packages/url-policy",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.80.5",
     "cookie-parser": "^1.4.7",

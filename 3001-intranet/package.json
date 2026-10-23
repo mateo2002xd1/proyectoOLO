@@ -24,6 +24,7 @@
     "@olo/password-policy": "file:../packages/password-policy",
     "@olo/slug-policy": "file:../packages/slug-policy",
     "@olo/upload-policy": "file:../packages/upload-policy",
+    "@olo/url-policy": "file:../packages/url-policy",
     "@puckeditor/core": "^0.22.4",
     "clsx": "^2.1.1",
     "file-type": "^22.0.1",

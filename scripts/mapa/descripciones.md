@@ -82,6 +82,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `packages/password-policy/` — política de contraseñas
 - `packages/slug-policy/` — formato válido de un slug
 - `packages/upload-policy/` — controles de subida: bytes mágicos, lista blanca, UUID, límites
+- `packages/url-policy/` — qué direcciones puede llevar el contenido: enlaces, imágenes, hosts de iframe, redirecciones
 
 ## 3000-sitio-web
 

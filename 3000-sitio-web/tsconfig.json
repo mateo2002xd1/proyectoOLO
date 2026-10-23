@@ -19,7 +19,8 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
-      "@olo/blocks-renderer": ["../packages/blocks-renderer/src/index.ts"]
+      "@olo/blocks-renderer": ["../packages/blocks-renderer/src/index.ts"],
+      "@olo/url-policy": ["../packages/url-policy/src/index.ts"]
     },
     "plugins": [
       {
