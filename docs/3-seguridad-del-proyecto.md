@@ -75,7 +75,7 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 | **XSS-06** | Una redirección a un valor que viene de fuera (`?redirect=`) usa `rutaInternaSegura` de `@olo/url-policy`, que rechaza `//`, `/\` y `/<tab>/` | **Corregido 2026-10-22** en los dos `login-view.tsx`; antes solo descartaban `//` (anotado el 2026-10-19) |
 | **XSS-07** | En `<style>` y `style` solo entran `#rrggbb` o valores de una lista cerrada; nunca texto libre interpolado | Se cumple en `EstilosDeIdentidad` y `LetraDelPanel`; queda escrita para que se siga cumpliendo |
 | **XSS-08** | **Todo** camino que escriba `paginas_versiones.contenido` pasa por `sanitizarContenidoPuck`, incluidos `cambiar-direccion` y la importación de volcados SQL; tras importar, `contenido:revisar -- --aplicar` | **Corregido 2026-10-22:** `cambiar-direccion` sanea, y `deploy.sh importar` / `importar-paginas` corren el saneo al terminar. Las siembras (`scripts/semillas/`) siguen escribiendo directo: su contenido es del repositorio, no de usuarios |
-| **XSS-09** | `class` e `id` del HTML editorial son una superficie: una clase de utilidad (`fixed inset-0 z-50`) tapa la página igual que el `style` que ya se bloqueó | `class` está en la lista de atributos permitidos |
+| **XSS-09** | El HTML editorial no guarda `class` ni `id`, y cada atributo de la lista blanca del sanitizador lleva en un comentario qué abre. Una clase de utilidad (`fixed inset-0 z-50`) tapa la página igual que el `style` que ya se bloqueó, y un `id` como `location` o `cookie` pisa propiedades de `document` (DOM clobbering) | **Corregido 2026-10-22.** `class` e `id` estaban en `ATRIBUTOS_PERMITIDOS` y ningún editor del OLO está configurado para escribirlos (ni la barra de Puck ni las herramientas de EditorJS que se cargan). Si un bloque llegara a necesitar una clase, se añade con una lista cerrada de valores |
 | **XSS-10** | Un control nuevo contra XSS añade su caso a `npm run xss:verificar` | Un control que no se puede comprobar vuelve a romperse |
 
 ### S3 — Autenticación y sesiones (RF-16)
@@ -410,8 +410,8 @@ oculta, el backend prohíbe*, y aquí el backend no prohíbe.
   `next.config`. Lee el esquema como lo lee un navegador: sin espacios, controles ni ancho cero.
 - **CSP que bloquea** en el sitio y en la intranet (`next.config`): `frame-src` (lista única), `object-src
   'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'` y `script-src` solo con el propio
-  origen y `cdnjs.cloudflare.com`. Probado en Chrome: bloquea un `iframe` a un sitio ajeno y deja pasar
-  YouTube; el inicio de sesión de las dos apps carga sin violaciones.
+  origen. Probado en Chrome: bloquea un `iframe` a un sitio ajeno, deja pasar YouTube (que reproduce dentro
+  del `sandbox`) y pdf.js propio dibuja un PDF real; el inicio de sesión de las dos apps carga sin violaciones.
 
 ### 4.5 Límites de tasa y abuso automatizado
 
@@ -561,13 +561,17 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   cualquier esquema ejecutable, los bloques repiten `enlaceSeguro` / `iframeSeguro` al pintar,
   los dos `iframe` de texto libre van a una lista única de hosts, y las dos apps mandan una CSP
   que bloquea (`frame-src`, `object-src`, `base-uri`, `form-action`, `frame-ancestors`).*
-- **`script-src` estricto (con nonce).** La CSP actual lleva `script-src 'self' 'unsafe-inline'
-  https://cdnjs.cloudflare.com`: no carga scripts de otros orígenes, pero no frena un script en línea ni
-  un `javascript:`. Un nonce por petición exige páginas dinámicas, y las públicas son estáticas/ISR. La
+- **`script-src` estricto (con nonce).** La CSP actual lleva `script-src 'self' 'unsafe-inline'`: no carga
+  scripts de otros orígenes, pero no frena un script en línea ni un `javascript:`. Un nonce por petición exige páginas dinámicas, y las públicas son estáticas/ISR. La
   intranet mide la política estricta en `Report-Only` (hoy reporta los scripts en línea de Next).
   A evaluar: nonce solo en la intranet (todo es dinámico tras el login); en el sitio, otra vía (hashes por página).
-- **pdf.js se carga desde `cdnjs.cloudflare.com` sin comprobación de integridad** (`publicaciones.tsx`,
-  sitio e intranet). Servirlo desde el propio origen vaciaría `HOSTS_DE_SCRIPT` de `@olo/url-policy`.
+- ~~**pdf.js desde `cdnjs.cloudflare.com` sin comprobación de integridad**~~ y ~~**`class`/`id` en el HTML
+  editorial**~~. *Cerrados el 2026-10-22: pdf.js 3.11.174 se sirve desde `public/assets/pdfjs/` de cada app
+  (`LEEME.txt` con el origen y la integridad del paquete), `HOSTS_DE_SCRIPT` quedó vacío y la CSP no abre
+  `script-src` a ningún tercero; el sanitizador ya no guarda `class` ni `id` (XSS-09).*
+- **Power BI dentro del `sandbox`, sin comprobar con un tablero real.** Se comprobó que carga su pantalla
+  de inicio y que YouTube reproduce; un informe publicado de verdad solo se ve en el servidor. Si fallara,
+  se ajusta `ATRIBUTOS_DE_IFRAME_SEGURO` en `packages/url-policy/src/index.ts`.
 - **Un texto que empiece por «JavaScript:» desaparece al guardar** (p. ej. un título «JavaScript: lo
   básico»): es el precio de validar por valor y no por nombre de campo. Se arregla con otra redacción.
 - **nginx confía en cualquier `X-Forwarded-For`** (`set_real_ip_from 0.0.0.0/0` con
@@ -606,7 +610,7 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
 | `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
 | `npm run email:verificar` | Que el dominio institucional se exija donde debe |
-| `npm run xss:verificar` | Que el sanitizador del contenido de las páginas no deje pasar HTML ejecutable (34 cargas × 5 ubicaciones) ni un esquema ejecutable en una URL, sea cual sea el nombre del campo (21 campos, 14 evasiones, lo legítimo intacto), y que los helpers de `@olo/url-policy` (enlaces, `iframe`, redirecciones) hagan lo que dicen: 97 comprobaciones |
+| `npm run xss:verificar` | Que el sanitizador del contenido de las páginas no deje pasar HTML ejecutable (34 cargas × 5 ubicaciones) ni un esquema ejecutable en una URL, sea cual sea el nombre del campo (21 campos, 14 evasiones, lo legítimo intacto), que `class` e `id` no se guarden, y que los helpers de `@olo/url-policy` (enlaces, `iframe`, redirecciones) hagan lo que dicen: 99 comprobaciones |
 | `npm run errores:verificar` | Que ningún error filtre `code`, SQL ni mensajes internos, y que login y recuperación respondan igual (texto y tiempo) exista o no la cuenta |
 | `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
 | `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |

@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 22-10-2026 (4.ª parte): lo que quedaba abierto del XSS
+
+**Qué pidió el usuario:** resolver lo que la parte anterior dejó sin cerrar: `script-src` sin nonce, YouTube y Power BI dentro del `sandbox`, pdf.js (cdnjs, sin integridad), y `class`/`id` del HTML editorial (XSS-09). Detalle en [`auditorias/2026-10-22-xss-almacenado-y-defensas.md`](../auditorias/2026-10-22-xss-almacenado-y-defensas.md) (sección «Seguimiento»).
+
+**Qué cambió.** pdf.js 3.11.174 deja de venir de `cdnjs.cloudflare.com` y se sirve desde `public/assets/pdfjs/` de cada app, así que `HOSTS_DE_SCRIPT` queda vacío y la CSP no abre `script-src` a ningún tercero. El sanitizador de la API ya no guarda `class` ni `id`.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Estáticos | `3000-sitio-web/public/assets/pdfjs/`, `3001-intranet/public/assets/pdfjs/` (nuevos) | `pdf.min.js`, `pdf.worker.min.js`, `cmaps/`, `LICENSE` y `LEEME.txt` (origen e integridad del paquete `pdfjs-dist@3.11.174`) |
+| Bloques | `publicaciones.tsx` (sitio e intranet) | `RUTA_PDFJS = '/assets/pdfjs'` en lugar de las tres direcciones de cdnjs |
+| Paquete | `packages/url-policy/src/index.ts` | `HOSTS_DE_SCRIPT` vacío; `directivaScriptSrc()` devuelve `'self' 'unsafe-inline'` |
+| Cabeceras | `next.config.mjs` (sitio), `next.config.ts` (intranet) | Comentarios al día; el `Report-Only` estricto de la intranet ya no nombra cdnjs |
+| API | `shared/sanitizar-contenido.ts` | `class` e `id` fuera de `ATRIBUTOS_PERMITIDOS`, con un comentario por atributo (XSS-09) |
+| API | `scripts/verificaciones/verificar-xss-contenido.ts` | Dos comprobaciones nuevas: `class`/`id` no se guardan, y el texto y el enlace sí |
+| Docs | `3-seguridad` (XSS-09, §4.4, §4.8, tabla de verificaciones), `2-convenciones` XSS-09 | Estado al día |
+
+| Verificación | Resultado |
+|---|---|
+| `npm run xss:verificar` | **99 comprobaciones, todo correcto** |
+| `tsc --noEmit` de sitio e intranet | Sin errores |
+| Chrome real con la CSP de producción del sitio | pdf.js propio (script, worker y cmaps del mismo origen) dibuja la portada de un PDF real, sin violaciones; un `iframe` a `example.com` se bloquea |
+| YouTube dentro del `sandbox` | Carga, y al pulsar reproducir el video arranca |
+| Power BI dentro del `sandbox` | Carga su pantalla de inicio; **un informe publicado de verdad no se vio** |
+
+**Sigue abierto:** `script-src` con nonce. En el sitio no es posible sin volver dinámicas las páginas públicas (hoy estáticas/ISR); en la intranet exige quitarle el renderizado estático a toda la app y no se puede probar entera sin sesión. Queda como decisión del equipo. También: un tablero de Power BI real dentro del `sandbox`, las páginas públicas con contenido real, y el `contenido:revisar` contra producción.
+
+---
+
 ## sesión 22-10-2026 (3.ª parte): corrección de la auditoría de XSS
 
 **Qué pidió el usuario:** implementar la solución a la revisión de XSS de la parte anterior. Detalle, pruebas y límites en [`auditorias/2026-10-22-xss-almacenado-y-defensas.md`](../auditorias/2026-10-22-xss-almacenado-y-defensas.md) (sección «Corrección aplicada»).

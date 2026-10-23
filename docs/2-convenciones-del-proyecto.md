@@ -354,6 +354,6 @@ hace al escribir código:
 | `XSS-06` | Redirigir a un valor de la URL o del contenido: con `rutaInternaSegura` (rechaza `//`, `/\` y `/<tab>/`). `startsWith('/') && !startsWith('//')` **no basta** |
 | `XSS-07` | Un `<style>` o `style` con datos de usuario solo recibe `#rrggbb` o una opción de una lista cerrada. Nada de interpolar texto libre en CSS |
 | `XSS-08` | Si escribes en `paginas_versiones.contenido` (casos de uso, scripts, importaciones), el contenido pasa antes por `sanitizarContenidoPuck`. Un volcado SQL importado se sanea con `contenido:revisar -- --aplicar` (`deploy.sh importar` ya lo hace) |
-| `XSS-09` | Al añadir un atributo o una etiqueta a la lista blanca del sanitizador, se explica en un comentario qué ataque abre y por qué se acepta |
+| `XSS-09` | Al añadir un atributo o una etiqueta a la lista blanca del sanitizador, se explica en un comentario qué ataque abre y por qué se acepta. `class` e `id` **no** están: si un bloque necesita una clase, va con una lista cerrada de valores, nunca como atributo libre |
 | `XSS-10` | Un campo o control nuevo relacionado con XSS añade su caso a `npm run xss:verificar` |
 
