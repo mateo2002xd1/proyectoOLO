@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 23-10-2026 (2.ª parte): pruebas automáticas de los límites de tasa
+
+**Qué pidió el usuario:** implementar pruebas de rate limit.
+
+**Qué se hizo.** Script nuevo `scripts/verificaciones/verificar-limites-de-tasa.ts` (`npm run limites:verificar`), que monta las **instancias reales** exportadas de `rate-limit.middleware.ts` —no una copia con números más pequeños— en una app de Express mínima levantada en un puerto suelto, y las golpea con peticiones HTTP de verdad (`fetch` del propio Node, sin dependencias nuevas; el proyecto no tiene test runner, mismo patrón que el resto de `scripts/verificaciones/`). Fuerza el almacén en memoria (`REDIS_URL` vaciada antes de cargar el middleware) para no tocar el Redis de desarrollo del usuario.
+
+**Qué prueba, por limitador:**
+
+| Limitador | Qué confirma |
+|---|---|
+| `claveDeSesionOIp` (función pura) | Por usuario si hay sesión; sin ella, por IP; dos IPv6 del mismo /56 comparten cubo, de distinto /56 no |
+| Login, preguntas, verificar, recuperar (por correo) | El techo documentado bloquea en el intento siguiente, con el mensaje exacto; otro correo desde la misma IP no se bloquea; el mismo correo desde otra IP sigue bloqueado (cuenta por correo, no por IP); sin correo cae a un cubo por IP nuevo |
+| Logout, escritura (por sesión/usuario) | Techo, mensaje, cupo independiente por usuario; el superadmin exento de `limitadorDeEscritura` no se bloquea ni muy por encima del techo |
+| Visitas (IP+página y techo general por IP) | Cada uno con su propio cupo, y los dos montados juntos en el mismo orden que `pagina.routes.ts` — el más estrecho de los dos es el que bloquea |
+| Global | El tráfico sin `X-Forwarded-For` (interno) pasa sin contar ni con 301 peticiones; con la cabecera, el techo de 300/min por IP sí aplica |
+
+**Un fallo real, pero en el arnés de prueba, no en el límite de tasa:** las primeras versiones de `/logout` y `/escritura` en el script no mandaban método explícito y mi `pedir()` las enviaba como `GET` (porque decidía el método por si había `body`, y esas dos pruebas solo mandan cabeceras). Daban `404` en vez de ejecutar el limitador, y como un `404` tampoco es `429`, las comprobaciones "pasan sin bloquearse" salían en falso verde. Corregido pasando `metodo: 'POST'` explícito en esos seis sitios.
+
+**Verificación:** `tsc --noEmit` sin errores; `npm run limites:verificar` → 49 comprobaciones, todo correcto.
+
+**Para saber:** con `REDIS_URL` vacía a propósito, esto no prueba que `RedisStore` cuente igual que el almacén en memoria (misma interfaz de `express-rate-limit`, misma lógica probada aquí) ni `passOnStoreError` (que una caída de Redis deje pasar la petición en vez de devolver 500) — para eso hace falta apagar un Redis de verdad a mitad de prueba; no se hizo esta vez.
+
+**Aparte, al leer §4.5 de `3-seguridad-del-proyecto.md`:** su tabla menciona un limitador «Encolar trabajos pesados — 10/hora — usuario» que no existe en el código actual (`rate-limit.middleware.ts` no exporta nada así, y ningún router de carga pesada lo usa). Es una fila desactualizada, no algo que esta sesión tocara — queda anotado para quien revise esa sección.
+
+---
+
 ## sesión 23-10-2026: pruebas de inyección SQL, Content-Type y confusión de tipos, y su corrección
 
 **Qué pidió el usuario:** probar la API contra inyección SQL, forzado del `Content-Type` de las cabeceras y confusión de tipos (*type confusion*); al encontrar un hallazgo real, corregirlo y dejar evidencia en `auditorias/`. Informe: `auditorias/2026-10-23-sqli-content-type-y-type-confusion.md`.
@@ -28,6 +54,55 @@
 | `controllers/role-permissions.controller.ts` | `revoke` ya no necesita el `req.body?.x \|\| req.query?.x` defensivo ni el chequeo manual: `validarCuerpo` garantiza los dos campos |
 
 **Verificación:** `tsc --noEmit` sin errores; los cinco casos que antes daban `500` dan `400` con el detalle de Zod (sin mensaje interno, sin traza); control positivo —asignar y revocar un permiso real— sigue funcionando igual, probado de punta a punta contra la base desechable.
+
+---
+
+## sesión 22-10-2026 (6.ª parte): pruebas de confusión de algoritmos en el JWT, y HS256 fijado en los tres verificadores
+
+**Qué pidió el usuario:** implementar pruebas de seguridad de «confusión de algoritmos»: un token que reutiliza una clave con dos algoritmos distintos.
+
+**Qué es y por qué importa aquí.** La cabecera de un JWT dice con qué algoritmo se firmó, y la escribe quien lo presenta. Si el verificador no fija cuáles admite, esa cabecera decide: `alg: none` (sin firma), RS256→HS256 (firmar con HMAC usando la clave *pública* como secreto) o un mismo secreto que vale para HS256, HS384 y HS512. El proyecto firma con un solo secreto (`JWT_SECRET`, HS256) y lo comprueban **tres** piezas independientes: la API (`jsonwebtoken`, `requireAuth`) y el borde del sitio web y de la intranet (`jose`, `verificarSesion`).
+
+**Lo que se encontró antes de cambiar nada** (se escribió primero la prueba y se ejecutó contra el código sin tocar): de 31 casos, **29 ya se rechazaban** —`none` en cuatro grafías, la clásica RS256→HS256, firmas RSA y EC reales con clave del atacante, `jwk`/`jku`/`x5u`/`kid` en la cabecera, cabeceras rotas—, porque ni `jsonwebtoken` 9 con un secreto de texto ni `jose` con una clave simétrica admiten algoritmos asimétricos. **Los dos que no**: un token HS384 y otro HS512 firmados con el `JWT_SECRET` bueno **se aceptaban en los tres verificadores**. No era una puerta abierta (hace falta el secreto), pero es justo la propiedad que se quería cerrar —una clave que sirve para más de un algoritmo— y dependía de los valores por defecto de dos librerías en vez de estar escrita.
+
+**Qué cambió.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Config | `config/index.ts` | `jwtAlgoritmo: 'HS256'`, con el porqué y la lista de los tres sitios que deben cambiar a la vez |
+| API | `middlewares/auth.middleware.ts` | `jwt.verify(..., { algorithms: [config.jwtAlgoritmo] })` |
+| API | `use-cases/auth/login.usecase.ts` | Las dos firmas (cuenta maestra y cuenta normal) con `algorithm: config.jwtAlgoritmo` |
+| Sitio web | `shared/lib/session/verificar-sesion.ts` | `jwtVerify(..., { algorithms: ['HS256'] })` con la constante `ALGORITMO_DE_FIRMA` |
+| Intranet | `shared/lib/session/verificar-sesion.ts` | Igual |
+| Verificación | `scripts/verificaciones/verificar-confusion-de-algoritmos.ts` (nuevo) y `npm run jwt:verificar` | 31 casos × 3 verificadores = 93 comprobaciones |
+
+> **Cómo está hecha la prueba.** Los tokens se arman a mano con `crypto` (no con ninguna librería de JWT) y pasan por los verificadores **reales**: `requireAuth` con una petición y respuesta de mentira, y los dos `verificarSesion` importados de sus apps. Todos los falsos llevan `isLocal: true` y rol `Superadmin`: si alguno se aceptara, `requireAuth` lo dejaría pasar **sin consultar la base**, así que la prueba nunca toca Neon. Incluye controles positivos (el HS256 legítimo y el que emite `jwt.sign` como el login) para que un verificador demasiado estricto, que dejaría a todo el mundo fuera, también haga fallar la prueba.
+
+> **Trampa para quien venga.** El algoritmo está escrito en **tres sitios que no comparten código** (la API y los dos bordes; el borde no puede importar `config` de la API). Si alguien cambia uno, los otros dos rechazarán todos los tokens y nadie podrá entrar; `jwt:verificar` lo detecta porque el token que firma `jwt.sign` con `config.jwtAlgoritmo` tiene que ser aceptado por los tres. Y la prueba importa archivos de `3000-sitio-web` y `3001-intranet` desde `4000-api-backend/scripts`: es la única forma de ejecutar de verdad `jose`, pero acopla el script a esas rutas.
+
+**Qué se dejó fuera, y por qué.**
+- **Exigir `exp` en la verificación** (`requiredClaims`/`maxTokenAge`): hoy el login siempre firma con caducidad, pero ninguno de los tres verificadores rechazaría un token firmado sin ella. Para fabricarlo hace falta el secreto, así que no se tocó; es endurecimiento aparte.
+- **Probar contra el servidor HTTP real** (cabecera `Authorization` y cookie de punta a punta): la prueba usa el camino `Bearer`; el de la cookie termina en el mismo `jwt.verify`, y `sesion:verificar` comprueba solo *cuál* cookie se elige.
+- **Una clave asimétrica (RS256/JWKS)**: no se añadió. Las pruebas RS256→HS256 existen para que el día que se añada una no se pueda reutilizar como secreto del HMAC.
+
+**Verificación (lo que de verdad se ejecutó):**
+
+| Qué | Resultado |
+|---|---|
+| `npm run jwt:verificar` **antes** de los cambios | 2 fallos (HS384 y HS512, en los tres verificadores); los otros 29 casos, bien |
+| `npm run jwt:verificar` después | «Todo correcto», 31/31 |
+| `tsc --noEmit` en API, sitio web e intranet | Sin errores |
+| `npm run sesion:verificar` y `npm run errores:verificar` | «Todo correcto» |
+
+**No** probado: un inicio de sesión real contra la base (el token de la API se probó con `jwt.sign` y las mismas opciones, no a través de `/api/auth/login`) ni las apps arrancadas.
+
+> **Aviso al desplegar.** Los tokens que ya están emitidos son HS256 (el valor por defecto de `jsonwebtoken`), así que **siguen valiendo**; no hay que cerrar sesiones. Hay que reiniciar la API y reconstruir las dos apps para que lean el cambio.
+
+**Pendiente al cierre:**
+- Reiniciar la API y reconstruir sitio web e intranet.
+- Nada más de esta parte.
+
+**Corrección posterior de la misma sesión: «7 días» frente a 8 horas.** `config.jwtExpiresIn` es `8h` (y la cookie también), pero la documentación y dos comentarios seguían diciendo 7 días en presente. Se corrigieron `3-seguridad-del-proyecto.md` (§S3, la fila del rol en la tabla de BOLA y la decisión «el rol se relee de la fila», en §4.2) y los dos comentarios de `auth.middleware.ts` (cierre por inactividad y rol desde la fila); ahora dicen 8 horas y recuerdan que antes eran 7 días. **Se dejó a propósito** donde habla del pasado: la tabla de BOLA lo aclara («entonces, 7 días; hoy 8 horas»), el comentario de `3000-sitio-web/.../login/route.ts` («Eran 7 días»), el de `auth.controller.ts` y el texto OpenAPI de `/api/me` en `auth.routes.ts` («hasta siete días»), que describen el fallo tal como era cuando se arregló.
 
 ---
 

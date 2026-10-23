@@ -82,7 +82,7 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 
 - **Contraseñas con bcrypt** (ya está) — coste de hashing adecuado (≥ 10 rounds).
 - **Política de complejidad concreta**: definir longitud mínima, mezcla de caracteres. Hoy el requerimiento la menciona pero no está especificada — hay que escribirla.
-- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 7 días; lo que acota la sesión de verdad es la inactividad, abajo.
+- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 8 horas (`JWT_EXPIRES_IN`; eran 7 días): es el techo de la jornada, y lo que acota la sesión activa de verdad es la inactividad, abajo.
 - **Cierre por inactividad — IMPLEMENTADO 2026-08-18.** Dos umbrales que hacen cosas distintas y por eso no coinciden:
   - **15 minutos en el navegador** (`packages/inactividad/`): a los 14 aparece un aviso con cuenta atrás de 60 s; al agotarse se llama a `/logout` y se va al login con `?motivo=inactividad`. En la mesa de edición se guarda el borrador antes de cerrar, como autoguardado (desde el 2026-09-28 el editor guarda solo cada 30 s, así que lo pendiente al cerrar es como mucho medio minuto de trabajo). Esto es **experiencia de usuario**: quien robe la cookie no ejecuta nuestro JavaScript.
   - **20 minutos en la API** (`requireAuth`, contra `usuarios.ultimo_acceso_en`): este es el control real. La columna existía y solo se escribía al iniciar sesión, así que no medía nada; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`.
@@ -148,7 +148,7 @@ Lo que estaba abierto y ya no:
 | `DELETE /api/attachments/:id` | Borrar del disco el fichero de cualquier contenido: se cargaba por id y se hacía `fs.unlinkSync` sin mirar el padre | Colgada de `/api/contenidos/:contenidoId/attachments/:id` + `exigirPertenencia`. **Hoy no existe:** la migración 036 retiró el CMS de contenidos, y `exigirPertenencia`/`exigirPropiedad` se quitaron el 2026-09-26 al quedarse sin uso |
 | `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**). **Hoy no existe:** se retiró con el CMS de contenidos (migración 036) |
 | `/api/alerts` | Correo y caducidad de toda la plantilla | `puedeAdministrarUsuarios` |
-| Rol tomado del JWT | Degradar a alguien no surtía efecto durante 7 días | `auth.middleware.ts` lo lee de la fila, sin consulta extra |
+| Rol tomado del JWT | Degradar a alguien no surtía efecto mientras viviera su token (entonces, 7 días; hoy 8 horas) | `auth.middleware.ts` lo lee de la fila, sin consulta extra |
 | Cualquier ruta con sesión de primer ingreso a medias (2026-10-09) | Entrar con la contraseña temporal, salir de `/first-login` sin cambiarla y seguir usando la API con todo el rol: solo los proxies de las apps redirigían pantallas | `requireAuth` responde 403 `CONFIGURACION_PENDIENTE` mientras la fila tenga `debe_cambiar_password` o `debe_configurar_preguntas`; solo `requireAuthConConfiguracionPendiente` (estado, primer ingreso, `/me`, cambio de contraseña, guardar preguntas) la deja pasar. El login enciende `debe_configurar_preguntas` si la cuenta no tiene sus 3 preguntas. Desde la 043 la temporal vence a las 72 horas: el login la rechaza (403, después de comprobarla) y `requireAuth` corta la sesión abierta con ella (401) |
 
 Reglas que deja fijadas:
@@ -306,6 +306,7 @@ grep -rl "$SECRETO" 3000-sitio-web/.next/static 3001-intranet/.next/static
 |---|---|
 | Contraseñas con bcrypt y política única compartida | `packages/password-policy/`, `4000-api-backend/src/shared/password-policy` |
 | El JWT se firma y se verifica **solo** en la API | `use-cases/auth/login.usecase.ts`, `middlewares/auth.middleware.ts` |
+| **El algoritmo del JWT está fijado a HS256 en la firma y en las tres verificaciones** (API, borde del sitio, borde de la intranet): la cabecera del token la escribe quien lo presenta y no decide con qué se comprueba. Cierra `alg: none`, RS256→HS256 y el mismo secreto con HS384/HS512. Desde el 2026-10-22 | `config.jwtAlgoritmo` (`config/index.ts`), `auth.middleware.ts`, `login.usecase.ts`, `verificar-sesion.ts` de sitio e intranet |
 | Token en cookie `httpOnly`, `Secure` en producción, `SameSite=lax` — nunca en `localStorage` | `controllers/auth.controller.ts`, `3000-sitio-web/src/app/api/auth/login/route.ts` |
 | Cookies de sesión separadas por aplicación (`sitio_token` / `token`) | `3000-sitio-web/src/shared/lib/session/auth-cookies.ts`, aceptadas en `auth.middleware.ts` |
 | Bloqueo de cuenta a los 5 intentos fallidos, 15 minutos | `login.usecase.ts` → `registrarFalloDeLogin` |
@@ -317,9 +318,9 @@ grep -rl "$SECRETO" 3000-sitio-web/.next/static 3001-intranet/.next/static
 
 Dos decisiones que conviene no deshacer sin entender por qué están:
 
-- **El rol se relee de la fila, nunca del claim del token.** El JWT dura 7 días y lleva
-  dentro el rol que había al iniciar sesión; confiar en él significaba que degradar a
-  alguien no surtía efecto durante una semana. `auth.middleware.ts` lo sustituye por el
+- **El rol se relee de la fila, nunca del claim del token.** El JWT dura 8 horas (`JWT_EXPIRES_IN`;
+  antes 7 días) y lleva dentro el rol que había al iniciar sesión; confiar en él significaba
+  que degradar a alguien no surtía efecto durante toda la vida del token. `auth.middleware.ts` lo sustituye por el
   valor de la base, aprovechando la fila que ya carga para comprobar estado y caducidad —
   así que no cuesta una consulta extra.
 - **El login no distingue "dominio no institucional" de "usuario inexistente".** Los dos
@@ -611,7 +612,9 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
 | `npm run email:verificar` | Que el dominio institucional se exija donde debe |
 | `npm run xss:verificar` | Que el sanitizador del contenido de las páginas no deje pasar HTML ejecutable (34 cargas × 5 ubicaciones) ni un esquema ejecutable en una URL, sea cual sea el nombre del campo (21 campos, 14 evasiones, lo legítimo intacto), que `class` e `id` no se guarden, y que los helpers de `@olo/url-policy` (enlaces, `iframe`, redirecciones) hagan lo que dicen: 99 comprobaciones |
+| `npm run jwt:verificar` | Que ningún verificador de sesión (API, sitio, intranet) acepte un JWT con otro algoritmo del que firma la API: `alg: none` en cuatro grafías, RS256→HS256 con la clave pública como secreto, firmas RSA/EC del atacante, `jwk`/`jku`/`x5u`/`kid` en la cabecera, HS384 y HS512 con el secreto bueno y cabeceras rotas; y que el token legítimo siga pasando: 31 casos × 3 verificadores |
 | `npm run errores:verificar` | Que ningún error filtre `code`, SQL ni mensajes internos, y que login y recuperación respondan igual (texto y tiempo) exista o no la cuenta |
+| `npm run limites:verificar` | Que cada limitador de `rate-limit.middleware.ts` cuente por la clave que dice (correo, usuario o IP — nunca la que no toca), bloquee justo en su techo documentado, con el mensaje documentado, y que cada `skip` exima lo que dice eximir (tráfico interno sin `X-Forwarded-For`, el superadmin en las escrituras): 49 comprobaciones, instancias reales, con almacén en memoria para no tocar el Redis de desarrollo |
 | `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
 | `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |
 
