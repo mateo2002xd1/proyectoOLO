@@ -3,7 +3,20 @@
 # (no con el árbol de trabajo) y lo mete en el mismo commit. Así el mapa cambia en el
 # commit que cambió la estructura, y su diff dice qué carpeta, librería o ruta entró.
 #
-# Nunca bloquea un commit: el mapa es un plano, no un control.
+# El mapa nunca bloquea un commit: es un plano, no un control. La única excepción es lo de
+# abajo: nada de `auditorias/` entra a un commit.
+
+# Los informes de /auditar son privados de quien los genera (`auditorias/` está en
+# .gitignore). El .gitignore no basta: no frena un `git add -f` ni un archivo que ya estaba
+# rastreado. Borrarlos del índice (dejar de rastrearlos) sí se permite.
+prohibidos=$(git diff --cached --name-only --diff-filter=ACMR -- auditorias)
+if [ -n "$prohibidos" ]; then
+  echo "COMMIT BLOQUEADO: auditorias/ es privada y no se sube a GitHub:" >&2
+  echo "$prohibidos" | sed "s/^/  /" >&2
+  echo "Sácalos del commit con: git restore --staged auditorias" >&2
+  echo "Si ya estaban rastreados: git rm -r --cached auditorias" >&2
+  exit 1
+fi
 
 # `git commit -- rutas` arma un índice temporal solo con esas rutas; añadir el mapa ahí
 # lo dejaría descuadrado con el índice real. En ese caso se salta y lo pone al día el

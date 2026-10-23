@@ -1,0 +1,38 @@
+#!/bin/sh
+# Antes de cada push: rechaza subir commits que añadan o cambien archivos de `auditorias/`.
+#
+# Los informes de /auditar son privados de quien los genera: describen fallos de seguridad
+# con el detalle para reproducirlos. `.gitignore` y el `pre-commit` los frenan al hacer el
+# commit, pero un `git commit --no-verify` o un clon sin hooks se saltan los dos. Esta es la
+# última barrera antes de que salgan de la máquina.
+#
+# Un commit que solo BORRA esos archivos (dejar de rastrearlos) pasa: no los sube.
+
+cero=0000000000000000000000000000000000000000
+
+while read -r _ref_local sha_local _ref_remota sha_remoto; do
+  # Borrar una rama remota no sube nada.
+  [ "$sha_local" = "$cero" ] && continue
+
+  if [ "$sha_remoto" = "$cero" ]; then
+    # Rama nueva en el remoto: se revisa todo lo que ese remoto aún no tiene.
+    rango="$sha_local --not --remotes=$1"
+  else
+    rango="$sha_remoto..$sha_local"
+  fi
+
+  # shellcheck disable=SC2086 # `$rango` son dos argumentos a propósito.
+  prohibidos=$(git log --diff-filter=ACMR --format='  %h %s' $rango -- auditorias 2>/dev/null)
+
+  if [ -n "$prohibidos" ]; then
+    echo "PUSH BLOQUEADO: estos commits traen archivos de auditorias/ (privados, no se suben):" >&2
+    echo "$prohibidos" >&2
+    echo "" >&2
+    echo "Hay que sacarlos de esos commits antes de subir. Los archivos se conservan en tu" >&2
+    echo "carpeta: solo dejan de estar en el historial. Ver docs/6-auditoria.md (sesión del" >&2
+    echo "23-10-2026, «auditorias/ no se sube») para los comandos." >&2
+    exit 1
+  fi
+done
+
+exit 0
