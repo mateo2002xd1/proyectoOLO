@@ -91,6 +91,10 @@ Comandos:
   importar-paginas - Traer del origen SOLO las paginas (y sus archivos de filesystem/),
               conservando los usuarios y todo lo demas de este servidor
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
+  retirar-rol - Retirar un rol que ya no existe (por defecto visitante_interno) y decidir
+              que pasa con sus cuentas. Sin --aplicar solo informa. Uso:
+              ./docker/deploy.sh retirar-rol [--rol=X] [--reasignar-a=ROL | --inactivar-usuarios |
+              --borrar-usuarios] [--aplicar]
   backup    - Backup de la base de datos y de los archivos subidos
   restore   - Restaurar backup de la base (uso: ./docker/deploy.sh restore backup.sql)
   restore-archivos - Restaurar los archivos subidos (uso: ... restore-archivos archivos_X.tar.gz)
@@ -382,6 +386,20 @@ crear_admin() {
         -e ADMIN_EMAIL="$correo" \
         -e ADMIN_PASSWORD="$clave" \
         migraciones npm run crear:superadmin
+}
+
+# Retira un rol que el producto ya no tiene (visitante_interno, retirado el 2026-09-15) y deja
+# decidir, cuenta por cuenta, que pasa con quien aun lo tenga. Sin --aplicar SOLO INFORMA: es lo
+# que hay que correr primero en produccion para saber si hay alguien. Los argumentos pasan tal
+# cual al script de la API (scripts/db/retirar-rol.ts), que hace todo en una transaccion y deja
+# cada cambio en la bitacora.
+retirar_rol() {
+    comprobar_requisitos
+    comprobar_entorno
+
+    echo "=== Retirar rol ==="
+    componer up -d db
+    componer run --rm -T migraciones npm run roles:retirar -- "$@"
 }
 
 # Tablas cuyo CONTENIDO no viaja al importar. Su estructura si existe (la crean las
@@ -823,6 +841,7 @@ case "${1:-help}" in
     importar) importar ;;
     importar-paginas) importar_paginas ;;
     crear-admin) crear_admin ;;
+    retirar-rol) shift; retirar_rol "$@" ;;
     backup)  backup ;;
     restore) restore "${2:-}" ;;
     restore-archivos) restore_archivos "${2:-}" ;;

@@ -253,6 +253,42 @@ reemplazan las páginas (sitio e intranet, con todas sus versiones) y se queda t
   estaban. Repetirlo no hace daño.
 - Solo se vacía la caché de respuestas de la API (`cache:*`), no la cola de trabajos.
 
+### A6c. Retirar un rol que el producto ya no tiene (`visitante_interno`)
+
+Piensa en dar de baja un cargo del organigrama: antes de borrar el cargo hay que decidir qué
+pasa con las personas que todavía lo tienen. `visitante_interno` se retiró el 2026-09-15 (se
+fusionaron los roles de dirección) y un servidor antiguo puede tener a alguien con ese rol.
+Un servidor nuevo ya no lo crea (el seed se corrigió el 2026-10-23).
+
+**1. Mira primero. Este paso no cambia nada:**
+
+```bash
+./docker/deploy.sh retirar-rol
+```
+
+- `El rol «visitante_interno» no existe en esta base. No hay nada que hacer.` → terminaste.
+- Si lista cuentas, hay que decidir qué hacer con cada una (paso 2).
+
+**2. Decide y aplica.** Elige **una** salida y agrega `--aplicar` (sin él solo simula):
+
+| Opción | Qué pasa con las cuentas | El rol |
+|---|---|---|
+| `--reasignar-a=Editor` | Pasan a ese rol (el que elijas; nunca uno protegido). **Es la salida segura**: nadie pierde cuenta ni historial | Se borra |
+| `--reasignar-a=Editor --inactivar-usuarios` | Pasan a ese rol **y quedan inactivas**: no entran, el historial se conserva | Se borra |
+| `--inactivar-usuarios` (sola) | Quedan inactivas | **Se conserva**: una cuenta no puede quedarse sin rol |
+| `--borrar-usuarios` | Se eliminan. Solo si no figuran en la bitácora; si figuran, se niega y propone inactivar | Se borra |
+
+```bash
+./docker/deploy.sh retirar-rol --reasignar-a=Editor --aplicar
+```
+
+**3. Comprueba:** vuelve a correr `./docker/deploy.sh retirar-rol`; debe decir que el rol no existe.
+
+Todo ocurre en **una transacción** (se hace entero o no se hace nada), cada cuenta que cambia deja
+su fila en la bitácora con el autor «Mantenimiento (retirar-rol)», y los roles protegidos
+(`Superadmin`, `Administrador`, `Director/Subdirector`) no se pueden retirar ni usar de destino.
+El mismo comando sirve para otro rol retirado con `--rol=<nombre>`.
+
 ### A7. Encender el túnel
 
 ```bash
