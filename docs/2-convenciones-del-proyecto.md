@@ -136,7 +136,8 @@ export function TablaUsuarios({ filtroRol }: TablaUsuariosProps) {
 
 - **Backend**: los use-cases lanzan errores con `status` (`throw Object.assign(new Error('Rol no encontrado'), { status: 404 })`); un único `error.middleware.ts` los traduce a respuesta HTTP. Los controllers usan `try/catch` que delega a `next(err)`, nunca arman la respuesta de error a mano.
 - **Frontend**: los services propagan errores tipados; los componentes los manejan vía `error.tsx` de Next o estado local con feedback al usuario. Nunca `catch` vacío que silencie el error.
-- **Mensajes al usuario en español y sin filtrar detalles internos** (no exponer stack traces, nombres de tablas, ni el error crudo de Sequelize).
+- **Mensajes al usuario en español y sin filtrar detalles internos** (no exponer stack traces, nombres de tablas, ni el error crudo de Sequelize). Solo se muestra el texto de un error de dominio (`status` 4xx puesto a propósito); el resto sale como 500 genérico y su `code` no viaja. Para el log, `describirErrorParaLog(err)` de `shared/errores.ts`: nunca `console.error('…', error)`, que vuelca `sql` y `parameters`.
+- **Pantallas sin sesión no distinguen cuentas**: mismo texto, mismo estado y mismo tiempo exista o no el correo (`shared/anti-enumeracion.ts`). Un estado de cuenta (bloqueada, inactiva…) solo se dice a quien ya acertó la contraseña.
 
 ---
 

@@ -294,6 +294,8 @@ grep -rl "$SECRETO" 3000-sitio-web/.next/static 3001-intranet/.next/static
 | Token en cookie `httpOnly`, `Secure` en producción, `SameSite=lax` — nunca en `localStorage` | `controllers/auth.controller.ts`, `3000-sitio-web/src/app/api/auth/login/route.ts` |
 | Cookies de sesión separadas por aplicación (`sitio_token` / `token`) | `3000-sitio-web/src/shared/lib/session/auth-cookies.ts`, aceptadas en `auth.middleware.ts` |
 | Bloqueo de cuenta a los 5 intentos fallidos, 15 minutos | `login.usecase.ts` → `registrarFalloDeLogin` |
+| **El estado de la cuenta (inactiva, bloqueada, caducada) solo se dice a quien acierta la contraseña**; un correo inexistente tarda lo mismo (bcrypt de relleno). Desde el 2026-10-22: antes esos tres mensajes salían sin conocer la clave y delataban qué cuentas existen | `login.usecase.ts`, `shared/anti-enumeracion.ts` |
+| Recuperación sin enumerar cuentas: `user-questions` devuelve siempre tres preguntas (inventadas y estables por correo si no hay cuenta) y `verify` responde un único 401 sea cual sea el motivo | `security-questions.usecase.ts`, `shared/anti-enumeracion.ts` |
 | Estado, bloqueo y caducidad revalidados en **cada** petición, no solo al entrar | `auth.middleware.ts` |
 | Cierre por inactividad verificado en el servidor (20 min) además del aviso del navegador (15 min) | `auth.middleware.ts` + `packages/inactividad/` |
 | Recuperación de contraseña limitada **por correo**, no por IP | `routes/security-question.routes.ts` → `limitadorDeRecuperacion` |
@@ -467,8 +469,17 @@ HSTS, `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` y
 
 - **Sin SQL crudo en las rutas.** Todo pasa por Sequelize con parámetros; las únicas
   consultas literales están en las migraciones, sobre nombres de tabla constantes.
-- **Los 500 se sanean en producción** (`middlewares/error.middleware.ts`): el stack solo se
-  imprime fuera de producción.
+- **Solo un error de dominio muestra su mensaje** (`middlewares/error.middleware.ts`,
+  `shared/errores.ts`): `status` entero 4xx puesto a propósito por el código. Cualquier otro
+  error —Sequelize, disco, Redis, un 502 de librería— sale como un 500 genérico en producción
+  y **sin su `code`** (`ENOSPC` o `ECONNREFUSED` ya dicen demasiado). Antes solo se saneaba
+  el `status === 500` exacto y el `code` salía siempre (auditoría 2026-10-22). El fallo se
+  registra siempre en una línea (`describirErrorParaLog`), sin traza ni `sql`/`parameters` de
+  Sequelize, que llevan los valores del formulario. **No** se hace `console.error('…', error)`.
+- **Lo que se guarda para enseñar en el panel pasa por `mensajeSeguroDeCarga`**:
+  `cargas_datos.mensaje` conserva los mensajes escritos por el código (`Fila 12: …`) y sustituye
+  los de la base o el sistema.
+- **Las rutas desconocidas responden 404 en JSON** y nginx va con `server_tokens off`.
 - **La paginación de auditoría tiene tope**, para que `?limit=1000000` no sea una petición
   válida contra la tabla que más crece.
 - **La PWA solo guarda en el dispositivo lo que es público** (desde el 2026-09-25). Lo que
@@ -521,6 +532,14 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   incompatible con la topología de `docker-compose`, donde los servicios se hablan por
   nombre de red. Depende de cómo se despliegue de verdad, así que no se cambia a ciegas:
   abrirlo a `0.0.0.0` amplía la exposición y esa decisión no es del código.
+- **nginx confía en cualquier `X-Forwarded-For`** (`set_real_ip_from 0.0.0.0/0` con
+  `real_ip_recursive on`). Si el túnel no reescribe la cabecera, un cliente puede fijar la IP
+  que quiera: esquiva el límite de nginx y ensucia la IP de la bitácora de auditoría. Hay que
+  probarlo en el servidor real (`curl -H "X-Forwarded-For: 1.2.3.4" …/api-backend/health` y
+  mirar `access.log`) y, si se falsifica, limitar `set_real_ip_from` a la red de Docker.
+  Detalle en `auditorias/2026-10-22-fuga-de-informacion-en-errores.md`.
+- **El login devuelve el `token` también en el cuerpo JSON**, además de la cookie
+  `httpOnly`: el BFF del sitio lo consume. Latente, no explotable hoy.
 - **`client_max_body_size` está en 10M y la política de subida admite 50 MB** para
   documentos. Hoy nginx cortaría antes. Hay que igualar los dos números en la dirección
   que se decida.
@@ -549,6 +568,7 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
 | `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
 | `npm run email:verificar` | Que el dominio institucional se exija donde debe |
+| `npm run errores:verificar` | Que ningún error filtre `code`, SQL ni mensajes internos, y que login y recuperación respondan igual (texto y tiempo) exista o no la cuenta |
 | `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
 | `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |
 

@@ -5,6 +5,39 @@
 
 ---
 
+## sesión 22-10-2026: auditoría de divulgación de información en errores, y sus correcciones
+
+**Qué pidió el usuario:** que Claude actuara como revisor imparcial de la seguridad, con rigor en la divulgación de información en los mensajes de error; después, que corrigiera y dejara un informe como evidencia en `auditorias/`. Informe completo: [`auditorias/2026-10-22-fuga-de-informacion-en-errores.md`](../auditorias/2026-10-22-fuga-de-informacion-en-errores.md).
+
+**Hallazgo principal (ALTO).** `POST /security-questions/verify`, `POST /security-questions/user-questions` y `POST /login` respondían cosas distintas (y tardaban distinto) según la cuenta existiera, estuviera bloqueada, inactiva, caducada o sin preguntas: sin sesión se podía averiguar qué correos tienen cuenta y en qué estado, y `user-questions` entregaba la pregunta de seguridad de cualquiera.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `use-cases/auth/login.usecase.ts` | La contraseña se compara antes de mirar estado, bloqueo y caducidad; cuenta inexistente → bcrypt de relleno. «Inactiva/bloqueada/expirada» solo a quien acierta la clave |
+| API | `use-cases/auth/security-questions.usecase.ts`, `controllers/security-questions.controller.ts` | `verify`: forma del cuerpo antes de la base y un único 401 después. `user-questions`: siempre tres preguntas (inventadas y estables por correo si no hay cuenta). Fuera el 423 de `recover-password` |
+| API | `shared/anti-enumeracion.ts` (nuevo) | Hash de relleno y elección determinista (HMAC con el secreto del servidor) |
+| API | `middlewares/error.middleware.ts`, `shared/errores.ts` (nuevo) | Solo un error de dominio (`status` 4xx) muestra su mensaje; el resto, 500 genérico y sin `code`; JSON roto con mensaje fijo; el fallo se registra siempre y sin traza |
+| API | tres `procesar-carga*.usecase.ts` | `cargas_datos.mensaje` pasa por `mensajeSeguroDeCarga` |
+| API | 16 archivos | 42 `console.error(…, error)` → `describirErrorParaLog` (no vuelca `sql` ni `parameters`) |
+| API | `app.ts`, `recibir-archivo.middleware.ts`, `auth.controller.ts`, `server.ts` | 404 en JSON; `MulterError` → 400; cookie de 8 h como el JWT |
+| nginx | `docker/nginx/nginx.servidor.conf` | `server_tokens off` |
+| Sitio | `user-questions/route.ts`, `verify/route.ts`, `recuperacion.service.ts`, `recovery-view.tsx` | Solo comentarios al día con el comportamiento nuevo |
+| Docs | `3-seguridad` (§4.2, §4.7, §4.8, §4.9), `2-convenciones` §6 | Reglas nuevas y dos pendientes anotados |
+
+| Verificación | Resultado |
+|---|---|
+| `npm run errores:verificar` (nuevo) | Todo correcto: más de 50 comprobaciones, incluido el tiempo (240 ms contra 240 ms con y sin cuenta) |
+| `tsc --noEmit` de API y sitio; `sesion:verificar`, `email:verificar` | Sin errores / todo correcto |
+| App real de Express por HTTP en modo producción, sin base | 404 JSON, JSON roto con mensaje fijo, 401 sin sesión, Swagger apagado |
+| Comportamiento anterior reproducido con `git show HEAD:…` | Documentado en el informe |
+| En el navegador y contra el servidor real | **No se vio** |
+
+**Para saber:** quien tiene la cuenta bloqueada y teclea mal la clave ve «Credenciales inválidas» (con la correcta, sí «bloqueada»); una cuenta sin preguntas recibe tres inventadas y falla con el mensaje general. Durante la prueba del código antiguo se abrió una conexión a Neon; el `INSERT` falló por UUID inválido y no se escribió nada.
+
+**Pendiente al cierre:** probar en el servidor qué hace el túnel con `X-Forwarded-For` (nginx confía en cualquiera: IP falsificable); probar en el navegador el login, «Olvidé mi contraseña» y una carga de Excel con error; segunda pasada sobre la intranet, la CSP de Next y el editor.
+
+---
+
 ## sesión 21-10-2026: el editor en `/edit`, y los `.ts` sueltos de `shared/lib` en carpetas
 
 **Qué pidió el usuario:** se queda con `app/edit/` (antes `app/editor/`) en las dos apps y con el grupo `app/(pages)/` (antes `(paginas)`, que no cambia ninguna URL), y pidió poner al día el proxy y las rutas. Después, ordenar los `.ts` sueltos de `shared/lib` del sitio según el carpetado; eligió nombres en inglés, borrar los que nadie importaba y hacer lo mismo en la intranet.
