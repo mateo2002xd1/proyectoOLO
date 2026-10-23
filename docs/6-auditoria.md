@@ -5,6 +5,70 @@
 
 ---
 
+## sesión 23-10-2026 (5.ª parte): arreglo de las condiciones de carrera, pruebas de lo que faltaba (restaurar, alertas, tendencia, cola, logo, HTTP) y tres hallazgos más
+
+**Qué pidió el usuario:** arreglar lo grave y los demás fallos de la parte anterior, y volver a probar lo que había quedado sin probar. Resultado: los 17 hallazgos de la 4.ª parte quedan cerrados (uno se reclasifica como no-defecto), se encontraron y cerraron tres más, y los cinco scripts `probar-carreras-*` pasan en verde.
+
+**Las tres ideas de los arreglos** (todas nuevas en el código, para que quien las vea sepa por qué están):
+
+1. **Bloqueo de la fila de la página** (`PaginaRepository.findBySlug(…, { bloquear: true })` = `FOR UPDATE`) al principio de guardar, enviar, aprobar, rechazar y descartar versión: el ciclo editorial va de uno en uno **por página** y quien llega después lee el estado que dejó el anterior. Para lo que todavía no existe como fila (primera versión, sección nueva) se usa un candado de aviso (`pg_advisory_xact_lock`).
+2. **El contador se numera en la base, antes de comparar**: `UPDATE … SET intentos = intentos + 1 … RETURNING` (login y preguntas de seguridad). Quien pasa del tope se rechaza sin comparar, así que una ráfaga puede probar como mucho tantas contraseñas como el tope, igual que en fila.
+3. **`src/shared/seccion-critica.ts`**: `tomarCandadoDeAviso(clave, tx)` para código que ya está en una transacción, y `enSeccionCritica(clave, fn)` para el que usa varios repositorios sin pasar `tx`: hace cola dentro del proceso (antes de pedir conexión, porque el pool es de 5) y toma el candado de Postgres para cubrir varios procesos.
+
+| # | Hallazgo (4.ª parte) | Arreglo | Dónde |
+|---|---|---|---|
+| 1–3 | Aprobar × guardar / × rechazar / × descartar | Bloqueo de la página; el segundo lee el estado ya cambiado y responde 409 (o 404 si la versión ya no existe) | `aprobar-pagina`, `rechazar-pagina`, `eliminar-version`, `enviar-a-revision`, `guardar-borrador` |
+| 4 | Dos decisiones sobre la misma versión, «ok» las dos | Igual | los mismos |
+| 5–6 | Ráfaga de contraseñas / respuestas sin bloqueo | Intento reservado en la base antes de comparar; bloqueo al llegar al tope; el acierto reinicia el contador **en cuanto se acierta**, no al final (los rechazos «cuenta inactiva / caducada / temporal vencida» llegan con la contraseña buena) | `usuarios.repository` (`reservarIntento…`, `bloquearPor…`), `login.usecase`, `security-questions.usecase` |
+| 7 | Último administrador | `updateUser` y `deleteUser` entran de una en una (`enSeccionCritica('usuarios:administracion')`) | `listar-usuarios.usecase` |
+| 8 | Dos cargas de «Programas sobresalientes» a la vez | `pg_advisory_xact_lock('carga:programas_sobresalientes')` al abrir la transacción de escritura | `importar-programas-excel.usecase` |
+| 9–10 | Guardar ×2 con 500 | Bloqueo de página + candado de aviso en la creación; si no hay transacción (scripts) se abre una | `guardar-borrador.usecase` |
+| 11 | Crear sección ×2 con 500 | Candado de aviso `pagina:{ámbito}:{slug}` (el mismo que usa guardar, así que se excluyen entre sí) | `crear-seccion.usecase` |
+| 12 | Crear usuario ×2 con 500 | `UniqueConstraintError` → 409 «El correo ya está registrado» (también al cambiar el correo) | `listar-usuarios.usecase` |
+| 13 | Primer ingreso ×2 | `enSeccionCritica('primer-ingreso:{id}')`: el segundo encuentra la cuenta sin nada pendiente y responde «nada que hacer» | `first-login.usecase` |
+| 14 | Restablecer contraseña ×2 | **No es un defecto**: dos restablecimientos seguidos invalidan el primero, también en fila. La prueba ahora exige solo que no quede inservible la entregada en último lugar | `probar-carreras-acceso` |
+| 15 | Identidad del panel, primera escritura | `ConfiguracionRepository.leer(…, tx)` toma además un candado de aviso por clave | `configuracion.repository` |
+| 16 | «No hay versión en revisión» / «No hay borrador» / «Página no encontrada» → 500 | `status` 409 / 409 / 404 | los casos de uso de arriba |
+
+**Hallazgos nuevos de esta parte** (los encontraron las pruebas de lo que faltaba):
+
+| # | Qué | Arreglo |
+|---|---|---|
+| 18 | **Restaurar × depurar versiones**: 500 por la clave foránea `fk_paginas_version_publicada` en 14 de 20 rondas (depurar borraba la archivada entre que restaurar la leía y que la página la apuntaba) | `restaurarVersionAnterior` lee, decide y escribe en **una** transacción con la página bloqueada, y la versión archivada se lee `FOR UPDATE` (depurar ya lo hacía). Con esto, o se restaura primero o se depura primero (y restaurar responde 404) |
+| 19 | **Alertas de inversión**: cargar el mismo Excel dos veces a la vez, o dos Excel que comparten empresa o ciudad, y el alta manual en paralelo → 500 por `uq_empresas_nombre` / `uq_municipios_depto_nombre`; y `fuente_url` **no tiene índice único**, así que dos cargas con las mismas fuentes duplicaban cada proyecto | `resolverOCrearEmpresa/Municipio` capturan la violación y usan la que ya existe; la importación entera va con `enSeccionCritica('alertas-inversion:importar')` |
+| 20 | **El controlador de `aprobar` llamaba al caso de uso sin transacción**, así que el bloqueo de los puntos 1–4 **no hacía nada por HTTP** (aprobar ×2 y aprobar × rechazar daban 200 + 200 y la página quedaba apuntando a una versión «rechazado»). Lo vio solo la prueba por HTTP: los casos de uso, probados dentro de su propia transacción, estaban bien | `aprobarPagina` abre su transacción cuando no recibe una, y la invalidación de cachés (`ContenidoPublicado`) pasa a `tx.afterCommit`: antes se emitía con la transacción aún abierta y el front podía volver a leer, y guardar de nuevo, el contenido viejo |
+
+> **Trampa para quien escriba otro caso de uso del ciclo editorial:** el bloqueo `FOR UPDATE` solo vale dentro de una transacción. `guardarBorrador` y `aprobarPagina` ya la abren si no se la pasan; `enviarARevision`, `rechazarPagina` y `eliminarVersion` la reciben de su controlador. Si añades un llamador sin `tx`, el bloqueo no hace nada y no hay error que lo avise.
+
+**Cambio de comportamiento que conviene saber:**
+- Con el login, el intento se cuenta **antes** de comparar. Un usuario legítimo que lance más de 5 peticiones de login **simultáneas** recibe 401 en las que pasan del tope sin comparar (en fila no cambia nada: 5 fallos y 15 minutos de bloqueo). Los limitadores de tasa por correo ya cortaban antes de eso por HTTP (ráfaga de 20: 9 × 401 y 11 × 429).
+- `verificar-errores-sin-fuga.ts` simulaba el repositorio de usuarios en memoria; ahora simula también los métodos nuevos (`reservarIntentoDe…`, `bloquearPor…`). Lo avisó otra sesión que lo vio fallar.
+
+**Qué se probó de lo que faltaba** (todo contra Postgres 18 y Redis 7 desechables, con `FILESYSTEM_DIR` en una carpeta temporal):
+
+| Prueba | Resultado |
+|---|---|
+| Restaurar ×2, × depurar, × aprobar, × guardar; depurar ×2 | Verde tras el arreglo 18 |
+| Logo e icono del panel: dos logos a la vez, logo + icono, subir × restablecer | Verde (sin archivos huérfanos en disco; los candados de configuración los cubrían) |
+| Alertas de inversión: mismo Excel ×2, dos Excel con empresa común, alta manual ×2 | Verde tras el arreglo 19 |
+| **Tendencia ocupacional** (la plantilla oficial como Excel: 20.774 indicadores): dos cargas a la misma celda, y eliminar mientras se procesa | Verde sin tocar nada: su candado de celda funciona (una `completado`, otra `error`, 1 corte, 20.774 indicadores; eliminar deja 0 cortes y 0 indicadores) |
+| **Cola real de BullMQ con dos workers** (`probar-carreras-cola.ts`) | Verde: máximo **1** trabajo activo a la vez (61 mediciones), las dos cargas `completado`, la tabla queda exactamente como una de las dos. Es la comprobación de `setGlobalConcurrency(1)` de la 2.ª parte del 22-10 |
+| **Por HTTP** (`probar-carreras-http.ts`: la app real, sesiones por el login real): aprobar ×2, aprobar × rechazar, aprobar × guardar, guardar ×2, crear sección ×2 (201 + 409), crear usuario ×2 (201 + 409), dos Superadmin que se eliminan entre sí (200 + 409), ráfaga de 20 contraseñas | Verde tras el arreglo 20 |
+
+**Pasada final** (30 rondas por escenario): `carreras:paginas` 28 escenarios, `carreras:acceso` 9, `carreras:cargas` 13, `carreras:cola`, `carreras:http` 8 — todo en orden. Los verificadores existentes, contra la misma base: `errores`, `permisos`, `propiedad`, `auditoria`, `password`, `caducidad`, `sesion`, `jwt`, `email`, `limites` (49), `ambito` y `idor` (169 comprobaciones, 0 fallos, 0 abiertos) en verde. `tsc --noEmit` limpio.
+
+**Qué se descartó o se dejó, y por qué:**
+- **Un único `UNIQUE` en `proyectos_inversion.fuente_url`** en vez de la sección crítica: es la defensa de verdad, pero hoy el campo admite repetidos a propósito (el alta manual no deduplica) y habría que decidirlo con quien cargue datos. La sección crítica cubre la carga.
+- **`lock` de Sequelize sin `tx` ni cola**: no sirve; el `FOR UPDATE` necesita una transacción abierta (ver la trampa de arriba).
+- **Probar la cola «sin» concurrencia global como control**: el medidor (`getActiveCount` cada 10 ms) no se validó contra un caso que sí solape. Con `setGlobalConcurrency` ausente deberían verse 2; no se montó.
+- **Subida de logo por HTTP** (multipart) y **restaurar por HTTP**: probados a nivel de caso de uso, no de ruta.
+
+**Observación aparte (no es una carrera, no se tocó):** cada sección que se crea concede una clave de permiso nueva al rol Editor, y esas claves viajan **dentro del token de sesión**. En la prueba por HTTP, tras crear unas doscientas secciones, el cliente falló con `Headers Overflow` (cabecera de petición de más de 16 KB); la causa más probable es el token del rol Editor, que crece con cada sección (no se aisló). La cookie de un navegador admite 4 KB. Conviene comprobar cuántas secciones soporta hoy un Editor antes de que le falle el inicio de sesión; la prueba ahora retira esas claves en cada ronda.
+
+**Para ti:** (1) decidir si se commitea todo junto; `guardar-borrador`, `enviar-a-revision` y `restaurar-version-anterior` llevan además cambios de la sesión de IDOR (el candado `exigir-candado`, el 404 y el ámbito por UUID), así que conviene `git add -p` en esos tres. (2) Los scripts son nuevos y no se han commiteado. (3) Se borraron 71 carpetas de respaldo **vacías** de `filesystem/sitio/backup` que las primeras pasadas de prueba habían creado en el repositorio (la causa estaba en que cada publicación crea su carpeta de respaldo aunque la página no tenga archivos; ahora las pruebas usan `FILESYSTEM_DIR` temporal). (4) Las pruebas usan los contenedores `olo-carreras-pg` y `olo-carreras-redis` (puertos 55432 y 6390); otra sesión que comparte Docker los paró varias veces durante el trabajo.
+
+---
+
 ## sesión 23-10-2026 (4.ª parte): pruebas de condiciones de carrera (ciclo editorial, acceso, cargas de Excel) y 17 hallazgos
 
 **Qué pidió el usuario:** hacer pruebas de *race condition* en los cuatro flujos con riesgo: edición de páginas, usuarios y acceso, carga de Excel y configuración. **No se corrigió nada**: esta entrada es el inventario de lo que falla, con su causa, para que el usuario decida qué se arregla.
@@ -13351,3 +13415,43 @@ Comprobado:
 **No** probado: la vista previa del sitio y de la intranet con sesión (no se firman tokens); la rama de `..` literal de la barrera desde fuera, porque Next la normaliza con un 308 antes de llegar al handler (queda como defensa en profundidad, probada solo con la lógica); las llamadas del servidor de la intranet con sesión después del cambio de `api-client`.
 
 **Para ti**: nada que migrar ni reiniciar (Next recarga solo). El arnés está fuera del repositorio; si quieres, lo convierto en `npm run ssrf:verificar` como `xss:verificar` o `jwt:verificar`.
+
+## Sesión 23-10-2026 (2): la intranet exige sesión para leerse, un solo editor escribe a la vez, y se ordenan los cabos sueltos
+
+Pedido: cerrar lo que quedó abierto en la entrada anterior y fijar cuatro decisiones: (1) un Administrador **sí** puede restablecer la contraseña de otro Administrador; (2) qué código devolver en `POST /:slug/restaurar` cuando el id o la versión no son de esa página; (3) los Editores trabajan sobre **la misma copia** del borrador, pero **solo uno edita**; (4) el nombre de quien edita **sí** se ve, para mejorar el flujo. Y revisar y ordenar «Cosas que debes saber».
+
+**Corrige la entrada anterior** («pruebas de IDOR por HTTP»): lo que allí figuraba como ABIERTO está cerrado, el candado ya no es solo un aviso y tres de los avisos pasan a ser decisiones asentadas.
+
+| Qué | Cambio |
+|---|---|
+| **Intranet legible sin sesión** (`/paginas/publica/:slug`, `/indice-busqueda`, `/titulos`) | Guardia `requiereSesionSiEsIntranet` (`permisos.middleware.ts`): con `X-Ambito: intranet` exige sesión y `puedeVer` (401/403); el sitio sigue público. Va **antes** de `cacheInterceptor` y marca `Cache-Control: private, no-store`. |
+| **Registro de visitas** (`POST /visitas/registrar`) | Mismo guardia, leyendo el ámbito también del cuerpo: sin sesión confirmaba qué páginas de la intranet existían y cuántas visitas tenían, y permitía inflar el contador. |
+| **Intranet (frontal)** | `obtenerPaginaPublicada(slug, opciones)` y `obtenerPlantilla(opciones)` reciben `cabecerasConSesion()` desde los componentes de servidor (`[...puckPath]/page.tsx`, `edit/[slug]/page.tsx`, `marco-secciones.tsx`). `obtenerPlantilla` no importa `next/headers` porque `menu-y-pie.ts` también lo importa un componente de cliente. Si la API rechaza la sesión, la página vuelve al acceso (401 → `/login?logout=1`, 403 → `acceso_denegado`). `registrarVisita` del navegador lleva la cookie (mismo origen). |
+| **Un solo editor escribe** | `exigirCandadoLibreOPropio` (`use-cases/paginas/exigir-candado.ts`), llamado al inicio de `guardarBorrador` y `enviarARevision`: si otra persona tiene el candado vigente, 409 `PAGE_LOCKED` con su nombre. Sin candado vigente se guarda (siembras y latido retrasado). Quien perdió el candado a la fuerza tampoco guarda; el editor ya pinta «candado perdido». |
+| **Nombre visible** | Sin cambio de código: `GET /:slug/bloqueo` ya lo daba a cualquier Editor. Pasó de AVISO a comprobación. |
+| **`restaurar`** | **404** (`status` explícito) cuando la página o la versión no existen, en vez de un `Error` sin estado que el manejador volvía 500. Además, por UUID la búsqueda ahora exige el mismo ámbito: antes un id de la intranet con `X-Ambito: sitio` restauraba la página de la intranet comprobando el candado de otra del sitio. |
+| **Administrador ↔ Administrador** | Sin cambio: decidido que se administran entre sí. La prueba lo vigila como comprobación. |
+| **`propiedad:verificar`** | `identidad-panel/archivos/:nombre` (pública a propósito, es el logo de la pantalla de acceso) declarada con su motivo en `COMPROBACION_FUERA_DE_LA_RUTA`; `publica/:slug` sale de esa lista porque ya lleva guardia. |
+
+**Por qué 404 en `restaurar`**: la regla de §S10 es «404 cuando el objeto no debería ser visible»; el 500 era un accidente de no tener estado, no una decisión. Un 409 no aplica (no hay conflicto de estado) y un 403 confirmaría que la versión existe en otra página.
+
+**Cosas que debes saber (ordenadas)**
+- Los tres archivos vacíos de `4000-api-backend/` (`props-`, `root-`, `title`) ya no existen; no eran de esta sesión.
+- La falla de `propiedad:verificar` sobre `identidad-panel/archivos` estaba **declarada como ajena**; ahora se corrigió en el script y sale «Todo correcto».
+- `verificar-idor.ts` quedó commiteado (21163c14). Es posible que al crearlo se pisara un archivo del mismo nombre de otra sesión; no hay forma de comprobarlo.
+- Varias sesiones editan este árbol a la vez. Mientras se escribía esto, otra dejó `tsc` con TS7023/TS7024 en `guardar-borrador.usecase.ts` (recursión sin tipo de retorno) y TS2322 en `security-questions.usecase.ts`, y `errores:verificar` falla en el login (`invalid input syntax for type uuid: "u-1"`). No vienen de estos cambios; se avisó a la sesión.
+- Los `AGENTS.md` que `next dev` creaba en `3000-sitio-web/` y `3001-intranet/` ya no están; no se tocaron.
+
+Comprobado:
+- `idor:verificar`: **169 comprobaciones, 0 fallos, 2 avisos, 0 abiertos** (antes de estos cambios: 3 abiertos). Incluye candado (ed2 no guarda, no autoguarda y no envía; ed1 sí; quien perdió el candado a la fuerza no; sin candado se guarda), `restaurar` 404 por versión ajena y por UUID de otro ámbito, y la lectura de la intranet: 401 sin sesión, 403 con una cuenta solo-sitio, 200 con sesión y al Director, 401 sin sesión **aunque la caché se acabe de llenar con sesión**, y las visitas (cuerpo y cabecera).
+- `tsc --noEmit` de la intranet y eslint de sus archivos tocados; `tsc` de la API pasaba antes de los cambios de la otra sesión.
+- `propiedad:verificar` (sin chequeo de tipos por el estado del árbol), `permisos`, `sesion`, `caducidad`, `auditoria`: todo correcto.
+- Todo contra un Postgres 18 y un Redis desechables (Docker, 47 migraciones y `sembrar:permisos`); ni Neon ni los servidores de dev.
+
+**No** probado: el render real de la intranet con sesión de punta a punta (`next dev` no se arrancó: ni build ni navegador), así que falta ver en pantalla que el menú, el pie, el buscador y una página publicada siguen cargando; el 409 de guardado en el editor real (solo se probó la API); el comportamiento del editor cuando el autoguardado recibe 409.
+
+**Para ti**:
+1. Reiniciar la API (no recarga sola) y recargar la intranet.
+2. **Abrir la intranet con tu cuenta**: inicio, una sección, el buscador del menú. Si algo sale vacío o te manda al login, es esta entrega.
+3. Abrir una misma página con dos cuentas de Editor: la segunda debe quedar en solo lectura con el nombre de la primera.
+4. Sigue pendiente de decidir: `/respaldos` y `/publicadas` solo piden sesión (un Director las lista).

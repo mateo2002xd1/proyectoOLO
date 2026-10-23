@@ -222,6 +222,22 @@ const instalarRepositoriosEnMemoria = (): void => {
     escrituras += 1;
   };
   usuarios.updateLastAccess = async () => undefined;
+  // El intento se cuenta con una sentencia atómica antes de comparar (ver `reservarIntentoDeLogin`):
+  // aquí devuelve el primer intento, o `null` si la cuenta en memoria sigue bloqueada. Cuenta como
+  // escritura para que "no suma otro fallo a una cuenta bloqueada" siga detectando que se llamó.
+  const reservar = async () => {
+    escrituras += 1;
+    const hasta = usuarioEnMemoria?.locked_until;
+    return hasta && new Date(hasta) > new Date() ? null : 1;
+  };
+  usuarios.reservarIntentoDeLogin = reservar;
+  usuarios.reservarIntentoDePreguntas = reservar;
+  usuarios.bloquearPorLogin = async () => {
+    escrituras += 1;
+  };
+  usuarios.bloquearPorPreguntas = async () => {
+    escrituras += 1;
+  };
   (SecurityQuestionRepository as any).findByUserId = async () => preguntasEnMemoria;
   // La bitácora escribe en la base; aquí no hay. Los fallos de respuesta la usan al contar intentos.
   (auditoria as any).logVerificacionDePreguntas = async () => undefined;
