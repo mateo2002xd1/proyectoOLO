@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import React, { useState, type ReactNode } from 'react';
 import { IconoRenderer } from '../primitives/icon-selector-field';
 import type { DestinoBotonConfig } from '../primitives/selector-destino-boton-field';
@@ -67,11 +68,13 @@ export function BotonPersonalizado({
 
   const anchoFinal = ANCHOS_MAP[ancho] || (ancho === 'completo' ? '100%' : 'auto');
 
+  // `enlaceSeguro`: la API ya vació los `javascript:`, pero el botón también se pinta con lo que
+  // hay en el editor sin guardar y con contenido que llegó por otros caminos (XSS-01).
   const urlDestino =
     destino?.tipo === 'archivo'
-      ? destino.urlArchivo || '#'
+      ? enlaceSeguro(destino.urlArchivo) || '#'
       : destino?.tipo === 'enlace'
-      ? destino.urlEnlace || '#'
+      ? enlaceSeguro(destino.urlEnlace) || '#'
       : undefined;
 
   const esEnlace = Boolean(urlDestino && urlDestino !== '#');

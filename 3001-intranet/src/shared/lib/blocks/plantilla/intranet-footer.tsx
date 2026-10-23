@@ -1,3 +1,4 @@
+import { enlaceSeguro, imagenSegura } from '@olo/url-policy';
 import { Fragment, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 
@@ -177,11 +178,11 @@ export function IntranetFooter({
                           width: '20px',
                           height: '20px',
                           backgroundColor: linea.colorIcono || 'currentColor',
-                          maskImage: `url(${linea.icono})`,
+                          maskImage: `url(${imagenSegura(linea.icono)})`,
                           maskSize: 'contain',
                           maskRepeat: 'no-repeat',
                           maskPosition: 'center',
-                          WebkitMaskImage: `url(${linea.icono})`,
+                          WebkitMaskImage: `url(${imagenSegura(linea.icono)})`,
                           WebkitMaskSize: 'contain',
                           WebkitMaskRepeat: 'no-repeat',
                           WebkitMaskPosition: 'center',
@@ -201,7 +202,7 @@ export function IntranetFooter({
                 // Sin URL es un dato, no un destino: se pinta como texto en vez de
                 // como un enlace que no lleva a ninguna parte.
                 return linea.url ? (
-                  <a key={clave} href={linea.url} className={clase}>
+                  <a key={clave} href={enlaceSeguro(linea.url) || undefined} className={clase}>
                     {contenido}
                   </a>
                 ) : (

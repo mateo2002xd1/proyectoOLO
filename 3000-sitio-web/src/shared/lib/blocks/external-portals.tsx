@@ -1,3 +1,4 @@
+import { enlaceSeguro } from '@olo/url-policy';
 import type { CSSProperties, ReactNode } from 'react';
 import { IconoRenderer } from '@olo/blocks-renderer';
 import { CARPETA_ICONOS_DE_PORTALES } from './iconos-de-portales';
@@ -107,7 +108,7 @@ export function ExternalPortals({ block, tarjetas, radioEsquinas, esEdicion = fa
               {contenido}
             </div>
           ) : (
-            <a key={clave} href={tarjeta.enlace} className="olo-portal" style={estilo}>
+            <a key={clave} href={enlaceSeguro(tarjeta.enlace) || '#'} className="olo-portal" style={estilo}>
               {contenido}
             </a>
           );

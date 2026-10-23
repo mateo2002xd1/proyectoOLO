@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import React, { useState, useEffect, type ReactNode } from 'react';
 
 /**
@@ -275,7 +276,7 @@ function TarjetasDestacadas({
         return enlace ? (
           <a
             key={tarjeta.id ?? i}
-            href={enlace}
+            href={enlaceSeguro(enlace) || undefined}
             className="olo-tarjeta-destacada"
             {...(tarjeta.nuevaPestana ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >

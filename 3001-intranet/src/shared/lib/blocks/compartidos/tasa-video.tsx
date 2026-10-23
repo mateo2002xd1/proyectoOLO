@@ -11,6 +11,7 @@
  * que las secciones que solo tienen video no cambian.
  */
 import type { ReactNode } from 'react';
+import { ATRIBUTOS_DE_IFRAME_SEGURO, enlaceSeguro, iframeSeguro } from '@olo/url-policy';
 
 export interface TasaVideoProps {
   tituloInicio?: ReactNode;
@@ -41,6 +42,11 @@ export function TasaVideo({
   descargaUrl,
   descargaNombre,
 }: TasaVideoProps) {
+  // Solo un host de la lista de `@olo/url-policy` (XSS-04). Lo que se guardó pasó por la misma
+  // lista en la API; aquí se vuelve a comprobar porque el `src` sale de texto libre del editor.
+  const urlDelVideo = iframeSeguro(aUrlDeInsercion(videoUrl));
+  const urlDeDescarga = enlaceSeguro(descargaUrl);
+
   return (
     <section className="tasa-video-wrapper">
       <div className="tasa-video-header">
@@ -50,19 +56,22 @@ export function TasaVideo({
         </h2>
       </div>
       <div className="tasa-video-container">
-        <iframe
-          className="tasa-video-iframe"
-          src={aUrlDeInsercion(videoUrl)}
-          title={typeof tituloDestacado === 'string' ? tituloDestacado : 'Video'}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+        {urlDelVideo && (
+          <iframe
+            className="tasa-video-iframe"
+            src={urlDelVideo}
+            title={typeof tituloDestacado === 'string' ? tituloDestacado : 'Video'}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            {...ATRIBUTOS_DE_IFRAME_SEGURO}
+          />
+        )}
       </div>
-      {descargaUrl && (
+      {urlDeDescarga && (
         <div className="tasa-video-descarga">
           {descargaTexto && <p>{descargaTexto}</p>}
           <a
-            href={descargaUrl}
+            href={urlDeDescarga}
             download={
               descargaNombre ||
               (descargaUrl?.includes('?nombre=')

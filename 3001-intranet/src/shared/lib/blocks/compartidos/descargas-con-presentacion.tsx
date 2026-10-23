@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import { PptxViewer } from './pptx-viewer';
 import type { ReactNode } from 'react';
 
@@ -48,7 +49,7 @@ export function DescargasConPresentacion({
                 <li key={typeof elemento.etiqueta === 'string' ? `${elemento.etiqueta}-${indice}` : `enlace-${indice}`}>
                   {elemento.url ? (
                     <a
-                      href={elemento.url}
+                      href={enlaceSeguro(elemento.url) || undefined}
                       download={
                         elemento.nombreArchivo ||
                         (typeof elemento.etiqueta === 'string' && elemento.etiqueta.trim()

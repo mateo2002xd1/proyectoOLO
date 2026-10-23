@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import React, { type ReactNode } from 'react';
 
 export type AlineacionTarjeta = 'izquierda' | 'centro' | 'derecha';
@@ -61,8 +62,9 @@ export function TarjetaArticulo({
     setSrcEfectiva(imagenSrc || FALLBACK_SVG);
   }, [imagenSrc]);
 
-  const urlEnlace = enlace?.trim();
-  const urlBoton = (enlaceBoton && enlaceBoton.trim()) || urlEnlace;
+  // Las dos direcciones pasan por `enlaceSeguro`: acaban en un `href` (XSS-01).
+  const urlEnlace = enlaceSeguro(enlace);
+  const urlBoton = enlaceSeguro(enlaceBoton) || urlEnlace;
   const anchoClase = ancho === 'completo' ? 'w-full' : 'max-w-sm w-full';
   const claseAlineacionContenedor = ALINEACION_CONTENEDOR[alineacion] || ALINEACION_CONTENEDOR.izquierda;
   const claseAlineacionMargen = ALINEACION_MARGEN[alineacion] || ALINEACION_MARGEN.izquierda;

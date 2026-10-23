@@ -1,3 +1,4 @@
+import { enlaceSeguro } from '@olo/url-policy';
 import type { CSSProperties, ReactNode } from 'react';
 import { estiloDeFranjaGov } from './tinta-de-franja';
 import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA, rellenoDeImagenDeFranja } from './disposicion-de-franja';
@@ -371,7 +372,7 @@ export function Footer({
                 {hasText(direccion) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{direccion}</p> : null}
                 {hasText(atencionPresencial) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{atencionPresencial}</p> : null}
                 {hasText(puntosAtencionTexto) ? (
-                  <a href={puntosAtencionUrl || '#'} className="olo-link" style={{ whiteSpace: 'pre-wrap' }}>
+                  <a href={enlaceSeguro(puntosAtencionUrl) || '#'} className="olo-link" style={{ whiteSpace: 'pre-wrap' }}>
                     {puntosAtencionTexto}
                   </a>
                 ) : null}
@@ -414,7 +415,7 @@ export function Footer({
                 {redes.map((item, idx) => (
                   <a
                     key={idx}
-                    href={item.url || '#'}
+                    href={enlaceSeguro(item.url) || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="olo-social-item"
@@ -443,7 +444,7 @@ export function Footer({
               {fila1.length > 0 ? (
                 <div className="olo-links-row">
                   {fila1.map((enlace, idx) => (
-                    <a key={idx} href={enlace.url || '#'}>
+                    <a key={idx} href={enlaceSeguro(enlace.url) || '#'}>
                       {enlace.texto}
                     </a>
                   ))}
@@ -452,7 +453,7 @@ export function Footer({
               {fila2.length > 0 ? (
                 <div className="olo-links-row">
                   {fila2.map((enlace, idx) => (
-                    <a key={idx} href={enlace.url || '#'}>
+                    <a key={idx} href={enlaceSeguro(enlace.url) || '#'}>
                       {enlace.texto}
                     </a>
                   ))}
@@ -461,7 +462,7 @@ export function Footer({
               {fila3.length > 0 ? (
                 <div className="olo-links-row">
                   {fila3.map((enlace, idx) => (
-                    <a key={idx} href={enlace.url || '#'}>
+                    <a key={idx} href={enlaceSeguro(enlace.url) || '#'}>
                       {enlace.texto}
                     </a>
                   ))}

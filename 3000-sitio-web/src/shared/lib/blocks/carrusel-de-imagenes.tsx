@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import { useCallback, useEffect, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { registerOverlayPortal } from '@puckeditor/core';
 import { muestraDeImagen } from '@olo/blocks-renderer';
@@ -179,7 +180,7 @@ export function CarruselDeImagenes({ block, textos, diapositivas = [], esEdicion
                     esEdicion ? (
                       <span className="olo-carrusel__boton">{textoBoton}</span>
                     ) : (
-                      <a href={enlace} className="olo-carrusel__boton">
+                      <a href={enlaceSeguro(enlace) || undefined} className="olo-carrusel__boton">
                         {textoBoton}
                       </a>
                     )
@@ -195,7 +196,7 @@ export function CarruselDeImagenes({ block, textos, diapositivas = [], esEdicion
                     aria-hidden={!visible}
                     inert={!visible}
                   >
-                    {enlace && !boton && !esEdicion ? <a href={enlace}>{imagen}</a> : imagen}
+                    {enlace && !boton && !esEdicion ? <a href={enlaceSeguro(enlace) || undefined}>{imagen}</a> : imagen}
                     {boton}
                   </div>
                 );

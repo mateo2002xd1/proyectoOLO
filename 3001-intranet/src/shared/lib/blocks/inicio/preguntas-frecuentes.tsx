@@ -1,3 +1,4 @@
+import { enlaceSeguro } from '@olo/url-policy';
 import type { ReactNode } from 'react';
 import { resaltar } from '../compartidos/resaltar';
 
@@ -57,7 +58,7 @@ export function PreguntasFrecuentes({
               <div className="preguntas-card" key={`pregunta-${indice}`}>
                 {tarjeta.url ? (
                   <a
-                    href={tarjeta.url}
+                    href={enlaceSeguro(tarjeta.url) || undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="preguntas-card-link"

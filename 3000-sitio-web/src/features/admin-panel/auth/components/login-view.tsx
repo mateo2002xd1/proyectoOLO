@@ -1,5 +1,6 @@
 'use client';
 
+import { rutaInternaSegura } from '@olo/url-policy';
 import { Suspense, useState, FormEvent } from 'react';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -43,12 +44,10 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
-  // `//host-ajeno` también "empieza por barra" y el navegador lo trata como URL
-  // absoluta a otro origen: sin descartarlo, `redirect` sería una redirección
-  // abierta armable a mano.
-  const esRutaSegura = (r: string | null): r is string =>
-    !!r && r.startsWith('/') && !r.startsWith('//');
-  const redirectTo = esRutaSegura(redirectParam) ? redirectParam : '/admin-panel/dashboard';
+  // `startsWith('/') && !startsWith('//')` no bastaba: el navegador lee `/\host` y `/<tab>/host`
+  // como `//host`, otro origen, y `redirect` seguía siendo una redirección abierta armable a mano
+  // (auditorías del 2026-10-19 y del 2026-10-22). `rutaInternaSegura` los descarta todos.
+  const redirectTo = rutaInternaSegura(redirectParam, '/admin-panel/dashboard');
 
   // Por qué se llegó aquí, si es que se llegó desde un cierre automático. El valor lo
   // traduce `mensajeDeCierre`, que solo reconoce los motivos propios: el parámetro

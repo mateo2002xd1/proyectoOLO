@@ -1,5 +1,6 @@
 'use client';
 
+import { enlaceSeguro } from '@olo/url-policy';
 import React, { useState, useMemo, useId, type ComponentType, type ReactElement } from 'react';
 import type { ConfigDeBloque } from './controles-de-caja';
 import { DestinoTabField, type DestinoTabConfig } from './destino-tab-field';
@@ -223,9 +224,9 @@ export function TabsRender({
 
                   const destino: DestinoTabConfig = tab.destino || { tipo: 'contenido' };
                   const tipoDestino = destino.tipo || tab.tipoDestino || 'contenido';
-                  const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
+                  const urlEnlace = enlaceSeguro(destino.urlEnlace || tab.urlEnlace);
                   const abrirNuevaPestana = destino.abrirNuevaPestana || tab.abrirNuevaPestana || 'si';
-                  const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+                  const urlArchivo = enlaceSeguro(destino.urlArchivo || tab.urlArchivo);
                   const nombreArchivo = destino.nombreArchivo || tab.nombreArchivo;
 
                   const esEnlace = tipoDestino === 'enlace';
@@ -362,8 +363,8 @@ export function TabsRender({
 
               const destino: DestinoTabConfig = tab.destino || { tipo: 'contenido' };
               const tipoDestino = destino.tipo || tab.tipoDestino || 'contenido';
-              const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
-              const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+              const urlEnlace = enlaceSeguro(destino.urlEnlace || tab.urlEnlace);
+              const urlArchivo = enlaceSeguro(destino.urlArchivo || tab.urlArchivo);
               const nombreArchivo = destino.nombreArchivo || tab.nombreArchivo;
               const pesoArchivo = destino.pesoArchivo || tab.pesoArchivo;
               const nombreVisible =
