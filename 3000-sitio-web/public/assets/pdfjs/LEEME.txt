@@ -1,0 +1,13 @@
+pdf.js 3.11.174 (Mozilla, licencia Apache-2.0: ver LICENSE).
+
+Copiado tal cual de la publicacion npm `pdfjs-dist@3.11.174`:
+  build/pdf.min.js         -> pdf.min.js
+  build/pdf.worker.min.js  -> pdf.worker.min.js
+  cmaps/                   -> cmaps/
+  integridad del paquete (npm view pdfjs-dist@3.11.174 dist.integrity):
+  sha512-TdTZPf1trZ8/UFu5Cx/GXB7GZM30LT+wWUNfsi6Bq8ePLnb+woNKtDymI2mxZYBpMbonNFqKmiz684DIfnd8dA==
+
+Lo carga el bloque «Publicaciones» (publicaciones.tsx) para dibujar la primera pagina de
+un PDF. Se sirve desde el propio origen para que la CSP no abra `script-src` a un CDN
+(XSS-02). Para actualizarlo: bajar otra version con `npm pack pdfjs-dist@X`, copiar los
+mismos archivos aqui y en la otra app, y cambiar RUTA_PDFJS en publicaciones.tsx.

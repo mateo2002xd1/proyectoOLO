@@ -30,9 +30,9 @@ import { resaltar } from '../compartidos/resaltar';
  * respaldo. Mientras tanto, editable es mejor que incrustada.
  *
  * La miniatura es la imagen subida en «Miniatura»; sin ella, se dibuja la primera
- * página del PDF en el navegador con pdf.js traído de un CDN. Si el CDN no responde,
- * la tarjeta se queda con su portada de respaldo y el resto de la página funciona
- * igual.
+ * página del PDF en el navegador con pdf.js, servido desde el propio origen
+ * (`public/assets/pdfjs/`, ver su LEEME.txt). Si no carga, la tarjeta se queda con su
+ * portada de respaldo y el resto de la página funciona igual.
  */
 export interface PublicacionItem {
   /** Campo `textarea`: un salto de línea parte el título en dos renglones. */
@@ -75,6 +75,12 @@ const VELOCIDAD_POR_DEFECTO = 45;
 /** Ancho de una tarjeta más su hueco (20rem + 1.5rem), hasta que el navegador mida. */
 const PASO_POR_DEFECTO = 344;
 
+/**
+ * Dónde está pdf.js. Es el propio origen y no un CDN: así la CSP no abre `script-src` a un
+ * tercero y no hace falta comprobar la integridad de un archivo ajeno (XSS-02).
+ */
+const RUTA_PDFJS = '/assets/pdfjs';
+
 const cacheDeMiniaturas: Record<string, string> = {};
 
 /** El dibujo en marcha de cada PDF: la cinta pinta la misma tarjeta varias veces y
@@ -109,7 +115,7 @@ export const PUBLICACIONES_EJEMPLO: PublicacionItem[] = [
   },
 ];
 
-/* PDF.js se carga por <script> desde un CDN, así que no trae tipos. Se declara
+/* PDF.js se carga por <script> desde `public/assets/pdfjs/`, así que no trae tipos. Se declara
    aquí la porción mínima de su API que este archivo usa, en vez de castear a
    `any` y perder toda verificación sobre una librería externa. */
 interface PdfViewport {
@@ -171,7 +177,7 @@ async function dibujarPortadaSinCompartir(pdfUrl: string): Promise<string | null
     if (!window.pdfjsLib) {
       await new Promise<void>((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.src = `${RUTA_PDFJS}/pdf.min.js`;
         script.onload = () => resolve();
         script.onerror = () => reject(new Error('No se pudo cargar PDF.js'));
         document.head.appendChild(script);
@@ -181,12 +187,11 @@ async function dibujarPortadaSinCompartir(pdfUrl: string): Promise<string | null
     const pdfjsLib = window.pdfjsLib;
     if (!pdfjsLib) return null;
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `${RUTA_PDFJS}/pdf.worker.min.js`;
 
     const documento = await pdfjsLib.getDocument({
       url: pdfUrl,
-      cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+      cMapUrl: `${RUTA_PDFJS}/cmaps/`,
       cMapPacked: true,
     }).promise;
 

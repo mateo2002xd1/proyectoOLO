@@ -20,7 +20,7 @@ const API_URL = process.env.API_BACKEND_URL || "http://127.0.0.1:4000";
  */
 const CSP_DIRECTIVAS = [
   // Scripts: solo del mismo origen; no inline, no eval
-  "script-src 'self' https://cdnjs.cloudflare.com",
+  "script-src 'self'",
   // Estilos: permite inline (requerido por Puck/Tailwind en dev) pero solo del mismo origen
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   // Fuentes
@@ -56,7 +56,7 @@ const CSP_DIRECTIVAS = [
  *    valida cada `iframe` al guardar y al pintar). Un marco a un sitio ajeno queda bloqueado
  *    aunque se cuele.
  *  - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`.
- *  - `script-src`: la propia intranet y `cdnjs.cloudflare.com` (pdf.js), sin ningún otro origen. Con `'unsafe-inline'`
+ *  - `script-src`: solo la propia intranet, ningún otro origen. Con `'unsafe-inline'`
  *    **no** bloquea un script en línea ni un `javascript:`; eso lo cierran la validación por valor de
  *    `sanitizar-contenido.ts` y `enlaceSeguro`/`iframeSeguro` al pintar.
  *

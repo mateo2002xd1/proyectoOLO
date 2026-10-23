@@ -184,13 +184,12 @@ export function iframeSeguro(valor: unknown, { alAguardar = false }: { alAguarda
 }
 
 /**
- * Los únicos orígenes, además del propio, de los que se carga un script.
- *
- *  - `cdnjs.cloudflare.com`: pdf.js, que el bloque «Publicaciones» inyecta para dibujar la
- *    primera página de cada PDF (`publicaciones.tsx`, en el sitio y en la intranet). Pendiente:
- *    servirlo desde el propio sitio, con lo que esta lista quedaría vacía.
+ * Los únicos orígenes, además del propio, de los que se carga un script. Vacía desde el
+ * 2026-10-22: pdf.js, que era lo único que venía de fuera (`cdnjs.cloudflare.com`), se sirve
+ * desde `public/assets/pdfjs/` de cada app. Un origen nuevo aquí es una decisión de seguridad:
+ * se justifica en un comentario y se prefiere servir el archivo desde el propio origen.
  */
-export const HOSTS_DE_SCRIPT: readonly string[] = ['cdnjs.cloudflare.com'];
+export const HOSTS_DE_SCRIPT: readonly string[] = [];
 
 /** Lo que se escribe en `script-src` de la CSP, sin `'unsafe-eval'` (solo lo pide Next en desarrollo). */
 export function directivaScriptSrc(): string {

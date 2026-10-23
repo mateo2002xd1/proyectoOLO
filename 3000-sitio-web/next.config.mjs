@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  *    valida cada `iframe` al guardar y al pintar). Un marco a un sitio ajeno queda bloqueado
  *    aunque se cuele.
  *  - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`.
- *  - `script-src`: el propio sitio y `cdnjs.cloudflare.com` (pdf.js), sin ningún otro origen. Con `'unsafe-inline'`
+ *  - `script-src`: solo el propio sitio, ningún otro origen. Con `'unsafe-inline'`
  *    **no** bloquea un script en línea ni un `javascript:`; eso lo cierran la validación por valor de
  *    `sanitizar-contenido.ts` y `enlaceSeguro`/`iframeSeguro` al pintar.
  *
