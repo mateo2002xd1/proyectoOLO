@@ -125,6 +125,14 @@ const verificarHtml = (): void => {
   const bueno = '<p style="text-align: center">Hola <strong>mundo</strong> <a href="/estudios">ir</a> <a href="https://sena.edu.co" target="_blank" rel="noopener">sena</a> <img src="/uploads/a.png" alt="x"></p>';
   const limpio = (sanitizarContenidoPuck({ content: [{ type: 'T', props: { texto: bueno } }] }) as any).content[0].props.texto as string;
   informar(limpio.includes('text-align: center') && limpio.includes('href="/estudios"') && limpio.includes('<strong>') && limpio.includes('src="/uploads/a.png"'), 'alineación, enlace relativo, negrita e imagen sobreviven', limpio.slice(0, 80));
+
+  console.log('\n=== HTML: `class` e `id` no se guardan (XSS-09) ===');
+  const conClases =
+    '<div class="fixed inset-0 z-50 bg-white" id="location"><p class="text-9xl" id="cookie">Hola <a class="absolute" id="x" href="/estudios">ir</a></p></div>';
+  const sinClases = (sanitizarContenidoPuck({ content: [{ type: 'T', props: { texto: conClases } }] }) as any).content[0].props.texto as string;
+  const restos = new JSDOM(sinClases).window.document.querySelectorAll('[class],[id]').length;
+  informar(restos === 0, 'una clase de utilidad o un id (DOM clobbering) se quitan', sinClases.slice(0, 80));
+  informar(sinClases.includes('Hola') && sinClases.includes('href="/estudios"'), 'el texto y el enlace de ese HTML se conservan');
 };
 
 // ── 2. URLs sueltas ──────────────────────────────────────────────────────────

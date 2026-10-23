@@ -58,9 +58,22 @@ const ETIQUETAS_PERMITIDAS = [
   'figure', 'figcaption',
 ];
 
-/** Atributos permitidos en las etiquetas anteriores. */
+/**
+ * Atributos permitidos en las etiquetas anteriores (XSS-09: cada uno abre algo, y aquí se dice qué).
+ *
+ *  - `href`, `src`: llevan direcciones; `URI_PERMITIDA` deja fuera `javascript:` y los `data:`.
+ *  - `target`, `rel`: sin ellos un enlace no puede abrirse en otra pestaña; `rel` se conserva
+ *    para no perder `noopener`.
+ *  - `style`: solo la alineación (hook de `ALINEACION_PERMITIDA`).
+ *  - **No hay `class` ni `id`** (quitados el 2026-10-22). Ningún editor del OLO está configurado para escribirlos (ni
+ *    la barra de Puck ni las herramientas de EditorJS que se cargan), y los dos son superficie:
+ *    una clase de utilidad de Tailwind (`fixed inset-0 z-50 bg-white`) tapa la página entera igual
+ *    que el `style` que ya se bloqueó, y un `id` como `location` o `cookie` pisa propiedades de
+ *    `document` (DOM clobbering). Si un bloque llegara a necesitar una clase, se añade aquí
+ *    con una lista cerrada de valores, no como atributo libre.
+ */
 const ATRIBUTOS_PERMITIDOS = [
-  'href', 'src', 'alt', 'title', 'class', 'id',
+  'href', 'src', 'alt', 'title',
   'target', 'rel', 'width', 'height',
   'colspan', 'rowspan',
   'data-type', 'data-id',  // atributos de datos de Puck (internos, no peligrosos)
