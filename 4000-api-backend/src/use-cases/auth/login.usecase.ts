@@ -140,7 +140,10 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
       must_change_password: false,
       permisos: CLAVES_DEL_CATALOGO,
     };
-    const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
+    const token = jwt.sign(payload as any, config.jwtSecret, {
+      algorithm: config.jwtAlgoritmo,
+      expiresIn: config.jwtExpiresIn as any,
+    });
     return { token, user: payload };
   }
 
@@ -237,7 +240,10 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
     permisos: await permisosDeRol(user.role?.name),
   };
 
-  const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
+  const token = jwt.sign(payload as any, config.jwtSecret, {
+    algorithm: config.jwtAlgoritmo,
+    expiresIn: config.jwtExpiresIn as any,
+  });
 
   // Va después de firmar el token y no antes: si `logAudit` fallara, quien acaba de
   // dar la contraseña correcta no debe quedarse sin poder entrar por eso. `logAudit`

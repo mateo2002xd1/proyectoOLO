@@ -35,6 +35,14 @@ export interface SesionVerificada {
   permisos: string[];
 }
 
+/**
+ * El único algoritmo que se acepta: el mismo con el que firma la API (`config.jwtAlgoritmo`).
+ * Sin fijarlo, `jwtVerify` admite HS256, HS384 y HS512 con el mismo secreto, y deja que la
+ * cabecera del token —que escribe quien lo presenta— elija. Si cambia en la API, cambia aquí.
+ * Lo comprueba `npm run jwt:verificar` en `4000-api-backend`.
+ */
+const ALGORITMO_DE_FIRMA = 'HS256';
+
 const claveSecreta = (): Uint8Array | null => {
   const secreto = process.env.JWT_SECRET;
   if (!secreto) return null;
@@ -55,7 +63,7 @@ export async function verificarSesion(token: string | undefined): Promise<Sesion
   }
 
   try {
-    const { payload } = await jwtVerify(token, clave);
+    const { payload } = await jwtVerify(token, clave, { algorithms: [ALGORITMO_DE_FIRMA] });
 
     // Un token sin `exp` no caduca nunca. `jwtVerify` no lo rechaza por sí solo
     // —`exp` es opcional en el estándar—, así que se exige aquí: esta aplicación no

@@ -94,7 +94,7 @@ async function autenticar(req: Request, res: Response, next: NextFunction, admit
 
   let decoded: any;
   try {
-    decoded = jwt.verify(token, config.jwtSecret);
+    decoded = jwt.verify(token, config.jwtSecret, { algorithms: [config.jwtAlgoritmo] });
   } catch (err: any) {
     console.log('[Auth] Token verify failed:', err.name); // REGLA 95.3 BE: Solo imprimir el nombre del error, no el mensaje completo
     return res.status(401).json({ error: 'Token inválido o expirado' });
@@ -122,7 +122,7 @@ async function autenticar(req: Request, res: Response, next: NextFunction, admit
      * Esto es lo que hace real el cierre por inactividad. El temporizador del
      * navegador (`@olo/inactividad`) enseña el aviso y da la buena experiencia, pero
      * quien robe la cookie no ejecuta ese código: sin esta comprobación el token
-     * seguiría sirviendo los siete días que dura su firma.
+     * seguiría sirviendo las ocho horas que dura su firma.
      *
      * `ultimo_acceso_en` ya existía y solo se escribía al iniciar sesión, así que no
      * medía nada. Ahora se refresca aquí —con freno, ver abajo— y es la marca contra
@@ -154,10 +154,10 @@ async function autenticar(req: Request, res: Response, next: NextFunction, admit
     /**
      * El rol y el `role_id` salen de **la fila**, no del token.
      *
-     * El JWT dura 7 días y lleva dentro el rol que tenía el usuario al iniciar
+     * El JWT dura 8 horas (antes 7 días) y lleva dentro el rol que tenía el usuario al iniciar
      * sesión. Confiar en ese claim significaba que degradar a alguien —o quitarle
-     * el rol entero— no surtía efecto hasta que su token caducara: durante una
-     * semana seguía siendo Administrador para toda la API. Todas las policies leen
+     * el rol entero— no surtía efecto hasta que su token caducara: durante toda
+     * la vida del token seguía siendo Administrador para toda la API. Todas las policies leen
      * `req.user.role`, así que el arreglo tiene que estar aquí y no en cada una.
      *
      * No cuesta una consulta extra: la fila ya está cargada aquí arriba para

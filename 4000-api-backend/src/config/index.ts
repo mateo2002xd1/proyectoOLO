@@ -102,6 +102,17 @@ export const config = {
    */
   redisUrl: process.env.REDIS_URL || '',
   jwtSecret: process.env.JWT_SECRET!,
+  /**
+   * El único algoritmo con el que se firma y se acepta un token: HMAC con SHA-256.
+   *
+   * El algoritmo lo declara la cabecera del propio token, que escribe quien lo presenta, así
+   * que `jwt.verify` no puede dejarlo a su criterio: se fija aquí, en la firma (`login.usecase`)
+   * y en la comprobación (`auth.middleware`). Sin esto un mismo `JWT_SECRET` también valía para
+   * HS384 y HS512, y el día que se añadiera una clave asimétrica la cabecera podría elegir con
+   * cuál se comprueba. El borde de las dos apps lo repite en `verificar-sesion.ts`: los tres
+   * tienen que cambiar a la vez. Lo comprueba `npm run jwt:verificar`.
+   */
+  jwtAlgoritmo: 'HS256' as const,
   // Una jornada, no una semana. Es el tiempo que un token robado sigue sirviendo, y
   // quien entra al panel administra usuarios y lee la bitácora. El uso diario no lo
   // nota: `@olo/inactividad` ya cierra la sesión a los 15 minutos sin actividad —esto
