@@ -181,7 +181,9 @@ Salen con código 1 mientras haya hallazgos abiertos. Los de fuerza bruta usan 5
 
 **Verificación:** `next --version` → 16.4.3; `npm run build` correcto con Turbopack; `npm run lint` da exactamente lo mismo que antes del cambio (1878 problemas, 28 errores de `no-explicit-any` ya existentes); `npm audit` ya no marca `next`.
 
-**No se verificó:** el sitio en ejecución (no se levantó `next dev`/`start` ni se probó el proxy) ni los PR abiertos (`gh` no está instalado). **La intranet (`3001-intranet`) no se tocó:** si usa la misma versión de Next, tiene el mismo aviso.
+**No se verificó:** el sitio en ejecución (no se levantó `next dev`/`start` ni se probó el proxy) ni los PR abiertos (`gh` no está instalado). **Intranet:** se actualizó después en la misma rama (`3001-intranet`: `next` `^16.4.3`, `eslint-config-next` 16.4.3, `experimental.agentUpgrade: "security"` en `next.config.ts`); `next --version` 16.4.3, build correcto, lint idéntico al de antes (1868 problemas, 18 errores ya existentes), `npm audit` sin hallazgos.
+
+**Lint a cero errores (en la misma rama).** Los 18 errores de cada app eran de `public/assets/pdfjs/pdf.min.js` y `pdf.worker.min.js` (pdf.js de terceros, minificado): se excluyen en `eslint.config.mjs` de las dos apps, lo que además quita ~1850 avisos que eran de ese mismo código. Los 10 `no-explicit-any` reales estaban en el sitio web (`puck.config.tsx`, `campos-del-pie.ts`, `grupos-de-props.ts`): `Record<string, any>` pasó a `Record<string, unknown>` y dos accesos (`botonIntranet.texto`, `tarjeta1/2.imagen|titulo`) se estrecharon con un tipo local, sin cambiar el comportamiento. Resultado: `npm run lint` 0 errores en las dos apps (1 aviso restante en el sitio y en la intranet), `tsc --noEmit` y `npm run build` del sitio, correctos.
 
 **Nota del entorno:** un worktree nuevo no trae `packages/blocks-renderer/node_modules` (está en `.gitignore`) y el build falla con `Cannot find module 'react'` hasta correr `npm ci` en esa carpeta. No tiene que ver con Next.
 
