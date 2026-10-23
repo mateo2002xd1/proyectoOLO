@@ -1,6 +1,8 @@
 /**
  * Revisa el contenido ya guardado de todas las páginas y dice qué versiones traen HTML
- * peligroso: `<script>`, `<iframe>`, atributos `onerror`/`onclick`, enlaces `javascript:`.
+ * peligroso: `<script>`, `<iframe>`, atributos `onerror`/`onclick`, enlaces `javascript:` (en
+ * cualquier campo, no solo en los de nombre conocido) e `iframe` a sitios fuera de la lista.
+ * `docker/deploy.sh importar` e `importar-paginas` lo corren con `--aplicar` al terminar.
  *
  * Hasta el 2026-09-25 el saneo no cubría el texto enriquecido de EditorJS, los campos
  * `intro` ni los bloques de una `DropZone`: lo que se guardó antes pudo entrar sin
@@ -16,6 +18,7 @@ import 'dotenv/config';
 import sequelize from '../../src/config/database';
 import { Pagina, PaginaVersion } from '../../src/infrastructure/db/models';
 import { htmlPeligrosoEn, sanitizarContenidoPuck } from '../../src/shared/sanitizar-contenido';
+import { describirErrorParaLog } from '../../src/shared/errores';
 
 /** Informa de las versiones con HTML peligroso y, con `--aplicar`, las sanea en la base. */
 async function main() {
@@ -73,7 +76,7 @@ async function main() {
 }
 
 main().catch(async (error) => {
-  console.error('Error revisando el contenido:', error);
+  console.error('Error revisando el contenido:', describirErrorParaLog(error));
   await sequelize.close().catch(() => undefined);
   process.exit(1);
 });

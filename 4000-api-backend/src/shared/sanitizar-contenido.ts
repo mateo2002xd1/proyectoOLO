@@ -17,6 +17,9 @@
  * Sin `<` no hay etiqueta que inyectar: un texto sin ese carácter se pinta igual como
  * HTML o como texto, así que no hace falta saber qué campo es HTML.
  *
+ * **Las URLs se validan por su valor** (`sanitizarTexto`), no por el nombre del campo: un
+ * texto sin `<` no es HTML pero puede ser un `javascript:` que se ejecuta al pulsarlo.
+ *
  * Perfil de sanitización (estricto):
  *   - Etiquetas y atributos: los de ETIQUETAS_PERMITIDAS y ATRIBUTOS_PERMITIDOS.
  *   - Enlaces e imágenes: http, https, mailto, tel y rutas relativas (`/estudios`,
@@ -30,6 +33,7 @@
 
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
+import { esEsquemaEjecutable, iframeSeguro } from '@olo/url-policy';
 
 // ---------------------------------------------------------------------------
 // Instancia de DOMPurify con el window de jsdom
@@ -117,8 +121,26 @@ function sanitizarHtml(valor: string): string {
  * Campos que contienen URLs sueltas (no dentro de HTML): se validan aparte, porque
  * pueden ir a un `href` o a un `src` sin pasar por DOMPurify. En minúsculas: la clave
  * se compara en minúsculas (`backgroundImage` → `backgroundimage`).
+ *
+ * **Esta lista ya no es la defensa, es la parte estricta de ella.** Hasta el 2026-10-22 era
+ * la única: `urlBoton`, `urlEnlace`, `urlDestino`, `urlPowerBi`… no estaban y guardaban
+ * `javascript:` tal cual (`auditorias/2026-10-22-xss-almacenado-y-defensas.md`). Lo que
+ * cierra ese hueco es `sanitizarTexto`, que mira el **valor** de cualquier campo.
  */
 const CAMPOS_URL = new Set(['src', 'href', 'url', 'link', 'backgroundimage', 'imageurl']);
+
+/**
+ * Campos cuyo valor acaba en el `src` de un `iframe`: solo pasa una dirección de la lista
+ * de hosts de `@olo/url-policy` (la misma que usa `frame-src` de la CSP). Un `javascript:` ahí
+ * se ejecutaría al cargar la página, sin que nadie pulse nada.
+ */
+const CAMPOS_IFRAME = new Set(['urlpowerbi', 'videourl', 'embedurl', 'iframeurl']);
+
+/** Nombres de campo que, por su aspecto, llevan una dirección (en minúsculas). */
+const CLAVE_DE_DIRECCION = /(url|href|src|link|enlace|destino|ruta|archivo|imagen|icono|logo|miniatura|poster|video|action|background)/;
+
+/** Los esquemas que puede tener la dirección de un campo así. `data:` ya pasó por `esEsquemaEjecutable`. */
+const ESQUEMAS_ADMITIDOS_EN_DIRECCION = new Set(['http', 'https', 'mailto', 'tel', 'data']);
 
 /**
  * Sanitiza una URL: acepta http(s), mailto, tel y rutas relativas (`/uploads/…`,
@@ -149,11 +171,46 @@ function sanitizarUrl(valor: string): string {
  * Sanea un valor a cualquier profundidad. Un texto dentro de un arreglo hereda la
  * clave del arreglo (los `items` de una lista de EditorJS son textos sueltos).
  */
-function sanitizarValor(valor: unknown, clave: string): unknown {
-  if (typeof valor === 'string') {
-    if (CAMPOS_URL.has(clave)) return sanitizarUrl(valor);
-    return valor.includes('<') ? sanitizarHtml(valor) : valor;
+/**
+ * Sanea un texto según **lo que dice**, no solo según cómo se llama su campo (XSS-01).
+ *
+ *  1. Si empieza por un esquema que ejecuta código (`javascript:`, `vbscript:`, un
+ *     `data:` que no sea imagen) se vacía, en cualquier campo: no hay campo donde sea
+ *     inofensivo.
+ *  2. Un campo de `iframe` solo admite un host de la lista.
+ *  3. Un campo de la lista estricta (`src`, `href`…) solo admite http, https, mailto, tel o
+ *     una ruta relativa.
+ *  4. Un campo con aspecto de dirección (`urlBoton`, `archivo`, `icono`…) que empieza por
+ *     un esquema solo admite los de enlace. Un texto sin esquema pasa.
+ *  5. Lo demás: si tiene `<`, DOMPurify.
+ */
+function sanitizarTexto(valor: string, clave: string): string {
+  if (esEsquemaEjecutable(valor)) {
+    recolector?.(`url ${valor.trim().slice(0, 40)}`);
+    return '';
   }
+
+  if (CAMPOS_IFRAME.has(clave)) {
+    const seguro = iframeSeguro(valor, { alAguardar: true });
+    if (!seguro && valor.trim()) recolector?.(`iframe ${valor.trim().slice(0, 40)}`);
+    return seguro;
+  }
+
+  if (CAMPOS_URL.has(clave)) return sanitizarUrl(valor);
+
+  if (CLAVE_DE_DIRECCION.test(clave)) {
+    const esquema = /^([a-z][a-z0-9+.-]*):\S/i.exec(valor.trim())?.[1]?.toLowerCase();
+    if (esquema && !ESQUEMAS_ADMITIDOS_EN_DIRECCION.has(esquema)) {
+      recolector?.(`url ${valor.trim().slice(0, 40)}`);
+      return '';
+    }
+  }
+
+  return valor.includes('<') ? sanitizarHtml(valor) : valor;
+}
+
+function sanitizarValor(valor: unknown, clave: string): unknown {
+  if (typeof valor === 'string') return sanitizarTexto(valor, clave);
   if (Array.isArray(valor)) return valor.map((item) => sanitizarValor(item, clave));
   if (typeof valor === 'object' && valor !== null) {
     const resultado: Record<string, unknown> = {};

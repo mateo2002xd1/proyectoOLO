@@ -510,7 +510,11 @@ importar() {
     done < <(LC_ALL=C join -a1 -a2 -e '-' -o '0,1.2,2.2' <(echo "$conteo_origen") <(echo "$conteo_destino"))
 
     echo ""
-    echo "--- 5/5 Permisos y cache ---"
+    echo "--- 5/5 Contenido, permisos y cache ---"
+    # El contenido importado entra por SQL, sin pasar por el sanitizador de la API (XSS-08): lo que
+    # traiga el origen —un `javascript:` en un boton, un iframe a un sitio ajeno— llegaria a todos
+    # tal cual. Se sanea aqui, en la base de destino, antes de que nadie lo vea.
+    componer run --rm -T migraciones npm run contenido:revisar -- --aplicar
     componer run --rm -T migraciones npm run sembrar:permisos
     # La API guarda respuestas en Redis: sin vaciarlo seguiria sirviendo lo de antes.
     # El sitio tiene ademas su propia cache de Next, que caduca sola en un minuto.
@@ -616,7 +620,11 @@ importar_paginas() {
     done < <(LC_ALL=C join -a1 -a2 -e '-' -o '0,1.2,2.2' <(echo "$conteo_origen") <(echo "$conteo_destino"))
 
     echo ""
-    echo "--- 5/5 Permisos, cache y archivos ---"
+    echo "--- 5/5 Contenido, permisos, cache y archivos ---"
+    # El contenido importado entra por SQL, sin pasar por el sanitizador de la API (XSS-08): lo que
+    # traiga el origen —un `javascript:` en un boton, un iframe a un sitio ajeno— llegaria a todos
+    # tal cual. Se sanea aqui, en la base de destino, antes de que nadie lo vea.
+    componer run --rm -T migraciones npm run contenido:revisar -- --aplicar
     # sembrar:permisos quita la clave editar.* de las paginas que ya no existen.
     componer run --rm -T migraciones npm run sembrar:permisos
     # Solo la cache de respuestas (`cache:*`): un FLUSHALL se llevaria tambien la cola de

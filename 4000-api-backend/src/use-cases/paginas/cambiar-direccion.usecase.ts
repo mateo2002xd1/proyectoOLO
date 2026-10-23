@@ -71,6 +71,7 @@ import { resolverHref, rutaLlevaAPagina } from '../../shared/extraer-textos-puck
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
 import { paginasPolicies } from '../../policies/paginas.policies';
+import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 import type { Ambito } from '../../shared/ambito';
 import {
   versionesQueEnlazan,
@@ -458,7 +459,8 @@ export const cambiarDireccion = async (
     for (const version of versiones) {
       const { contenido, cambiados } = reemplazarEnlaces(version.contenido, llevaAqui, nuevoHref);
       if (cambiados === 0) continue;
-      await PaginaVersion.update({ contenido }, { where: { id: version.versionId }, transaction });
+      // Se reescribió con enlaces nuevos: vuelve a pasar por el saneo como todo lo que escribe `contenido` (XSS-08).
+      await PaginaVersion.update({ contenido: sanitizarContenidoPuck(contenido) as typeof contenido }, { where: { id: version.versionId }, transaction });
 
       const slugDespues = version.paginaSlug === slug ? nuevo : version.paginaSlug;
       const hecha =
