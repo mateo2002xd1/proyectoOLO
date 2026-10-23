@@ -254,7 +254,7 @@ El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para 
   * *Administradores:* Al contar con facultades de gobierno y permisos de administración, el sistema los redirige de manera directa al **Panel Administrativo** (`/admin-panel/dashboard`).
   * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón flotante de edición para maquetar páginas y gestionar cabecera y pie.
   * *Directores y Subdirectores:* Al no contar con permisos de edición ni de acceso al panel administrativo en este portal, el sistema muestra la alerta *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a la Intranet para consultar sus tableros analíticos e indicadores gerenciales.
-* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
+* **Enlace de recuperación:** La pantalla de autenticación dispone del enlace directo para el restablecimiento de contraseñas ante situaciones de olvido («¿Olvidaste tu contraseña?»). *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
 * **Aviso de privacidad y protección de datos:** En la base del formulario se ubican los hipervínculos a la **política de privacidad y protección de datos**, los cuales permiten al usuario consultar el documento normativo (`/politica-de-privacidad`) antes de ingresar al sistema.
 
 ##### 3.2.3.1.3. Enlace a la Intranet (Botón Intranet)
@@ -2167,7 +2167,7 @@ El Editor Visual es un entorno de maquetación interactiva que permite construir
 > *Explorador jerárquico de capas en el panel lateral adaptado a dispositivo móvil. (Móvil).*
 
 3. **Lienzo central de trabajo (Área visual interactiva de maquetación):**
-   Es el área principal donde se construye la página. En esta zona ves la página exactamente como la verán los visitantes en el portal, mostrando los mismos colores, tipos de letra e imágenes sin necesidad de abrir una vista previa aparte.
+   Es el área principal donde se construye la página. En esta zona se visualiza la página exactamente como la verán los visitantes en el portal, mostrando los mismos colores, tipos de letra e imágenes sin necesidad de abrir una vista previa aparte.
 
 > **[Captura: Lienzo Central de Trabajo]**
 > *Área central del editor donde se visualiza y construye la página en tiempo real.*
@@ -2333,8 +2333,8 @@ Al seleccionar cualquier bloque, el panel lateral derecho despliega los controle
 
 ###### 4. Historial de Cambios y Autoguardado
 
-* **Controles Deshacer y Rehacer:** Ubicados en la barra superior, permiten revertir (**Deshacer**) o volver a aplicar (**Rehacer**) cualquier cambio realizado mientras estás en el editor. *(Nota: Si recargas la página o sales del editor, el historial de deshacer vuelve a comenzar).*
-* **Autoguardado automático:** Cada vez que haces un cambio, el aviso en la barra superior te indica el estado en tiempo real: *«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*.
+* **Controles Deshacer y Rehacer:** Ubicados en la barra superior, permiten revertir (**Deshacer**) o volver a aplicar (**Rehacer**) cualquier cambio realizado durante la sesión en el editor. *(Nota: Si se recarga la página o se sale del editor, el historial de deshacer vuelve a comenzar).*
+* **Autoguardado automático:** Cada vez que se realiza un cambio, el aviso en la barra superior indica el estado en tiempo real: *«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*.
 
 > **[Captura: Barra Superior - Historial y Autoguardado]**
 > *Detalle del sector derecho mostrando los controles de Deshacer, Rehacer y el indicador de autoguardado en tiempo real.*
@@ -2359,9 +2359,9 @@ En la esquina superior derecha de la barra de herramientas se encuentran los tre
 > *Botones de acción en la barra superior adaptados a pantalla móvil. (Móvil).*
 
 ###### 1. Botón «Guardar borrador»
-* **Para qué sirve:** Guarda los cambios realizados en la página para no perder tu trabajo.
-* **Cómo funciona:** Permite guardar el avance sin publicar la página en el portal y sin enviarla a revisión. Puedes pausar tu trabajo, cerrar la ventana y retomarlo cuando quieras.
-* **Qué ves en pantalla:** Al hacer clic en el botón **«Guardar borrador»** (ícono de disquete), el aviso de estado en la barra superior muestra brevemente el texto *«Guardando…»* y luego cambia a *«Guardado a las [hora]»*, confirmando la hora exacta en la que se guardó.
+* **Para qué sirve:** Guarda los cambios realizados en la página para conservar el trabajo efectuado.
+* **Cómo funciona:** Permite guardar el avance sin publicar la página en el portal y sin enviarla a revisión. El editor puede pausar su labor, cerrar la ventana y retomarla en cualquier momento.
+* **Visualización en pantalla:** Al hacer clic en el botón **«Guardar borrador»** (ícono de disquete), el aviso de estado en la barra superior muestra brevemente el texto *«Guardando…»* y luego cambia a *«Guardado a las [hora]»*, confirmando la hora exacta en la que se guardó.
 
 > **[Captura: Guardado Manual de Borrador]**
 > *Clic en el botón «Guardar borrador» y aviso en pantalla confirmando el guardado con la hora.*
@@ -2370,24 +2370,24 @@ En la esquina superior derecha de la barra de herramientas se encuentran los tre
 > *Aviso de guardado de borrador en pantalla móvil. (Móvil).*
 
 ###### 2. Botón «Salir»
-* **Para qué sirve:** Cierra el editor y te regresa a la vista de la página en el portal (Sitio Web o Intranet).
-* **Aviso en pantalla si hay cambios sin guardar:** Si tienes cambios recientes y no has presionado «Guardar borrador», el editor muestra la siguiente ventana de confirmación:
+* **Para qué sirve:** Cierra el editor y regresa a la vista de la página en el portal (Sitio Web o Intranet).
+* **Aviso en pantalla si hay cambios sin guardar:** Si existen cambios recientes y no se ha presionado «Guardar borrador», el editor muestra la siguiente ventana de confirmación:
   *«¿Salir del editor? Hay cambios sin guardar que se perderán si sales ahora.»*.
-  En esta ventana puedes elegir entre dos opciones:
+  En esta ventana es posible elegir entre dos opciones:
   * **«Salir sin guardar»:** Cierra el editor y descarta los cambios no guardados.
-  * **«Continuar editando»:** Cierra el aviso y te mantiene en el editor para que puedas presionar **«Guardar borrador»**.
-* **Qué sucede con la página:** Al salir del editor, la página queda libre para que otros compañeros puedan ingresar a editarla sin advertencias de bloqueo.
+  * **«Continuar editando»:** Cierra el aviso y mantiene al usuario en el editor para que pueda presionar **«Guardar borrador»**.
+* **Qué sucede con la página:** Al salir del editor, la página queda libre para que otros funcionarios puedan ingresar a editarla sin advertencias de bloqueo.
 
 > **[Captura: Modal de Confirmación al Salir del Editor]**
-> *Ventana de advertencia en pantalla preguntando si deseas salir sin guardar los cambios recientes.*
+> *Ventana de advertencia en pantalla consultando la confirmación de salida sin guardar los cambios recientes.*
 >
 > **[Captura: Modal de Confirmación al Salir del Editor (Móvil)]**
 > *Ventana de confirmación de salida en pantalla móvil. (Móvil).*
 
 ###### 3. Botón «Enviar a revisión»
 * **Para qué sirve:** Envía la página terminada al Administrador para que la revise y la publique en el portal.
-* **Aviso de imágenes sin descripción:** Si alguna imagen no tiene escrita su descripción (texto alternativo), aparece un aviso en pantalla indicando qué imagen debes completar antes de enviar.
-* **Ventana para escribir el comentario de cambios:** Una vez verificadas las imágenes, se abre en pantalla la ventana **«Enviar a revisión»** con una casilla donde debes escribir un comentario breve (entre 10 y 100 caracteres) explicando qué cambiaste o agregaste en la página.
+* **Aviso de imágenes sin descripción:** Si alguna imagen no tiene escrita su descripción (texto alternativo), aparece un aviso en pantalla indicando qué imagen se debe completar antes de enviar.
+* **Ventana para escribir el comentario de cambios:** Una vez verificadas las imágenes, se abre en pantalla la ventana **«Enviar a revisión»** con una casilla donde se debe escribir un comentario breve (entre 10 y 100 caracteres) explicando las modificaciones o adiciones realizadas en la página.
 * **Confirmación del envío:** Al pulsar el botón **«Enviar a revisión»** dentro de esa ventana, la etiqueta de estado en la barra superior cambia a **«En revisión»**, indicando que la página está a la espera de que el Administrador revise los cambios y los publique.
 
 > **[Captura: Envío a Revisión y Comentario de Versión]**
@@ -3387,7 +3387,7 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 4. **Ejecución y validación de la sesión (Validación de credenciales en el acceso):**
    * *Acción errónea y alerta del sistema:* Al hacer clic en el botón "Ingresar", si la contraseña o el correo no coinciden con los registros activos de la plataforma, se despliega la alerta en la parte superior del formulario: `"Correo o contraseña incorrectos"`.
    * *Redirección por primer ingreso pendiente:* Si las credenciales coinciden pero la cuenta aún no ha culminado su configuración inicial, la plataforma detecta este estado y redirige al usuario de manera automática hacia la pantalla de primer ingreso para que establezca su contraseña definitiva y sus preguntas de seguridad.
-   * *Acción de corrección:* Comprobar que no esté activada la tecla Bloq Mayús, verificar los caracteres mediante el control de visualización (ícono de ojo) o hacer uso del enlace de recuperación *(¿Olvidaste tu contraseña?)*.
+   * *Acción de corrección:* Comprobar que no esté activada la tecla Bloq Mayús, verificar los caracteres mediante el control de visualización (ícono de ojo) o hacer uso del enlace de recuperación («¿Olvidaste tu contraseña?»).
 
 > **[Captura: Alerta de Credenciales Incorrectas en Sitio Web]**
 > *Mensaje superior de credenciales incorrectas en el formulario de acceso del Sitio Web Público.*
@@ -3450,7 +3450,7 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 4. **Ejecución y validación de la sesión (Validación de credenciales en el acceso):**
    * *Acción errónea y respuesta del sistema:* Si el correo electrónico o la clave no coinciden con los registros activos de la plataforma, el sistema emite la alerta general: `"Correo o contraseña incorrectos"`.
    * *Redirección por primer ingreso pendiente:* Si las credenciales ingresadas son válidas pero la cuenta tiene pendiente su configuración inicial, la plataforma lo detecta y lo redirige automáticamente al flujo de primer ingreso para que defina su contraseña personal definitiva y sus tres preguntas de seguridad.
-   * *Acción de corrección:* Verificar minuciosamente la clave ingresada mediante el control de visualización (ícono de ojo) o acceder al enlace de recuperación de contraseña *(¿Olvidaste tu contraseña?)*.
+   * *Acción de corrección:* Verificar minuciosamente la clave ingresada mediante el control de visualización (ícono de ojo) o acceder al enlace de recuperación de contraseña («¿Olvidaste tu contraseña?»).
 
 > **[Captura: Alerta de Credenciales Inválidas en Intranet]**
 > *Mensaje de credenciales erróneas en el panel de acceso de la Intranet.*
@@ -4020,7 +4020,7 @@ El flujo editorial de revisión y paso a producción (cuyo procedimiento operati
 * **Causa técnica y operativa:** El editor guardó sus avances de forma local o como borrador de trabajo mediante el botón "Guardar Borrador", pero no completó la acción final de **"Enviar a revisión"** (o cerró el navegador antes de confirmar el envío). Mientras no se ejecute este paso, el borrador permanece exclusivamente en el entorno de edición y no entra al circuito de aprobación administrativa.
 * **Acción correctiva:**
   1. Solicitar al funcionario que ingrese nuevamente al editor visual de la página correspondiente.
-  2. Verificar que haga clic en el botón **"Enviar a revisión"** y registre el comentario de cambios.
+  2. Verificar que el funcionario haga clic en el botón **"Enviar a revisión"** y registre el comentario de cambios.
   3. Tras confirmar el envío en el editor, el Administrador debe refrescar la bandeja de **Páginas en Revisión** para visualizar y gestionar la nueva solicitud.
 
 > **[Captura: Bandeja sin Páginas en Revisión]**
@@ -5143,19 +5143,19 @@ El Panel de Accesibilidad («Personaliza tu experiencia») ([Sección 3.4.4.4](#
 **Situación:** Al buscar ocupaciones en el catálogo, en pantalla pueden mostrarse mensajes como *«No se encontró la ocupación»*, *«No se pudo consultar el catálogo de ocupaciones»* o el buscador tarda en responder.
 **Qué significan estos mensajes:**
 1. **«No se encontró la ocupación»:** La palabra o código ingresado no coincide con ninguna ocupación registrada en los catálogos CNO o CUOC.
-2. **Código incompleto o con formato diferente:** Si buscas por código numérico, debe tener exactamente **4 dígitos** para la CNO (por ejemplo: `2173`) o **5 dígitos** para la CUOC (por ejemplo: `25120`). Si faltan o sobran números, el sistema no encuentra coincidencias.
+2. **Código incompleto o con formato diferente:** Si la búsqueda se realiza por código numérico, este debe contener exactamente **4 dígitos** para la CNO (por ejemplo: `2173`) o **5 dígitos** para la CUOC (por ejemplo: `25120`). Si faltan o sobran números, el sistema no encuentra coincidencias.
 3. **«No se pudo consultar el catálogo de ocupaciones»:** Existe una interrupción momentánea de conexión con la base oficial del catálogo ocupacional.
 **Acción:** 
-* Si buscas por código, verifica que contenga exactamente 4 dígitos (CNO) o 5 dígitos (CUOC).
-* Si buscas por texto o profesión, intenta escribir palabras clave más amplias o comunes (por ejemplo: *«enfermería»*, *«sistemas»*, *«mecánica»*).
-* Si aparece el aviso de que no se pudo consultar, espera unos momentos y presiona nuevamente el botón **«Buscar»**.
-* Si la situación persiste, revisa tu conexión a internet o intenta nuevamente más tarde.
+* Si la búsqueda se realiza por código, se debe verificar que contenga exactamente 4 dígitos (CNO) o 5 dígitos (CUOC).
+* Si la consulta es por texto o denominación ocupacional, se sugiere ingresar términos más generales o comunes (por ejemplo: *«enfermería»*, *«sistemas»*, *«mecánica»*).
+* Si aparece el aviso de que no se pudo consultar, se recomienda esperar unos momentos y presionar nuevamente el botón **«Buscar»**.
+* Si la situación persiste, se debe comprobar la conexión a internet o intentar nuevamente más tarde.
 
 #### 3.5.2.9. Compatibilidad y seguridad en la subida y descarga de archivos
 **Situación:** Un funcionario tiene dudas sobre si los archivos de Excel o las imágenes subidas al sistema se alteran, o si los reportes y plantillas descargadas abren correctamente en sus programas.
 **Aclaración para el usuario:**
 * **Conservación de datos en archivos Excel:** Las matrices y archivos de Excel cargados en el sistema conservan su contenido y estructura original sin modificaciones accidentales.
-* **Formatos de descarga estándar:** Todas las plantillas oficiales y reportes que descargas se guardan en formato estándar `.xlsx` (Excel), abriendo sin problemas en Microsoft Excel, LibreOffice u otros visores compatibles.
+* **Formatos de descarga estándar:** Todas las plantillas oficiales y reportes descargados se guardan en formato estándar `.xlsx` (Excel), permitiendo su apertura sin inconvenientes en Microsoft Excel, LibreOffice u otros visores compatibles.
 * **Imágenes del portal:** Las imágenes y logotipos cargados en el sistema conservan su formato original (como `.png` o `.jpg`) manteniendo su calidad visual en el portal.
 
 #### 3.5.2.10. Cambio de dirección de una página web («Editar dirección») y resolución de dependencias
