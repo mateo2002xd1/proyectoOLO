@@ -532,10 +532,10 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@types/react-dom` | `^19` | desarrollo |
 | `clsx` | `^2.1.1` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.4.0` | desarrollo |
+| `eslint-config-next` | `16.4.3` | desarrollo |
 | `file-type` | `^22.0.1` | producción |
 | `jose` | `^6.2.3` | producción |
-| `next` | `^16.3.0` | producción |
+| `next` | `^16.4.3` | producción |
 | `react` | `19.2.4` | producción |
 | `react-dom` | `19.2.4` | producción |
 | `tailwind-merge` | `^3.6.0` | producción |

@@ -77,6 +77,9 @@ const CSP_APLICADA = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  experimental: {
+    agentUpgrade: "security",
+  },
   // DEBE coincidir con `turbopack.root` de abajo -- Next avisa en build si no
   // coinciden y usa `outputFileTracingRoot`, lo que rompe la resolución de los
   // paquetes @olo/* (verificado con un build real: sin esto Turbopack no encontraba
