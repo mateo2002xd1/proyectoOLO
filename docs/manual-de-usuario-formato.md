@@ -2566,6 +2566,51 @@ Componente interactivo diseñado para destacar cifras clave, boletines e infogra
 > **[Captura: Bloque Dato OLO de la Semana]**
 > *Presentación del bloque Dato OLO de la semana en el editor visual con infografías y transiciones visuales.*
 
+##### 3.4.3.7.5. Bloque «Buscador del Sitio Web»
+Componente modular e interactivo que permite incorporar una barra de búsqueda institucional en cualquier página del portal (por ejemplo en la portada `/inicio` o en páginas temáticas), estructurado bajo las especificaciones de diseño accesible de la **Página 20 del Kit UI GOV.CO**:
+* **Ubicación en el catálogo:** Se encuentra disponible en el catálogo de componentes del Editor Visual bajo la categoría *Contenido Principal*, con el nombre **«Buscador del Sitio Web»**.
+* **Arquitectura desacoplada y dinámica:** No depende de rutas fijas ni preconfiguradas en el código fuente. Se enlaza de manera flexible con la dirección web de resultados que el editor o administrador cree en la plataforma mediante la herramienta flotante **«Nueva página»**.
+* **Protección del entorno editorial (`esEdicion = true`):** Al maquetar en el Editor Visual, presionar Enter en el teclado o pulsar el botón con la lupa no ejecuta la navegación externa hacia otra página, protegiendo al editor contra la pérdida involuntaria de cambios no guardados.
+* **Campos configurables en el panel lateral de Puck:**
+  * **Página de resultados:** Ruta relativa hacia la página creada con «Nueva página» donde se desplegarán las coincidencias encontradas (ej: `/buscador-general`, `/consulta`).
+  * **Texto del campo (placeholder):** Texto orientativo visible en la caja de texto mientras no se haya escrito ninguna palabra.
+  * **Texto de instrucción o ayuda:** Mensaje explicativo situado en la parte inferior de la barra de búsqueda.
+  * **Ancho máximo:** Selector de anchura horizontal del contenedor (*Restringido (576 px)*, *Medio (768 px)* o *Ancho completo (100%)*).
+  * **Configuración cromática en acordeones independientes:** Cada elemento visual cuenta con su propio selector de color interactivo provisto de previsualización en miniatura y botón de limpieza («X») para restablecerlo individualmente:
+    * *Color de fondo del buscador:* Tonalidad de fondo de la cápsula de entrada.
+    * *Color de borde en reposo:* Contorno exterior de la cápsula en estado inactivo.
+    * *Color de borde activo (hover/foco):* Contorno y anillo de resalte al pasar el cursor o interactuar con el campo.
+    * *Color de la letra (texto escrito):* Tonalidad tipográfica de las palabras digitadas en el campo.
+    * *Color del texto sugerido (placeholder):* Tonalidad del mensaje orientativo inicial.
+    * *Color de fondo del botón de buscar:* Tono del botón circular integrado.
+    * *Color del icono de la lupa:* Tonalidad del símbolo de lupa dentro del botón.
+    * *Color del botón borrar («X»):* Tono del control circular interactivo de borrado.
+    * *Color del texto de instrucción o ayuda:* Tonalidad del mensaje explicativo inferior.
+
+> **[Captura: Bloque Buscador del Sitio Web en el Editor Visual]**
+> *Configuración del bloque Buscador del Sitio Web en el panel lateral de Puck con campo de página de resultados, selectores de color en acordeón y opciones de ancho.*
+
+##### 3.4.3.7.6. Bloque «Resultados de Búsqueda del Sitio»
+Componente modular diseñado para desplegarse en la página de destino creada por el usuario editorial (por ejemplo `/buscador-general` o `/consulta`), encargado de renderizar y organizar las coincidencias del portal web:
+* **Ubicación en el catálogo:** Se encuentra en la categoría *Contenido Principal* del Editor Visual con el nombre **«Resultados de Búsqueda del Sitio»**.
+* **Flexibilidad editorial de maquetación:** Puede combinarse libremente con cualquier otro bloque del editor; por ejemplo, anteponer un bloque de **`TextoRico`** con orientaciones institucionales y ubicar abajo el bloque de **`Resultados de Búsqueda del Sitio`** con su barra de refinamiento superior.
+* **Exclusión dinámica de la página actual:** El motor de consulta local valida en tiempo real la ruta de la página en la que se encuentra montado el componente, excluyéndola automáticamente del listado de resultados para impedir enlaces redundantes o circulares hacia la misma vista.
+* **Modo de previsualización en edición (`esEdicion = true`):** En el lienzo del editor muestra tarjetas de ejemplo estructuradas para que el editor pueda calibrar los contrastes cromáticos y la jerarquía visual sin requerir una consulta activa en la barra de direcciones.
+* **Campos configurables en el panel lateral de Puck:**
+  * **Título de la sección:** Encabezado principal visible en la cabecera del listado de resultados.
+  * **Resultados por página:** Límite numérico (de 1 a 50) de coincidencias mostradas antes de activar los controles de paginación.
+  * **Mostrar barra de búsqueda:** Selector conmutador tipo radio (*Sí* / *No*) para exhibir u ocultar la barra de refinamiento superior.
+  * **Configuración cromática en acordeones independientes:** Controles organizados con previsualización en miniatura y botón de limpieza («X») para ajustes individuales:
+    * *Barra superior:* Color de fondo, borde en reposo, borde activo (hover/foco), texto, placeholder, fondo del botón de buscar, icono de lupa y botón de borrado («X»).
+    * *Sección de resultados:* Color del título principal y color del texto del conteo de coincidencias.
+    * *Tabla de resultados:* Color de borde y divisiones, fondo de cabecera de columnas, texto de cabecera y fondo de fila al pasar el cursor.
+    * *Badges y tipografía:* Color de fondo y texto de la pastilla identificadora (*Página* / *Sección*), color del título de coincidencia, color de la ruta o enlace y color del extracto de texto coincidente.
+    * *Resaltado de coincidencias:* Color de fondo y color de texto para las palabras clave coincidentes.
+    * *Paginación:* Color de fondo del botón indicador de la página activa.
+
+> **[Captura: Bloque Resultados de Búsqueda del Sitio]**
+> *Vista del bloque Resultados de Búsqueda del Sitio en el Editor Visual con opciones en acordeón, tabla semántica, badges identificadores y controles de paginación.*
+
 #### 3.4.3.8. Catálogo de Componentes de la Intranet
 
 Este apartado reúne la documentación, especificaciones técnicas, campos configurables y directrices de uso de los componentes visuales prediseñados exclusivos para la Intranet del Observatorio Laboral y Ocupacional (OLO).
@@ -2580,37 +2625,27 @@ Esta sección describe los procedimientos para la localización de contenidos en
 
 #### 3.4.4.1. Búsquedas y Filtros en el Portal Público
 
-##### 3.4.4.1.1. Uso del Buscador Global Desplegable
+##### 3.4.4.1.1. Uso del Buscador Modular del Sitio Web (Kit UI GOV.CO)
 
-El sistema cuenta con un motor de búsqueda global accesible directamente desde la cabecera superior del portal público. El proceso para realizar una consulta es el siguiente:
+El portal público incorpora un sistema de búsqueda ciudadana integral y desacoplado, concebido bajo los estándares de accesibilidad e interacción de la **Página 20 del Kit UI GOV.CO**:
+* **Enfoque ciudadano y cabecera despejada:** La cabecera principal del portal permanece limpia para la navegación institucional y el acceso a la Intranet, mientras que la búsqueda se ubica estratégicamente en la portada y páginas informativas, canalizando las consultas hacia la pantalla de resultados del observatorio.
+* **Flujo de interacción ciudadana paso a paso:**
+  1. **Aproximación y enfoque ergonómico:** La barra de búsqueda presenta un contorno neutral accesible y un texto de instrucción inferior. Al interactuar mediante clic o navegación secuencial por teclado con la tecla **Tab**, se enciende el anillo exterior de enfoque de alto contraste.
+  2. **Digitación y borrado inmediato («X» / Escape):** Al escribir el primer carácter, se activa el estado dinámico emergiendo un botón circular con ícono de equis (**«X»**). El usuario puede pulsar dicho botón o presionar la tecla **Escape** (**Esc**) para borrar instantáneamente la consulta sin perder el cursor dentro del campo.
+  3. **Ejecución de la búsqueda:** Al presionar **Enter** o hacer clic en el botón circular de la lupa, la plataforma ejecuta la navegación fluida como aplicación de página única (SPA) sin recargar la pantalla completa, trasladando la consulta hacia la página de resultados mediante el parámetro `?busqueda=[termino]`. Esta consulta es independiente y no altera los filtros del catálogo de ocupaciones CNO.
+  4. **Exploración de la tabla de resultados:** En la pantalla de destino, el listado despliega las coincidencias organizadas en dos columnas semánticas (*Página / Sección* y *Contenido coincidente*):
+     * *Pastillas de categoría:* Distintivos visuales (*Página*, *Sección*) que indican el origen jerárquico del resultado.
+     * *Resaltado contextual:* Las palabras coincidentes se enfatizan con fondo verde institucional (`#7DB828`/30) y tipografía en azul oscuro (`#001631`).
+     * *Exclusión de la página actual:* El listado omite dinámicamente la misma página de resultados para evitar enlaces redundantes o confusos.
+     * *Accesibilidad en tiempo real:* Las tecnologías de asistencia anuncian el número de coincidencias mediante la región accesible (`aria-live="polite"`).
+  5. **Refinamiento sin retroceso:** Mediante la barra de búsqueda superior incorporada en la propia pantalla de resultados, el ciudadano puede afinar su consulta o ingresar nuevos términos de forma directa, actualizando el listado al instante sin devolverse a la portada.
+  6. **Paginación ágil y estados sin coincidencia:** Cuando los resultados superan el límite configurado, se activan los botones de paginación para desplazarse fluidamente entre páginas sin refrescar el sitio web. Si ningún contenido coincide con el término, el sistema presenta un panel empático con recomendaciones prácticas de redacción y sugerencias de exploración.
 
-*(Nota: Para consultar las posibles situaciones de validación, búsquedas sin coincidencias en vivo y solución de problemas al interactuar con el buscador de la cabecera, remitirse a la [Sección 3.5.1.21: Validaciones y Solución de Problemas en el Buscador Global del Portal Público](#35121-validaciones-y-solución-de-problemas-en-el-buscador-global-del-portal-público)).*
-
-1. **Despliegue del buscador:** En la barra superior de navegación, el usuario debe hacer clic sobre el botón con ícono de lupa. Al interactuar con él, el campo de búsqueda se despliega de manera fluida hacia la izquierda con bordes redondeados, corriendo armónicamente los enlaces del menú principal hacia el logotipo institucional para no tapar los textos de navegación.
-
-> **[Captura: Despliegue de Buscador en Cabecera]**
-> *Despliegue interactivo del buscador en la cabecera desde el ícono de lupa.*
+> **[Captura: Buscador Modular del Sitio Web en Portada]**
+> *Barra de búsqueda modular en portada con estados de enfoque, botón de borrado rápido y botón integrado de lupa.*
 >
-> **[Captura: Despliegue de Buscador en Cabecera (Móvil)]**
-> *Despliegue interactivo del buscador en la cabecera en dispositivo móvil. (Móvil).*
-
-2. **Ingreso de términos:** Digitar las palabras clave relacionadas con la temática, contenido, boletín, indicador o documento que se desea localizar.
-
-> **[Captura: Ingreso de Términos en Buscador]**
-> *Ingreso de términos clave en el campo blanco de búsqueda desplegado.*
->
-> **[Captura: Ingreso de Términos en Buscador (Móvil)]**
-> *Ingreso de términos clave en el campo de búsqueda en pantalla móvil. (Móvil).*
-
-3. **Exploración de resultados en vivo:** El sistema evalúa la consulta en tiempo real (por frase exacta, frase difusa o coincidencia de palabras significativas) y despliega automáticamente una lista flotante debajo del campo con los resultados coincidentes, resaltando los términos encontrados y el contexto de origen. Cada resultado muestra además una etiqueta identificadora de su tipo (*Página*, *Sección* o *Contenido*). El usuario puede desplazarse entre los resultados usando las flechas de dirección del teclado (*Arriba* / *Abajo*) y presionar la tecla *Enter*, o bien hacer clic con el ratón sobre cualquier ítem para navegar de inmediato a la sección o página correspondiente.
-
-> **[Captura: Resultados en Vivo de Cabecera]**
-> *Lista flotante de resultados en vivo desplegada debajo del buscador con términos resaltados y acceso directo.*
->
-> **[Captura: Resultados en Vivo de Cabecera (Móvil)]**
-> *Lista de resultados desplegada en dispositivo móvil con acceso directo a la página encontrada. (Móvil).*
-
-*(Nota de uso: Para cerrar el buscador sin seleccionar un resultado, el usuario puede presionar la tecla **Escape**, hacer clic en cualquier punto exterior fuera de la lista o volver a pulsar sobre la lupa sin texto ingresado; el foco de navegación regresará de inmediato a la lupa de la cabecera).*
+> **[Captura: Página de Resultados de Búsqueda Modular]**
+> *Pantalla de resultados con barra de búsqueda superior, anuncios accesibles, tarjetas resaltadas y paginación.*
 
 ##### 3.4.4.1.2. Módulos de Consulta Especializada y Filtrado Interactivo
 
@@ -4511,51 +4546,49 @@ El formulario modal de creación de páginas ([Sección 3.4.3.4](#3434-creación
 
 ---
 
-#### 3.5.1.21. Validaciones y Solución de Problemas en el Buscador Global del Portal Público
+#### 3.5.1.21. Validaciones y Solución de Problemas en el Buscador Modular del Portal Público
 
-El motor de búsqueda global de la cabecera superior del portal público ([Sección 3.4.4.1.1](#34411-uso-del-buscador-global-desplegable)) permite a la ciudadanía localizar de manera ágil páginas, secciones informativas y contenidos temáticos del Observatorio Laboral y Ocupacional. A continuación se presentan las principales situaciones de interacción, sus causas y las acciones de solución recomendadas:
+El buscador modular del portal público ([Secciones 3.4.3.7.5 y 3.4.4.1.1](#34375-bloque-buscador-del-sitio-web)) incorpora las directrices de accesibilidad de la Página 20 del Kit UI GOV.CO y un esquema de navegación desacoplado. A continuación se presentan las situaciones de interacción más frecuentes, sus motivos y los pasos para su solución:
 
-##### 1. Búsqueda sin Coincidencias en Vivo («No se encontraron resultados»)
-* **Situación:** Al digitar términos en el campo de búsqueda desplegado, la lista flotante muestra el mensaje informativo *«No se encontraron resultados para "[término]"»* o permanece vacía sin arrojar coincidencias sugeridas.
-* **Causa:** Errores de digitación o letras transpuestas, empleo de oraciones demasiado largas o compuestas, o búsqueda de contenidos muy específicos que no forman parte de los títulos ni secciones públicas activas del observatorio.
+##### 1. Búsqueda sin Coincidencias («No se encontraron resultados»)
+* **Situación:** En la página de resultados, el sistema despliega el mensaje *«No se encontraron resultados para «[término]»»* con recomendaciones de búsqueda.
+* **Causa:** Errores mecanográficos, empleo de oraciones excesivamente largas o búsqueda de temáticas que aún no cuentan con páginas públicas autorizadas en el observatorio.
 * **Acción correctiva:**
-  1. Revisar la ortografía del término ingresado y verificar que no existan errores mecanográficos o espacios excesivos.
-  2. Simplificar la búsqueda utilizando una o dos palabras clave principales (por ejemplo, escribir *«boletín»*, *«inversión»* o *«egresados»* en lugar de oraciones completas).
-  3. Si se trata de una página o publicación aprobada recientemente por la entidad, refrescar el navegador para actualizar el índice de contenidos del portal.
+  1. Revisar la ortografía del término ingresado en la barra de búsqueda superior.
+  2. Simplificar la consulta empleando una o dos palabras clave (ej: *«boletín»*, *«inversión»*, *«clasificación»*).
+  3. Si se trata de una página aprobada recientemente, refrescar la ventana para que el índice local de páginas recargue las publicaciones vigentes.
 
-> **[Captura: Sin Coincidencias en Buscador Global]**
-> *Lista flotante del buscador de la cabecera indicando que no se encontraron coincidencias para la palabra ingresada.*
+> **[Captura: Sin Coincidencias en Buscador Modular]**
+> *Pantalla de resultados informando empáticamente la ausencia de coincidencias y ofreciendo sugerencias de reformulación.*
 >
-> **[Captura: Sin Coincidencias en Buscador Global (Móvil)]**
-> *Mensaje informativo de ausencia de resultados en pantalla móvil. (Móvil).*
+> **[Captura: Sin Coincidencias en Buscador Modular (Móvil)]**
+> *Mensaje informativo de ausencia de resultados adaptado a pantalla móvil. (Móvil).*
 
-##### 2. Dificultad para Cerrar el Buscador o Menú Superior Desplazado
-* **Situación:** El usuario activó el buscador pulsando la lupa, el campo de texto se extendió corriendo los enlaces del menú superior hacia la izquierda y no se visualiza un botón convencional de cierre tipo "X".
-* **Causa:** El campo de búsqueda permanece abierto y con el foco activo en pantalla a la espera de que el usuario decida realizar una consulta o cerrar la interacción.
+##### 2. Uso del Botón de Borrado Rápido («X») y Tecla Escape
+* **Situación:** El visitante ingresó un texto largo y desea borrarlo completamente sin tener que presionar la tecla de retroceso reiteradamente.
+* **Causa:** Estado visual interactivo *Active* (Página 20 Kit UI GOV.CO).
 * **Acción correctiva:**
-  1. Presionar la tecla **Escape** (**Esc**) en el teclado del computador; el campo se replegará fluidamente y el foco regresará de inmediato a la lupa de la cabecera.
-  2. Hacer clic en cualquier área despejada de la página por fuera de la lista desplegable y del campo de texto.
-  3. Borrar el texto del campo y volver a presionar el botón de la lupa para replegar la caja de búsqueda.
+  1. Al escribir el primer carácter, emerge automáticamente un botón circular blanco con una equis (**«X»**) en el extremo derecho del campo.
+  2. Hacer clic sobre dicho botón circular o presionar la tecla **Escape** (**Esc**); el texto se borrará en su totalidad y el foco permanecerá en la caja de texto listo para escribir una nueva consulta.
 
-> **[Captura: Cierre y Repliegue del Buscador de Cabecera]**
-> *Acción de repliegue del campo de búsqueda devolviendo la visibilidad habitual a la barra de menú institucional.*
+> **[Captura: Botón de Borrado Rápido en Buscador]**
+> *Botón circular de borrado con ícono de equis visible durante el ingreso de texto en el buscador.*
 >
-> **[Captura: Cierre y Repliegue del Buscador de Cabecera (Móvil)]**
-> *Repliegue del buscador en cabecera de dispositivo móvil. (Móvil).*
+> **[Captura: Botón de Borrado Rápido en Buscador (Móvil)]**
+> *Botón interactivo de borrado rápido en dispositivo móvil. (Móvil).*
 
-##### 3. Navegación por Teclado en la Lista Flotante de Resultados
-* **Situación:** El visitante visualiza los resultados sugeridos debajo del campo pero, al presionar la tecla *Enter*, la página no navega ni abre el contenido deseado.
-* **Causa:** El cursor de texto continúa dentro de la caja de búsqueda sin haber seleccionado ningún ítem específico de la lista flotante con las flechas direccionales.
+##### 3. El Buscador no Navega al Probarlo Dentro del Editor Visual («Protección de Borrador»)
+* **Situación:** El editor insertó el bloque «Buscador del Sitio Web», digitó una palabra y presionó Enter o el botón de lupa, pero la pantalla no redirige a la página de resultados.
+* **Causa:** Protección intencional del Editor Visual (`esEdicion = true`). En modo de maquetación, las acciones de navegación externa se deshabilitan para evitar que el usuario abandone involuntariamente su sesión de edición y pierda cambios en borrador.
+* **Acción correctiva:** Para comprobar la redirección hacia la página de resultados, utilizar el botón de vista previa o salir del modo edición guardando previamente los cambios.
+
+##### 4. Error al Navegar a la Página de Resultados (Página no encontrada)
+* **Situación:** Al ejecutar una búsqueda en el portal público, el navegador abre una página no encontrada o en blanco.
+* **Causa:** La propiedad `Página de resultados` en el inspector del bloque «Buscador del Sitio Web» apunta a una dirección que no ha sido creada con el botón «Nueva página» o cuyo slug fue modificado.
 * **Acción correctiva:**
-  1. Una vez desplegada la lista de sugerencias, presionar la tecla **Flecha Abajo** para iluminar el primer resultado de la lista.
-  2. Desplazarse hacia arriba o hacia abajo con las flechas del teclado hasta resaltar la página o sección deseada.
-  3. Al tener seleccionado el ítem correspondiente, presionar la tecla **Enter** para ejecutar la navegación inmediata a la sección elegida.
-
-> **[Captura: Selección de Resultado con Teclado]**
-> *Ítem de la lista flotante resaltado mediante navegación por teclado con anuncio accesible de su tipo de contenido.*
->
-> **[Captura: Selección de Resultado con Teclado (Móvil)]**
-> *Selección de ítem sugerido en lista adaptada a pantalla táctil. (Móvil).*
+  1. Abrir el editor de la página donde reside el buscador.
+  2. Seleccionar el bloque «Buscador del Sitio Web» y consultar el panel lateral de propiedades.
+  3. En la casilla **«Página de resultados»**, verificar que la ruta relativa coincida exactamente con la página creada para los resultados (ej: `/buscador-general` o `/consulta`) y que dicha página contenga el bloque «Resultados de Búsqueda del Sitio».
 
 ---
 

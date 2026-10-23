@@ -44,6 +44,13 @@ import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA } from '@/shared/lib/blocks/di
 import { Footer } from '@/shared/lib/blocks/footer';
 import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
 import { obtenerIndiceBusqueda } from '@/features/editor/publishing/services/publicacion.service';
+import {
+  BuscadorSitioBloque,
+  ResultadosBusquedaSitio,
+  type BuscadorSitioBloqueProps,
+  type ResultadosBusquedaSitioProps,
+} from '@/shared/lib/blocks/buscador-sitio';
+import type { PaginaIndiceBusqueda } from '@/features/editor';
 
 import { CABECERA_POR_DEFECTO } from '@/features/editor/client';
 import {
@@ -389,6 +396,8 @@ const puckConfigBase: Config = {
         'AlertasInversion',
         'TendenciaOcupacional',
         'MapaSitio',
+        'BuscadorSitioWeb',
+        'ResultadosBusquedaSitio',
       ],
     },
     'Texto e imagen': {
@@ -2218,30 +2227,31 @@ const puckConfigBase: Config = {
       label: 'Mapa del Sitio',
       defaultProps: VALORES_MAPA_SITIO_POR_DEFECTO,
       fields: {
-        mostrarTitulo: {
+        mostrarTitulo: campoEnAcordeon({
           type: 'radio',
           label: 'Mostrar título',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
           ],
-        },
-        titulo: {
+        }),
+        titulo: campoEnAcordeon({
           type: 'text',
           label: 'Título',
-        },
-        mostrarDescripcion: {
+          placeholder: 'Mapa del sitio',
+        }),
+        mostrarDescripcion: campoEnAcordeon({
           type: 'radio',
           label: 'Mostrar descripción',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
           ],
-        },
-        descripcion: {
+        }),
+        descripcion: campoEnAcordeon({
           type: 'textarea',
           label: 'Descripción (Opcional)',
-        },
+        }),
       },
       resolveData: async (data) => {
         try {
@@ -2263,6 +2273,282 @@ const puckConfigBase: Config = {
           mostrarDescripcion={mostrarDescripcion}
           descripcion={descripcion}
           paginas={paginas}
+        />
+      ),
+    },
+    BuscadorSitioWeb: {
+      label: 'Buscador del Sitio Web',
+      fields: {
+        paginaResultados: campoEnAcordeon(
+          {
+            type: 'text',
+            label: 'Página de resultados',
+            placeholder: '/buscador-general',
+            ayuda: 'Ruta relativa hacia la página creada con «Nueva página» donde se mostrarán los resultados (ej: /buscador-general, /consulta).',
+          },
+          { abierto: true, resumen: (v) => v || '/buscador-general' }
+        ),
+        placeholder: campoEnAcordeon({
+          type: 'text',
+          label: 'Texto del campo (placeholder)',
+          placeholder: 'Buscar en el sitio web...',
+          ayuda: 'Texto indicativo que se muestra dentro del campo mientras está vacío.',
+        }),
+        textoAyuda: campoEnAcordeon({
+          type: 'textarea',
+          label: 'Texto de instrucción o ayuda',
+          placeholder: 'Escribe tu búsqueda y presiona Enter para buscar',
+          ayuda: 'Mensaje visible ubicado debajo del campo de búsqueda.',
+        }),
+        anchoMaximo: campoEnAcordeon({
+          type: 'select',
+          label: 'Ancho máximo',
+          options: [
+            { label: 'Restringido (576 px)', value: 'max-w-xl' },
+            { label: 'Medio (768 px)', value: 'max-w-3xl' },
+            { label: 'Ancho completo (100%)', value: 'w-full' },
+          ],
+          ayuda: 'Anchura máxima que ocupará la barra de búsqueda en la pantalla.',
+        }),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo del buscador',
+          ayuda: 'Color de fondo de la cápsula de búsqueda.',
+        }),
+        colorBorde: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de borde en reposo',
+          ayuda: 'Color del contorno del buscador en reposo.',
+        }),
+        colorBordeHover: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de borde activo (hover/foco)',
+          ayuda: 'Color del borde y anillo activo al pasar el cursor o hacer clic.',
+        }),
+        colorTexto: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de la letra (texto escrito)',
+          ayuda: 'Color de las letras escritas por el usuario dentro del campo.',
+        }),
+        colorPlaceholder: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del texto sugerido (placeholder)',
+          ayuda: 'Color del texto informativo mientras el campo está vacío.',
+        }),
+        colorBoton: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo del botón de buscar',
+          ayuda: 'Color de fondo del botón circular con la lupa.',
+        }),
+        colorIconoBoton: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del icono de la lupa',
+          ayuda: 'Color de la lupa dentro del botón de búsqueda.',
+        }),
+        colorBotonLimpiar: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del botón borrar ("X")',
+          ayuda: 'Color del botón para borrar el texto escrito.',
+        }),
+        colorTextoAyuda: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del texto de instrucción o ayuda',
+          ayuda: 'Color del mensaje de ayuda ubicado debajo del campo.',
+        }),
+      },
+      defaultProps: {
+        paginaResultados: '/buscador-general',
+        placeholder: 'Buscar en el sitio web...',
+        textoAyuda: 'Escribe tu búsqueda y presiona Enter para buscar',
+        anchoMaximo: 'max-w-3xl',
+      },
+      render: ({
+        puck,
+        id,
+        ...props
+      }: BlockRender<BuscadorSitioBloqueProps & { puck?: { isEditing?: boolean } }>) => (
+        <BuscadorSitioBloque
+          {...props}
+          id={id}
+          esEdicion={Boolean(puck?.isEditing)}
+        />
+      ),
+    },
+    ResultadosBusquedaSitio: {
+      label: 'Resultados de Búsqueda del Sitio',
+      fields: {
+        tituloResultados: campoEnAcordeon(
+          {
+            type: 'text',
+            label: 'Título de la sección',
+            placeholder: 'Resultados de Búsqueda',
+            ayuda: 'Encabezado principal visible sobre el listado de coincidencias encontradas.',
+          },
+          { abierto: true, resumen: (v) => v || 'Resultados de Búsqueda' }
+        ),
+        resultadosPorPagina: campoEnAcordeon(
+          {
+            type: 'number',
+            label: 'Resultados por página',
+            min: 1,
+            max: 50,
+            placeholder: '10',
+            sufijo: 'resultados',
+            ayuda: 'Cantidad máxima de tarjetas de resultados visibles antes de activar la paginación.',
+          },
+          { abierto: true }
+        ),
+        mostrarBarraRefinamiento: campoEnAcordeon(
+          {
+            type: 'radio',
+            label: 'Mostrar barra de búsqueda',
+            options: [
+              { label: 'Sí', value: true },
+              { label: 'No', value: false },
+            ],
+            ayuda: 'Permite realizar una nueva búsqueda o modificar los términos directamente desde esta página de resultados.',
+          },
+          { resumen: (v) => (v === false ? 'No' : 'Sí') }
+        ),
+        colorBarraFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color de fondo',
+          ayuda: 'Color de fondo de la cápsula de búsqueda superior.',
+        }),
+        colorBarraBorde: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color de borde en reposo',
+          ayuda: 'Color de borde de la barra superior en reposo.',
+        }),
+        colorBarraBordeHover: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color de borde activo',
+          ayuda: 'Color de borde y anillo al enfocar o pasar el cursor.',
+        }),
+        colorBarraTexto: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color de letra',
+          ayuda: 'Color del texto escrito en la barra superior.',
+        }),
+        colorBarraPlaceholder: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color del placeholder',
+          ayuda: 'Color del texto sugerido en la barra superior.',
+        }),
+        colorBarraBoton: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color del botón de buscar',
+          ayuda: 'Color de fondo del botón circular con la lupa.',
+        }),
+        colorBarraIconoBoton: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color del icono de la lupa',
+          ayuda: 'Color de la lupa en el botón superior.',
+        }),
+        colorBarraBotonLimpiar: campoEnAcordeon({
+          type: 'color',
+          label: 'Barra superior: Color del botón borrar ("X")',
+          ayuda: 'Color del botón para borrar el texto en la barra superior.',
+        }),
+        colorTitulo: campoEnAcordeon({
+          type: 'color',
+          label: 'Resultados: Color del título',
+          ayuda: 'Color del encabezado principal («Resultados de Búsqueda»).',
+        }),
+        colorConteo: campoEnAcordeon({
+          type: 'color',
+          label: 'Resultados: Color del conteo de resultados',
+          ayuda: 'Color del texto con el número de resultados encontrados.',
+        }),
+        colorBordeTabla: campoEnAcordeon({
+          type: 'color',
+          label: 'Tabla: Color de borde y separadores',
+          ayuda: 'Color del marco exterior y líneas de división entre filas.',
+        }),
+        colorCabeceraTabla: campoEnAcordeon({
+          type: 'color',
+          label: 'Tabla: Color de fondo de cabecera',
+          ayuda: 'Color de fondo de la fila de títulos de columna.',
+        }),
+        colorTextoCabeceraTabla: campoEnAcordeon({
+          type: 'color',
+          label: 'Tabla: Color de texto de cabecera',
+          ayuda: 'Color de los títulos «Página / Sección» y «Contenido coincidente».',
+        }),
+        colorFilaHover: campoEnAcordeon({
+          type: 'color',
+          label: 'Tabla: Color de fila al pasar el cursor',
+          ayuda: 'Color de fondo de cada fila al pasar el ratón.',
+        }),
+        colorBadgeFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Badge: Color de fondo de etiqueta',
+          ayuda: 'Color de fondo de la pastilla («Página» o «Sección»).',
+        }),
+        colorBadgeTexto: campoEnAcordeon({
+          type: 'color',
+          label: 'Badge: Color de texto de etiqueta',
+          ayuda: 'Color de la letra dentro de la pastilla.',
+        }),
+        colorTituloResultado: campoEnAcordeon({
+          type: 'color',
+          label: 'Resultados: Color del título de coincidencia',
+          ayuda: 'Color del nombre de la página o sección en la lista.',
+        }),
+        colorRutaResultado: campoEnAcordeon({
+          type: 'color',
+          label: 'Resultados: Color de la ruta o enlace',
+          ayuda: 'Color de la URL relativa visible debajo del título.',
+        }),
+        colorTextoResultado: campoEnAcordeon({
+          type: 'color',
+          label: 'Resultados: Color del fragmento de texto',
+          ayuda: 'Color del extracto o párrafo donde se encontró la coincidencia.',
+        }),
+        colorResaltado: campoEnAcordeon({
+          type: 'color',
+          label: 'Resaltado: Color de fondo de la coincidencia',
+          ayuda: 'Color de fondo que resalta las palabras coincidentes.',
+        }),
+        colorTextoResaltado: campoEnAcordeon({
+          type: 'color',
+          label: 'Resaltado: Color de texto de la coincidencia',
+          ayuda: 'Color de las letras dentro del fondo resaltado.',
+        }),
+        colorPaginacionActiva: campoEnAcordeon({
+          type: 'color',
+          label: 'Paginación: Color del botón de página actual',
+          ayuda: 'Color de fondo del número de página activa.',
+        }),
+      },
+      defaultProps: {
+        tituloResultados: 'Resultados de Búsqueda',
+        resultadosPorPagina: 10,
+        mostrarBarraRefinamiento: true,
+      },
+      resolveData: async (data) => {
+        try {
+          const paginas = await obtenerIndiceBusqueda();
+          return {
+            props: {
+              ...data.props,
+              paginas,
+            },
+          };
+        } catch {
+          return { props: data.props };
+        }
+      },
+      render: ({
+        puck,
+        id,
+        ...props
+      }: BlockRender<ResultadosBusquedaSitioProps & { puck?: { isEditing?: boolean } }>) => (
+        <ResultadosBusquedaSitio
+          {...props}
+          id={id}
+          mostrarBarraRefinamiento={props.mostrarBarraRefinamiento !== false}
+          esEdicion={Boolean(puck?.isEditing)}
         />
       ),
     },
