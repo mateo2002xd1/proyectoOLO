@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 23-10-2026 (3.ª parte): el rol `visitante_interno`, retirado hace un mes pero vivo en el seed de un servidor nuevo
+
+**Qué pidió el usuario:** revisar si existe un rol «visitante interno» en el proyecto; al confirmar que es un rol retirado y encontrar que el seed de un servidor nuevo seguía creándolo, corregirlo.
+
+**Qué se encontró.** `visitante_interno` existió como uno de los 6 roles originales (acceso de solo lectura a la intranet) hasta el commit `4d5137d6` (2026-09-15, *"fusionar Director/Subdirector, retirar visitante_interno y bloquear sus permisos desde el panel"*): `Director` y `Subdirector` —permisos idénticos— se fundieron en `Director/Subdirector`, que cubre el mismo caso de solo lectura, y `visitante_interno` se retiró por duplicarlo. Ese commit puso al día `scripts/semillas/sembrar-permisos-roles.ts` (la fuente de verdad, que corre en cada despliegue), las policies, los scripts de verificación y la documentación — **pero no `4000-api-backend/seed/roles-y-permisos.sql`**, el SQL crudo que usa `deploy.sh sembrar` para un servidor nuevo desde cero. Ese archivo seguía creando **6** roles: `Director` y `Subdirector` sin fundir, y `visitante_interno` con `acceso.intranet`. Llevaba así más de un mes, sobrevivió a un commit tan reciente como el de ayer (`217a88f6`, que solo tocó la lista de permisos del mismo archivo sin notarlo).
+
+**Consecuencia si no se corregía:** un `deploy.sh sembrar` contra un servidor nuevo volvía a traer el rol retirado, seleccionable en el desplegable de rol al crear un usuario (`RoleRepository.findAll()` solo excluye a Superadmin por nombre), y sin que `sembrar-permisos-roles.ts` lo gestionara nunca después (un rol fuera de su lista «no se toca»). Y creaba, aparte, un tercer rol `Director/Subdirector` duplicado la primera vez que corriera `sembrar:permisos` encima, porque ese script busca ese nombre exacto y no lo encontraba.
+
+**Corrección.** `4000-api-backend/seed/roles-y-permisos.sql`: de 6 roles a 4 (`Superadmin`, `Administrador`, `Editor`, `Director/Subdirector`), con un comentario que explica por qué y qué hacer si una base ya tiene las filas viejas. El paso 5 (acceso a la intranet) ya no nombra `Director`, `Subdirector` ni `visitante_interno`, solo `Director/Subdirector`.
+
+**Verificación:** contra Postgres 18 desechable —migraciones 001-047 aplicadas—, el seed corregido crea exactamente 4 roles, `Director/Subdirector` con `acceso.intranet`, es idempotente (correrlo dos veces no cambia nada), y `npm run sembrar:permisos` corrido encima dice `[Director/Subdirector] sin cambios`: los dos scripts quedan de acuerdo, sin duplicar el rol.
+
+**No se tocó Neon.** No se comprobó si hay algún usuario real asignado a `visitante_interno` en producción; si lo hay, hay que reasignarlo y borrar la fila a mano (el `ON CONFLICT` del seed no limpia filas ya existentes con otro nombre).
+
+**Dos discrepancias más, encontradas al correr `sembrar:permisos` encima — también corregidas, pidiéndolo el usuario, con doble comprobación antes de tocar el archivo.** El catálogo de permisos del seed (paso 2) traía `editor.eliminar-bloques` y `editor.enviar-revision`, dos claves que ya no están en `catalogo-permisos.ts`, y le faltaban `configuracion.identidad` y `editar.sitio.politica-de-privacidad`, que sí están. El Editor (paso 4) llevaba de más `acceso.panel`, `editor.eliminar-bloques` y `editor.enviar-revision`, y le faltaba `editar.sitio.politica-de-privacidad`.
+
+Antes de tocar el archivo, la lista de 21 claves del catálogo y la de 11 del Editor se sacaron **dos veces por separado**: una leyendo `catalogo-permisos.ts` y `sembrar-permisos-roles.ts` a mano, otra ejecutándolos de verdad con `ts-node` (`CLAVES_DEL_CATALOGO` y `clavesDeEdicion('sitio'/'intranet')`). Las dos coincidieron. Al cargar el seed corregido contra la base migrada, las 21 claves del catálogo ya existían —las siembra una migración aparte, junto con tres claves de secciones creadas desde el editor que el catálogo estático no declara a propósito (`editar.sitio.alertas-inversion`, `clasificacion`, `programas-sobresalientes`)— y el Editor quedó con exactamente las 11 esperadas. Un tercer cruce, contra el esquema real.
+
+**Verificación final:** `npm run sembrar:permisos` sobre el seed ya corregido dice `sin cambios` en los cuatro roles, sin ninguna línea `[RETIRADO]`; `tsc --noEmit` de la API, limpio.
+
+---
+
 ## sesión 23-10-2026 (2.ª parte): pruebas automáticas de los límites de tasa
 
 **Qué pidió el usuario:** implementar pruebas de rate limit.
