@@ -82,7 +82,7 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 
 - **Contraseñas con bcrypt** (ya está) — coste de hashing adecuado (≥ 10 rounds).
 - **Política de complejidad concreta**: definir longitud mínima, mezcla de caracteres. Hoy el requerimiento la menciona pero no está especificada — hay que escribirla.
-- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 8 horas (`JWT_EXPIRES_IN`; eran 7 días): es el techo de la jornada, y lo que acota la sesión activa de verdad es la inactividad, abajo.
+- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 8 horas (`JWT_EXPIRES_IN`; eran 7 días): es el techo de la jornada, y lo que acota la sesión activa de verdad es la inactividad, abajo. **Qué lleva el token (SES-01, SES-02, 2026-10-23):** la identidad, el rol y solo las claves **fijas** del catálogo (21 hoy, ~500 bytes), más `edita`, que es lo que miran los bordes de Next. Las `editar.<ámbito>.<slug>` de las secciones creadas desde el editor **no viajan**: crecían con los datos (una clave por sección) y a unas doscientas la cookie pasaba los 4 KB, el navegador la descartaba en silencio y la persona se quedaba «sin sesión» (la cabecera `Authorization` llegaba a dar 431). La lista completa va en la respuesta del login y en `GET /api/me`, y **la API lee las claves de la base en cada petición** (`requireAuth` → `shared/permisos-de-rol.ts`: caché de 30 s con invalidación al escribir), así que revocar un permiso se nota en la petición siguiente y no a las 8 horas. Con varias instancias de la API el peor caso son esos 30 s. Lo vigila `npm run sesion:permisos`.
 - **Cierre por inactividad — IMPLEMENTADO 2026-08-18.** Dos umbrales que hacen cosas distintas y por eso no coinciden:
   - **15 minutos en el navegador** (`packages/inactividad/`): a los 14 aparece un aviso con cuenta atrás de 60 s; al agotarse se llama a `/logout` y se va al login con `?motivo=inactividad`. En la mesa de edición se guarda el borrador antes de cerrar, como autoguardado (desde el 2026-09-28 el editor guarda solo cada 30 s, así que lo pendiente al cerrar es como mucho medio minuto de trabajo). Esto es **experiencia de usuario**: quien robe la cookie no ejecuta nuestro JavaScript.
   - **20 minutos en la API** (`requireAuth`, contra `usuarios.ultimo_acceso_en`): este es el control real. La columna existía y solo se escribía al iniciar sesión, así que no medía nada; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`.
@@ -161,9 +161,15 @@ Reglas que deja fijadas:
   objeto ya es conocida para esa sesión y lo que falta es el derecho a actuar.
 - **El dueño se toma de la sesión, nunca del cuerpo.** `subidoPor`, `usuarioId` de un job y
   `creadoPor` de una versión salen de `req.user`.
-- **La edición es colaborativa por decisión de producto**: cualquier Editor trabaja sobre el
-  borrador de otro. La autoría se registra para RF-07, no para negar el paso. Lo que sí mira
-  al dueño es **borrar**, la cuenta propia, los adjuntos y los trabajos en cola.
+- **La edición es colaborativa por decisión de producto, pero escribe uno solo a la vez**
+  (2026-10-23): todos los Editores trabajan sobre **la misma copia** del borrador, y quien tiene
+  el candado de edición es el único que puede guardar (también el autoguardado) y enviar a
+  revisión. Otro recibe 409 `PAGE_LOCKED` con el nombre de quien edita
+  (`exigir-candado.ts`). Sin candado vigente (caducado o nunca pedido) se guarda; quien lo
+  quiera con otro dentro lo toma a la fuerza, y eso solo lo hace quien aprueba. Que el nombre
+  de quien edita sea visible para cualquier Editor es a propósito: ayuda a coordinarse. La
+  autoría se registra para RF-07. Lo que además mira al dueño es **borrar**, la cuenta propia,
+  los adjuntos y los trabajos en cola.
 - **El ámbito no es una frontera de permisos** y no debe tratarse como tal mientras todos los
   roles que editan editen en las dos aplicaciones y la cola de revisión sea cruzada. Lo que
   sí se exige es que venga declarado al escribir (`exigirAmbito`), para que una cabecera
@@ -173,28 +179,31 @@ Reglas que deja fijadas:
 cadena de middlewares; no ve lo que pasa dentro del caso de uso. Esta prueba levanta la API,
 inicia sesión con ocho cuentas reales (Superadmin, dos Administradores, dos Editores, Director y
 dos roles de un solo ámbito) y ataca los objetos de los demás, con un control por cada negativa
-(143 comprobaciones). Escribe en la base, así que se niega a correr salvo contra una base local
+(169 comprobaciones). Escribe en la base, así que se niega a correr salvo contra una base local
 cuyo nombre contenga «prueba», «test» o «idor», y borra lo suyo al terminar.
 
 | Hallazgo | Estado |
 |---|---|
 | Un **Administrador** podía restablecer la contraseña de un Superadmin (la temporal venía en la respuesta → toma de cuenta), cambiarle el correo, degradarlo, desactivarlo, borrarlo, crear cuentas Superadmin y ascender a otra cuenta a Superadmin: `puedeAdministrarUsuarios` decía *si* se gestionan cuentas, no *cuáles* | **Corregido 2026-10-23.** `puedeGestionarCuentaDeRol` (`usuarios.policies.ts`): el rol de Superadmin, y sus cuentas, solo los gestiona un Superadmin; se aplica en `createUser`, `updateUser` (rol actual **y** rol pedido) y `deleteUser` |
 | `GET`/`DELETE /api/observatorio/cargas/:id` aceptaban el id de una carga de **otro módulo** (alertas de inversión, fuentes futuras) y la leían o la borraban con su Excel: `obtenerCarga` usaba `findByPk` sin filtrar `modulo` | **Corregido 2026-10-23.** Filtra por módulo como los otros tres repositorios; un id de tendencia conserva su 409 con la pista, cualquier otro es 404 |
-| **Lectura de la intranet sin sesión.** `GET /api/paginas/publica/:slug`, `/indice-busqueda` y `/titulos` están antes de `requireAuth` y el ámbito lo elige quien pregunta (`X-Ambito: intranet`): devuelven contenido, textos y títulos de la intranet a cualquiera. Los adjuntos de la intranet sí exigen sesión; el contenido no | **ABIERTO, decisión de producto.** Exigir sesión con `puedeVer` cuando el ámbito es intranet obliga a que el render de la intranet (servidor de Next, `api-client.ts` sin cookies) reenvíe la sesión, y a sacar esas rutas de la caché compartida por ámbito. Lo detectó otra sesión; `idor:verificar` lo imprime como ABIERTO hasta que se decida |
+| **Lectura de la intranet sin sesión (OBS-04).** `GET /api/paginas/publica/:slug`, `/indice-busqueda`, `/titulos` y `POST /visitas/registrar` estaban antes de `requireAuth` y el ámbito lo elige quien pregunta (`X-Ambito: intranet`): devolvían contenido, textos y títulos de la intranet a cualquiera (y las visitas confirmaban qué páginas existían). Los adjuntos de la intranet sí exigían sesión; el contenido no | **Corregido 2026-10-23.** `requiereSesionSiEsIntranet` (`permisos.middleware.ts`): con ámbito intranet exige sesión y `puedeVer`, **antes** de la caché por ámbito, y marca la respuesta `private, no-store`; el sitio sigue siendo público. La intranet reenvía la sesión desde sus componentes de servidor (`cabecerasConSesion()` en `obtenerPaginaPublicada` / `obtenerPlantilla`) y vuelve al acceso si la API la rechaza. Detectado por otra sesión; `idor:verificar` comprueba que ni la caché llena con sesión se sirve sin ella |
 
-Quedan como AVISO, a propósito o por decidir (la prueba los imprime, no fallan): un Administrador
-puede restablecer la contraseña de otro Administrador; otro Editor puede guardar borrador en una
-página con el candado de un compañero (la edición es colaborativa); `GET /:slug/bloqueo` muestra
-quién edita a un Editor sin permiso sobre esa sección (lo usa la restauración de respaldos);
-`GET /api/paginas/respaldos` y `/publicadas` solo piden sesión, así que un Director las lista; y
-`POST /:slug/restaurar` con una versión que no es de esa página responde 500 en vez de 404 (no la
-publica, pero el motivo no se distingue).
+**Decidido el 2026-10-23** (la prueba lo vigila como comprobación, no como aviso):
+- Un **Administrador sí puede restablecer la contraseña de otro Administrador**: los administradores se administran entre sí; solo el Superadmin es intocable.
+- `POST /:slug/restaurar` con una versión o un id que no son de esa página (o de ese ámbito) responde **404**, no 500: el objeto no existe para quien pregunta. Por UUID ya no cruza de ámbito.
+- **Un solo editor escribe**: guardar, autoguardar y enviar a revisión exigen el candado (regla de arriba).
+- Un Editor **ve el nombre** de quien tiene abierta una página aunque no tenga el permiso de esa sección (`GET /:slug/bloqueo`).
+
+Queda como AVISO (la prueba lo imprime, no falla): `GET /api/paginas/respaldos` y `/publicadas`
+solo piden sesión, así que un Director las lista.
 
 Lo que se probó y aguanta: lectura, edición y borrado de cuentas ajenas por Editor y Director (403 igual exista o no el id);
 lista blanca de autoservicio (rol, estado, `reset_password`); roles protegidos; permiso por sección y
 por ámbito con cuentas de un solo ámbito; `versionId` de otra página en `editable`, `versiones` y
 `restaurar`; candados ajenos; cargas por rol; salida de carpeta en `/api/archivos` y en las imágenes
-de identidad; `change-password` y preguntas de seguridad con ids ajenos en el cuerpo.
+de identidad; `change-password` y preguntas de seguridad con ids ajenos en el cuerpo; el candado
+(guardar, autoguardar y enviar a revisión de otro editor dan 409; quien lo perdió a la fuerza tampoco
+guarda); y la lectura pública con ámbito intranet (401 sin sesión, 403 sin acceso, caché sin fuga).
 
 Verificación: `npm run propiedad:verificar` en `4000-api-backend`. Comprueba las policies contra
 los nombres de rol reales de la tabla `roles` **y** recorre los routers de Express afirmando
@@ -510,6 +519,8 @@ cada uso, y lo desconocido se ignora: `?cachebust=N` resuelve a la misma entrada
 petición sin parámetros. A cambio, toda variable que lea un handler cacheado tiene que
 estar declarada, o dos respuestas distintas compartirían entrada.
 
+**Redis y los límites (RED-01, 2026-10-23).** El almacén es Redis, no la memoria del proceso: por eso el cupo se comparte entre réplicas y sobrevive a un reinicio (un atacante no gana intentos porque haya más instancias, ni limpia su castigo haciendo que el proceso se reinicie). Y el límite **nunca** debe costar la disponibilidad: con Redis caído la petición pasa (`passOnStoreError`), pero hasta el 2026-10-23 pasaba **cada vez más despacio** —0,4 s, 2 s, 4 s, 6 s…, porque esperaba al siguiente intento de reconexión y una petición cruza hasta tres limitadores—. Se vio apagando Redis a mitad de una prueba; la prueba con Redis inalcanzable desde el arranque no lo veía. Ahora cada comando tiene 300 ms (`COMANDO_TIMEOUT_MS`), la reconexión espera como mucho 2 s y, si la conexión se perdió, el limitador se salta al instante (~5 ms por petición). No se salta mientras la conexión se está abriendo, para no dejar sin límite a una réplica recién arrancada. Es **fail-open a propósito**: perder el límite unos segundos es mejor que perder la API. Lo vigila `npm run limites:redis` (dos réplicas, reinicio, Redis inalcanzable y Redis mudo con `CLIENT PAUSE`).
+
 ### 4.6 Transporte y cabeceras (§3)
 
 Helmet en la API; CORS restringido a los dos orígenes de los frontends con `credentials`,
@@ -610,9 +621,9 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   Detalle en `auditorias/2026-10-22-fuga-de-informacion-en-errores.md`.
 - **El login devuelve el `token` también en el cuerpo JSON**, además de la cookie
   `httpOnly`: el BFF del sitio lo consume. Latente, no explotable hoy.
-- **`client_max_body_size` está en 10M y la política de subida admite 50 MB** para
-  documentos. Hoy nginx cortaría antes. Hay que igualar los dos números en la dirección
-  que se decida.
+- ~~**`client_max_body_size` en 10M frente a los 50 MB de la política de subida**~~. *Ya no
+  aplica (revisado el 2026-10-23): `docker/nginx/nginx.servidor.conf` tiene
+  `client_max_body_size 50M`, igual que el techo de documentos de `@olo/upload-policy`.*
 - ~~**Las subidas siguen dentro del webroot** (`public/uploads`)~~. *Cerrado el
   2026-10-06: viven en el filesystem de la API y se sirven por `/api/archivos` — ver
   §S1.*
@@ -643,6 +654,10 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | `npm run jwt:verificar` | Que ningún verificador de sesión (API, sitio, intranet) acepte un JWT con otro algoritmo del que firma la API: `alg: none` en cuatro grafías, RS256→HS256 con la clave pública como secreto, firmas RSA/EC del atacante, `jwk`/`jku`/`x5u`/`kid` en la cabecera, HS384 y HS512 con el secreto bueno y cabeceras rotas; y que el token legítimo siga pasando: 31 casos × 3 verificadores |
 | `npm run errores:verificar` | Que ningún error filtre `code`, SQL ni mensajes internos, y que login y recuperación respondan igual (texto y tiempo) exista o no la cuenta |
 | `npm run limites:verificar` | Que cada limitador de `rate-limit.middleware.ts` cuente por la clave que dice (correo, usuario o IP — nunca la que no toca), bloquee justo en su techo documentado, con el mensaje documentado, y que cada `skip` exima lo que dice eximir (tráfico interno sin `X-Forwarded-For`, el superadmin en las escrituras): 49 comprobaciones, instancias reales, con almacén en memoria para no tocar el Redis de desarrollo |
+| `npm run limites:redis` | Que los límites sirvan con **varias réplicas** y con un Redis de verdad: cupo compartido entre dos procesos, castigo que sobrevive a un reinicio, clave con caducidad, y que un Redis caído o mudo (`CLIENT PAUSE`) no frene ni tumbe la API (RED-01). Solo contra un Redis local fuera de la base 0 |
+| `npm run sesion:permisos` | Que el token de un rol con 300 claves de sección quepa en una cookie (SES-01) y que revocar un permiso se note en la petición siguiente con el mismo token (SES-02) |
+| `npm run rutas:verificar` | Que una ruta guardada en el contenido de una página (`../`, `%2e%2e`, absoluta) no saque de `uploads/` el publicar, el restaurar, el borrar huérfanos ni el servir (OBS-01). Sin base ni red |
+| `npm run roles:retirar` | No es una verificación: la herramienta que retira un rol retirado (`deploy.sh retirar-rol`, ROL-01) |
 | `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
 | `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |
 
@@ -660,6 +675,57 @@ requiere que alguien se acuerde de revisarla: rompe la suite.
 Donde esa costumbre todavía no llegó es a la accesibilidad, que no tiene ni un script
 equivalente — y se nota: un cambio de tres valores hex revirtió media fase de
 `9-accesibilidad.md` sin que nada avisara.
+
+### 4.10 Registro de hallazgos
+
+Un solo sitio donde cada hallazgo tiene **un identificador** y un estado. La bitácora
+(`6-auditoria.md`) cuenta qué pasó cada día; esto dice qué **sigue** abierto.
+
+**Reglas del registro:**
+- Un ID es único en todo el repositorio, no se reutiliza ni se renumera. Familia = el tema
+  (`OBS` off-by-slash, `SES` sesión, `RED` Redis y límites, `ROL` roles).
+- En la bitácora, los informes y los mensajes entre sesiones se cita **el ID**, no «H1», «H2» u
+  «O1»: esas son numeraciones de un solo informe. El 2026-10-23 una sesión llamó «H2» a la lectura
+  de la intranet sin sesión, que el informe del 19-10 llamaba «O1» (hoy OBS-04), mientras que el
+  «H2» de ese informe es el redirect del login (OBS-02): el mismo nombre para dos cosas.
+- Un hallazgo cerrado se queda en la tabla con **cómo se vigila**: si no tiene una prueba, se dice.
+
+**Cerrados:**
+
+| ID | Hallazgo | Estado | Cómo se vigila |
+|---|---|---|---|
+| OBS-01 | Publicar y restaurar páginas convertían las rutas `/uploads/…` del contenido en rutas de disco **sin contención**: con `../` (también `%2e%2e`, que `extraerRutasUploads` decodifica) un archivo de fuera de `uploads/` —el adjunto de la intranet, un Excel de las cargas— acababa en el backup **público** del sitio y se borraba el original, y restaurar escribía donde se dijera. Informe del 19-10 (allí «H1») | **Corregido 2026-10-23.** `resolverDentroDe` en `filesystem.ts` es la única comprobación de contención; la usan publicar, restaurar, vista previa, borrar huérfanos y servir | `rutas:verificar`: 6 de 10 antes, 16 de 16 después |
+| OBS-02 | El `?redirect=` del login descartaba `//` pero no `/\` ni `/%09/`: redirección abierta tras el login (allí «H2») | **Corregido** antes del 2026-10-23: `rutaInternaSegura` en `@olo/url-policy`, usada por las dos pantallas de login | `xss:verificar` |
+| OBS-03 | `proxy.ts` de la intranet usaba `startsWith('/api-backend')` sin barra: `/api-backendx` pasaba como ruta pública y respondía 200 con el marco de la intranet sin sesión (allí «H3») | **Corregido 2026-10-23**: `/api-backend` exacto o con barra. Mismo criterio en el sitio con `/login/first-login` | `curl` al `next dev` (antes 200, ahora 307 a `/login`). **Sin prueba automática**: el proxy necesita el runtime de Next |
+| OBS-04 | Lectura de la intranet sin sesión: `publica/:slug`, `indice-busqueda`, `titulos` y `visitas/registrar` iban antes de `requireAuth` y el ámbito lo elige quien pregunta (allí «O1»; la sesión que lo confirmó lo llamó «H2») | **Corregido 2026-10-23** (`requiereSesionSiEsIntranet`). Ver §S10 | `idor:verificar` |
+| SES-01 | El token llevaba **todas** las claves del rol y crecía con cada sección creada: con ~200, la cookie pasaba los 4 KB y el navegador la descartaba en silencio; la cabecera `Authorization` daba 431 | **Corregido 2026-10-23.** Solo viajan las claves fijas del catálogo (21) y `edita`; ver §S3 | `sesion:permisos`: 605 bytes frente a más de 9 800 solo en permisos |
+| SES-02 | Revocar un permiso no surtía efecto hasta que caducaba el token (8 h): las policies leían `req.user.permisos` del token | **Corregido 2026-10-23.** `requireAuth` pone los permisos desde la base (caché de 30 s con invalidación) | `sesion:permisos`: mismo token, 200 → 403 → 200 |
+| RED-01 | Con Redis caído cada petición esperaba más (0,4 → 6 s) y pasaba por hasta tres limitadores | **Corregido 2026-10-23**: tope por comando, reconexión corta y salto inmediato si la conexión se perdió; ver §4.5 | `limites:redis` (13 comprobaciones) |
+
+**Pendiente de ejecutar (la herramienta ya está):**
+
+| ID | Hallazgo | Qué falta |
+|---|---|---|
+| ROL-01 | El rol `visitante_interno` está retirado desde el 2026-09-15 pero una base antigua puede tener cuentas con él (y un seed anterior al 2026-10-23 lo volvía a crear) | **Correrlo en el servidor real:** `./docker/deploy.sh retirar-rol` (informa sin cambiar nada) y, si hay cuentas, elegir la salida (`docker/guia-bash.md` A6c). Probado en una base desechable con las cuatro salidas y sus rechazos; **no se ha tocado Neon ni el servidor** |
+
+**Por decidir antes de integrar** (viene en `OLO/dev`, aún no está en `dev`):
+
+| ID | Hallazgo | Qué lo cierra |
+|---|---|---|
+| DIR-01 | Los commits de Mateo (`OLO/dev`, 2026-10-23) cambian `PATCH /:slug/direccion` y sus dos consultas de `puedePublicar` a `puedeEditar` (rutas y `cambiar-direccion.usecase.ts`), y habilitan el ámbito `intranet`. Cambiar la dirección **reescribe los enlaces de la versión publicada sin pasar por la aprobación** (su propia descripción de la clave lo decía: «solo opera para quien aprueba») y ahora lo puede hacer un Editor al que se le conceda `secciones.cambiar-direccion`. La clave sigue siendo de concesión explícita, así que no es un hueco abierto a todos los Editores; sí es una **rebaja del control editorial** | Decidir: (a) dejarlo, entendiendo que quien tenga la clave publica sin aprobación; o (b) volver a `puedePublicar`. `idor:verificar` («el Editor no cambia direcciones») sigue en verde con la cuenta Editor de fábrica porque no tiene la clave: no vigila el caso del Editor con la clave |
+
+**Abiertos** (cada uno nombra qué lo cierra; ninguno se puede cerrar solo con código):
+
+| ID | Hallazgo | Qué lo cierra |
+|---|---|---|
+| HIS-01 | Los secretos viejos (`JWT_SECRET`, `LOCAL_AUTH_PASSWORD`, contraseña de Postgres) siguen en el historial de git; están rotados y **quemados** | Decisión de reescribir el historial (invalida los clones del equipo). §4.8 |
+| NGX-01 | nginx confía en cualquier `X-Forwarded-For` (`set_real_ip_from 0.0.0.0/0`): si el túnel no lo reescribe, un cliente fija su IP, esquiva el límite de nginx y ensucia la bitácora | Probarlo en el servidor real y, si se falsifica, limitar `set_real_ip_from` a la red de Docker. §4.8 |
+| CSP-01 | `script-src` sin nonce: la CSP no frena un script en línea ni un `javascript:` (lo cierran la validación por valor y `enlaceSeguro`/`iframeSeguro`) | Nonce solo en la intranet (todo dinámico) y otra vía, hashes por página, en el sitio. §4.8 |
+| PBI-01 | Power BI dentro del `sandbox`, sin probar con un informe publicado de verdad | Mirar un tablero real en el servidor; si falla, ajustar `ATRIBUTOS_DE_IFRAME_SEGURO` |
+| TXT-01 | Un texto que empieza por «JavaScript:» desaparece al guardar (precio de validar por valor) | Otra redacción; no es un fallo a corregir en código |
+| TOK-01 | El login devuelve el `token` también en el cuerpo JSON, además de la cookie `httpOnly`; lo consume el BFF del sitio | Cambiar el BFF para no depender del cuerpo; latente, no explotable hoy |
+| VAL-01 | Zod cubre usuarios y borradores de página, no toda la API | Esquemas en el resto de los `req.body` (§3) |
+| ABR-01 | `GET /api/paginas/respaldos` y `/publicadas` solo piden sesión: un Director las lista (AVISO de `idor:verificar`) | Decidir si es a propósito |
 
 ---
 

@@ -47,6 +47,9 @@
     "errores:verificar": "ts-node scripts/verificaciones/verificar-errores-sin-fuga.ts",
     "xss:verificar": "ts-node scripts/verificaciones/verificar-xss-contenido.ts",
     "limites:verificar": "ts-node scripts/verificaciones/verificar-limites-de-tasa.ts",
+    "limites:redis": "ts-node scripts/verificaciones/verificar-limites-redis.ts",
+    "rutas:verificar": "ts-node scripts/verificaciones/verificar-contencion-de-rutas.ts",
+    "sesion:permisos": "ts-node scripts/verificaciones/verificar-permisos-en-sesion.ts",
     "carreras:paginas": "ts-node scripts/verificaciones/probar-carreras-paginas.ts",
     "carreras:acceso": "ts-node scripts/verificaciones/probar-carreras-acceso.ts",
     "carreras:cargas": "ts-node scripts/verificaciones/probar-carreras-cargas.ts",
@@ -54,6 +57,7 @@
     "carreras:http": "ts-node scripts/verificaciones/probar-carreras-http.ts",
     "seed:generar": "ts-node scripts/semillas/generar-seed-contenido.ts",
     "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts",
+    "roles:retirar": "ts-node scripts/db/retirar-rol.ts",
     "contenido:revisar": "ts-node scripts/puntuales/revisar-contenido-guardado.ts"
   },
   "dependencies": {

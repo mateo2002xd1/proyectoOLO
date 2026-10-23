@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 23-10-2026 (7.ª parte): sesión y permisos, Redis, rol retirado, contención de rutas y un registro de hallazgos con ID único
+
+**Qué pidió el usuario:** arreglar u organizar con rigor técnico —escalabilidad, integración, buenas prácticas— lo que las otras sesiones dejaron abierto: el tamaño de la sesión y los permisos, el usuario con el rol retirado (con comando en el deploy), lo que faltaba probar de Redis y los límites, los hallazgos de seguridad sin cerrar; bajar los commits de `dev`, revisar todas las pruebas de ayer y de hoy, y arreglar el choque de nombres «H2».
+
+**Punto de partida.** Las 20 verificaciones del API pasaban en el árbol tal como estaba (typecheck, permisos, propiedad, idor con 169 comprobaciones, ámbito, auditoría, caducidad, password, email, sesión, jwt, errores, xss, límites y las cinco de carreras más versionamiento). Dos cosas que ninguna prueba veía y se encontraron leyendo: **`HEAD` de `dev` no compila en un clon limpio** (`guardar-borrador` y `enviar-a-revision` importan `./exigir-candado`, que sigue sin añadir a git), y los commits de Mateo en `OLO/dev` rebajan el control de cambiar dirección (DIR-01).
+
+| ID | Qué se encontró | Qué se hizo | Verificación |
+|---|---|---|---|
+| OBS-01 | Publicar y restaurar movían archivos fuera de `uploads/` por un `../` o `%2e%2e` guardado en el contenido: el adjunto de la intranet y un Excel privado acababan en el backup **público** del sitio. Reproducido antes de arreglarlo | `resolverDentroDe` en `filesystem.ts` como única contención; la usan publicar, restaurar, vista previa, borrar huérfanos y servir | `rutas:verificar` (nueva): 6/10 antes, **16/16** después |
+| SES-01 | El token copiaba todas las claves del rol; cada sección creada suma una. Con 300 claves, 9,8 KB solo en permisos (la cookie se descarta a los 4 KB; la cabecera dio 431) | Token con las 21 claves fijas del catálogo y `edita`; la lista completa va en la respuesta del login y en `/api/me`. Borde del sitio lee `edita` | `sesion:permisos` (nueva): token de **605 bytes** |
+| SES-02 | Revocar un permiso no valía hasta que caducaba el token (8 h): las policies leían `req.user.permisos` del token | `requireAuth` pone los permisos desde la base, con la caché de 30 s que ya existía y su invalidación. Un solo módulo, `shared/permisos-de-rol.ts`, reemplaza la caché del middleware y la lectura sin caché del login | `sesion:permisos`: mismo token, 200 → 403 → 200 |
+| RED-01 | La prueba que faltaba. Con Redis **apagado a mitad de camino**, cada petición esperaba más (0,4 s, 2 s, 4 s, 6 s) porque esperaba al siguiente intento de reconexión, y cruza hasta tres limitadores | `commandTimeout` de 300 ms, reconexión de 2 s como máximo y salto inmediato si la conexión se perdió (~5 ms por petición). Mi primer arreglo dejó sin límite a una réplica recién arrancada; la prueba lo atrapó y se acotó a los estados `reconnecting`, `close` y `end` | `limites:redis` (nueva): **13/13**: cupo compartido entre dos procesos, castigo que sobrevive a un reinicio, clave con caducidad, Redis inalcanzable, Redis mudo (`CLIENT PAUSE`). Además, apagado y encendido real con Docker |
+| ROL-01 | `visitante_interno` está retirado, pero una base antigua puede tener cuentas con él | `./docker/deploy.sh retirar-rol` (script `scripts/db/retirar-rol.ts`, `npm run roles:retirar`): sin `--aplicar` solo informa; salidas `--reasignar-a`, `--inactivar-usuarios`, ambas, o `--borrar-usuarios` (solo sin historial); transacción única, bitácora, roles protegidos intocables. Documentado en `docker/guia-bash.md` A6c | Probado en una base desechable con las salidas y los rechazos. Encontró un error mío: inactivar no libera el rol (`usuarios.rol_id` es obligatorio) |
+| OBS-03 | `/api-backendx` pasaba como ruta pública en la intranet (200 sin sesión) | Barra en la comparación; mismo criterio para `/login/first-login` en el sitio | `curl` al dev: antes 200, ahora 307 a `/login`. Sin prueba automática (el proxy necesita Next) |
+| OBS-02, OBS-04 | El redirect del login ya estaba corregido (y vigilado por `xss:verificar`). La lectura de la intranet sin sesión la corrige el árbol de trabajo (otra sesión) | Sin cambios míos; hay que commitearlo | `idor:verificar`: 169 comprobaciones, 0 fallos |
+
+**El «H2».** En el informe del 19-10 la lectura de la intranet sin sesión es «O1»; «H2» es el redirect del login. Una sesión llamó «H2» a O1. Se creó el **registro de hallazgos** (`3-seguridad-del-proyecto.md` §4.10, IDs únicos, estado y cómo se vigila) y el informe del 19-10 lleva ahora la equivalencia H1=OBS-01, H2=OBS-02, H3=OBS-03, O1=OBS-04. Quedó además una revisión que no estaba en ningún sitio: `client_max_body_size` ya está en 50M en nginx, así que ese pendiente de §4.8 ya no aplica.
+
+**Verificación.** Con todos los cambios puestos, **las 23 verificaciones salieron en verde** (las 20 de antes más `rutas:verificar`, `sesion:permisos` y `limites:redis`; `idor` 169/169 con 2 AVISOS que son ABR-01). `tsc` de la API y de las dos apps sin errores; `eslint` limpio en los archivos de los dos `proxy.ts` y `verificar-sesion.ts`. No hay migraciones nuevas: no se tocó Neon ni el servidor.
+
+**Los commits de `dev`.** `git fetch --all` trajo 5 commits de Mateo a `OLO/dev` (`dev` va 29 por delante y 5 por detrás). `git merge-tree` los da **sin conflictos** con `dev`, pero no se fusionaron: el único archivo en común con lo que está sin commitear es `pagina.routes.ts` (el arreglo de OBS-04), y Git no deja fusionar sobre un archivo modificado. Hay que commitear primero y luego `git merge OLO/dev`. Revisión de lo que traen: ver DIR-01.
+
+**No se verificó:** la intranet y el sitio **en ejecución** con el token nuevo (el `edita` del borde del sitio se probó solo por tipos y por el contenido del token, no entrando al editor con una cuenta real), la lectura de la intranet con sesión desde el navegador, ni el `deploy.sh retirar-rol` dentro de Docker contra la base del servidor (se probó el script con `ts-node` y `bash -n` del `deploy.sh`). El API de desarrollo del usuario (ts-node sin recarga) sigue con el código anterior hasta reiniciarlo.
+
+**Pendiente (cada uno nombra qué lo cierra en §4.10):** ROL-01 correrlo en el servidor real; DIR-01 decidir; HIS-01, NGX-01, CSP-01, PBI-01, TXT-01, TOK-01, VAL-01 y ABR-01.
+
+---
+
 ## sesión 23-10-2026 (6.ª parte): el mapa de «Programas + sobresalientes» pasa a ECharts
 
 **Qué pidió el usuario:** que el mapa de programas sobresalientes use ECharts para ser más interactivo y verse como una imagen de referencia (regiones de color, línea guía y cifra grande a la derecha). Eligió: **por departamento**, con la **tasa de vinculación** como número, y que el **clic siga filtrando** la tabla.
@@ -1051,6 +1079,8 @@ La tarjeta sigue la maqueta: portada 16:10 con esquinas de 24 px, flecha verde l
 | nginx en contenedor | **No se ejecutó**; Docker Desktop quedó arrancado |
 
 > **Trampa para quien arregle H1:** `extraerRutasUploads` **decodifica** cada ruta (`decodeURIComponent`), así que un `%2e%2e%2f` guardado en la base se convierte en `../` justo antes del `path.join`. Filtrar el texto crudo al guardar no basta: la contención tiene que estar en el `path.join`.
+
+> **Desde el 2026-10-23 estos cuatro se citan por su ID del registro** (`3-seguridad-del-proyecto.md` §4.10): H1 = **OBS-01**, H2 = **OBS-02**, H3 = **OBS-03** y O1 = **OBS-04**. Una sesión llamó «H2» a O1, y el H2 de este informe es otra cosa (el redirect del login).
 
 **No se cambió código.** Los arreglos propuestos (una función `dentroDe(base, ruta)` compartida, comparar orígenes en el `redirect`, la barra en `proxy.ts`, sesión para el ámbito intranet en `publica`) están en el informe.
 
