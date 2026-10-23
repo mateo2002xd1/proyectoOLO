@@ -63,6 +63,21 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 - **Content-Security-Policy** que bloquee scripts inline y orígenes no confiables — mitiga el XSS aunque algo se escape.
 - Aplica igual al contenido de bloques Puck que acepten texto libre.
 
+**Reglas que salieron de la auditoría del 2026-10-22** (`auditorias/2026-10-22-xss-almacenado-y-defensas.md`; las mismas, en forma de lista de código, en `2-convenciones-del-proyecto.md` §11):
+
+| Regla | Qué exige | Por qué |
+|---|---|---|
+| **XSS-01** | Un texto que vaya a un `href`, `src`, `action`, `poster` o `url()` se valida **por su valor** (esquema permitido), no por el nombre del campo. El servidor lo hace con cualquier clave y a cualquier profundidad (`sanitizarTexto` en `sanitizar-contenido.ts`); el render vuelve a comprobarlo con `enlaceSeguro` / `imagenSegura` de `@olo/url-policy` | **Corregido 2026-10-22.** Antes `sanitizarContenidoPuck` solo validaba las claves `src`, `href`, `url`, `link`, `backgroundImage` e `imageUrl`: 15 de los 21 nombres de campo probados (`urlBoton`, `urlEnlace`, `urlDestino`, `urlPowerBi`…) guardaban `javascript:` tal cual |
+| **XSS-02** | La CSP **bloquea** en el sitio y en la intranet: `frame-src` con la lista única de hosts, `object-src 'none'`, `base-uri`, `form-action`, `frame-ancestors` y un `script-src` sin orígenes ajenos. Un comentario que diga «la segunda capa es la CSP» tiene que ser verdad | **Corregido en parte 2026-10-22.** Antes el sitio no mandaba CSP y la intranet solo `Report-Only`. Sigue pendiente un `script-src` estricto con nonce: las páginas públicas son estáticas/ISR y no pueden llevar un nonce por petición, y con `'unsafe-inline'` la CSP no frena un `javascript:` (lo frenan XSS-01 y XSS-04). La intranet mide la política estricta en `Report-Only` |
+| **XSS-03** | `dangerouslySetInnerHTML` solo con (a) texto fijo escrito en el código o (b) HTML del contenido guardado que ya pasó por `sanitizarContenidoPuck`. Nunca con una URL, una cookie, un parámetro de la barra o una respuesta de la API sin sanear. Cada uso nuevo se anota aquí | Hoy hay 11 usos y los 11 cumplen (a) o (b); sin la lista, el siguiente se revisa a ojo |
+| **XSS-04** | Un `iframe` solo apunta a una lista de hosts (Power BI, YouTube, `*.sena.edu.co`) comprobada al guardar y al pintar (`iframeSeguro`), con `sandbox` y `referrerPolicy` (`ATRIBUTOS_DE_IFRAME_SEGURO`). La lista es **una sola** (`HOSTS_DE_IFRAME`) y de ella sale `frame-src` | **Corregido 2026-10-22.** `urlPowerBi` y `videoUrl` aceptaban cualquier `https://` (marco de phishing dentro de la intranet) y, por XSS-01, hasta `javascript:`, que en un `iframe` se ejecuta sin clic |
+| **XSS-05** | Todo `target="_blank"` lleva `rel="noopener noreferrer"` | Hoy se cumple (18 de 18 enlaces con `target` en el sitio, la intranet y `blocks-renderer`, comprobado leyendo cada etiqueta completa); queda escrita para que se siga cumpliendo |
+| **XSS-06** | Una redirección a un valor que viene de fuera (`?redirect=`) usa `rutaInternaSegura` de `@olo/url-policy`, que rechaza `//`, `/\` y `/<tab>/` | **Corregido 2026-10-22** en los dos `login-view.tsx`; antes solo descartaban `//` (anotado el 2026-10-19) |
+| **XSS-07** | En `<style>` y `style` solo entran `#rrggbb` o valores de una lista cerrada; nunca texto libre interpolado | Se cumple en `EstilosDeIdentidad` y `LetraDelPanel`; queda escrita para que se siga cumpliendo |
+| **XSS-08** | **Todo** camino que escriba `paginas_versiones.contenido` pasa por `sanitizarContenidoPuck`, incluidos `cambiar-direccion` y la importación de volcados SQL; tras importar, `contenido:revisar -- --aplicar` | **Corregido 2026-10-22:** `cambiar-direccion` sanea, y `deploy.sh importar` / `importar-paginas` corren el saneo al terminar. Las siembras (`scripts/semillas/`) siguen escribiendo directo: su contenido es del repositorio, no de usuarios |
+| **XSS-09** | `class` e `id` del HTML editorial son una superficie: una clase de utilidad (`fixed inset-0 z-50`) tapa la página igual que el `style` que ya se bloqueó | `class` está en la lista de atributos permitidos |
+| **XSS-10** | Un control nuevo contra XSS añade su caso a `npm run xss:verificar` | Un control que no se puede comprobar vuelve a romperse |
+
 ### S3 — Autenticación y sesiones (RF-16)
 
 - **Contraseñas con bcrypt** (ya está) — coste de hashing adecuado (≥ 10 rounds).
@@ -388,6 +403,15 @@ oculta, el backend prohíbe*, y aquí el backend no prohíbe.
   a filtrar al escribirlos (`EstilosDeAcciones`): un `}` o un `</style>` guardado sería CSS
   o HTML inyectado en la página de todas las personas del panel.
 - **Tope de cuerpo de petición**: 1 MB en Express, 10 MB en nginx.
+- **Las direcciones se validan por su valor, en un solo paquete** (`packages/url-policy`,
+  `@olo/url-policy`, desde el 2026-10-22): `esEsquemaEjecutable` (en cualquier campo), `enlaceSeguro` e
+  `imagenSegura` (al pintar), `iframeSeguro` con `HOSTS_DE_IFRAME` (al guardar y al pintar, y de ahí sale
+  `frame-src`) y `rutaInternaSegura` (redirecciones). Lo usan la API, el sitio, la intranet y las dos
+  `next.config`. Lee el esquema como lo lee un navegador: sin espacios, controles ni ancho cero.
+- **CSP que bloquea** en el sitio y en la intranet (`next.config`): `frame-src` (lista única), `object-src
+  'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'` y `script-src` solo con el propio
+  origen y `cdnjs.cloudflare.com`. Probado en Chrome: bloquea un `iframe` a un sitio ajeno y deja pasar
+  YouTube; el inicio de sesión de las dos apps carga sin violaciones.
 
 ### 4.5 Límites de tasa y abuso automatizado
 
@@ -532,6 +556,20 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   incompatible con la topología de `docker-compose`, donde los servicios se hablan por
   nombre de red. Depende de cómo se despliegue de verdad, así que no se cambia a ciegas:
   abrirlo a `0.0.0.0` amplía la exposición y esa decisión no es del código.
+- ~~**XSS almacenado por URLs sin validar**~~ y ~~**sin CSP que bloquee**~~. *Cerrados el
+  2026-10-22 (`auditorias/2026-10-22-xss-almacenado-y-defensas.md`): la API vacía por valor
+  cualquier esquema ejecutable, los bloques repiten `enlaceSeguro` / `iframeSeguro` al pintar,
+  los dos `iframe` de texto libre van a una lista única de hosts, y las dos apps mandan una CSP
+  que bloquea (`frame-src`, `object-src`, `base-uri`, `form-action`, `frame-ancestors`).*
+- **`script-src` estricto (con nonce).** La CSP actual lleva `script-src 'self' 'unsafe-inline'
+  https://cdnjs.cloudflare.com`: no carga scripts de otros orígenes, pero no frena un script en línea ni
+  un `javascript:`. Un nonce por petición exige páginas dinámicas, y las públicas son estáticas/ISR. La
+  intranet mide la política estricta en `Report-Only` (hoy reporta los scripts en línea de Next).
+  A evaluar: nonce solo en la intranet (todo es dinámico tras el login); en el sitio, otra vía (hashes por página).
+- **pdf.js se carga desde `cdnjs.cloudflare.com` sin comprobación de integridad** (`publicaciones.tsx`,
+  sitio e intranet). Servirlo desde el propio origen vaciaría `HOSTS_DE_SCRIPT` de `@olo/url-policy`.
+- **Un texto que empiece por «JavaScript:» desaparece al guardar** (p. ej. un título «JavaScript: lo
+  básico»): es el precio de validar por valor y no por nombre de campo. Se arregla con otra redacción.
 - **nginx confía en cualquier `X-Forwarded-For`** (`set_real_ip_from 0.0.0.0/0` con
   `real_ip_recursive on`). Si el túnel no reescribe la cabecera, un cliente puede fijar la IP
   que quiera: esquiva el límite de nginx y ensucia la IP de la bitácora de auditoría. Hay que
@@ -568,6 +606,7 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
 | `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
 | `npm run email:verificar` | Que el dominio institucional se exija donde debe |
+| `npm run xss:verificar` | Que el sanitizador del contenido de las páginas no deje pasar HTML ejecutable (34 cargas × 5 ubicaciones) ni un esquema ejecutable en una URL, sea cual sea el nombre del campo (21 campos, 14 evasiones, lo legítimo intacto), y que los helpers de `@olo/url-policy` (enlaces, `iframe`, redirecciones) hagan lo que dicen: 97 comprobaciones |
 | `npm run errores:verificar` | Que ningún error filtre `code`, SQL ni mensajes internos, y que login y recuperación respondan igual (texto y tiempo) exista o no la cuenta |
 | `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
 | `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |

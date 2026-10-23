@@ -5,6 +5,71 @@
 
 ---
 
+## sesión 22-10-2026 (3.ª parte): corrección de la auditoría de XSS
+
+**Qué pidió el usuario:** implementar la solución a la revisión de XSS de la parte anterior. Detalle, pruebas y límites en [`auditorias/2026-10-22-xss-almacenado-y-defensas.md`](../auditorias/2026-10-22-xss-almacenado-y-defensas.md) (sección «Corrección aplicada»).
+
+**Qué cambió.** Un paquete nuevo, `@olo/url-policy`, es la única fuente de qué direcciones puede llevar el contenido. La API deja de validar las URLs por *nombre* de campo y lo hace por *valor*; los bloques repiten la comprobación al pintar; los dos `iframe` de texto libre van a una lista única de hosts; las dos apps mandan una CSP que bloquea; y la redirección tras el login rechaza `/\host`.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Paquete | `packages/url-policy/` (nuevo) | `esEsquemaEjecutable`, `enlaceSeguro`, `imagenSegura`, `iframeSeguro`, `HOSTS_DE_IFRAME`, `directivaFrameSrc`, `directivaScriptSrc`, `rutaInternaSegura`. Sin dependencias ni DOM |
+| API | `shared/sanitizar-contenido.ts` | `sanitizarTexto`: esquema ejecutable vaciado en cualquier campo; campos de `iframe` con lista de hosts; campos con aspecto de dirección solo con esquemas de enlace |
+| API | `cambiar-direccion.usecase.ts`, `revisar-contenido-guardado.ts` | `cambiar-direccion` sanea; el script detecta también URLs ejecutables e `iframe` ajenos |
+| Despliegue | `docker/deploy.sh` | `importar` e `importar-paginas` corren `contenido:revisar -- --aplicar` |
+| Bloques | `blocks-renderer` (4), sitio (3), intranet (5) | `enlaceSeguro` en cada `href` de contenido; `iframeSeguro` + `sandbox` en `TasaDashboards` y `TasaVideo`; `imagenSegura` en el icono del pie |
+| Acceso | los dos `login-view.tsx` | `rutaInternaSegura` en lugar de `startsWith('/') && !startsWith('//')` |
+| Cabeceras | `next.config.mjs` (sitio), `next.config.ts` (intranet) | CSP que bloquea: `frame-src` (lista única), `object-src`, `base-uri`, `form-action`, `frame-ancestors`, `script-src` sin orígenes ajenos |
+| Apps | tres `package.json`, tres `package-lock.json`, dos `tsconfig.json`, `transpilePackages` | La dependencia nueva |
+| Docs | `3-seguridad` (§S2, §4.4, §4.8, §4.9), `2-convenciones` §11, `scripts/mapa/descripciones.md` | Reglas `XSS-01`…`XSS-10` con su estado; lo que sigue abierto |
+
+| Verificación | Resultado |
+|---|---|
+| `npm run xss:verificar` | **97 comprobaciones, todo correcto** (antes: 30, 18 fallaban) |
+| `tsc --noEmit` de API, sitio e intranet; ESLint de los archivos tocados | Sin errores |
+| `errores:verificar`, `sesion:verificar`, `email:verificar`, `permisos:verificar` | Todo correcto |
+| Chrome sin cabeza contra `next dev` de sitio e intranet | Bloques hostiles renderizados sin `javascript:`, `iframe` ajenos vaciados, CSP bloquea un marco a `example.com` y deja pasar YouTube; el inicio de sesión de las dos apps carga sin violaciones |
+| Reproducción de video y tableros dentro del `sandbox`; páginas públicas con contenido real; `pdf.js` | **No se vio** |
+
+**Para saber:** un texto que empiece por «JavaScript:» se vacía al guardar; un `iframe` fuera de la lista (Power BI, YouTube, `*.sena.edu.co`) deja de verse; con `'unsafe-inline'` la CSP no frena un script en línea, y el `script-src` con nonce sigue pendiente (las páginas del sitio son estáticas).
+
+**Pendiente al cierre:** correr `npm run contenido:revisar` contra la base de producción (solo informa); comprobar en el servidor que un tablero de Power BI y un video cargan con el `sandbox`; `script-src` estricto (nonce en la intranet, otra vía en el sitio); servir pdf.js desde el propio origen; `class`/`id` del HTML editorial (XSS-09).
+
+---
+
+## sesión 22-10-2026 (2.ª parte): auditoría de XSS, y las reglas `XSS-01` a `XSS-10`
+
+**Qué pidió el usuario:** revisar las vulnerabilidades asociadas a XSS y ir agregando las reglas a las convenciones o a la seguridad del proyecto. **No pidió corregir el código**, así que no se tocó código de producción. Informe: [`auditorias/2026-10-22-xss-almacenado-y-defensas.md`](../auditorias/2026-10-22-xss-almacenado-y-defensas.md).
+
+**Veredicto.** El sanitizador de HTML (DOMPurify 3.4.17 sobre jsdom) resiste 34 cargas en 5 ubicaciones. El de URLs no: valida por *nombre* de campo y 15 de 21 nombres probados (`urlBoton`, `urlEnlace`, `urlDestino`, `urlPowerBi`…) guardan `javascript:` tal cual. Y la CSP que los comentarios llaman «segunda capa» no existe: el sitio no la manda y la intranet la manda en `Report-Only`.
+
+| # | Severidad | Hallazgo |
+|---|---|---|
+| 1 | Alta | XSS almacenado por URL: cadena verificada hasta el `href` en Botón personalizado, tarjeta de artículo, pestañas y pie |
+| 2 | Alta | `iframe` de `urlPowerBi` sin lista de hosts: `javascript:` se ejecuta sin clic; `https://` ajeno es un marco de phishing |
+| 3 | Alta | Sin CSP que bloquee en ninguna de las dos apps |
+| 4 | Media | La limpieza es «al guardar»: siembras, importación SQL y `cambiar-direccion` escriben sin ella |
+| 5 | Media | Comentarios del render dicen «la API ya sanea los campos url» (cierto solo para la clave `url`) |
+| 6–7 | Baja | `class`/`id` permitidos (tapar la página con clases); redirección `/\` sin corregir desde el 2026-10-19 |
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `scripts/verificaciones/verificar-xss-contenido.ts` (nuevo), `package.json` | `npm run xss:verificar`: batería de HTML (parseando el resultado) y de URLs por nombre real de campo |
+| Docs | `3-seguridad-del-proyecto.md` §S2, §4.8, §4.9 | Tabla de reglas `XSS-01`…`XSS-10`; dos puntos abiertos; fila del script |
+| Docs | `2-convenciones-del-proyecto.md` §9 y §11 (nueva) | Las mismas reglas como «qué hacer al escribir código» y casilla en el checklist de commit |
+| Código de producción | — | **Sin cambios** |
+
+| Verificación | Resultado |
+|---|---|
+| `npm run xss:verificar` | 30 comprobaciones, **18 fallan a propósito** (15 campos de URL, 2 anidados, 1 `iframe`); las 6 de HTML pasan |
+| Los 11 `dangerouslySetInnerHTML` | Leídos: 3 de texto fijo, 8 de contenido guardado y saneado |
+| `target="_blank"` | 18 de 18 con `rel` (un primer barrido de una línea daba falsos positivos y se descartó) |
+| Navegador real | **No se vio** |
+
+**Pendiente al cierre:** decidir si se aplica la corrección propuesta (validar URLs por valor en `sanitizar-contenido.ts`; lista única de hosts para `iframe`; CSP con nonce en `proxy.ts`), que dejaría `xss:verificar` en verde; probar los hallazgos 1–3 en navegador; sin cubrir: visores DOCX/PPTX con archivos subidos.
+
+---
+
 ## sesión 22-10-2026: auditoría de divulgación de información en errores, y sus correcciones
 
 **Qué pidió el usuario:** que Claude actuara como revisor imparcial de la seguridad, con rigor en la divulgación de información en los mensajes de error; después, que corrigiera y dejara un informe como evidencia en `auditorias/`. Informe completo: [`auditorias/2026-10-22-fuga-de-informacion-en-errores.md`](../auditorias/2026-10-22-fuga-de-informacion-en-errores.md).

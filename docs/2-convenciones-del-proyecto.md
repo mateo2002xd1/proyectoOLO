@@ -206,6 +206,7 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - [ ] Librerías pesadas con carga diferida.
 - [ ] Si tocaste `shared/ui`: contraste ≥4.5:1, operable con teclado, foco visible, `alt` en toda imagen. Checklist completo en `9-accesibilidad.md` §5.
 - [ ] Si tocaste interfaz: cortes de la escala de Tailwind, alturas en `dvh`, sin anchos fijos que desborden, y mirado a 360, 768, 1024 y 1280 px sin scroll horizontal (§10).
+- [ ] Si tocaste un bloque con enlaces, imágenes, `iframe` o HTML: cumple las reglas `XSS-01` a `XSS-10` (§11).
 - [ ] Pasa ESLint y `tsc --noEmit`.
 
 > Nota de estado (2026-07-26): **Prettier y Husky + lint-staged aún no están instalados** en ningún proyecto, pese a lo que dice §8. Hasta que lo estén, las dos últimas casillas se verifican a mano corriendo `npx eslint .` y `npx tsc --noEmit` en el proyecto tocado.
@@ -334,3 +335,25 @@ parecen a propósito: un arreglo en una se revisa en la otra.
   en la consola.
 - Si la pantalla tiene modales, abrir cada uno en el móvil y llegar a su último botón.
 - En la entrada de `6-auditoria.md`, decir qué anchos se miraron y cuáles no.
+
+---
+
+## 11. XSS: reglas de código (`XSS-01` … `XSS-10`)
+
+Nacieron de la auditoría del 2026-10-22 (`auditorias/2026-10-22-xss-almacenado-y-defensas.md`).
+El porqué de cada una, y qué falló, está en `3-seguridad-del-proyecto.md` §S2. Aquí, lo que se
+hace al escribir código:
+
+| Regla | Al escribir código |
+|---|---|
+| `XSS-01` | Un valor que acaba en `href`, `src`, `action`, `poster` o `url()` y viene del contenido guardado se pasa por `enlaceSeguro` / `imagenSegura` de `@olo/url-policy` (esquemas `http`, `https`, `mailto`, `tel` y rutas `/…`, `#…`). **No** se confía en que «la API ya lo sanea»: valida por valor, pero el render también puede recibir lo que hay en el editor sin guardar. En el servidor, la validación es por valor, con cualquier clave |
+| `XSS-02` | No se escribe en un comentario que la CSP protege algo que no protege. Hoy bloquea marcos, objetos, `<base>`, formularios y scripts de otros orígenes; **no** frena un script en línea ni un `javascript:` (`script-src` lleva `'unsafe-inline'`): eso lo hacen XSS-01 y XSS-04 |
+| `XSS-03` | `dangerouslySetInnerHTML` solo con texto fijo del código o con HTML de contenido que ya pasó por `sanitizarContenidoPuck`. Nunca con URLs, cookies, `searchParams` ni respuestas de API sin sanear. Un uso nuevo se anota en `3-seguridad-del-proyecto.md` |
+| `XSS-04` | Un `iframe` recibe su `src` de `iframeSeguro` (lista única `HOSTS_DE_IFRAME`) y lleva `{...ATRIBUTOS_DE_IFRAME_SEGURO}` (`sandbox` y `referrerPolicy`). Nunca `src={valorDelEditor}` a secas. Un host nuevo se añade en `packages/url-policy` y con él cambia `frame-src` |
+| `XSS-05` | `target="_blank"` siempre con `rel="noopener noreferrer"` |
+| `XSS-06` | Redirigir a un valor de la URL o del contenido: con `rutaInternaSegura` (rechaza `//`, `/\` y `/<tab>/`). `startsWith('/') && !startsWith('//')` **no basta** |
+| `XSS-07` | Un `<style>` o `style` con datos de usuario solo recibe `#rrggbb` o una opción de una lista cerrada. Nada de interpolar texto libre en CSS |
+| `XSS-08` | Si escribes en `paginas_versiones.contenido` (casos de uso, scripts, importaciones), el contenido pasa antes por `sanitizarContenidoPuck`. Un volcado SQL importado se sanea con `contenido:revisar -- --aplicar` (`deploy.sh importar` ya lo hace) |
+| `XSS-09` | Al añadir un atributo o una etiqueta a la lista blanca del sanitizador, se explica en un comentario qué ataque abre y por qué se acepta |
+| `XSS-10` | Un campo o control nuevo relacionado con XSS añade su caso a `npm run xss:verificar` |
+
