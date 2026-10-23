@@ -6,6 +6,7 @@ import { procesarCargaTendencia } from '../../use-cases/observatorio/tendencia-o
 import { procesarCargaAlertasInversion } from '../../use-cases/alertas-inversion/procesar-carga.usecase';
 
 let heavyJobsQueue: Queue | null = null;
+let worker: Worker | null = null;
 
 /**
  * La cola `heavy-jobs`, que se crea la primera vez que alguien la pide.
@@ -33,7 +34,14 @@ export const getHeavyJobsQueue = (): Queue => {
  * tendencia ocupacional fuera de la petición HTTP.
  */
 export const setupWorker = () => {
-  const worker = new Worker('heavy-jobs', async (job: Job) => {
+  // Una carga a la vez en TODA la cola, sea cual sea el número de réplicas de la API: cada una
+  // levanta su propio worker (concurrencia 1), y dos cargas simultáneas vacían y recargan la
+  // misma tabla, así que se pisarían. El límite se guarda en Redis, por eso es idempotente.
+  getHeavyJobsQueue()
+    .setGlobalConcurrency(1)
+    .catch(crearLoggerDeErrorConThrottle('Queue Error'));
+
+  worker = new Worker('heavy-jobs', async (job: Job) => {
     console.log(`[Worker] Procesando trabajo asíncrono ${job.id}:`, job.name);
 
     // Observatorio ("Programa + Sobresalientes"): parsear el Excel y hacer el
@@ -86,4 +94,17 @@ export const setupWorker = () => {
   worker.on('error', crearLoggerDeErrorConThrottle('Worker Error'));
 
   return worker;
+};
+
+/**
+ * Cierra el worker y la cola al apagar la API.
+ *
+ * Sin esto, un SIGTERM a mitad de una carga mata el proceso con el trabajo a medias: BullMQ lo
+ * da por estancado y lo vuelve a ejecutar, y la carga de alertas de inversión —que agrega
+ * proyecto por proyecto en vez de vaciar y recargar— podría duplicar filas. `Worker.close()`
+ * espera a que acabe el trabajo en curso y no toma otro.
+ */
+export const cerrarCola = async (): Promise<void> => {
+  await worker?.close();
+  await heavyJobsQueue?.close();
 };

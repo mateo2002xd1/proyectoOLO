@@ -5,7 +5,7 @@ import sequelize from './config/database';
 // Import models to register associations
 import './infrastructure/db/models';
 import { listarPendientes } from './infrastructure/db/migrations';
-import { setupWorker } from './infrastructure/redis/queue';
+import { cerrarCola, setupWorker } from './infrastructure/redis/queue';
 import { cerrarClienteDeLimites } from './middlewares/rate-limit.middleware';
 import { describirErrorParaLog } from './shared/errores';
 
@@ -53,6 +53,7 @@ const start = async () => {
     const apagar = async (senal: string) => {
       console.log(`${senal} recibida — cerrando servidor...`);
       servidor.close();
+      await cerrarCola();
       await cerrarClienteDeLimites();
       process.exit(0);
     };

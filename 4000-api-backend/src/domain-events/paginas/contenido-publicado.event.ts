@@ -1,6 +1,7 @@
 // Domain Event - Contenido Publicado
 
 import type { Ambito } from '../../shared/ambito';
+import { describirErrorParaLog } from '../../shared/errores';
 import { invalidarCacheListener } from './listeners/invalidar-cache.listener';
 import { revalidarISRListener } from './listeners/revalidar-isr.listener';
 
@@ -47,7 +48,7 @@ export const emitirContenidoPublicado = async (
 
   for (const resultado of resultados) {
     if (resultado.status === 'rejected') {
-      console.error('[contenido-publicado] un oyente falló:', resultado.reason);
+      console.error('[contenido-publicado] un oyente falló:', describirErrorParaLog(resultado.reason));
     }
   }
 };
