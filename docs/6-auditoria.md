@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 23-10-2026: pruebas de inyección SQL, Content-Type y confusión de tipos, y su corrección
+
+**Qué pidió el usuario:** probar la API contra inyección SQL, forzado del `Content-Type` de las cabeceras y confusión de tipos (*type confusion*); al encontrar un hallazgo real, corregirlo y dejar evidencia en `auditorias/`. Informe: `auditorias/2026-10-23-sqli-content-type-y-type-confusion.md`.
+
+**Cómo se probó.** Revisión de todo punto donde la API arma SQL (`sequelize.query`, `literal`, `sequelize.where`) y, aparte, tráfico real contra una copia de la API en el puerto 4100 con Postgres 18 y Redis desechables (migraciones 001-047, sin tocar Neon ni el dev del usuario): login real, payloads SQL clásicos en los filtros públicos, cabeceras `Content-Type` cambiadas o ausentes, cuerpos con tipos equivocados (objetos y arreglos donde se esperaba texto), y una subida de SVG con `<script>` disfrazada de PNG.
+
+**Qué se encontró.**
+
+| Punto | Resultado |
+|---|---|
+| Inyección SQL | **Ninguna.** Todo `sequelize.query` usa `:replacements`; lo que se arma con texto son condiciones o constantes del código, nunca el valor de un campo. Probado en vivo: `q`, `departamento` y `periodo` del buscador de tendencia ocupacional con comillas, `UNION SELECT` y `DROP TABLE` — Zod rechaza con 400, o el valor se busca como texto literal. La tabla `usuarios` sigue intacta |
+| Confusión de `Content-Type` en subidas | **Ninguna.** `@olo/upload-policy` detecta el tipo real por *magic bytes* (`file-type`) y descarta lo que declara el cliente; un SVG disfrazado de `image/png` se rechazó (SVG excluido a propósito: ejecutaría JavaScript servido inline). Un PNG real sí pasó |
+| `Content-Type` fuera de `application/json`, y confusión de tipos | **Hallazgo real, corregido.** `POST`/`DELETE /api/role-permissions` leían `req.body` sin pasar por `validarCuerpo` (Zod) — el único router de escritura que no lo hacía. Con `Content-Type: text/plain`, sin cabecera, o con `role_id`/`permission_id` como objeto o arreglo, reventaban en `500` (no era inyección: Sequelize/`pg` rechazaban el tipo antes de tocar la base) |
+
+**Corrección aplicada.**
+
+| Archivo | Cambio |
+|---|---|
+| `validators/usuarios.validators.ts` | `asignarPermisoSchema` nuevo: `{ role_id: z.string().uuid(), permission_id: z.string().uuid() }.strict()` |
+| `routes/role-permission.routes.ts` | `validarCuerpo(asignarPermisoSchema)` en `POST /` y `DELETE /`, igual que el resto de rutas de escritura |
+| `controllers/role-permissions.controller.ts` | `revoke` ya no necesita el `req.body?.x \|\| req.query?.x` defensivo ni el chequeo manual: `validarCuerpo` garantiza los dos campos |
+
+**Verificación:** `tsc --noEmit` sin errores; los cinco casos que antes daban `500` dan `400` con el detalle de Zod (sin mensaje interno, sin traza); control positivo —asignar y revocar un permiso real— sigue funcionando igual, probado de punta a punta contra la base desechable.
+
+---
+
 ## sesión 22-10-2026 (5.ª parte): una sola fuente de configuración, la cola de Redis perezosa, y reevaluación del logger y de las réplicas de la API
 
 **Qué pidió el usuario:** evaluar un criterio técnico sobre el patrón singleton (conexión a la base, logger, configuración: un solo objeto, un solo punto de acceso) contra el proyecto, aplicar lo que valiera la pena y, al terminar, reevaluar el logger único y las réplicas de la API.
@@ -24,6 +50,9 @@
 | Cola | `infrastructure/redis/queue.ts` | `heavyJobsQueue` (constante, abría Redis al importar) pasa a `getHeavyJobsQueue()` perezoso; el `Worker` pide `getRedis()` donde lo necesita |
 | Cola | `use-cases/{observatorio,observatorio/tendencia-ocupacional,alertas-inversion}/iniciar-carga*.usecase.ts` | Llaman a `getHeavyJobsQueue().add(...)` |
 | Verificación | `scripts/verificaciones/verificar-errores-sin-fuga.ts` | Alterna `config.esProduccion` y ya no `process.env.NODE_ENV` |
+| Cola (continuación) | `infrastructure/redis/queue.ts` | `setupWorker()` fija `setGlobalConcurrency(1)`; nuevo `cerrarCola()` cierra el worker y la cola |
+| Arranque (continuación) | `server.ts` | `apagar()` espera a `cerrarCola()` antes de cerrar los limitadores |
+| Eventos (continuación) | `domain-events/paginas/contenido-publicado.event.ts` | El error de un oyente pasa por `describirErrorParaLog` |
 
 > **Trampa para quien venga.** `config.esProduccion` se fija **al cargar el módulo**. Cambiar `process.env.NODE_ENV` durante una prueba ya no mueve el manejador de errores ni la cookie: hay que asignar `config.esProduccion`, como hace ahora `errores:verificar`. Y `redisUrl` **no** lleva valor por defecto porque los dos consumidores quieren cosas distintas sin la variable: la conexión compartida prueba `localhost:6379` y los limitadores cuentan en memoria (ver el comentario en `config/index.ts`).
 
@@ -40,7 +69,7 @@ Medido en `src/` sin migraciones: **74 llamadas a `console.*` en 30 archivos** (
 - El despliegue no agrega logs (se leen con `docker logs`), así que un formato estructurado de pino no tendría quién lo consuma. Añadiría una dependencia y tocar 30 archivos sin cambiar ningún comportamiento visible.
 - Los niveles ya se reparten bien a mano: `error` para fallos, `warn` para degradaciones esperables (Redis caído, formato de carga ausente).
 
-**Veredicto: no adoptarlo ahora.** Lo que sí hay es **una fuga concreta**, aparte de la idea del logger: `domain-events/paginas/contenido-publicado.event.ts:50` imprime `resultado.reason` entero, sin `describirErrorParaLog`. Es la única llamada que vuelca un error sin pasar por él. No se tocó (no estaba en lo pedido); es un arreglo de una línea.
+**Veredicto: no adoptarlo ahora.** Lo que sí hay es **una fuga concreta**, aparte de la idea del logger: `domain-events/paginas/contenido-publicado.event.ts:50` imprime `resultado.reason` entero, sin `describirErrorParaLog`. Es la única llamada que vuelca un error sin pasar por él. Se arregló al final de la sesión (ver «Continuación»).
 
 **Cuándo sí:** si el despliegue pasa a recoger logs (Loki, un servicio de la institución) o hace falta correlacionar una petición entre la API y los BFF con un `request-id`.
 
@@ -65,7 +94,7 @@ Hoy hay **un solo contenedor** `api-backend` (sin `replicas` ni `--scale`), así
 
 > **Segundo hallazgo, ya presente con una sola réplica.** `server.ts` al recibir SIGTERM cierra el servidor HTTP y los limitadores, pero **no** el `Worker`, la cola ni el pool de Sequelize. Si el cierre llega a mitad de una carga, BullMQ la da por «estancada» y la **vuelve a ejecutar** otra instancia (o la misma al reiniciar). Para la de «alertas de inversión», que agrega proyecto por proyecto en vez de vaciar y recargar, eso podría duplicar filas. Se arregla guardando el `Worker` que devuelve `setupWorker()` y llamando a `await worker.close()` en `apagar()`.
 
-**Veredicto: no hacer nada para las réplicas mientras haya una sola, pero esos dos puntos son requisitos previos para tener más de una**; el segundo conviene arreglarlo ya porque puede ocurrir en cada despliegue.
+**Veredicto: no hacía falta nada para las réplicas mientras haya una sola, pero esos dos puntos eran requisitos previos para tener más de una**, y el segundo puede ocurrir en cada despliegue. Los dos se aplicaron al final de la sesión (ver «Continuación»).
 
 **Verificación (lo que de verdad se ejecutó):**
 
@@ -77,35 +106,32 @@ Hoy hay **un solo contenedor** `api-backend` (sin `replicas` ni `--scale`), así
 | Importar `queue.ts` y `redis/index.ts` apuntando a un `REDIS_URL` inexistente, sin pedir nada | Ninguna conexión ni error de Redis en 800 ms; después `getHeavyJobsQueue()` devuelve la misma cola dos veces, `getRedis()` la misma conexión, y ambas se cierran limpias |
 | Finales de línea de los 12 archivos tocados | Sin mezcla (11 CRLF, `alertas-inversion/iniciar-carga.usecase.ts` LF como estaba) |
 
-**No** probado: una carga de Excel de punta a punta con Redis real (no estaba levantado), ni el arranque completo de la API contra la base; el cambio de `server.ts` no se hizo.
+**No** probado: una carga de Excel de punta a punta, ni el arranque completo de la API contra la base.
+
+### Continuación: los tres arreglos pendientes
+
+Pedidos por el usuario al ver el informe ("continúa"), aplicados tal como estaban descritos arriba:
+
+- **`setGlobalConcurrency(1)`** al comienzo de `setupWorker()`. El límite vive en Redis (`bull:heavy-jobs:meta`, campo `concurrency`), así que repetirlo en cada réplica es inofensivo y vale para toda la cola.
+- **`cerrarCola()`** (nuevo, en `queue.ts`) cierra el `Worker` y la `Queue`, y `apagar()` de `server.ts` lo espera. `Worker.close()` deja terminar el trabajo en curso y no toma otro.
+- **`contenido-publicado.event.ts`**: `describirErrorParaLog(resultado.reason)`.
+
+> **Límite del cierre ordenado.** `docker stop` mata el contenedor a los 10 s. Una carga de Excel larga que no acabe en ese tiempo seguirá interrumpiéndose y BullMQ la reejecutará; `cerrarCola()` evita el caso común (SIGTERM con la cola ociosa o con un trabajo corto), no el de un Excel enorme. Si eso ocurre, hay que subir `stop_grace_period` del servicio en `docker-compose.servidor.yml` (no se tocó).
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` | Sin errores |
+| Redis 7 desechable (Docker, puerto 6390; el de desarrollo no se tocó): `setupWorker()` y consultar `bull:heavy-jobs:meta` | `concurrency = 1` |
+| `cerrarCola()` con worker y cola abiertos | Resuelve en 4 ms y el proceso termina solo |
+| `cerrarCola()` sin haber creado worker ni cola | Resuelve sin error |
+| `npm run errores:verificar` | «Todo correcto» |
+
+**No** probado: dos réplicas reales procesando a la vez (se comprobó el límite guardado en Redis, no el reparto entre procesos), ni un SIGTERM con una carga real en curso.
 
 **Pendiente al cierre:**
-- `setGlobalConcurrency(1)` y `worker.close()` en el apagado (arriba), antes de cualquier réplica; lo segundo, ya.
-- `contenido-publicado.event.ts:50`: pasar `resultado.reason` por `describirErrorParaLog`.
 - Reiniciar la API: ts-node no recarga solo y la configuración se lee al cargar.
-
----
-
-## sesión 23-10-2026: pruebas de inyección SQL, Content-Type y confusión de tipos
-
-**Qué pidió el usuario:** probar la API contra inyección SQL, forzado del `Content-Type` de las cabeceras y confusión de tipos (*type confusion*). Sin informe en `auditorias/` pedido esta vez; se deja constancia aquí.
-
-**Cómo se probó.** Revisión de todo punto donde la API arma SQL (`sequelize.query`, `literal`, `sequelize.where`) y, aparte, tráfico real contra una copia de la API corriendo en el puerto 4100 con Postgres 18 y Redis desechables (migraciones 001-047 aplicadas, sin tocar Neon ni el dev del usuario): login real, payloads SQL clásicos en los filtros públicos, cabeceras `Content-Type` cambiadas o ausentes, cuerpos con tipos equivocados (objetos y arreglos donde se esperaba texto), y una subida de SVG con `<script>` disfrazada de PNG.
-
-**Qué se encontró.**
-
-| Punto | Resultado |
-|---|---|
-| Inyección SQL | **Ninguna encontrada.** Todo `sequelize.query` usa `:replacements`; lo que se arma con texto (el `WHERE` de tendencia ocupacional, `MODULO_CARGA`, `SQL_IDS_GUARDADOS_AUTOMATICOS`) son condiciones o constantes del código, nunca el valor de un campo. Probado en vivo: `q`, `departamento` y `periodo` del buscador de tendencia ocupacional con comillas, `UNION SELECT` y `DROP TABLE` — o Zod rechaza con 400, o el valor se busca como texto literal. La tabla `usuarios` sigue intacta tras el intento de `DROP` |
-| Confusión de `Content-Type` en subidas | **Ninguna encontrada.** `@olo/upload-policy` detecta el tipo real por *magic bytes* (`file-type`) y descarta lo que declara el cliente; un SVG con `<script>`/`onload` disfrazado de `image/png` se rechazó (SVG está excluido a propósito, con el motivo escrito en el código: ejecutaría JavaScript servido inline). Un PNG real sí pasó (control positivo) |
-| `Content-Type` fuera de `application/json` en un cuerpo JSON | **Hallazgo real:** `POST` y `DELETE /api/role-permissions` leen `req.body` sin pasar por `validarCuerpo` (Zod) — el único router de escritura del proyecto que no lo hace. Con `Content-Type: text/plain`, sin cabecera, o con `application/xml`, `express.json()` no parsea el cuerpo y `const { role_id, permission_id } = req.body` revienta: `500` con el mensaje real del `TypeError` **en desarrollo** (`NODE_ENV !== 'production'`, a propósito, ver `error.middleware.ts`); confirmado por código que en producción sale enmascarado (`MENSAJE_ERROR_INTERNO`, sin `code`) |
-| Confusión de tipos | **Mismo endpoint.** `role_id`/`permission_id` como objeto (`{"toString":"x"}`) o arreglo (`["a","b"]`) también revientan en `500`: Sequelize/`pg` los rechaza al intentar usarlos como parámetro (`Cannot convert object to primitive value`, `Argument passed to findByPk is invalid`) — no es inyección, es un `TypeError` sin atrapar. En el resto de la API, cada `z.string()`/`z.enum()` valida el tipo real antes de llegar a Sequelize y rechaza con 400 limpio |
-
-**Por qué no es más grave:** el endpoint exige sesión y los permisos `puedeAdministrarSeguridad` + `usuarios.permisos`; no es alcanzable por una cuenta sin privilegios ni sin sesión. El golpe es una petición mal formada que debería dar 400 y da 500, y en desarrollo enseña un mensaje de más (dentro de lo que el propio `error.middleware.ts` documenta como intencional para depurar).
-
-**Para corregir (no aplicado — no se pidió):** envolver `role_id`/`permission_id` en un esquema Zod (`z.object({ role_id: z.string().uuid(), permission_id: z.string().uuid() }).strict()`) con `validarCuerpo` en `role-permission.routes.ts`, igual que el resto de rutas de escritura.
-
----
+- Subir `stop_grace_period` si las cargas de Excel pueden pasar de 10 s (ver el aviso).
+- Con Neon, revisar el tope de conexiones del plan antes de escalar (5 por réplica, y `min: 1` las mantiene abiertas).
 
 ---
 
