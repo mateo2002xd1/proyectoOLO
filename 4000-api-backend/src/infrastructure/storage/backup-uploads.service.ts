@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import type { Ambito } from '../../shared/ambito';
 import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
+import { resolverDentroDe } from './filesystem';
 import { directorioDelAmbito } from './filesystem';
 
 /**
@@ -158,8 +159,11 @@ export function respaldarArchivosAlPublicar(params: {
 
   for (const rutaRelativa of rutasAnteriores) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
-    const rutaOrigenFisica = path.join(dirUploads, subRuta);
-    const rutaDestinoFisica = path.join(dirBackup, nombreEnBackup(subRuta));
+    // Una ruta del contenido que, ya resuelta, cae fuera de `uploads/` (un `../`, una ruta
+    // absoluta) no es un adjunto de esta página: se ignora, no se mueve (OBS-01).
+    const rutaOrigenFisica = resolverDentroDe(dirUploads, subRuta);
+    const rutaDestinoFisica = resolverDentroDe(dirBackup, nombreEnBackup(subRuta));
+    if (!rutaOrigenFisica || !rutaDestinoFisica) continue;
 
     if (!fs.existsSync(rutaOrigenFisica)) {
       continue;
@@ -216,8 +220,9 @@ export function restaurarArchivosDesdeBackup(params: {
   // 1. Mover hacia uploads los archivos necesarios para la versión que se restaura
   for (const rutaRelativa of rutasRestaurar) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
-    const rutaOrigenBackup = path.join(dirBackup, nombreEnBackup(subRuta));
-    const rutaDestinoUploads = path.join(dirUploads, subRuta);
+    const rutaOrigenBackup = resolverDentroDe(dirBackup, nombreEnBackup(subRuta));
+    const rutaDestinoUploads = resolverDentroDe(dirUploads, subRuta);
+    if (!rutaOrigenBackup || !rutaDestinoUploads) continue;
 
     if (fs.existsSync(rutaOrigenBackup)) {
       moverArchivoSeguro(rutaOrigenBackup, rutaDestinoUploads);
@@ -228,8 +233,9 @@ export function restaurarArchivosDesdeBackup(params: {
   // 2. Mover a backup los archivos de la versión que se despublica (que ahora pasa a archivada)
   for (const rutaRelativa of rutasActuales) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
-    const rutaOrigenUploads = path.join(dirUploads, subRuta);
-    const rutaDestinoBackup = path.join(dirBackup, nombreEnBackup(subRuta));
+    const rutaOrigenUploads = resolverDentroDe(dirUploads, subRuta);
+    const rutaDestinoBackup = resolverDentroDe(dirBackup, nombreEnBackup(subRuta));
+    if (!rutaOrigenUploads || !rutaDestinoBackup) continue;
 
     if (rutasRestaurar.includes(rutaRelativa) || conservarEnUploads?.has(rutaRelativa)) {
       // Si la versión restaurada u otra página también la usa, se copia a backup (se mantiene en uploads)
@@ -307,8 +313,8 @@ export function adaptarRutasParaVistaPreviaArchivada(
     if (cacheExiste.has(subRuta)) {
       return cacheExiste.get(subRuta)!;
     }
-    const rutaFisica = path.join(dirBackup, nombreEnBackup(subRuta));
-    const existe = fs.existsSync(rutaFisica);
+    const rutaFisica = resolverDentroDe(dirBackup, nombreEnBackup(subRuta));
+    const existe = rutaFisica !== null && fs.existsSync(rutaFisica);
     cacheExiste.set(subRuta, existe);
     return existe;
   }
@@ -387,8 +393,8 @@ export async function borrarDeUploads(rutas: Iterable<string>, ambito: Ambito): 
   const borradas: string[] = [];
 
   for (const ruta of rutas) {
-    const rutaFisica = path.resolve(dirUploads, ruta.replace(/^\/?uploads\//, ''));
-    if (!rutaFisica.startsWith(dirUploads + path.sep)) continue;
+    const rutaFisica = resolverDentroDe(dirUploads, ruta.replace(/^\/?uploads\//, ''));
+    if (!rutaFisica) continue;
 
     try {
       await fs.promises.rm(rutaFisica, { force: true });

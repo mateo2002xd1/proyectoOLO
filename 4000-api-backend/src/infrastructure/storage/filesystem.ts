@@ -95,6 +95,31 @@ export function resolverArchivoDeIdentidad(nombre: string): { rutaAbsoluta: stri
   return mime ? { rutaAbsoluta, mime } : null;
 }
 
+/**
+ * Resuelve `segmentos` dentro de `base`, o devuelve `null` si, ya resuelta, la ruta cae fuera
+ * (un `..`, una ruta absoluta) o no apunta a nada dentro (la propia carpeta).
+ *
+ * Es **la** comprobación de contención del proyecto: todo lugar que convierta un texto que no es
+ * nuestro (la ruta de un adjunto guardada en el contenido de una página, el segmento de una URL)
+ * en una ruta de disco pasa por aquí, en vez de repetir `startsWith`. Dos cosas que un
+ * `startsWith(base)` a secas se salta y esta no:
+ *
+ *  - **la barra final.** `.../uploads-x` empieza igual que `.../uploads`; se compara contra
+ *    `base + path.sep` (es el fallo «off-by-slash» del informe del 2026-10-19, OBS-01);
+ *  - **lo que decodifica quien llama.** `extraerRutasUploads` entrega las rutas ya decodificadas,
+ *    así que un `%2e%2e%2f` guardado en la base llega aquí como `../`: filtrar el texto crudo
+ *    al guardar no basta, la contención tiene que estar en el último paso, el de la ruta de disco.
+ *
+ * Un byte nulo se rechaza: algunas capas truncan ahí y comprobarían una ruta distinta de la que
+ * se usa. No mira si el archivo existe.
+ */
+export function resolverDentroDe(base: string, ...segmentos: string[]): string | null {
+  if (segmentos.some((segmento) => segmento.includes('\0'))) return null;
+  const raizDeBase = path.resolve(base);
+  const rutaAbsoluta = path.resolve(raizDeBase, ...segmentos);
+  return rutaAbsoluta.startsWith(raizDeBase + path.sep) ? rutaAbsoluta : null;
+}
+
 /** Las dos carpetas de un ámbito que se pueden pedir desde fuera. */
 const CARPETAS_SERVIDAS = new Set(['uploads', 'backup']);
 
@@ -117,9 +142,8 @@ export function resolverArchivoServible(
   const [carpeta, ...resto] = segmentos;
   if (!carpeta || !CARPETAS_SERVIDAS.has(carpeta) || resto.length === 0) return null;
 
-  const base = path.join(directorioDelAmbito(ambito as Ambito), carpeta);
-  const rutaAbsoluta = path.resolve(base, ...resto);
-  if (!rutaAbsoluta.startsWith(base + path.sep)) return null;
+  const rutaAbsoluta = resolverDentroDe(path.join(directorioDelAmbito(ambito as Ambito), carpeta), ...resto);
+  if (!rutaAbsoluta) return null;
 
   const mime = mimeParaServir(rutaAbsoluta);
   return mime ? { rutaAbsoluta, mime } : null;
