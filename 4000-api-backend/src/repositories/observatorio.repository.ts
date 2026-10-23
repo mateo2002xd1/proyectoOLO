@@ -52,8 +52,19 @@ export const ObservatorioRepository = {
   listarCargas: (limite = 20) =>
     CargaDatos.findAll({ where: { modulo: MODULO }, order: [['creadoEn', 'DESC']], limit: limite }),
 
-  /** Una carga por su id, o `null`. */
-  obtenerCarga: (id: string) => CargaDatos.findByPk(id),
+  /**
+   * Una carga de **este** módulo por su id, o `null`.
+   *
+   * Filtra por `modulo` como `obtenerCarga` de alertas de inversión y de fuentes futuras. Con
+   * `findByPk` a secas, `GET`/`DELETE /api/observatorio/cargas/:id` aceptaba el id de una carga
+   * de cualquier otro módulo y la leía o la borraba (con su Excel): un id de un objeto servido
+   * por la ruta de otro. Hoy los mismos roles operan los cuatro módulos, pero las policies son
+   * separadas a propósito y el aislamiento no puede depender de que sigan coincidiendo.
+   */
+  obtenerCarga: (id: string) => CargaDatos.findOne({ where: { id, modulo: MODULO } }),
+
+  /** Una carga por su id sea del módulo que sea; solo para decir a qué ruta pertenece. */
+  obtenerCargaDeCualquierModulo: (id: string) => CargaDatos.findByPk(id),
 
   /** Borra la fila de una carga (el Excel lo gestiona `eliminarArchivoSiQuedaSuelto`). */
   eliminarCarga: (id: string) => CargaDatos.destroy({ where: { id } }),

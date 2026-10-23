@@ -5,6 +5,61 @@
 
 ---
 
+## sesión 23-10-2026 (4.ª parte): pruebas de condiciones de carrera (ciclo editorial, acceso, cargas de Excel) y 17 hallazgos
+
+**Qué pidió el usuario:** hacer pruebas de *race condition* en los cuatro flujos con riesgo: edición de páginas, usuarios y acceso, carga de Excel y configuración. **No se corrigió nada**: esta entrada es el inventario de lo que falla, con su causa, para que el usuario decida qué se arregla.
+
+**Método.** Tres scripts nuevos en `4000-api-backend/scripts/verificaciones/` con un módulo común (`carreras-comun.ts`). Lanzan las operaciones **reales** (los casos de uso, dentro de `sequelize.transaction` como los controladores) **a la vez** con `Promise.all`, con el pool caliente, repitiendo la ronda con datos nuevos. Cada escenario mira dos cosas: que la base quede coherente y que ninguna operación falle con un error **sin `status` 4xx** (el manejador de errores lo convierte en un 500 genérico). Las de páginas corren antes las mismas operaciones **en fila**, en los dos órdenes, como control: lo que sale en concurrencia y nunca en fila es lo que introduce la carrera. El módulo común **aborta si `DATABASE_URL` o `REDIS_URL` no son `localhost`**, así que no pueden escribir en Neon.
+
+| Script | Escenarios | Con problemas |
+|---|---|---|
+| `probar-carreras-paginas.ts` | 23 | 10 |
+| `probar-carreras-acceso.ts` | 9 | 8 |
+| `probar-carreras-cargas.ts` | 5 | 2 |
+
+**Hallazgos (todos reproducibles; por orden de gravedad).**
+
+| # | Escenario | Qué pasa | Causa |
+|---|---|---|---|
+| 1 | Aprobar × guardar del editor | Se **publica contenido que nadie revisó** (30 de 30). El guardado entra en la versión que se aprueba y se salta la cola | `aprobarPagina` y `guardarBorrador` leen la versión sin bloquearla; `instance.update` solo escribe los campos que cree cambiados |
+| 2 | Aprobar × rechazar | Las dos responden «ok» (30 de 30) y la página queda **publicada**: el rechazo y su motivo se pierden sin avisar | Igual: lectura sin `FOR UPDATE` y sin volver a comprobar el estado |
+| 3 | Aprobar × descartar la versión en revisión | Las dos responden «ok» y la **página desaparece** (si era su única versión) | Igual; el `UPDATE` sobre una fila ya borrada afecta 0 filas y no avisa |
+| 4 | Aprobar ×2, rechazar ×2, descartar ×2 | Las dos responden «ok» donde en fila la segunda falla; doble evento de publicación y doble fila de bitácora | Igual |
+| 5 | Login: ráfaga de contraseñas incorrectas | Con 20 intentos simultáneos el contador queda en **1** y la cuenta **no se bloquea**; con la contraseña buena se entra justo después (en fila: bloqueada al 5.º) | `registrarFalloDeLogin` lee `failed_login_attempts`, suma 1 en memoria y escribe: lectura-modificación-escritura sin atomicidad |
+| 6 | Preguntas de seguridad: ráfaga de respuestas incorrectas | Igual: contador en 1, sin bloqueo (tope 3), las respuestas buenas pasan después | Mismo patrón en `verifyAnswers` |
+| 7 | Último administrador | Dos administradores que se **eliminan**, se **inactivan** o se degradan entre sí a la vez dejan **0 administradores activos** | `contarAdministradoresActivos` cuenta y después se borra/actualiza, sin bloqueo ni transacción |
+| 8 | Dos cargas distintas de «Programas sobresalientes» a la vez | La tabla queda con **las filas de las dos cargas mezcladas** (48 filas en vez de 24), las dos responden «ok» | `ProgramaSobresaliente.destroy({ where: {} })` ve solo lo confirmado: la segunda no borra lo que inserta la primera |
+| 9 | Guardar ×2 sobre una página nueva | 500 (`SequelizeUniqueConstraintError`) en una de las dos (30 de 30) | `findBySlug` y después `crear`, sin tratar la violación de `uq_paginas_ambito_slug` |
+| 10 | Guardar ×2 con la última versión publicada | 500 en una de las dos | Mismo patrón con `uq_paginas_versiones_numero` (las dos calculan la v2) |
+| 11 | Crear sección ×2 con el mismo nombre | 500 en vez del 409 que da en fila | `findOne` + `create` en transacciones separadas |
+| 12 | Crear usuario ×2 con el mismo correo | 500 en vez del 409 que da en fila | `findByEmail` + `create` |
+| 13 | Primer ingreso ×2 (dos pestañas) | 500 en una de las dos en 4 de 5 rondas (las preguntas guardadas sí quedaron todas de la misma pestaña) | `deleteByUserId` + `createBulk` + `update` fuera de una transacción |
+| 14 | Restablecer contraseña ×2 | Se entregan dos contraseñas temporales y **solo una funciona** | Última escritura gana; las dos respuestas muestran su temporal |
+| 15 | Identidad del panel, **primera** escritura | Dos administradores cambian cosas distintas a la vez y **se pierde uno de los cambios** | `leer(... FOR UPDATE)` no bloquea una fila que todavía no existe |
+| 16 | Una segunda aprobación en fila | 500 (`Error` sin `status`: «No hay versión en revisión») | **No es una carrera**: debería ser 409. Sale también en el control |
+| 17 | Cola de Excel | Sin probar a través de BullMQ | Ver «No probado» |
+
+**Lo que aguantó (no hay nada que arreglar).** Candado de edición (`adquirirBloqueo`): 5 personas pidiendo a la vez la misma página, libre o con candado caducado, dejan **un solo dueño**; el dueño renovando mientras un administrador fuerza, y dos administradores forzando, quedan coherentes. **Cambiar dirección** (`pg_advisory_xact_lock` + `FOR UPDATE`): la misma página a dos destinos, dos páginas al mismo destino, contra crear sección y contra guardar borrador: siempre un ganador y 404/409 para el otro, nunca un 500. Guardar ×2 sobre un borrador, enviar a revisión ×2 y enviar × guardar, aprobar × autoguardado (409 correcto), descartar borrador × guardar, la misma carga de Excel dos veces, y la identidad del panel con la fila ya existente.
+
+> **Trampa para quien reproduzca esto:** el Docker de esta máquina lo comparten varias sesiones, y otra sesión paró todos los contenedores a la vez dos veces durante la prueba (`ECONNREFUSED`). Arrancar el Postgres/Redis desechables dentro del mismo comando que la prueba.
+
+**Cómo ejecutarlas** (Postgres 18 desechable con las 47 migraciones, Redis 7 aparte, `REVALIDAR_SECRET` vacío):
+
+```
+DATABASE_URL=postgres://postgres:prueba@localhost:55432/olo_prueba DB_SSL=false REDIS_URL=redis://localhost:6390/0 \
+npx ts-node scripts/verificaciones/probar-carreras-{paginas|acceso|cargas}.ts [rondas]
+```
+
+Salen con código 1 mientras haya hallazgos abiertos. Los de fuerza bruta usan 5 rondas (cada intento es un bcrypt de 12).
+
+**Hacia dónde apuntan los arreglos** (propuestas, sin aplicar): `SELECT … FOR UPDATE` de la página/versión al principio de aprobar, rechazar, enviar, guardar y descartar, y volver a comprobar el estado con el bloqueo tomado (cierra 1–4 y 16); capturar `UniqueConstraintError` y devolver 409 o reintentar (9–13); `UPDATE … SET intentos = intentos + 1 … RETURNING` en una sola sentencia (5–6); un `pg_advisory_xact_lock` + transacción en eliminar/inactivar/degradar administradores (7); un candado de celda como el de la tendencia ocupacional en la carga de programas, o `LOCK TABLE` (8).
+
+**No probado.** La carga de Excel pasando por la cola de BullMQ (`setGlobalConcurrency(1)` de la 2.ª parte del 22-10 es la defensa real en producción; los hallazgos 8 y los de arriba aplican si dos cargas llegan a correr juntas: dos réplicas, un reintento, el script manual). Carga de **alertas de inversión** y de **tendencia ocupacional** (esta última ya lleva candado de celda). Subida/reemplazo de logo e icono del panel (escribe en disco). Restaurar versión anterior y depurar versiones. Todo a nivel de caso de uso: no se pasó por HTTP ni por el limitador de tasa, que en producción frena parte de las ráfagas de los hallazgos 5 y 6.
+
+**Para ti:** decidir qué hallazgos se corrigen (el 1, 2, 5, 6 y 7 son los que tienen consecuencia de seguridad o de integridad). Los scripts quedan sin commitear.
+
+---
+
 ## sesión 23-10-2026 (3.ª parte): el rol `visitante_interno`, retirado hace un mes pero vivo en el seed de un servidor nuevo
 
 **Qué pidió el usuario:** revisar si existe un rol «visitante interno» en el proyecto; al confirmar que es un rol retirado y encontrar que el seed de un servidor nuevo seguía creándolo, corregirlo.
@@ -13235,3 +13290,64 @@ Comprobado:
 **No** probado: el diálogo montado en el sitio con sesión (el clic de punta a punta, la navegación a la dirección nueva); el 409 refrescando el diálogo; el `down` de la 047.
 
 **Para ti** (igual que antes, y sigue pendiente): aplicar la migración 047 (`npm run migrate` en `4000-api-backend`) y reiniciar la API. De la 047 solo se editó el comentario: si ya la aplicaste, no hay nada que repetir ni migración nueva.
+
+## Sesión 23-10-2026: pruebas de IDOR por HTTP, dos huecos cerrados y uno abierto
+
+Pedido: «vamos a hacer pruebas de IDOR». Decidido contigo: pruebas dinámicas en una pila desechable, y corregir lo que saliera.
+
+`propiedad:verificar` solo ve la cadena de middlewares de cada ruta; no ve lo que pasa dentro del caso de uso. Se escribió **`npm run idor:verificar`** (`scripts/verificaciones/verificar-idor.ts`): levanta la API en el propio proceso, inicia sesión con ocho cuentas reales por el login (Superadmin, dos Administradores, dos Editores, Director, y dos roles de un solo ámbito, uno con solo `editar.intranet.matriz` y otro con solo `editar.sitio.inicio`) y ataca los objetos de los demás. Cada negativa lleva su control (quien sí puede, puede) para que no pase en vacío. Tres resultados: OK, FALLA (sale con código 1) y AVISO; más ABIERTO para lo confirmado cuyo arreglo es decisión de producto. **Se niega a correr** salvo contra una base local cuyo nombre contenga «prueba», «test» o «idor», fuera de producción y con `FILESYSTEM_DIR` definido, porque escribe (cuentas, roles, páginas, cargas) y lo borra al terminar.
+
+**Hallazgos**
+
+| Qué | Gravedad | Estado |
+|---|---|---|
+| Un **Administrador** gestionaba cuentas Superadmin: restablecer su contraseña (la temporal venía en la respuesta), cambiar su correo, degradarla, desactivarla, borrarla, crear cuentas Superadmin y ascender a otra cuenta a Superadmin | Alta (escalada vertical) | **Corregido.** `puedeGestionarCuentaDeRol` + `errorCuentaReservada` en `usuarios.policies.ts`, aplicados en `createUser` (ahora recibe el actor), `updateUser` (rol actual y rol pedido) y `deleteUser`; el controlador pasa `req.user` |
+| `GET`/`DELETE /api/observatorio/cargas/:id` leían y borraban (con su Excel) cargas de alertas de inversión y de fuentes futuras | Media-baja (hoy los mismos roles operan los cuatro módulos) | **Corregido.** `ObservatorioRepository.obtenerCarga` filtra por módulo; `obtenerCargaDeCualquierModulo` solo sirve para conservar el 409 con la pista de tendencia |
+| **Contenido de la intranet legible sin sesión** (`/paginas/publica/:slug`, `/indice-busqueda`, `/titulos` con `X-Ambito: intranet`) | Media-alta | **ABIERTO.** Lo detectó otra sesión y se confirmó aquí con una página publicada de verdad. Está antes de `requireAuth` y el ámbito lo manda quien pregunta. Cerrarlo toca la intranet: su `api-client` hace esas lecturas desde el servidor de Next sin reenviar cookies, y la caché por ámbito (`cacheInterceptor`) no puede compartir una respuesta que ahora exige sesión |
+
+**Avisos** (impresos por la prueba, no fallan): un Administrador restablece la contraseña de otro Administrador; otro Editor guarda borrador sobre el candado de un compañero (colaborativo por decisión); `GET /:slug/bloqueo` muestra quién edita a quien no tiene el permiso de esa sección; `/respaldos` y `/publicadas` solo piden sesión (un Director las lista); `POST /:slug/restaurar` con una versión que no es de esa página da 500 y no 404.
+
+**Aguanta** (143 comprobaciones, 0 fallos tras los arreglos): cuentas ajenas (403 igual exista o no el id, sin enumeración), lista blanca de autoservicio, roles protegidos, permiso por sección y por ámbito, `versionId` de otra página, candados ajenos, cargas por rol y entre módulos, salida de carpeta en archivos e imágenes de identidad, `change-password` y preguntas de seguridad con ids ajenos, y una cuenta desactivada pierde la sesión de inmediato.
+
+Comprobado:
+- `tsc --noEmit` en la API. `idor:verificar`: **143 comprobaciones, 0 fallos, 5 avisos, 3 abiertos**; antes de los arreglos eran 10 fallos (los 6 de Administrador→Superadmin y los 4 del cruce de módulos).
+- `permisos:verificar`, `sesion:verificar`, `errores:verificar` y `caducidad:verificar`: todo correcto. `propiedad:verificar`: la misma falla previa de `identidad-panel/archivos/:nombre` (pública a propósito, falta declararla en la lista del script), no de esta entrega.
+- Todo contra un Postgres 18 desechable y un Redis propio (Docker, las 47 migraciones y `sembrar:permisos`); ni Neon ni los servidores de dev. Sesiones por el login real, sin firmar tokens.
+
+**No** probado: subidas reales de Excel ni de archivos por `POST /api/archivos` (solo la guardia); el cruce de módulos en las rutas de `despublicar` de cortes; la caché de respuestas autenticadas.
+
+**Para ti**:
+1. Reiniciar la API (no recarga sola) para que los dos arreglos surtan efecto.
+2. Decidir lo de la intranet sin sesión (el ABIERTO); mientras tanto la prueba lo seguirá imprimiendo.
+3. Decidir si los Administradores se administran entre sí (el AVISO de reset de contraseña entre Administradores).
+
+## Sesión 23-10-2026: pruebas de SSRF y una ruta que se salía del proxy
+
+Pedido: «vamos a hacer pruebas de ssrf», y después «revalúa y corrige el hallazgo».
+
+**Método.** Sitio (3300) e intranet (3301) con `next dev`, con `BACKEND_URL`, `API_BACKEND_URL` y `CNO_API_URL` apuntando a un servidor señuelo que registra todo, y un segundo señuelo «malo» que no es de nadie: si recibe una sola petición, hay SSRF. 66 rutas hostiles con la ruta cruda (`//host`, `%2f%2f`, `http://`, `\`, `%2e%2e`, doble codificación, `@host`, CRLF, `Host` y `X-Forwarded-Host` falsos), sin sesión ni tokens firmados.
+
+**Resultado.** **SSRF: ninguno.** El señuelo malo recibió 0 peticiones antes y después de la corrección; el `Host` que vio el bueno fue siempre el suyo. La API solo hace una petición saliente (`revalidar-isr`, con destino de variable de entorno) y todos los `proxy_pass` de nginx van a destinos fijos. La lista blanca de `/api/docs/pdf` y el `encodeURIComponent` del buscador CNO aguantan. La ruta pública del sitio ya filtraba el slug con `slugificar` + `esSlugValido`, así que no hay recorrido sin sesión.
+
+**Hallazgo (no es SSRF).** Las rutas con `[id]` armaban la ruta hacia la API con el valor de la URL sin codificar, y `new URL` resuelve `..` y `%2e%2e%2f`. Con el token de la sesión, `/api/roles/%2e%2e%2fusers` llegaba como `GET /api/users` y `/api/users/%2e%2e%2f%2e%2e%2fpaginas` como `GET /paginas`. El host no cambia y la API sigue aplicando sus permisos, así que **gravedad baja**: lo que se perdía era que `RUTAS_PERMITIDAS` limitara lo que alcanza el proxy con la cookie.
+
+| Dónde | Corrección |
+|---|---|
+| `backend-proxy.ts` (sitio) | Barrera: la petición debe salir al mismo origen, a `/api/…` y llegar a la ruta escrita; si no, 400. Cubre `.`/`..` (que `encodeURIComponent` no toca), `//host` y esquemas para cualquier llamador futuro |
+| `api/users/[id]`, `api/roles/[id]`, `api/role-permissions/role/[roleId]` | `encodeURIComponent` del parámetro (cierra también la inyección de `?` y `#`) |
+| `preview/[slug]/page.tsx` (sitio) | `encodeURIComponent` del slug y 404 para `.`/`..` |
+| `api-client.ts` (intranet) | `urlDe`: en el servidor, rechaza la ruta si la URL resuelta no conserva lo escrito; los cinco métodos pasan por ella |
+| `edicion.service.ts` (intranet) | `encodeURIComponent` del slug (lo usa la vista previa, que llama desde el servidor) |
+
+Antes: `/api/roles/%2e%2e%2fusers` → `GET /api/users`. Después: `GET /api/roles/..%2Fusers`, que se queda dentro de la ruta.
+
+**Informativo, sin cambio.** La reescritura `/api-backend/:path*` de la intranet conserva `..%2f` tal cual hacia la API; el host no cambia y Express no lo interpreta como separador.
+
+Comprobado:
+- `tsc --noEmit` en sitio e intranet: sin errores.
+- Arnés de caja negra repetido tras la corrección: 0 SSRF, 0 escapes del catch-all, señuelo malo en 0; los controles (id normal, `PATCH /api/roles/7`) llegan intactos.
+- Lógica de las dos barreras, 16 casos (`.` `..` `%2e%2e`, barra invertida, `//host`, esquema, fuera de `/api`, rutas legítimas con query): todos como se esperaba.
+
+**No** probado: la vista previa del sitio y de la intranet con sesión (no se firman tokens); la rama de `..` literal de la barrera desde fuera, porque Next la normaliza con un 308 antes de llegar al handler (queda como defensa en profundidad, probada solo con la lógica); las llamadas del servidor de la intranet con sesión después del cambio de `api-client`.
+
+**Para ti**: nada que migrar ni reiniciar (Next recarga solo). El arnés está fuera del repositorio; si quieres, lo convierto en `npm run ssrf:verificar` como `xss:verificar` o `jwt:verificar`.

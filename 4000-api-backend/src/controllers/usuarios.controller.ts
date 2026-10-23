@@ -63,7 +63,7 @@ export const UserController = {
   /** Crea una cuenta y lo registra en la bitácora. */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await createUser(req.body);
+      const result = await createUser(req.body, req.user);
       await registrarUsuario(req, 'crear', (result as any)?.id);
       res.status(201).json(result);
     } catch (err) { next(err); }

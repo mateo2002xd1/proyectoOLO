@@ -35,3 +35,28 @@ export const usuariosPolicies = {
 };
 
 export type PermisoUsuario = keyof typeof usuariosPolicies;
+
+/** Roles cuyas cuentas solo gestiona alguien de su mismo nivel. */
+const ROLES_RESERVADOS_AL_SUPERADMIN = ['superadmin'];
+
+/**
+ * ¿Puede este actor crear, editar, desactivar, borrar o asignar la cuenta de un rol dado?
+ *
+ * `puedeAdministrarUsuarios` dice *si* alguien gestiona cuentas, no *cuáles*: un
+ * Administrador pasaba por ella sobre una cuenta Superadmin y podía restablecerle la
+ * contraseña (la temporal venía en la respuesta), cambiarle el correo, degradarla,
+ * desactivarla, borrarla, o crear y ascender cuentas a Superadmin. Eso es una escalada
+ * vertical: un rol que no es el máximo se hacía con el máximo. Aquí se fija que el rol de
+ * Superadmin solo lo gestiona un Superadmin.
+ *
+ * Va aparte de `usuariosPolicies` porque necesita el rol del objeto además del actor, y
+ * esa forma (`actor`) no encaja con las guardias de ruta. No decide nada entre
+ * Administradores: eso se gestiona hoy entre ellos, y cambiarlo es otra decisión.
+ */
+export const puedeGestionarCuentaDeRol = (actor: ActorDePolicy, rolDelObjeto: string | null | undefined): boolean =>
+  !tieneRol(rolDelObjeto, ROLES_RESERVADOS_AL_SUPERADMIN) ||
+  tieneRol(rolDeActor(actor), ROLES_RESERVADOS_AL_SUPERADMIN);
+
+/** El 403 de {@link puedeGestionarCuentaDeRol}, con el mismo texto en todos los caminos. */
+export const errorCuentaReservada = () =>
+  Object.assign(new Error('Solo un Superadmin puede gestionar cuentas de Superadmin'), { status: 403 });

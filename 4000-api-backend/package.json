@@ -27,6 +27,7 @@
     "ambito:verificar": "ts-node scripts/verificaciones/verificar-ambito.ts",
     "permisos:verificar": "ts-node scripts/verificaciones/verificar-permisos.ts",
     "propiedad:verificar": "ts-node scripts/verificaciones/verificar-propiedad.ts",
+    "idor:verificar": "ts-node scripts/verificaciones/verificar-idor.ts",
     "sembrar:permisos": "ts-node scripts/semillas/sembrar-permisos-roles.ts",
     "auditoria:verificar": "ts-node scripts/verificaciones/verificar-auditoria.ts",
     "caducidad:verificar": "ts-node scripts/verificaciones/verificar-caducidad-administradores.ts",

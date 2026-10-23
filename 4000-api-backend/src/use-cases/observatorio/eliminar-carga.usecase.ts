@@ -28,17 +28,18 @@ export class ErrorAlEliminarCarga extends Error {
 export async function eliminarCargaObservatorio(id: string): Promise<void> {
   const carga = await Repo.obtenerCarga(id);
   if (!carga) {
+    // Las de tendencia ocupacional tienen su propia ruta, que además retira del corte los
+    // datos de la carga vigente (`eliminarCargaTendencia`). Esta, la de programas, no sabe
+    // hacerlo y dejaría un corte con datos sin la carga que los trajo. Es la única pista de
+    // otro módulo que se da; cualquier otro id ajeno es un 404 como si no existiera.
+    const deOtroModulo = await Repo.obtenerCargaDeCualquierModulo(id);
+    if (deOtroModulo?.get('modulo') === MODULO_CARGA_TENDENCIA) {
+      throw new ErrorAlEliminarCarga(
+        'Las cargas de tendencia ocupacional se eliminan con DELETE /api/observatorio/tendencia-ocupacional/cargas/:id.',
+        409
+      );
+    }
     throw new ErrorAlEliminarCarga('Carga no encontrada.', 404);
-  }
-
-  // Las de tendencia ocupacional tienen su propia ruta, que además retira del corte los
-  // datos de la carga vigente (`eliminarCargaTendencia`). Esta, la de programas, no sabe
-  // hacerlo y dejaría un corte con datos sin la carga que los trajo.
-  if (carga.get('modulo') === MODULO_CARGA_TENDENCIA) {
-    throw new ErrorAlEliminarCarga(
-      'Las cargas de tendencia ocupacional se eliminan con DELETE /api/observatorio/tendencia-ocupacional/cargas/:id.',
-      409
-    );
   }
 
   const archivoId = carga.get('archivoId') as string | null;

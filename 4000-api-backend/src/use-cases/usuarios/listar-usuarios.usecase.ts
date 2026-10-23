@@ -10,7 +10,7 @@ import {
 } from '../../shared/password-policy';
 import { exigirEmailInstitucional } from '../../shared/email-policy';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
-import { usuariosPolicies } from '../../policies/usuarios.policies';
+import { usuariosPolicies, puedeGestionarCuentaDeRol, errorCuentaReservada } from '../../policies/usuarios.policies';
 import { esDueno } from '../../shared/autorizacion';
 import { logAudit } from '../auditoria/audit.usecase';
 
@@ -31,7 +31,7 @@ export const getUserById = async (id: string) => {
  * Crea una cuenta con correo institucional y una contraseña temporal que obliga a cambiarla al entrar.
  * @throws {Error} 403 con el correo reservado; 409 si el correo ya existe; 404 si el rol no existe.
  */
-export const createUser = async (data: any) => {
+export const createUser = async (data: any, actor?: Actor) => {
   const { email, password, role_id, ...rest } = data;
   // Aquí sí se devuelve el motivo real: quien crea usuarios es un administrador
   // autenticado, así que decirle que el dominio no vale no revela nada a nadie.
@@ -46,6 +46,7 @@ export const createUser = async (data: any) => {
 
   const role = await RoleRepository.findById(role_id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
+  if (actor && !puedeGestionarCuentaDeRol(actor, (role as any).name)) throw errorCuentaReservada();
 
   const temporaryPassword = generarPasswordTemporal();
   // La temporal ya nace cumpliendo §1, así que se hashea directa: pasarla otra vez
@@ -109,6 +110,17 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
 
   if (user.email === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('No se puede modificar la cuenta maestra del sistema'), { status: 403 });
+  }
+
+  // La cuenta de un Superadmin, y el rol de Superadmin, solo los toca un Superadmin. Se mira
+  // el rol que tiene ahora (para no operar sobre ella) y el que se pide (para no ascender a
+  // nadie, ni a uno mismo ni a un cómplice).
+  if (actor) {
+    if (!puedeGestionarCuentaDeRol(actor, (user as any).role?.name)) throw errorCuentaReservada();
+    if (rest.role_id !== undefined && !esDueno(rest.role_id, user.role_id)) {
+      const rolPedido = await RoleRepository.findById(rest.role_id);
+      if (rolPedido && !puedeGestionarCuentaDeRol(actor, (rolPedido as any).name)) throw errorCuentaReservada();
+    }
   }
 
   const esAdministrador = usuariosPolicies.puedeAdministrarUsuarios(actor?.role);
@@ -268,6 +280,8 @@ export const deleteUser = async (id: string, actor?: Actor) => {
   if (user.email === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('No se puede eliminar la cuenta maestra del sistema'), { status: 403 });
   }
+
+  if (actor && !puedeGestionarCuentaDeRol(actor, (user as any).role?.name)) throw errorCuentaReservada();
 
   // Borrarse a uno mismo deja la sesión en curso sin sujeto y es indistinguible de un
   // clic equivocado. Para irse está la desactivación, que es reversible.

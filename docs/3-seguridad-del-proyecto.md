@@ -169,6 +169,33 @@ Reglas que deja fijadas:
   sí se exige es que venga declarado al escribir (`exigirAmbito`), para que una cabecera
   perdida no cree la página en el sitio equivocado.
 
+**Segunda pasada, dinámica (2026-10-23): `npm run idor:verificar`.** El barrido de arriba mira la
+cadena de middlewares; no ve lo que pasa dentro del caso de uso. Esta prueba levanta la API,
+inicia sesión con ocho cuentas reales (Superadmin, dos Administradores, dos Editores, Director y
+dos roles de un solo ámbito) y ataca los objetos de los demás, con un control por cada negativa
+(143 comprobaciones). Escribe en la base, así que se niega a correr salvo contra una base local
+cuyo nombre contenga «prueba», «test» o «idor», y borra lo suyo al terminar.
+
+| Hallazgo | Estado |
+|---|---|
+| Un **Administrador** podía restablecer la contraseña de un Superadmin (la temporal venía en la respuesta → toma de cuenta), cambiarle el correo, degradarlo, desactivarlo, borrarlo, crear cuentas Superadmin y ascender a otra cuenta a Superadmin: `puedeAdministrarUsuarios` decía *si* se gestionan cuentas, no *cuáles* | **Corregido 2026-10-23.** `puedeGestionarCuentaDeRol` (`usuarios.policies.ts`): el rol de Superadmin, y sus cuentas, solo los gestiona un Superadmin; se aplica en `createUser`, `updateUser` (rol actual **y** rol pedido) y `deleteUser` |
+| `GET`/`DELETE /api/observatorio/cargas/:id` aceptaban el id de una carga de **otro módulo** (alertas de inversión, fuentes futuras) y la leían o la borraban con su Excel: `obtenerCarga` usaba `findByPk` sin filtrar `modulo` | **Corregido 2026-10-23.** Filtra por módulo como los otros tres repositorios; un id de tendencia conserva su 409 con la pista, cualquier otro es 404 |
+| **Lectura de la intranet sin sesión.** `GET /api/paginas/publica/:slug`, `/indice-busqueda` y `/titulos` están antes de `requireAuth` y el ámbito lo elige quien pregunta (`X-Ambito: intranet`): devuelven contenido, textos y títulos de la intranet a cualquiera. Los adjuntos de la intranet sí exigen sesión; el contenido no | **ABIERTO, decisión de producto.** Exigir sesión con `puedeVer` cuando el ámbito es intranet obliga a que el render de la intranet (servidor de Next, `api-client.ts` sin cookies) reenvíe la sesión, y a sacar esas rutas de la caché compartida por ámbito. Lo detectó otra sesión; `idor:verificar` lo imprime como ABIERTO hasta que se decida |
+
+Quedan como AVISO, a propósito o por decidir (la prueba los imprime, no fallan): un Administrador
+puede restablecer la contraseña de otro Administrador; otro Editor puede guardar borrador en una
+página con el candado de un compañero (la edición es colaborativa); `GET /:slug/bloqueo` muestra
+quién edita a un Editor sin permiso sobre esa sección (lo usa la restauración de respaldos);
+`GET /api/paginas/respaldos` y `/publicadas` solo piden sesión, así que un Director las lista; y
+`POST /:slug/restaurar` con una versión que no es de esa página responde 500 en vez de 404 (no la
+publica, pero el motivo no se distingue).
+
+Lo que se probó y aguanta: lectura, edición y borrado de cuentas ajenas por Editor y Director (403 igual exista o no el id);
+lista blanca de autoservicio (rol, estado, `reset_password`); roles protegidos; permiso por sección y
+por ámbito con cuentas de un solo ámbito; `versionId` de otra página en `editable`, `versiones` y
+`restaurar`; candados ajenos; cargas por rol; salida de carpeta en `/api/archivos` y en las imágenes
+de identidad; `change-password` y preguntas de seguridad con ids ajenos en el cuerpo.
+
 Verificación: `npm run propiedad:verificar` en `4000-api-backend`. Comprueba las policies contra
 los nombres de rol reales de la tabla `roles` **y** recorre los routers de Express afirmando
 que ninguna ruta con parámetro de objeto llega al controlador solo con `requireAuth`. Las
@@ -606,6 +633,7 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `400
 | Comando | Qué afirma |
 |---|---|
 | `npm run propiedad:verificar` | Que ninguna ruta con parámetro de objeto llegue al controlador solo con `requireAuth` |
+| `npm run idor:verificar` | Que cuentas de cada rol no lean ni cambien objetos de otras (cuentas, roles, páginas, versiones, candados, cargas, archivos); solo contra una base desechable |
 | `npm run permisos:verificar` | Que las policies coincidan con los nombres de rol reales de la tabla `roles` |
 | `npm run ambito:verificar` | Que toda escritura declare su ámbito |
 | `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
