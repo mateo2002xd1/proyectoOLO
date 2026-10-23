@@ -66,9 +66,12 @@ export async function proxy(request: NextRequest) {
   };
 
   const esRutaDeAcceso = RUTAS_DE_ACCESO.includes(pathname);
+  // `/api-backend` exacto o `/api-backend/…`. Sin la barra, `/api-backendx` también entraba como
+  // ruta pública y respondía 200 con el marco de la intranet sin sesión (OBS-03).
+  const esProxyDeLaApi = pathname === '/api-backend' || pathname.startsWith('/api-backend/');
 
   // Rutas públicas / de login
-  if (esRutaDeAcceso || pathname.startsWith('/api-backend')) {
+  if (esRutaDeAcceso || esProxyDeLaApi) {
     // Si el usuario pide salir explícitamente a /login?logout=1
     if (pathname === '/login' && request.nextUrl.searchParams.has('logout')) {
       const response = NextResponse.redirect(new URL('/login', request.url));
