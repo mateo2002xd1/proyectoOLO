@@ -34,7 +34,7 @@
  *
  * ## Qué impide el cambio
  *
- * - Un ámbito sin diálogo todavía (`AMBITOS_HABILITADOS`): hoy solo el sitio.
+ * - Un ámbito sin diálogo todavía (`AMBITOS_HABILITADOS`): hoy el sitio y la intranet.
  * - La portada (`inicio`), `menu-y-pie` y las páginas de fábrica o acopladas al código:
  *   hay código que da por hecho su slug (metadatos, redirecciones, enlaces fijos).
  * - Una página que alguien tiene abierta en el editor, o que enlaza a esta y alguien tiene
@@ -85,9 +85,9 @@ const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
 
 /**
- * Los ámbitos en los que el cambio de dirección está disponible. La intranet tiene sus
- * propias convenciones de rutas (`encuestas-*`) y todavía no tiene botón ni diálogo: se
- * añade aquí cuando los tenga.
+ * Los ámbitos en los que el cambio de dirección está disponible: los dos tienen botón y
+ * diálogo. La intranet tiene sus propias convenciones de rutas (`encuestas-*`), que protege
+ * `esSeccionDeFabrica`; un ámbito nuevo se añade aquí cuando tenga su botón y su diálogo.
  */
 export const AMBITOS_HABILITADOS: ReadonlySet<Ambito> = new Set<Ambito>(['sitio', 'intranet']);
 

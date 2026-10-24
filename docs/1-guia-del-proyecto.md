@@ -235,7 +235,7 @@ bloqueadas (`FOR UPDATE`): un guardado del editor no puede pisar la reescritura.
 alguien tiene abierto el editor en la página o en una que habría que reescribir, y si la clave de
 permiso de la dirección nueva ya tiene accesos concedidos (no se fusionan). No cambian de
 dirección `inicio`, `menu-y-pie`, las páginas de fábrica ni las acopladas al código
-(`clasificacion-cno`, `clasificacion-cuoc`). Hoy solo el sitio (`AMBITOS_HABILITADOS`). No deja
+(`clasificacion-cno`, `clasificacion-cuoc`). Disponible en el sitio y en la intranet (`AMBITOS_HABILITADOS`). No deja
 redirección: los enlaces de fuera del portal se rompen.
 
 Las migas de pan siguen la misma estructura: *Inicio › desplegable › página* (el desplegable

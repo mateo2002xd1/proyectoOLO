@@ -350,7 +350,7 @@ router.delete(
  *       si la página está protegida (`inicio`, `menu-y-pie`, las secciones de fábrica y las
  *       acopladas al código: no se cambian) y quién tiene abierta en el editor esta página o
  *       alguna de las que la enlazan. Solo quien aprueba (Superadmin y Administrador); 400 si
- *       el ámbito no es el sitio.
+ *       el ámbito no está habilitado (hoy el sitio y la intranet).
  *     parameters:
  *       - $ref: '#/components/parameters/SlugEnRuta'
  *       - $ref: '#/components/parameters/Ambito'
@@ -455,7 +455,7 @@ router.get(
  *       ocupada, si la clave de permiso de la dirección nueva ya tiene accesos, si hay enlaces
  *       y no se pidió actualizarlos, o si alguien tiene abierto el editor en esta página o en
  *       una que habría que reescribir. La portada, `menu-y-pie`, las secciones de fábrica y las
- *       acopladas al código no se cambian (403). Solo el sitio (400 en otro ámbito).
+ *       acopladas al código no se cambian (403). Solo el sitio y la intranet (400 en otro ámbito).
  *
  *       **No deja redirección:** los enlaces de fuera del portal dejan de funcionar.
  *     parameters:
