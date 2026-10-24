@@ -33,7 +33,7 @@
 
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
-import { esEsquemaEjecutable, iframeSeguro } from '@olo/url-policy';
+import { esEsquemaEjecutable, iframeSeguro, rutaInternaSegura } from '@olo/url-policy';
 
 // ---------------------------------------------------------------------------
 // Instancia de DOMPurify con el window de jsdom
@@ -152,6 +152,32 @@ const CAMPOS_IFRAME = new Set(['urlpowerbi', 'videourl', 'embedurl', 'iframeurl'
 /** Nombres de campo que, por su aspecto, llevan una dirección (en minúsculas). */
 const CLAVE_DE_DIRECCION = /(url|href|src|link|enlace|destino|ruta|archivo|imagen|icono|logo|miniatura|poster|video|action|background)/;
 
+/**
+ * Campos de color de los bloques (`colorFondo`, `colorFilaHover`…; en minúsculas). Su valor acaba en un
+ * `style` o en una variable CSS, y el selector de color de Puck deja escribir texto libre: una
+ * petición directa a la API puede mandar `#fff;} body::before{…}`. Solo se guarda un color de
+ * verdad (XSS-07, `2-convenciones-del-proyecto.md` §11).
+ */
+const CLAVE_DE_COLOR = /^color/;
+
+/**
+ * Lo que se admite como color: hex, `rgb()`/`hsl()` con solo números, una variable del tema o un nombre
+ * (`red`, `transparent`). Es el mismo criterio que `colorSeguro` del buscador del sitio
+ * (`3000-sitio-web/.../buscador-sitio/lib/colores.ts`): si cambia uno, cambia el otro.
+ */
+const COLOR_ADMITIDO = new RegExp(
+  '^(?:#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(?:rgb|hsl)a?\\(\\s*[\\d.%\\s,/-]+\\)|var\\(--[a-z0-9-]+\\)|[a-z]{3,30})$',
+  'i'
+);
+
+/**
+ * Campos que guardan una ruta de ESTE sitio y de ahí navegan el visitante (el «Buscador del Sitio
+ * Web» va a la página que se escriba aquí). Un valor como `//otro-sitio` o `/\otro-sitio` lo lee el
+ * navegador como otro origen, y su nombre no se parece a una dirección (`CLAVE_DE_DIRECCION`); se
+ * nombra aquí. Solo pasa `/ruta` de este mismo sitio (XSS-06).
+ */
+const CAMPOS_RUTA_INTERNA = new Set(['paginaresultados']);
+
 /** Los esquemas que puede tener la dirección de un campo así. `data:` ya pasó por `esEsquemaEjecutable`. */
 const ESQUEMAS_ADMITIDOS_EN_DIRECCION = new Set(['http', 'https', 'mailto', 'tel', 'data']);
 
@@ -190,17 +216,35 @@ function sanitizarUrl(valor: string): string {
  *  1. Si empieza por un esquema que ejecuta código (`javascript:`, `vbscript:`, un
  *     `data:` que no sea imagen) se vacía, en cualquier campo: no hay campo donde sea
  *     inofensivo.
- *  2. Un campo de `iframe` solo admite un host de la lista.
- *  3. Un campo de la lista estricta (`src`, `href`…) solo admite http, https, mailto, tel o
+ *  2. Un campo de color (`color*`) solo admite un color: hex, `rgb()`/`hsl()` numéricos, una
+ *     variable del tema o un nombre. Cualquier otra cosa se vacía (XSS-07).
+ *  3. Un campo de ruta interna (`paginaResultados`) solo admite `/ruta` de este sitio (XSS-06).
+ *  4. Un campo de `iframe` solo admite un host de la lista.
+ *  5. Un campo de la lista estricta (`src`, `href`…) solo admite http, https, mailto, tel o
  *     una ruta relativa.
- *  4. Un campo con aspecto de dirección (`urlBoton`, `archivo`, `icono`…) que empieza por
+ *  6. Un campo con aspecto de dirección (`urlBoton`, `archivo`, `icono`…) que empieza por
  *     un esquema solo admite los de enlace. Un texto sin esquema pasa.
- *  5. Lo demás: si tiene `<`, DOMPurify.
+ *  7. Lo demás: si tiene `<`, DOMPurify.
  */
 function sanitizarTexto(valor: string, clave: string): string {
   if (esEsquemaEjecutable(valor)) {
     recolector?.(`url ${valor.trim().slice(0, 40)}`);
     return '';
+  }
+
+  if (CLAVE_DE_COLOR.test(clave) && valor.trim() && !COLOR_ADMITIDO.test(valor.trim())) {
+    recolector?.(`color ${valor.trim().slice(0, 40)}`);
+    return '';
+  }
+
+  if (CAMPOS_RUTA_INTERNA.has(clave) && valor.trim()) {
+    const escrita = valor.trim();
+    // Con esquema (`https://…`) no es una ruta de este sitio: no se arregla poniéndole una barra.
+    const segura = /^[a-z][a-z0-9+.-]*:/i.test(escrita)
+      ? ''
+      : rutaInternaSegura(escrita.startsWith('/') ? escrita : `/${escrita}`, '');
+    if (!segura) recolector?.(`ruta ${escrita.slice(0, 40)}`);
+    return segura;
   }
 
   if (CAMPOS_IFRAME.has(clave)) {

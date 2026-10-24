@@ -293,11 +293,84 @@ const verificarHelpers = (): void => {
   informar(esEsquemaEjecutable('Data: 2026') === false, 'un texto «Data: 2026» no se confunde con un data:');
 };
 
+// ── 6. Colores y rutas internas de Puck (XSS-07 y XSS-06) ─────────────────────
+
+/** Nombres de campo reales de color de los bloques nuevos del buscador y de otros del catálogo. */
+const CLAVES_DE_COLOR_REALES = [
+  'colorFilaHover', 'colorResaltado', 'colorTextoResaltado', 'colorBarraPlaceholder', 'colorPlaceholder',
+  'colorFondo', 'colorBorde', 'colorBoton', 'colorTexto',
+];
+const CARGAS_DE_COLOR = [
+  "#fff;} body::before{content:'x';position:fixed;inset:0;z-index:99999;background:#fff} .x{",
+  'red;} .a{color:blue',
+  'url(https://evil.example/x.png)',
+  'expression(alert(1))',
+  'rgb(0,0,0);background:url(x)',
+  '#12345',
+  'var(--a);} body{display:none}',
+];
+const COLORES_VALIDOS = [
+  '#ff0000', '#FFF', '#7DB828', '#00163180', 'rgba(125, 184, 40, 0.3)', 'rgb(0 0 0 / 50%)', 'hsl(210, 50%, 40%)',
+  'transparent', 'red', 'var(--color-brand-focus)',
+];
+const CARGAS_DE_RUTA = ['//evil.example/buscar', '/' + String.fromCharCode(92) + 'evil.example', '/\tevil.example', 'https://evil.example', '/\u0001/x'];
+
+const verificarColoresYRutas = (): void => {
+  console.log('\n=== Colores: ¿se guarda solo un color, sea cual sea el campo? (XSS-07) ===');
+  const conFuga: string[] = [];
+  for (const clave of CLAVES_DE_COLOR_REALES) {
+    const quedaron: string[] = [];
+    for (const carga of CARGAS_DE_COLOR) {
+      const limpio = sanitizarContenidoPuck({ content: [{ type: 'Bloque', props: { [clave]: carga } }] }) as any;
+      if (String(limpio.content[0].props[clave]) !== '') quedaron.push(JSON.stringify(carga).slice(0, 28));
+    }
+    if (quedaron.length > 0) conFuga.push(`${clave} (${quedaron.length}/${CARGAS_DE_COLOR.length})`);
+    informar(quedaron.length === 0, `campo «${clave}»`, quedaron.length ? `se guardó tal cual: ${quedaron.join(', ')}` : '');
+  }
+  console.log(`\n  Campos con fuga: ${conFuga.length} de ${CLAVES_DE_COLOR_REALES.length}${conFuga.length ? ` → ${conFuga.join(', ')}` : ''}`);
+
+  const buenos = COLORES_VALIDOS.filter((valor) => {
+    const limpio = sanitizarContenidoPuck({ content: [{ type: 'Bloque', props: { colorFondo: valor } }] }) as any;
+    return limpio.content[0].props.colorFondo !== valor;
+  });
+  informar(buenos.length === 0, `un color de verdad pasa intacto (${COLORES_VALIDOS.length} formas)`, buenos.join(' | '));
+
+  const vacio = sanitizarContenidoPuck({ content: [{ type: 'Bloque', props: { colorFondo: '' } }] }) as any;
+  informar(vacio.content[0].props.colorFondo === '', 'un color vacío sigue vacío (usa el de respaldo del bloque)');
+
+  const anidado = sanitizarContenidoPuck({
+    content: [{ type: 'Bloque', props: { estilos: [{ colorTexto: 'red;} body{display:none' }, { colorTexto: '#001631' }] } }],
+  }) as any;
+  informar(
+    anidado.content[0].props.estilos[0].colorTexto === '' && anidado.content[0].props.estilos[1].colorTexto === '#001631',
+    'color anidado en una lista: el malo se vacía y el bueno se queda'
+  );
+
+  const noEsColor = sanitizarContenidoPuck({ content: [{ type: 'Bloque', props: { titulo: 'Rojo; } azul', descripcion: 'color: red;' } }] }) as any;
+  informar(
+    noEsColor.content[0].props.titulo === 'Rojo; } azul' && noEsColor.content[0].props.descripcion === 'color: red;',
+    'un texto que no es campo de color no se toca (la regla no se pasa de estricta)'
+  );
+
+  console.log('\n=== Ruta de resultados del buscador: ¿solo una ruta de este sitio? (XSS-06) ===');
+  for (const carga of CARGAS_DE_RUTA) {
+    const limpio = sanitizarContenidoPuck({ content: [{ type: 'BuscadorSitioWeb', props: { paginaResultados: carga } }] }) as any;
+    const valor = String(limpio.content[0].props.paginaResultados);
+    informar(valor === '', `«${JSON.stringify(carga).slice(0, 30)}» se vacía`, valor);
+  }
+  const ruta = (valor: string) =>
+    (sanitizarContenidoPuck({ content: [{ type: 'BuscadorSitioWeb', props: { paginaResultados: valor } }] }) as any).content[0].props.paginaResultados;
+  informar(ruta('/buscador-general') === '/buscador-general', '/buscador-general pasa intacta');
+  informar(ruta('buscador-general') === '/buscador-general', 'sin barra, se le pone (lo mismo que hace el bloque)');
+  informar(ruta('') === '', 'vacía sigue vacía (el bloque usa /buscador-general)');
+};
+
 verificarHtml();
 verificarUrls();
 verificarIframes();
 verificarEvasiones();
 verificarHelpers();
+verificarColoresYRutas();
 
 console.log(`\n${comprobaciones} comprobaciones · ${fallos === 0 ? 'Todo correcto.' : `${fallos} fallaron.`}\n`);
 process.exit(fallos === 0 ? 0 : 1);
