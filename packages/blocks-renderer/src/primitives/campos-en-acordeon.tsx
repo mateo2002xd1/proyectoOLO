@@ -7,7 +7,8 @@
  * Puck no ofrece acordeones por campo, así que estos se entregan como campos
  * `custom` que pintan sus propios controles. Por eso entienden solo los tipos
  * que hoy se usan en los paneles que los adoptaron —`select`, `radio`, `text`,
- * `textarea`, `number`, `color` (el selector de `ColorPickerField`) y `custom`—; un `custom` interior
+ * `textarea`, `number`, `medida` (número libre + unidad, para espaciados y anchos),
+ * `color` (el selector de `ColorPickerField`) y `custom`—; un `custom` interior
  * se pinta con su propio `render`, sin etiqueta, porque la etiqueta ya la pone
  * la cabecera del acordeón.
  *
@@ -26,7 +27,15 @@
  *   acordeón. Necesita `ObjetoEnAcordeon` en `overrides.fieldTypes.object` del editor.
  */
 
-import React, { cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from 'react';
+import React, {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useId,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { ColorPickerField } from './color-picker-field';
 import { CLASE_CONTROL, CLASE_ENFOCABLE, COLOR_FOCO_CAMPO, EstilosDeCampos } from './estilos-de-campos';
 
@@ -55,6 +64,19 @@ export type CampoDeAcordeon = (
       /** Unidad que se ve junto al número y en el resumen: «px». */
       sufijo?: string;
       placeholder?: string;
+    }
+  | {
+      type: 'medida';
+      label: string;
+      /** Unidades que se pueden elegir; la primera es la de por defecto. */
+      unidades: string[];
+      /** Admite números negativos (separaciones que se solapan). */
+      negativo?: boolean;
+      placeholder?: string;
+      /** Lo que dice el resumen cuando no hay valor: «Ninguno». */
+      vacio?: string;
+      /** Convierte un valor guardado con un formato anterior en una medida «2.5rem». */
+      normalizar?: (valor: unknown) => string;
     }
   | { type: 'color'; label: string }
   | {
@@ -93,6 +115,110 @@ const estiloControl: React.CSSProperties = {
   fontFamily: 'inherit',
   boxSizing: 'border-box',
 };
+
+// ─── Medidas libres ──────────────────────────────────────────────────────────
+const MEDIDA = /^(-?(?:\d+\.?\d*|\.\d+))(rem|em|vw|vh|ch|px|%)$/;
+
+/**
+ * Parte una medida guardada («2.5rem») en número y unidad, o `null` si no es una.
+ * Es también la lista blanca de unidades: lo que no encaja aquí no llega nunca a un
+ * estilo (`estiloDeCaja` la usa).
+ */
+export function partirMedida(valor: unknown): { numero: number; unidad: string } | null {
+  if (typeof valor !== 'string') return null;
+  const m = MEDIDA.exec(valor.trim());
+  if (!m) return null;
+  const numero = Number(m[1]);
+  return Number.isFinite(numero) ? { numero, unidad: m[2] } : null;
+}
+
+/** Lo tecleado como número, aceptando la coma decimal; `null` si aún no es un número entero o decimal completo. */
+function numeroTecleado(texto: string): number | null {
+  const limpio = texto.replace(',', '.');
+  if (limpio === '' || limpio === '-' || limpio === '.' || limpio === '-.') return null;
+  const numero = Number(limpio);
+  return Number.isFinite(numero) ? numero : null;
+}
+
+/**
+ * Número libre + unidad, sin tope. Guarda la medida como texto («2.5rem»), que es lo
+ * que el CSS usa tal cual; rem por defecto porque sigue al tamaño de letra y no se
+ * descuadra al cambiar de pantalla. El texto tecleado se guarda aparte para no pisar
+ * a medias lo que se escribe («2.» o «-»); si el valor cambia desde fuera (deshacer),
+ * se vuelve a leer de él.
+ */
+function CampoMedida({
+  campo,
+  valor,
+  onChange,
+}: {
+  campo: Extract<CampoDeAcordeon, { type: 'medida' }>;
+  valor: any;
+  onChange: (valor: any) => void;
+}) {
+  const actual = partirMedida(campo.normalizar ? campo.normalizar(valor) : valor);
+  const [unidad, setUnidad] = useState(actual?.unidad ?? campo.unidades[0]);
+  const [texto, setTexto] = useState(actual ? String(actual.numero) : '');
+
+  useEffect(() => {
+    if (!actual) {
+      if (!valor) setTexto('');
+      return;
+    }
+    setUnidad(actual.unidad);
+    setTexto((t) => (numeroTecleado(t) === actual.numero ? t : String(actual.numero)));
+    // Solo cuando cambia el valor guardado, no con cada letra tecleada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valor]);
+
+  const unidades = campo.unidades.includes(unidad) ? campo.unidades : [...campo.unidades, unidad];
+  const guardar = (t: string, u: string) => {
+    if (t === '') return onChange('');
+    const numero = numeroTecleado(t);
+    if (numero !== null) onChange(`${numero}${u}`);
+  };
+  const numero = numeroTecleado(texto);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+      <input
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        aria-label={`${campo.label}: valor`}
+        className={CLASE_CONTROL}
+        value={texto}
+        placeholder={campo.placeholder ?? '0'}
+        onChange={(e) => {
+          const t = e.target.value;
+          if (!(campo.negativo ? /^-?\d*[.,]?\d*$/ : /^\d*[.,]?\d*$/).test(t)) return;
+          setTexto(t);
+          guardar(t, unidad);
+        }}
+        style={{ ...estiloControl, width: '7rem' }}
+      />
+      <select
+        aria-label={`${campo.label}: unidad`}
+        className={CLASE_CONTROL}
+        value={unidad}
+        onChange={(e) => {
+          setUnidad(e.target.value);
+          guardar(texto, e.target.value);
+        }}
+        style={{ ...estiloControl, width: 'auto', cursor: 'pointer' }}
+      >
+        {unidades.map((u) => (
+          <option key={u} value={u}>
+            {u}
+          </option>
+        ))}
+      </select>
+      {numero !== null && (unidad === 'rem' || unidad === 'em') && (
+        <span style={{ color: COLOR_SUAVE, fontSize: '12px' }}>≈ {Math.round(numero * 16 * 10) / 10} px</span>
+      )}
+    </div>
+  );
+}
 
 // ─── Acordeón ────────────────────────────────────────────────────────────────
 export function AcordeonDeCampo({
@@ -343,6 +469,8 @@ function ControlDeCampo({
           {campo.sufijo && <span style={{ color: COLOR_SUAVE, fontSize: '13px' }}>{campo.sufijo}</span>}
         </div>
       );
+    case 'medida':
+      return <CampoMedida campo={campo} valor={valor} onChange={onChange} />;
     case 'color':
       return <ColorPickerField value={valor} onChange={onChange} />;
     case 'custom':
@@ -357,6 +485,10 @@ function resumenPorDefecto(campo: CampoDeAcordeon, valor: any): ReactNode {
   }
   if (campo.type === 'text' || campo.type === 'textarea') return typeof valor === 'string' ? valor : '';
   if (campo.type === 'number') return typeof valor === 'number' ? `${valor}${campo.sufijo ? ' ' + campo.sufijo : ''}` : '';
+  if (campo.type === 'medida') {
+    const medida = partirMedida(campo.normalizar ? campo.normalizar(valor) : valor);
+    return medida ? `${medida.numero} ${medida.unidad}` : (campo.vacio ?? '');
+  }
   if (campo.type === 'color') {
     if (!valor) return 'Por defecto';
     return (

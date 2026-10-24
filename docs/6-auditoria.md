@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 24-10-2026 (3.ª parte): «Espaciado y Ancho» del editor pasa a medida libre en rem
+
+**Qué pidió el usuario:** que las opciones globales de «Espaciado y Ancho» reciban medidas responsivas (rem u otra unidad que no se descuadre entre breakpoints) y que los valores se escriban a mano, sin límite, para personalizar más.
+
+**Qué se hizo**
+- `campos-en-acordeon.tsx`: tipo de campo nuevo `medida` (`CampoMedida`): número libre + selector de unidad. Acepta coma decimal, guarda la medida como texto CSS («2.5rem») y enseña el equivalente en px junto al número cuando la unidad es rem o em. `partirMedida()` es a la vez el lector y la lista blanca de unidades (`rem em vw vh ch px %`).
+- `controles-de-caja.tsx`: los cuatro espaciados y el «Ancho máximo» dejan de ser desplegables de seis medidas fijas y pasan a `medida`. Espaciados: rem (por defecto), em, vw. Ancho: rem, %, vw, ch. Sin mínimo ni máximo; las **separaciones** con el bloque de arriba y abajo admiten negativos (solapar bloques), el relleno no (en CSS no existe).
+- **Lo ya guardado no cambia:** `px20`, `medio`, un número, `contenido`, `completo`… se siguen leyendo y producen los mismos estilos en px de antes; el editor los muestra convertidos a rem (`px20` → 1.25 rem, `contenido` → 75 rem) y, al editarlos, se guardan ya en rem.
+- `cajaPorDefecto` ahora es vacío (antes `'ninguno'`/`'completo'`). La condición de «¿envuelvo el bloque?» deja de duplicar la lista de valores neutros y usa `estiloDeCaja().aplica`.
+- Un texto que no sea una medida válida (`1rem; background:red`) o un ancho como `constructor` no llega nunca a un estilo; de paso `pixelesDeEspacio` usa `Object.hasOwn` en vez de `in`.
+- El `globals.css` de las dos apps **no se tocó**: la regla móvil `calc(var(--olo-caja-…) * 0.6)` ya funciona con rem, em, vw y %.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| `estiloDeCaja` con `{}`, `'ninguno'`/`'completo'` | Sin estilos, sin envoltorio (igual que antes) |
+| `estiloDeCaja` con `px20`, `medio`, `24`, `contenido` | `20px`, `24px`, `24px`, `1200px` (igual que antes) |
+| `estiloDeCaja` con `2.5rem`, `100vw`, `-1rem`, `3em`, `75rem`, `60%` | Las variables salen tal cual; la posición derecha suma `olo-caja--derecha` |
+| Padding `-2rem`, ancho `0rem`, `1rem; background:red`, `constructor` | Descartados |
+| Campo servido con `renderToStaticMarkup` (valores `px20`, `contenido`, `-1.5rem`) | Muestra 1.25 rem, 75 rem y −1.5 rem, con su "≈ px" |
+| Navegador: teclear en el panel de Puck, deshacer y ver el lienzo a 4 anchos | **No se hizo**: queda por probar a mano |
+
+**Pendiente al cierre**
+- En «Imagen destacada» (`anchoDentro`) el contenedor sigue acotado a 1200 px (1000 px en el «sabías que») por su CSS (`min(var(--olo-caja-ancho), 1200px)`): un ancho mayor no lo ensancha más. Es un tope de diseño de ese bloque, no del campo.
+- Las páginas que ya tienen valores guardados siguen en px hasta que alguien edite ese campo.
+
+---
+
 ## sesión 24-10-2026 (2.ª parte): el volcado de páginas pasa a «inicio limpio»: cada página como versión 1
 
 **Qué pidió el usuario:** que en producción la aplicación empiece de cero: las páginas que hoy tiene en local, cada una como versión 1, sin registros de auditoría ni respaldos; y organizar esos comandos en `deploy.sh`. Quien da vida a la aplicación es el usuario creado con `crear-admin`, que empieza a editar desde la versión 1.

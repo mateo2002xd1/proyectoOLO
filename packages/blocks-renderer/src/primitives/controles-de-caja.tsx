@@ -22,10 +22,16 @@
  *    guardadas siguen produciendo exactamente el mismo DOM que antes. Es lo que
  *    permite aplicar esto a todo el catálogo sin revisar página por página.
  *
- * 3. **Escala cerrada, no píxeles libres.** Quien edita elige entre seis medidas
- *    fijas (10, 12, 14, 20, 26 y 32 px, a pedido del usuario el 2026-10-18; antes
- *    eran nombres como «Medio»). Sigue siendo una lista corta y no un número
- *    libre, para que las secciones queden coherentes entre sí.
+ * 3. **Medida libre, en rem por defecto, sin tope.** Quien edita escribe el número
+ *    que quiera y elige la unidad (a pedido del usuario el 2026-10-24; antes era una
+ *    lista de seis medidas en px, y antes de esa, nombres como «Medio»). Se guarda
+ *    como texto CSS («2.5rem»). rem y no px porque sigue al tamaño de letra del
+ *    visitante, y el espaciado se reduce en móvil con la regla de `.olo-caja` sin
+ *    que la medida se descuadre entre tamaños de pantalla.
+ *
+ *    Lo guardado con el formato de antes (claves como `px20` o `medio`, números,
+ *    `contenido`) se sigue entendiendo y produce los mismos estilos de siempre; el
+ *    editor lo enseña convertido a rem.
  *
  * El espaciado se aplica con variables CSS sobre la clase `.olo-caja` y no con
  * estilos inline porque en móvil se reduce con una media query, y un estilo
@@ -34,7 +40,7 @@
  */
 
 import { campoColor } from './color-picker-field';
-import { campoGrupoEnAcordeones, type CampoDeAcordeon } from './campos-en-acordeon';
+import { campoGrupoEnAcordeones, partirMedida, type CampoDeAcordeon } from './campos-en-acordeon';
 
 // ─── Tipos mínimos de Puck ───────────────────────────────────────────────────
 /**
@@ -76,10 +82,11 @@ export type FabricaCampoImagen = (label: string) => {
 /**
  * Escala compartida por padding, margen y separación entre elementos.
  *
- * Dos familias de claves. Las `pxNN` son las que ofrece «Espaciado y Ancho» desde
- * el 2026-10-18. Las de nombre (8 / 16 / 24 / 40 / 64, los saltos del diseño
- * escrito a mano) se quedan: hay páginas guardadas con ellas, y Grid, Flex y
+ * Dos familias de claves. Las `pxNN` fueron las que ofreció «Espaciado y Ancho» entre
+ * el 2026-10-18 y el 2026-10-24. Las de nombre (8 / 16 / 24 / 40 / 64, los saltos del
+ * diseño escrito a mano) se quedan: hay páginas guardadas con ellas, y Grid, Flex y
  * Espacio las usan para su separación. Quitarlas cambiaría páginas publicadas.
+ * «Espaciado y Ancho» ya no las ofrece (ahora es medida libre) pero las sigue leyendo.
  */
 export const ESCALA_ESPACIO = {
   ninguno: 0,
@@ -98,27 +105,6 @@ export const ESCALA_ESPACIO = {
 
 export type ClaveEspacio = keyof typeof ESCALA_ESPACIO;
 
-/** Lo que ofrece «Espaciado y Ancho». «Ninguno» es el valor por defecto de la caja. */
-const OPCIONES_ESPACIO = [
-  { label: 'Ninguno', value: 'ninguno' },
-  { label: '10 px', value: 'px10' },
-  { label: '12 px', value: 'px12' },
-  { label: '14 px', value: 'px14' },
-  { label: '20 px', value: 'px20' },
-  { label: '26 px', value: 'px26' },
-  { label: '32 px', value: 'px32' },
-];
-
-/* Las de antes: no se ofrecen, pero un bloque que ya tiene una la ve con su nombre
-   en vez de un desplegable que finge «Ninguno». */
-const OPCIONES_ESPACIO_ANTERIORES = [
-  { label: 'Muy poco · 8 px (anterior)', value: 'minimo' },
-  { label: 'Poco · 16 px (anterior)', value: 'poco' },
-  { label: 'Medio · 24 px (anterior)', value: 'medio' },
-  { label: 'Amplio · 40 px (anterior)', value: 'amplio' },
-  { label: 'Muy amplio · 64 px (anterior)', value: 'maximo' },
-];
-
 /**
  * Convierte un valor de la escala a píxeles.
  *
@@ -128,7 +114,7 @@ const OPCIONES_ESPACIO_ANTERIORES = [
  */
 export function pixelesDeEspacio(valor: unknown, porDefecto: ClaveEspacio = 'ninguno'): number {
   if (typeof valor === 'number' && Number.isFinite(valor)) return Math.max(0, valor);
-  if (typeof valor === 'string' && valor in ESCALA_ESPACIO) {
+  if (typeof valor === 'string' && Object.hasOwn(ESCALA_ESPACIO, valor)) {
     return ESCALA_ESPACIO[valor as ClaveEspacio];
   }
   return ESCALA_ESPACIO[porDefecto];
@@ -136,11 +122,11 @@ export function pixelesDeEspacio(valor: unknown, porDefecto: ClaveEspacio = 'nin
 
 // ─── Anchos ──────────────────────────────────────────────────────────────────
 /**
- * Anchos máximos ofrecidos.
+ * Anchos máximos que se guardaban antes de la medida libre.
  *
  * `contenido` (1200px) es el ancho de `matriz-content-container-wide`, y
- * `lectura` (720px) es el ancho cómodo para párrafos largos. Coinciden a
- * propósito con lo que ya hacen los bloques de texto.
+ * `lectura` (720px) es el ancho cómodo para párrafos largos. Ya no se ofrecen,
+ * pero las páginas guardadas con ellos se siguen viendo igual.
  */
 const ANCHOS: Record<string, string | null> = {
   completo: null,
@@ -148,6 +134,40 @@ const ANCHOS: Record<string, string | null> = {
   medio: '960px',
   lectura: '720px',
 };
+
+// ─── Medidas ─────────────────────────────────────────────────────────────────
+const PX_POR_REM = 16;
+
+/**
+ * Un espaciado guardado → medida CSS lista para una variable, o `''` si no pone nada.
+ *
+ * Entiende la medida libre («2.5rem») y, para lo guardado antes, las claves de la
+ * escala y los números (que salen en px, como siempre). Una unidad que no esté en la
+ * lista blanca de `partirMedida`, o un texto cualquiera, no llega nunca a un estilo.
+ * Los negativos solo valen para las separaciones: un relleno negativo no existe en CSS.
+ */
+function espacioComoMedida(valor: unknown, negativo = false): string {
+  const medida = partirMedida(valor);
+  if (medida) {
+    if (medida.numero === 0 || (medida.numero < 0 && !negativo)) return '';
+    return `${medida.numero}${medida.unidad}`;
+  }
+  const px = pixelesDeEspacio(valor);
+  return px > 0 ? `${px}px` : '';
+}
+
+/** El ancho máximo guardado → medida CSS, o `''` si no limita (todo el ancho). */
+function anchoComoMedida(valor: unknown): string {
+  const medida = partirMedida(valor);
+  if (medida) return medida.numero > 0 ? `${medida.numero}${medida.unidad}` : '';
+  return (typeof valor === 'string' && Object.hasOwn(ANCHOS, valor) && ANCHOS[valor]) || '';
+}
+
+/** Una medida en px, vista en rem para el editor; las demás unidades quedan como están. */
+function enRem(medida: string): string {
+  const px = /^(-?[\d.]+)px$/.exec(medida);
+  return px ? `${Math.round((Number(px[1]) / PX_POR_REM) * 1000) / 1000}rem` : medida;
+}
 
 // ─── Campos ──────────────────────────────────────────────────────────────────
 /**
@@ -158,40 +178,32 @@ const ANCHOS: Record<string, string | null> = {
  * bloque. Cada opción es un acordeón con su valor actual a la vista
  * (`campos-en-acordeon.tsx`).
  */
+const AYUDA_ESPACIO =
+  'Escribe cualquier número, sin tope. En rem (1 rem ≈ 16 px) sigue al tamaño de letra y no se descuadra entre pantallas; en móvil se reduce solo. Vacío = sin espacio.';
+
+const campoEspacio = (label: string, negativo = false): CampoDeAcordeon => ({
+  type: 'medida',
+  label,
+  unidades: ['rem', 'em', 'vw'],
+  negativo,
+  vacio: 'Ninguno',
+  normalizar: (valor) => enRem(espacioComoMedida(valor, negativo)),
+  ayuda: negativo ? `${AYUDA_ESPACIO} Un número negativo acerca los bloques hasta solaparlos.` : AYUDA_ESPACIO,
+});
+
 const CAMPOS_CAJA: Record<string, CampoDeAcordeon> = {
-  interiorY: {
-    type: 'select' as const,
-    label: 'Espacio interior · arriba y abajo',
-    options: OPCIONES_ESPACIO,
-    anteriores: OPCIONES_ESPACIO_ANTERIORES,
-  },
-  interiorX: {
-    type: 'select' as const,
-    label: 'Espacio interior · a los lados',
-    options: OPCIONES_ESPACIO,
-    anteriores: OPCIONES_ESPACIO_ANTERIORES,
-  },
-  superior: {
-    type: 'select' as const,
-    label: 'Separación con el bloque de arriba',
-    options: OPCIONES_ESPACIO,
-    anteriores: OPCIONES_ESPACIO_ANTERIORES,
-  },
-  inferior: {
-    type: 'select' as const,
-    label: 'Separación con el bloque de abajo',
-    options: OPCIONES_ESPACIO,
-    anteriores: OPCIONES_ESPACIO_ANTERIORES,
-  },
+  interiorY: campoEspacio('Espacio interior · arriba y abajo'),
+  interiorX: campoEspacio('Espacio interior · a los lados'),
+  superior: campoEspacio('Separación con el bloque de arriba', true),
+  inferior: campoEspacio('Separación con el bloque de abajo', true),
   ancho: {
-    type: 'select' as const,
+    type: 'medida',
     label: 'Ancho máximo',
-    options: [
-      { label: 'Todo el ancho', value: 'completo' },
-      { label: 'Ancho del contenido (1200px)', value: 'contenido' },
-      { label: 'Medio (960px)', value: 'medio' },
-      { label: 'Estrecho, para leer (720px)', value: 'lectura' },
-    ],
+    unidades: ['rem', '%', 'vw', 'ch'],
+    vacio: 'Todo el ancho',
+    normalizar: (valor) => enRem(anchoComoMedida(valor)),
+    ayuda:
+      'Escribe cualquier número, sin tope. Vacío = todo el ancho. Es un máximo: en pantallas más angostas el bloque se ajusta solo. En % es la parte del espacio disponible; en ch, caracteres de texto (65 ch ≈ una línea cómoda de leer).',
   },
   alineacion: {
     type: 'radio' as const,
@@ -227,24 +239,28 @@ export const campoCaja = campoGrupoEnAcordeones('Espaciado y Ancho', CAMPOS_CAJA
  *
  * Un bloque recién soltado tiene que verse exactamente igual que antes de que
  * existieran estos controles; el espaciado propio de cada bloque ya lo trae su
- * CSS. Por eso `ninguno` y `completo`, no un padding «bonito» de regalo.
+ * CSS. Por eso medidas vacías, no un padding «bonito» de regalo.
  */
 export const cajaPorDefecto = {
-  interiorY: 'ninguno',
-  interiorX: 'ninguno',
-  superior: 'ninguno',
-  inferior: 'ninguno',
-  ancho: 'completo',
+  interiorY: '',
+  interiorX: '',
+  superior: '',
+  inferior: '',
+  ancho: '',
   alineacion: 'centro',
   fondo: '',
 };
 
+/**
+ * Medidas: texto CSS («2.5rem»), o lo que se guardaba antes (`'ninguno'`, `'px20'`,
+ * `'medio'`, un número de px; `'completo'`, `'contenido'`…). Ver `espacioComoMedida`.
+ */
 export interface ValoresCaja {
-  interiorY?: ClaveEspacio | number;
-  interiorX?: ClaveEspacio | number;
-  superior?: ClaveEspacio | number;
-  inferior?: ClaveEspacio | number;
-  ancho?: keyof typeof ANCHOS;
+  interiorY?: string | number;
+  interiorX?: string | number;
+  superior?: string | number;
+  inferior?: string | number;
+  ancho?: string;
   alineacion?: 'centro' | 'izquierda' | 'derecha';
   fondo?: string;
 }
@@ -259,18 +275,18 @@ export interface EstiloDeCaja {
 export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
   const valores = caja ?? {};
 
-  const interiorY = pixelesDeEspacio(valores.interiorY);
-  const interiorX = pixelesDeEspacio(valores.interiorX);
-  const superior = pixelesDeEspacio(valores.superior);
-  const inferior = pixelesDeEspacio(valores.inferior);
-  const anchoMaximo = ANCHOS[valores.ancho ?? 'completo'] ?? null;
+  const interiorY = espacioComoMedida(valores.interiorY);
+  const interiorX = espacioComoMedida(valores.interiorX);
+  const superior = espacioComoMedida(valores.superior, true);
+  const inferior = espacioComoMedida(valores.inferior, true);
+  const anchoMaximo = anchoComoMedida(valores.ancho);
   const alineacion = valores.alineacion ?? 'centro';
 
   const style: Record<string, string> = {};
-  if (interiorY) style['--olo-caja-interior-y'] = `${interiorY}px`;
-  if (interiorX) style['--olo-caja-interior-x'] = `${interiorX}px`;
-  if (superior) style['--olo-caja-superior'] = `${superior}px`;
-  if (inferior) style['--olo-caja-inferior'] = `${inferior}px`;
+  if (interiorY) style['--olo-caja-interior-y'] = interiorY;
+  if (interiorX) style['--olo-caja-interior-x'] = interiorX;
+  if (superior) style['--olo-caja-superior'] = superior;
+  if (inferior) style['--olo-caja-inferior'] = inferior;
   if (anchoMaximo) style['--olo-caja-ancho'] = anchoMaximo;
 
   const fondo = typeof valores.fondo === 'string' ? valores.fondo.trim() : '';
@@ -324,24 +340,12 @@ export function conCaja<T extends ConfigDeBloque>(
     },
     render: (props: any) => {
       const contenido = config.render(props);
-      const { className, style } = estiloDeCaja(
+      const { className, style, aplica } = estiloDeCaja(
         conFondo ? props?.caja : { ...props?.caja, fondo: '' }
       );
 
-      // Se envuelve si algún espaciado o el ancho no es el neutro, o si hay «Color de
-      // fondo» (y el bloque lo admite): antes, un color solo no se pintaba nunca.
-      const fondo = (props?.caja as any)?.fondo;
-      const conColor = conFondo && typeof fondo === 'string' && fondo.trim() !== '';
-      const aplica =
-        conColor ||
-        (props?.caja &&
-          Object.keys(props.caja).some(
-            (k) =>
-              !['fondo', 'alineacion'].includes(k) &&
-              (props.caja as any)[k] !== 'ninguno' &&
-              (props.caja as any)[k] !== 'completo'
-          ));
-
+      // Se envuelve solo si algún espaciado o el ancho resuelve un estilo, o si hay
+      // «Color de fondo» (y el bloque lo admite): sin nada que pintar, el DOM es el de antes.
       if (!aplica) return contenido;
 
       return (
