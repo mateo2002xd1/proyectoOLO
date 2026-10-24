@@ -92,8 +92,11 @@ export function PaginasFabSpeedDial({
   const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
   const puedeCrearSeccion = tienePermisoGlobal && (esSuperadmin || permisosActivos.includes('secciones.crear'));
   const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
+  // Solo para quien aprueba: reescribir lo publicado sin cola equivale a publicar, y la API lo
+  // exige (`puedePublicar`) aunque el permiso se le haya concedido desde el panel.
   const puedeCambiarDireccion =
     tienePermisoGlobal &&
+    esAprobador &&
     Boolean(slug) &&
     slug !== 'inicio' &&
     (esSuperadmin || permisosActivos.includes('secciones.cambiar-direccion'));

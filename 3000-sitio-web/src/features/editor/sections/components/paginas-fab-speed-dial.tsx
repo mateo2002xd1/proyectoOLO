@@ -105,9 +105,12 @@ export function PaginasFabSpeedDial() {
   const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
   const puedeCrearSeccion = tienePermisoGlobal && (puedeCrear || esSuperadmin);
   const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (puedeEliminar || esSuperadmin);
-  // La portada no cambia de dirección (el sistema da por hecho `/inicio`): el botón no se ofrece.
+  // La portada no cambia de dirección (el sistema da por hecho `/inicio`): el botón ni se ofrece.
+  // Tampoco a quien no aprueba: reescribir lo publicado sin cola equivale a publicar, y la API
+  // lo exige (`puedePublicar`) aunque el permiso se le haya concedido desde el panel.
   const puedeCambiarDireccion =
     tienePermisoGlobal &&
+    esAprobador &&
     Boolean(slug) &&
     slug !== 'inicio' &&
     (puedeCambiarDir || esSuperadmin);
