@@ -63,6 +63,7 @@ yarn-error.log*
 .agents/
 openspec/
 SKILL.md
+CLAUDE.md
 # .claude/ no se versiona: ajustes, permisos, skills y el auditor (/auditar) son de
 # cada quien y se quedan en su máquina.
 .claude/
