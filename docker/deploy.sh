@@ -89,7 +89,12 @@ Comandos:
   importar  - Copiar los datos de la base de origen (ORIGEN_DATABASE_URL), sin cuentas
               (solo instalacion nueva: se niega si ya hay usuarios)
   importar-paginas - Traer del origen SOLO las paginas (y sus archivos de filesystem/),
-              conservando los usuarios y todo lo demas de este servidor
+              conservando los usuarios y todo lo demas de este servidor. Con
+              --desde-archivo[=ruta] las lee del volcado que trae git (por defecto
+              4000-api-backend/seed/paginas-volcado.sql) en vez de conectarse al origen
+  exportar-paginas - (En desarrollo, sin Docker) Generar ese volcado desde la base de
+              desarrollo: cada pagina publicada como version 1, sin historial ni visitas.
+              Con --con-historial lleva todas las versiones. Luego: git add, commit y push
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   retirar-rol - Retirar un rol que ya no existe (por defecto visitante_interno) y decidir
               que pasa con sus cuentas. Sin --aplicar solo informa. Uso:
@@ -321,6 +326,8 @@ migrar() {
 }
 
 SEED="4000-api-backend/seed/contenido-inicial.sql"
+# El volcado de paginas que se genera en desarrollo (npm run paginas:volcar) y viaja por git.
+ARCHIVO_DE_PAGINAS="4000-api-backend/seed/paginas-volcado.sql"
 SEED_ROLES="4000-api-backend/seed/roles-y-permisos.sql"
 
 sembrar() {
@@ -556,17 +563,50 @@ importar() {
 # Lo que no coincide entre las dos bases se traduce en importar-paginas-despues.sql: la
 # autoria pasa a la cuenta de aqui con el mismo correo, y los permisos de edicion se
 # conceden por nombre de rol. Las visitas de cada pagina son las de este servidor.
+#
+# El origen es la base en vivo (ORIGEN_DATABASE_URL) o, con --desde-archivo, el volcado que
+# se genero en desarrollo con `npm run paginas:volcar` y llego por git: asi el servidor no
+# necesita alcanzar la base de origen. Ese archivo no lleva correos (no deben ir a GitHub),
+# asi que con el la autoria de las versiones queda vacia.
 importar_paginas() {
+    local origen="" usuario base volcado respuesta completo=1 archivo="" arg sin_respaldos=""
+    # Los argumentos y el archivo se validan antes de pedir Docker o el .env: un error de
+    # uso no tiene por que arrancar nada.
+    for arg in "$@"; do
+        case "$arg" in
+            --desde-archivo) archivo="$ARCHIVO_DE_PAGINAS" ;;
+            --desde-archivo=?*) archivo="${arg#--desde-archivo=}" ;;
+            *) morir "Opcion desconocida: '$arg'. Uso: ./docker/deploy.sh importar-paginas [--desde-archivo[=ruta]]" ;;
+        esac
+    done
+    if [ -n "$archivo" ]; then
+        [ -f "$archivo" ] || morir "No existe '$archivo'. Haz git pull, o genera el volcado en desarrollo con: npm run paginas:volcar (en 4000-api-backend/)"
+        grep -q '^-- conteo: paginas=[0-9]* paginas_versiones=[0-9]*$' "$archivo" ||
+            morir "'$archivo' no parece un volcado de npm run paginas:volcar (falta la linea '-- conteo:')."
+        # Sin historial no hay versiones archivadas: los respaldos de filesystem/*/backup
+        # serian archivos de versiones que aqui no existen.
+        grep -q '^-- modo: inicio-limpio' "$archivo" && sin_respaldos=1
+    fi
+
     comprobar_requisitos
     comprobar_entorno
 
-    local origen usuario base volcado respuesta completo=1
-    origen=$(url_de_origen) || exit 1
+    [ -n "$archivo" ] || origen=$(url_de_origen) || exit 1
     usuario=$(leer_env POSTGRES_USER)
     base=$(leer_env POSTGRES_DB)
 
-    echo "=== Importar solo las paginas desde la base de origen ==="
-    aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las del origen."
+    if [ -n "$archivo" ]; then
+        echo "=== Importar solo las paginas desde un archivo ==="
+        if [ -n "$sin_respaldos" ]; then
+            aviso "Reemplaza las paginas de '$base' (sitio e intranet) por las de $archivo: cada una como version 1, sin historial."
+        else
+            aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las de $archivo."
+        fi
+        aviso "$(sed -n 's/^-- Generado el /Generado el /p' "$archivo" | head -n1 | tr -d '\015'). Las versiones quedan sin autor: el archivo no lleva cuentas."
+    else
+        echo "=== Importar solo las paginas desde la base de origen ==="
+        aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las del origen."
+    fi
     aviso "NO toca usuarios, roles, bitacora ni ninguna otra tabla. Las visitas se conservan."
     read -r -p "Continuar? (s/n): " -n 1 respuesta
     echo
@@ -580,30 +620,37 @@ importar_paginas() {
     aplicar_migraciones
 
     echo ""
-    echo "--- 2/5 Leyendo las paginas del origen ---"
-    # Un solo archivo con todo lo que se carga despues, en este orden: los correos de las
-    # cuentas del origen y quien podia editar cada pagina (para traducirlos aqui), y las
-    # dos tablas. Lleva correos: se borra al terminar, y si la carga falla se avisa.
-    volcado="importacion_paginas_$(date +%Y%m%d_%H%M%S).sql"
-    {
-        echo "COPY pg_temp.origen_usuarios (id, email) FROM stdin;"
-        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
-            -c "COPY (SELECT id, email FROM public.usuarios) TO STDOUT" | tr -d '\r' || completo=0
-        echo '\.'
-        echo "COPY pg_temp.origen_permisos_paginas (clave, rol) FROM stdin;"
-        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
-            -c "COPY (SELECT p.clave, r.nombre FROM public.permisos p JOIN public.roles_permisos rp ON rp.permiso_id = p.id JOIN public.roles r ON r.id = rp.rol_id WHERE p.clave LIKE 'editar.%') TO STDOUT" |
-            tr -d '\r' || completo=0
-        echo '\.'
-        # --disable-triggers: deja entrar versiones cuyo autor no es una cuenta de aqui, y la
-        # referencia circular paginas <-> paginas_versiones sin importar el orden.
-        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" pg_dump "$origen" \
-            --data-only --disable-triggers --no-owner --no-privileges \
-            --table=public.paginas --table=public.paginas_versiones || completo=0
-    } > "$volcado"
-    if [ "$completo" -ne 1 ]; then
-        rm -f "$volcado"
-        morir "No se pudo leer la base de origen. Revisa ORIGEN_DATABASE_URL y la conexion a internet."
+    if [ -n "$archivo" ]; then
+        echo "--- 2/5 Leyendo las paginas de $archivo ---"
+        # Ya trae todo lo que se carga despues (permisos de edicion y las dos tablas) y es
+        # del repositorio: no se genera ni se borra.
+        volcado="$archivo"
+    else
+        echo "--- 2/5 Leyendo las paginas del origen ---"
+        # Un solo archivo con todo lo que se carga despues, en este orden: los correos de las
+        # cuentas del origen y quien podia editar cada pagina (para traducirlos aqui), y las
+        # dos tablas. Lleva correos: se borra al terminar, y si la carga falla se avisa.
+        volcado="importacion_paginas_$(date +%Y%m%d_%H%M%S).sql"
+        {
+            echo "COPY pg_temp.origen_usuarios (id, email) FROM stdin;"
+            MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
+                -c "COPY (SELECT id, email FROM public.usuarios) TO STDOUT" | tr -d '\r' || completo=0
+            echo '\.'
+            echo "COPY pg_temp.origen_permisos_paginas (clave, rol) FROM stdin;"
+            MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
+                -c "COPY (SELECT p.clave, r.nombre FROM public.permisos p JOIN public.roles_permisos rp ON rp.permiso_id = p.id JOIN public.roles r ON r.id = rp.rol_id WHERE p.clave LIKE 'editar.%') TO STDOUT" |
+                tr -d '\r' || completo=0
+            echo '\.'
+            # --disable-triggers: deja entrar versiones cuyo autor no es una cuenta de aqui, y la
+            # referencia circular paginas <-> paginas_versiones sin importar el orden.
+            MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" pg_dump "$origen" \
+                --data-only --disable-triggers --no-owner --no-privileges \
+                --table=public.paginas --table=public.paginas_versiones || completo=0
+        } > "$volcado"
+        if [ "$completo" -ne 1 ]; then
+            rm -f "$volcado"
+            morir "No se pudo leer la base de origen. Revisa ORIGEN_DATABASE_URL y la conexion a internet."
+        fi
     fi
 
     echo ""
@@ -612,17 +659,25 @@ importar_paginas() {
     # errores y el aviso de roles que faltan van por stderr y se siguen viendo.
     if ! cat docker/sql/importar-paginas-antes.sql "$volcado" docker/sql/importar-paginas-despues.sql |
             componer exec -T db psql -q -o /dev/null -v ON_ERROR_STOP=1 --single-transaction -U "$usuario" -d "$base"; then
-        aviso "El volcado sigue en $volcado para revisarlo. Lleva los correos de las cuentas del origen: borralo despues."
+        [ -n "$archivo" ] ||
+            aviso "El volcado sigue en $volcado para revisarlo. Lleva los correos de las cuentas del origen: borralo despues."
         morir "La carga fallo y se deshizo entera: las paginas quedaron como estaban."
     fi
-    rm -f "$volcado"
+    [ -n "$archivo" ] || rm -f "$volcado"
 
     echo ""
     echo "--- 4/5 Comparacion: filas en el origen y aqui ---"
     local sql_conteo="SELECT 'paginas', count(*) FROM public.paginas UNION ALL SELECT 'paginas_versiones', count(*) FROM public.paginas_versiones UNION ALL SELECT 'usuarios', count(*) FROM public.usuarios"
     local conteo_origen conteo_destino t o d distintas=0
-    conteo_origen=$(MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" \
-        psql "$origen" -AtF ' ' -c "$sql_conteo" | tr -d '\r' | LC_ALL=C sort)
+    if [ -n "$archivo" ]; then
+        # Lo que el volcado dice que llevaba cuando se genero. El propio archivo ya comprobo,
+        # dentro de la transaccion, que entraron todas; esto lo deja a la vista.
+        conteo_origen=$(awk '/^-- conteo:/ { split($3, p, "="); split($4, v, "="); print "paginas", p[2]; print "paginas_versiones", v[2]; exit }' "$archivo" |
+            LC_ALL=C sort)
+    else
+        conteo_origen=$(MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" \
+            psql "$origen" -AtF ' ' -c "$sql_conteo" | tr -d '\r' | LC_ALL=C sort)
+    fi
     conteo_destino=$(componer exec -T db psql -U "$usuario" -d "$base" -AtF ' ' -c "$sql_conteo" |
         tr -d '\r' | LC_ALL=C sort)
     printf '  %-20s %8s %8s\n' TABLA ORIGEN AQUI
@@ -649,7 +704,7 @@ importar_paginas() {
     # trabajos y los contadores de intentos de acceso de un servidor en uso.
     componer exec -T -e REDISCLI_AUTH="$(leer_env REDIS_PASSWORD)" redis sh -c \
         'redis-cli --scan --pattern "cache:*" | while IFS= read -r clave; do redis-cli DEL "$clave" >/dev/null; done'
-    copiar_archivos_al_volumen "sitio intranet"
+    copiar_archivos_al_volumen "sitio intranet" "$sin_respaldos"
 
     echo ""
     if [ "$distintas" -gt 0 ]; then
@@ -658,7 +713,20 @@ importar_paginas() {
         verde "=== Paginas importadas: coinciden con el origen; los usuarios de aqui siguen intactos ==="
     fi
     echo "El sitio tiene ademas su propia cache de Next, que caduca sola en un minuto."
-    aviso "Cuando termines, borra ORIGEN_DATABASE_URL del $ENV_FILE: es la clave de la base de origen."
+    [ -n "$archivo" ] || aviso "Cuando termines, borra ORIGEN_DATABASE_URL del $ENV_FILE: es la clave de la base de origen."
+}
+
+# El otro extremo de importar-paginas --desde-archivo: se corre en el equipo de DESARROLLO,
+# no en el servidor, y no usa Docker ni el .env de aqui. Lee la base a la que apunte
+# 4000-api-backend/.env (DATABASE_URL) y escribe el volcado que viaja por git.
+exportar_paginas() {
+    command -v npm >/dev/null 2>&1 || morir "Hace falta Node/npm: este comando se corre en el equipo de desarrollo."
+    [ -f 4000-api-backend/.env ] || morir "No existe 4000-api-backend/.env: sin el no hay a que base conectarse."
+    npm --prefix 4000-api-backend run paginas:volcar -- "$@"
+    echo ""
+    verde "Volcado listo en $ARCHIVO_DE_PAGINAS"
+    echo "Siguiente paso: git add $ARCHIVO_DE_PAGINAS && git commit && git push"
+    echo "Y en el servidor:  git pull  y  ./docker/deploy.sh importar-paginas --desde-archivo"
 }
 
 backup() {
@@ -736,7 +804,7 @@ migrar_archivos() {
 # El trabajo de migrar-archivos, para las carpetas que se pidan: "sitio intranet" son los
 # archivos de las paginas (lo que usa importar-paginas); cargas-datos, los Excel.
 copiar_archivos_al_volumen() {
-    local carpetas="$1"
+    local carpetas="$1" sin_respaldos="${2:-}"
     local montajes=() par origen destino
     for par in "filesystem:desarrollo" \
                "3000-sitio-web/public/storage:sitio" "3001-intranet/public/storage:intranet" \
@@ -756,7 +824,7 @@ copiar_archivos_al_volumen() {
     MSYS_NO_PATHCONV=1 docker run --rm \
         --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem" \
         "${montajes[@]}" \
-        -e CARPETAS="$carpetas" \
+        -e CARPETAS="$carpetas" -e SIN_RESPALDOS="$sin_respaldos" \
         "$IMAGEN_UTILIDADES" sh -euc '
             # Archivo por archivo y no `cp -Rn origen/. destino/`: el cp de BusyBox (el de
             # alpine) no copia nada de esa forma si el destino ya existe, sin dar error.
@@ -765,6 +833,9 @@ copiar_archivos_al_volumen() {
                 [ -d "$1" ] || return 0
                 ( cd "$1" && find . -type f ) | while IFS= read -r f; do
                     [ -e "$2/$f" ] && continue
+                    # Con SIN_RESPALDOS (volcado sin historial) los respaldos de versiones
+                    # archivadas no viajan: aqui esas versiones no existen.
+                    case "$f" in ./backup/*) [ -n "$SIN_RESPALDOS" ] && continue ;; esac
                     mkdir -p "$2/$(dirname "$f")"
                     cp -p "$1/$f" "$2/$f"
                 done
@@ -778,7 +849,7 @@ copiar_archivos_al_volumen() {
             for ambito in sitio intranet; do
                 pedida "$ambito" || continue
                 copiar "/origen/$ambito/uploads" "/filesystem/$ambito/uploads"
-                copiar "/origen/$ambito/backup" "/filesystem/$ambito/backup"
+                [ -n "$SIN_RESPALDOS" ] || copiar "/origen/$ambito/backup" "/filesystem/$ambito/backup"
             done
             if pedida cargas-datos && [ -d /origen/cargas-datos ]; then
                 mkdir -p /filesystem/cargas-datos
@@ -839,7 +910,8 @@ case "${1:-help}" in
     migrar)  migrar ;;
     sembrar) sembrar ;;
     importar) importar ;;
-    importar-paginas) importar_paginas ;;
+    importar-paginas) shift; importar_paginas "$@" ;;
+    exportar-paginas) shift; exportar_paginas "$@" ;;
     crear-admin) crear_admin ;;
     retirar-rol) shift; retirar_rol "$@" ;;
     backup)  backup ;;

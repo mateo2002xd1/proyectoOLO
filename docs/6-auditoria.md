@@ -5,6 +5,77 @@
 
 ---
 
+## sesión 24-10-2026 (2.ª parte): el volcado de páginas pasa a «inicio limpio»: cada página como versión 1
+
+**Qué pidió el usuario:** que en producción la aplicación empiece de cero: las páginas que hoy tiene en local, cada una como versión 1, sin registros de auditoría ni respaldos; y organizar esos comandos en `deploy.sh`. Quien da vida a la aplicación es el usuario creado con `crear-admin`, que empieza a editar desde la versión 1.
+
+**Por qué no basta con `paginas`:** esa tabla solo guarda slug, título, visitas y el puntero a la versión publicada. El contenido está en `paginas_versiones.contenido`; sin versiones las páginas llegarían vacías.
+
+**Qué se hizo**
+- `npm run paginas:volcar` genera por defecto el **inicio limpio**: solo las páginas con versión publicada, con **solo esa versión**, renumerada como la 1 (`comentario_cambios` = «Versión inicial»), con **0 visitas**, sin autor, y con los permisos de edición de esas páginas. Hoy: 14 páginas, 14 versiones, 44 permisos. Quedan fuera las que no tienen nada publicado (`empleo`, `programas-sobresalientes`) y `prueba` de la intranet (lista `EXCLUIDAS` en el script). `programas-sobresalientes` tiene su ruta fija en `3000-sitio-web`, así que no depende de esa fila.
+- `--con-historial` conserva el comportamiento anterior (todas las versiones y las visitas).
+- El volcado declara su modo en la cabecera (`-- modo: inicio-limpio`). `importar-paginas --desde-archivo` lo lee y, en el inicio limpio, **no copia `filesystem/*/backup/`**: serían respaldos de versiones archivadas que ya no existen. Los `uploads/` sí van.
+- Nuevo `./docker/deploy.sh exportar-paginas [--con-historial]`: el otro extremo del flujo, en el equipo de desarrollo (sin Docker; lee `4000-api-backend/.env`). Imprime los comandos de git y del servidor que siguen.
+- Auditoría: `importar-paginas` no toca `auditoria_cambios`; en el servidor arranca vacía. No queda registro de que esas páginas «se crearon»: aparece solo aquí.
+- `volcado-sql.ts`: `volcar` acepta `fijar` (valor fijo por columna).
+
+| Verificación | Resultado |
+|---|---|
+| `./docker/deploy.sh exportar-paginas` y con una opción desconocida | 14 páginas / 14 versiones; la opción rara se rechaza |
+| Postgres 18 desechable (47 migraciones), servidor sin páginas pero con una cuenta, pasos de carga copiados tal cual | 14 páginas, 14 versiones, todas `numero_version` 1 y `publicado`, 0 visitas, 0 versiones con autor; la cuenta sigue; `auditoria_cambios` en 0; ninguna de `prueba`, `empleo`, `programas-sobresalientes` |
+| Copia de archivos (`copiar_archivos_al_volumen` con volumen anónimo) | Con respaldos: sitio/uploads 23, sitio/backup 16, intranet/uploads 3. Sin respaldos: 23 y 3 |
+| `guardar-borrador.usecase.ts` (leído) | La versión nueva es «última + 1»: el primer cambio en el servidor será la 2 |
+| `deploy.sh importar-paginas --desde-archivo` completo con Compose | **No se ejecutó**: queda para el servidor |
+
+**Pendiente al cierre**
+- Dejar el local como se quiere ver en producción **y publicarlo** (lo que esté en borrador no viaja), y volver a correr `./docker/deploy.sh exportar-paginas` justo antes del commit.
+- `filesystem/sitio/backup/` (16 archivos) sigue versionado en git; en el servidor no se copia, pero ocupa el repositorio. Decide si se retira.
+- Los `uploads/` que solo usaban versiones viejas viajan igual (peso muerto, no un error): `limpiar-huerfanos-uploads` los detecta.
+
+---
+
+## sesión 24-10-2026: `importar-paginas --desde-archivo`, las páginas viajan por GitHub en un volcado
+
+**Qué pidió el usuario:** volcar `paginas` y `paginas_versiones` de este equipo de desarrollo para llevarlas al servidor por GitHub. `importar-paginas` solo sabía leer la base de origen en vivo (`ORIGEN_DATABASE_URL`), así que hacía falta un modo que leyera de un archivo.
+
+**Qué se hizo**
+- **`npm run paginas:volcar`** (en `4000-api-backend/`, nuevo) escribe `seed/paginas-volcado.sql` con las páginas, **todas** sus versiones y los permisos de edición de cada página por nombre de rol. Lee Neon con `SELECT` dentro de una sola transacción `REPEATABLE READ` (una foto: si alguien guarda a mitad del volcado, `paginas` no apunta a una versión que falta). Se niega a escribir un volcado de cero páginas. Hoy: 17 páginas, 85 versiones, 53 permisos de edición, 0,5 MB.
+- **`./docker/deploy.sh importar-paginas --desde-archivo[=ruta]`**: usa ese archivo (por defecto `4000-api-backend/seed/paginas-volcado.sql`) en lugar de conectarse al origen. Es la misma transacción de siempre (`importar-paginas-antes.sql` + el archivo + `importar-paginas-despues.sql`), el mismo saneo del contenido y los mismos archivos de `filesystem/`. Sin la bandera, todo sigue como estaba. No exige `ORIGEN_DATABASE_URL`. Los argumentos y el archivo se validan antes de pedir Docker o el `.env`.
+- El archivo lleva su propia comprobación: si al terminar de insertar no están todas las páginas y versiones que se volcaron, **se deshace toda la importación**.
+- **Sin correos.** El volcado no lleva `usuarios`: las columnas de autoría (`creado_por`, `revisor_id`, `publicado_por`) salen NULL, porque lo que va a GitHub no puede llevar datos personales (Ley 1581). En el servidor las versiones quedan **sin autor**; con el origen en vivo la autoría sí se traduce por correo, como antes.
+- `volcado-sql.ts` (nuevo) reúne `literal`, `volcar` y las columnas a NULL, que estaban dentro de `generar-seed-contenido.ts`; ese script las importa de ahí. Mismo código, movido, para no tener dos copias.
+- `.gitattributes`: el volcado va como `-text`, para que un clon en Windows con `core.autocrlf=true` no cambie los saltos de línea del texto que escribió la gente.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Script | `4000-api-backend/scripts/semillas/volcar-paginas.ts`, `volcado-sql.ts` (nuevos); `generar-seed-contenido.ts` | Generador del volcado; funciones compartidas |
+| npm | `4000-api-backend/package.json` | `paginas:volcar` |
+| Script | `docker/deploy.sh` | `--desde-archivo` en `importar_paginas`; ayuda y `case` |
+| Datos | `4000-api-backend/seed/paginas-volcado.sql` (generado) | El volcado |
+| Git | `.gitattributes` | `-text` para el volcado |
+| Guía | `docker/guia-bash.md` | A6b: el modo con archivo |
+
+| Verificación | Resultado |
+|---|---|
+| `npm run paginas:volcar` contra Neon (solo lectura) | 17 páginas, 85 versiones, 53 permisos; el archivo no trae cuentas (los únicos correos son los de contacto del pie de página) |
+| `tsc` de `src/` más los tres scripts | Sin errores |
+| `bash -n docker/deploy.sh`; bandera desconocida, archivo que no existe y archivo que no es un volcado | Sin errores de sintaxis; cada uno responde su mensaje, sin tocar Docker |
+| Postgres 18 desechable (`olo-prueba-pg`, base nueva con las 47 migraciones), con una cuenta, una página que solo existe allí y 999 visitas en `inicio`; el paso 3 de la carga (una transacción con «antes», archivo y «después») copiado tal cual | Quedan 17 páginas y 85 versiones; la página que solo existía allí desaparece; la cuenta y las 999 visitas siguen; 0 versiones con autor; 18 permisos `editar.*` y 45 concesiones. Repetirlo da lo mismo |
+| Cuenta que no cuadra (condición del archivo alterada a mano) | Falla y se deshace todo: siguen las 17 páginas y las visitas que había |
+| `./docker/deploy.sh importar-paginas --desde-archivo` completo en Compose (Redis, volumen, `contenido:revisar`) | **No se ejecutó**: queda para el servidor |
+
+> **Trampa:** el volcado lleva los borradores y las versiones en revisión, no solo lo publicado. Es lo mismo que traía `importar-paginas` con el origen en vivo, pero ahora queda en el historial de GitHub; si el repositorio no es privado, o si hay un borrador que no debe verse, hay que decidirlo antes de subirlo.
+>
+> **Aviso:** el volcado es una foto de Neon. Lo que se edite allí después no llega al servidor hasta volver a correr `npm run paginas:volcar` y subir el archivo. Y las páginas de aquí que no estén en el archivo desaparecen del servidor, como con el origen en vivo.
+
+**Pendiente al cierre**
+- En el servidor: `git pull` y `./docker/deploy.sh importar-paginas --desde-archivo`.
+- Cuatro roles de Neon (`Editor Limitado`, `Editor Tendencias`, `Editor inicio`, `Editor prueba`) no existen en un servidor recién migrado: sus permisos de edición no se copian y sale un `WARNING` con sus nombres. Se crean en `/admin/roles` y se repite el comando.
+- `npm run seed:generar` falla desde antes de este cambio (`relation "configuraciones" does not exist`): el script sigue volcando una tabla que ya no existe. No se tocó.
+- El volumen `olo-app_filesystem` quedó creado (vacío) en el Docker de este equipo por una prueba de `deploy.sh`; no hace daño.
+
+---
+
 ## sesión 23-10-2026 (9.ª parte): CLAUDE.md con el mapa de agentes y skills de `.claude/`
 
 **Qué pidió el usuario:** que las sesiones usen los agentes y skills nuevos de `.claude/` sin tener que pedírselo cada vez, o saber si hacía falta un agente que los conecte.

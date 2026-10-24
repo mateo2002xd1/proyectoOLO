@@ -253,6 +253,47 @@ reemplazan las páginas (sitio e intranet, con todas sus versiones) y se queda t
   estaban. Repetirlo no hace daño.
 - Solo se vacía la caché de respuestas de la API (`cache:*`), no la cola de trabajos.
 
+**Sin acceso a la base de origen: llevar las páginas por GitHub.** Si el servidor no
+alcanza Neon (o no quieres dejar su clave en el `.env`), las páginas viajan en un archivo,
+como una carta en vez de una llamada. En el equipo de desarrollo:
+
+```bash
+./docker/deploy.sh exportar-paginas        # escribe 4000-api-backend/seed/paginas-volcado.sql
+git add 4000-api-backend/seed/paginas-volcado.sql && git commit -m "chore: volcado de páginas" && git push
+```
+
+(`exportar-paginas` no usa Docker ni el `.env` de la raíz: lee la base a la que apunte
+`4000-api-backend/.env`. Es lo mismo que `npm run paginas:volcar` dentro de esa carpeta.)
+
+y en el servidor:
+
+```bash
+git pull
+./docker/deploy.sh importar-paginas --desde-archivo      # o --desde-archivo=otra/ruta.sql
+```
+
+Hace lo mismo que arriba (mismas tablas, misma transacción, mismo saneo), con estas
+diferencias:
+
+- No pide `ORIGEN_DATABASE_URL`.
+- **Las versiones quedan sin autor.** El archivo no lleva cuentas ni correos, porque lo que
+  va a GitHub no puede llevar datos personales. Los permisos de edición sí se conceden, por
+  nombre de rol.
+- **Por defecto es un inicio limpio**: cada página con versión publicada llega con solo esa
+  versión, como la **versión 1**, y con 0 visitas. Sin historial, sin borradores y sin
+  respaldos (`filesystem/*/backup/` no se copia). Lo primero que se edite en el servidor
+  será la versión 2. Una página que en desarrollo no tiene nada publicado no viaja, ni
+  `prueba` de la intranet (la lista de exclusiones está en `volcar-paginas.ts`).
+  Con `./docker/deploy.sh exportar-paginas --con-historial` viajan todas las páginas con
+  todas sus versiones (borradores y en revisión incluidos) y sus visitas, y los respaldos
+  también se copian.
+- Es una foto de la base de desarrollo: lo que no esté **publicado** allí no llega, y lo que
+  se edite después tampoco hasta volver a generar el archivo.
+- Si el archivo no cuadra al terminar de cargar (faltan páginas o versiones), la importación
+  entera se deshace.
+- En un servidor nuevo, el orden es `crear-admin` y luego `importar-paginas --desde-archivo`.
+  La bitácora (`auditoria_cambios`) no se toca: arranca vacía.
+
 ### A6c. Retirar un rol que el producto ya no tiene (`visitante_interno`)
 
 Piensa en dar de baja un cargo del organigrama: antes de borrar el cargo hay que decidir qué

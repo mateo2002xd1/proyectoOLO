@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../src/config/database';
+import { etiquetaLibre, volcar } from './volcado-sql';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -19,100 +20,7 @@ import * as path from 'path';
  * Uso:  npm run seed:generar
  */
 
-/** Columnas que referencian `usuarios`. Se vuelcan como NULL — ver cabecera del .sql. */
-const COLUMNAS_A_NULL = new Set([
-  'creado_por',
-  'revisor_id',
-  'publicado_por',
-  'actualizado_por',
-  'autor_id', // contenidos.autor_id
-  'revisado_por', // contenidos.revisado_por
-  'aprobado_por', // marca_versiones.aprobado_por
-]);
-
 const SALIDA = path.join(__dirname, '..', '..', 'seed', 'contenido-inicial.sql');
-
-/**
- * Un valor listo para meter en un INSERT.
- *
- * Las cadenas se citan con el delimitador `$tag$` de PostgreSQL en vez de con comillas
- * simples: el contenido de los bloques de Puck es JSON lleno de comillas y de barras
- * invertidas, y escaparlas a mano es la clase de detalle que falla en el caso raro.
- */
-const literal = (valor: unknown, tag: string, esJson: boolean): string => {
-  if (valor === null || valor === undefined) return 'NULL';
-
-  // Las columnas JSONB se citan SIEMPRE como texto y se convierten con `::jsonb`,
-  // incluso cuando el valor es un número o un booleano. Un `5` suelto en un INSERT es
-  // un `integer` para PostgreSQL, que no lo convierte solo a jsonb y rechaza la fila
-  // entera: es lo que pasaba con `configuraciones.valor`.
-  if (esJson) return `$${tag}$${JSON.stringify(valor)}$${tag}$::jsonb`;
-
-  if (typeof valor === 'number') return String(valor);
-  if (typeof valor === 'boolean') return valor ? 'TRUE' : 'FALSE';
-  if (valor instanceof Date) return `'${valor.toISOString()}'`;
-  const texto = typeof valor === 'object' ? JSON.stringify(valor) : String(valor);
-  return `$${tag}$${texto}$${tag}$`;
-};
-
-interface Columna {
-  nombre: string;
-  /** `true` para json y jsonb: obliga a citar y convertir explícitamente. */
-  esJson: boolean;
-}
-
-/** Las columnas de una tabla con su tipo, en su orden. */
-const columnasDe = async (tabla: string): Promise<Columna[]> => {
-  const filas = await sequelize.query<{ column_name: string; data_type: string }>(
-    `SELECT column_name, data_type FROM information_schema.columns
-     WHERE table_schema = 'public' AND table_name = :tabla
-     ORDER BY ordinal_position`,
-    { type: QueryTypes.SELECT, replacements: { tabla } }
-  );
-  return filas.map((f) => ({
-    nombre: f.column_name,
-    esJson: f.data_type === 'jsonb' || f.data_type === 'json',
-  }));
-};
-
-interface OpcionesVolcado {
-  tag: string;
-  /** Columnas que no se incluyen en el INSERT (p. ej. una referencia circular). */
-  omitir?: string[];
-  /** Cláusula WHERE completa, si solo interesa parte de la tabla. */
-  filtro?: string;
-}
-
-/** Los INSERT de una tabla, con las columnas omitidas fuera y un filtro opcional. */
-const volcar = async (
-  tabla: string,
-  { tag, omitir = [], filtro = '' }: OpcionesVolcado
-): Promise<{ sql: string; n: number }> => {
-  const cols = (await columnasDe(tabla)).filter((c) => !omitir.includes(c.nombre));
-  const filas = await sequelize.query<Record<string, unknown>>(
-    `SELECT * FROM "${tabla}"${filtro}`,
-    { type: QueryTypes.SELECT }
-  );
-
-  if (filas.length === 0) return { sql: `-- ${tabla}: sin filas\n`, n: 0 };
-
-  const valores = filas
-    .map((fila) => {
-      const campos = cols.map((col) =>
-        COLUMNAS_A_NULL.has(col.nombre) ? 'NULL' : literal(fila[col.nombre], tag, col.esJson)
-      );
-      return `  (${campos.join(', ')})`;
-    })
-    .join(',\n');
-
-  const columnasSql = cols.map((c) => `"${c.nombre}"`).join(', ');
-  // `ON CONFLICT DO NOTHING` hace el archivo idempotente: aplicarlo dos veces sobre la
-  // misma base no duplica ni falla, que es lo que se espera de una semilla.
-  return {
-    sql: `INSERT INTO "${tabla}" (${columnasSql}) VALUES\n${valores}\nON CONFLICT DO NOTHING;\n`,
-    n: filas.length,
-  };
-};
 
 /** El comentario que encabeza el archivo generado, con la fecha. */
 const cabecera = (fecha: string) => `-- Contenido inicial del OLO. GENERADO, no editar a mano.
@@ -155,11 +63,10 @@ const generar = async (): Promise<void> => {
 
   // El delimitador de las cadenas no puede aparecer dentro de ningún dato, o cortaría
   // la cita por la mitad. Se comprueba contra el contenido real y se alarga si hiciera falta.
-  let tag = 'olo';
   const muestra = JSON.stringify(
     await sequelize.query('SELECT contenido FROM paginas_versiones', { type: QueryTypes.SELECT })
   );
-  while (muestra.includes(`$${tag}$`)) tag += 'x';
+  const tag = etiquetaLibre(muestra);
 
   const partes: string[] = [cabecera(new Date().toISOString()), '\nBEGIN;\n'];
 
