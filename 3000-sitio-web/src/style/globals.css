@@ -4203,16 +4203,18 @@ button.text-link,
 }
 
 /* ── Panel lateral del inspector de bloques en Puck ────────────────────────
-   Cuando un bloque está anidado (por ejemplo, dentro de Seccion con Pestañas
-   o Grid), Puck renderiza una miga de pan junto con el título del bloque en la
-   cabecera del inspector. Si se mantienen en la misma fila sin envolver, ambos
-   textos colisionan y se sobreponen. Al organizarlos en columna con salto de línea,
-   la miga queda arriba y el título abajo con espacio limpio y legible. */
+   Puck pone dentro de un mismo contenedor (`SidebarSection-breadcrumbs`) la miga
+   de pan («Page ›», o «Page › Sección ›» si el bloque está anidado) y el título del
+   bloque. Van en una sola fila: «Page › Botón personalizado». Si la miga es larga
+   (bloques anidados), la fila se parte entre migas y no encima del título. Antes
+   se apilaban en columna a propósito, por si colisionaban; con `flex-wrap` y sin
+   anchos del 100 % ya no hace falta. */
 .olo-editor [class*="SidebarSection-breadcrumbs"] {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 6px !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 2px 4px !important;
   width: 100% !important;
 }
 
@@ -4221,7 +4223,8 @@ button.text-link,
   align-items: center !important;
   flex-wrap: wrap !important;
   gap: 4px !important;
-  width: 100% !important;
+  width: auto !important;
+  max-width: 100% !important;
   font-size: 12px !important;
 }
 
@@ -4242,7 +4245,8 @@ button.text-link,
 }
 
 .olo-editor [class*="SidebarSection-heading"] {
-  width: 100% !important;
+  width: auto !important;
+  min-width: 0 !important;
   padding-inline-end: 0 !important;
 }
 
@@ -6011,9 +6015,10 @@ a.olo-tarjeta-destacada:focus-visible {
   transform: translateY(0);
 }
 
+/* El color lo pone el botón en `--olo-btn-resaltado` (selector de color del editor). */
 .olo-btn-resaltado {
-  border-color: #7db828 !important;
-  box-shadow: 0 0 0 3px rgba(125, 184, 40, 0.28), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--olo-btn-resaltado, #7db828) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--olo-btn-resaltado, #7db828) 28%, transparent), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
 .olo-sectorial-grid {

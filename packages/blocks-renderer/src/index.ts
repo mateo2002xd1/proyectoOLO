@@ -30,6 +30,8 @@ export {
   ObjetoEnAcordeon,
 } from './primitives/campos-en-acordeon';
 export type { CampoDeAcordeon, OpcionesDeAcordeon, OpcionesDeLista } from './primitives/campos-en-acordeon';
+export { CamposAgrupados, GRUPOS_DE_CAMPOS } from './primitives/campos-agrupados';
+export type { GrupoDeCampos } from './primitives/campos-agrupados';
 
 // ─── Campo de texto enriquecido con la barra de formato del OLO ───
 export { crearCampoTextoRico, OPCIONES_TEXTO_RICO } from './primitives/campo-texto-rico';
@@ -80,7 +82,11 @@ export type { TextoRicoProps } from './blocks/texto-rico';
 export { ImagenDestacada, muestraDeImagen } from './blocks/imagen-destacada';
 export type { ImagenDestacadaProps } from './blocks/imagen-destacada';
 
-export { BotonPersonalizado } from './blocks/boton-personalizado';
+export {
+  BotonPersonalizado,
+  alineacionDelBoton,
+  migrarBoton,
+} from './blocks/boton-personalizado';
 export type {
   BotonPersonalizadoProps,
   TamanoBoton,

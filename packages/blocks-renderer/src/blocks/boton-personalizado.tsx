@@ -18,11 +18,19 @@ export interface BotonPersonalizadoProps {
   colorBorde?: string;
   tamano?: TamanoBoton;
   ancho?: AnchoBoton | string;
+  /**
+   * Campo suelto de antes: la posición ahora sale de «Espaciado y Ancho» (`caja.alineacion`).
+   * Se sigue leyendo solo en páginas guardadas antes del cambio (ver `alineacionDelBoton`).
+   */
   alineacion?: AlineacionBoton;
+  /** Lo que `conCaja` pasa a todo bloque; aquí solo importa su «Posición». */
+  caja?: { alineacion?: AlineacionBoton | string };
   icono?: string;
   posicionIcono?: PosicionIcono;
   destino?: DestinoBotonConfig;
   resaltado?: boolean;
+  /** Color del borde y el halo cuando está resaltado; sin él, el verde SENA de siempre. */
+  colorResaltado?: string;
   varianteEstilo?: string; // Mantenido para retrocompatibilidad
   className?: string;
   style?: React.CSSProperties;
@@ -35,6 +43,9 @@ const TAMANOS_CLASES: Record<TamanoBoton, { paddingY: string; paddingX: string; 
   extraGrande: { paddingY: '16px', paddingX: '32px', fontSize: '18px', iconSize: 24 },
 };
 
+/** Verde SENA: el resaltado de siempre. */
+const COLOR_RESALTADO = '#7db828';
+
 const ANCHOS_MAP: Record<string, string> = {
   auto: 'auto',
   compacto: '240px',
@@ -45,6 +56,42 @@ const ANCHOS_MAP: Record<string, string> = {
   completo: '100%',
 };
 
+/**
+ * Dónde va el botón dentro de su fila: la «Posición» de «Espaciado y Ancho».
+ *
+ * La caja sola no basta para esto: su posición mueve el envoltorio y solo se nota si
+ * se le fijó un ancho máximo, mientras que el botón es más angosto que su fila
+ * aunque no haya ancho (por eso el botón la lee él mismo). La izquierda y la derecha
+ * de la caja mandan; con la caja en «Centrado» (su valor por defecto) se respeta el
+ * campo suelto de una página guardada antes del cambio, para que no se mueva sola.
+ */
+export function alineacionDelBoton(
+  caja: BotonPersonalizadoProps['caja'],
+  heredada?: string
+): AlineacionBoton {
+  const deCaja = caja?.alineacion;
+  if (deCaja === 'izquierda' || deCaja === 'derecha') return deCaja;
+  return heredada === 'izquierda' || heredada === 'derecha' ? heredada : 'centro';
+}
+
+/**
+ * `resolveData` del bloque suelto: al abrirlo en el editor limpia lo que ya no se configura ahí.
+ *
+ * - El campo suelto `alineacion` pasa a `caja.alineacion` y desaparece, así «Espaciado y
+ *   Ancho» es la única fuente (y se puede volver a «Centrado» aunque la página viniera
+ *   alineada a un lado).
+ * - `icono` y `posicionIcono` se borran: el botón suelto ya no lleva ícono. Un botón guardado
+ *   con uno lo sigue mostrando hasta que se abra y se guarde la página. Los botones de
+ *   «Sección de botones con íconos» tienen sus propios campos y no pasan por aquí.
+ */
+export function migrarBoton({ props }: { props: Record<string, any> }) {
+  if (!('alineacion' in props) && !('icono' in props) && !('posicionIcono' in props)) return { props };
+  const { alineacion, icono: _icono, posicionIcono: _posicionIcono, ...resto } = props;
+  if (alineacion === undefined) return { props: resto };
+  const caja = resto.caja ?? {};
+  return { props: { ...resto, caja: { ...caja, alineacion: alineacionDelBoton(caja, alineacion) } } };
+}
+
 export function BotonPersonalizado({
   texto = 'Nuevo botón',
   colorFondo = '#ffffff',
@@ -52,19 +99,26 @@ export function BotonPersonalizado({
   colorBorde,
   tamano = 'mediano',
   ancho = 'mediano',
-  alineacion = 'centro',
+  alineacion: alineacionHeredada,
+  caja,
   icono = '',
   posicionIcono = 'izquierda',
   destino = { tipo: 'enlace', urlEnlace: '' },
   resaltado = false,
+  colorResaltado,
   className = '',
   style = {},
 }: BotonPersonalizadoProps) {
   const [mensajeToast, setMensajeToast] = useState<string | null>(null);
+  const alineacion = alineacionDelBoton(caja, alineacionHeredada);
 
   const configTamano = TAMANOS_CLASES[tamano] || TAMANOS_CLASES.mediano;
   const colorTextoFinal = colorTexto || '#002237';
   const colorFondoFinal = colorFondo || '#ffffff';
+
+  // Lo elige el editor con el selector de color (#rrggbb); cualquier otra cosa vuelve al verde.
+  const colorResaltadoFinal =
+    colorResaltado && /^#[0-9a-f]{3,8}$/i.test(colorResaltado.trim()) ? colorResaltado.trim() : COLOR_RESALTADO;
 
   const anchoFinal = ANCHOS_MAP[ancho] || (ancho === 'completo' ? '100%' : 'auto');
 
@@ -143,13 +197,13 @@ export function BotonPersonalizado({
     color: colorTextoFinal,
     backgroundColor: colorFondoFinal,
     border: resaltado
-      ? '2px solid #7db828'
+      ? `2px solid ${colorResaltadoFinal}`
       : colorBorde
       ? `1.5px solid ${colorBorde}`
       : '1.5px solid #d1d5db',
     borderRadius: '10px', // Exacto a .olo-gov-btn del portal
     boxShadow: resaltado
-      ? '0 0 0 3px rgba(125, 184, 40, 0.25), 0 2px 4px rgba(0, 0, 0, 0.06)'
+      ? `0 0 0 3px color-mix(in srgb, ${colorResaltadoFinal} 28%, transparent), 0 2px 4px rgba(0, 0, 0, 0.06)`
       : '0 1px 3px rgba(0, 0, 0, 0.05)',
     textDecoration: 'none',
     transition: 'all 0.18s ease-in-out',
@@ -158,6 +212,8 @@ export function BotonPersonalizado({
     minHeight: '42px',
     cursor: esEnlace ? 'pointer' : 'default',
     boxSizing: 'border-box',
+    // El CSS del resaltado (`.olo-btn-resaltado`, con !important) toma el color de esta variable.
+    ...(resaltado ? { ['--olo-btn-resaltado' as string]: colorResaltadoFinal } : {}),
     ...style,
   };
 
@@ -220,7 +276,7 @@ export function BotonPersonalizado({
 
   return (
     <div
-      className={`olo-btn-contenedor olo-btn-align-${alineacion || 'centro'}`}
+      className={`olo-btn-contenedor olo-btn-align-${alineacion}`}
       style={estiloContenedor}
     >
       {botonElemento}

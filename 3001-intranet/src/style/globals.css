@@ -6525,9 +6525,10 @@ body:has(.preview-page) .intranet-topbar {
   transform: translateY(0);
 }
 
+/* El color lo pone el botón en `--olo-btn-resaltado` (selector de color del editor). */
 .olo-btn-resaltado {
-  border-color: #7db828 !important;
-  box-shadow: 0 0 0 3px rgba(125, 184, 40, 0.28), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--olo-btn-resaltado, #7db828) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--olo-btn-resaltado, #7db828) 28%, transparent), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
 .olo-sectorial-grid {

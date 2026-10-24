@@ -18,8 +18,8 @@ import {
   ImagenDestacada,
   TarjetaArticulo,
   BotonPersonalizado,
+  migrarBoton,
   SeccionBotonesIcono,
-  campoIcono,
   campoDestinoBoton,
   IconSelectorField,
 } from '@olo/blocks-renderer';
@@ -1698,15 +1698,6 @@ const puckConfigBase: Config = {
             { label: 'Extra grande (xl)', value: 'extraGrande' },
           ],
         },
-        alineacion: {
-          type: 'radio',
-          label: 'Alineación horizontal',
-          options: [
-            { label: 'Centrado', value: 'centro' },
-            { label: 'Izquierda', value: 'izquierda' },
-            { label: 'Derecha', value: 'derecha' },
-          ],
-        },
         ancho: {
           type: 'radio',
           label: 'Ancho del botón',
@@ -1719,38 +1710,31 @@ const puckConfigBase: Config = {
         },
         colorFondo: campoColor('Color de fondo (por defecto blanco)'),
         colorTexto: campoColor('Color del texto (por defecto color del título #002237)'),
-        icono: campoIcono('Ícono del botón'),
-        posicionIcono: {
-          type: 'radio',
-          label: 'Posición del ícono',
-          options: [
-            { label: 'Izquierda', value: 'izquierda' },
-            { label: 'Derecha', value: 'derecha' },
-            { label: 'No mostrar ícono', value: 'ninguno' },
-          ],
-        },
         destino: campoDestinoBoton('Destino del botón (Enlace o Archivo)'),
         resaltado: {
           type: 'radio',
           label: 'Resaltar botón',
           options: [
             { label: 'Normal', value: false },
-            { label: 'Resaltado (Verde SENA)', value: true },
+            { label: 'Resaltado', value: true },
           ],
         },
+        colorResaltado: campoColor('Color del resaltado (por defecto verde SENA #7db828)'),
       },
       defaultProps: {
         texto: 'Nuevo botón',
         tamano: 'mediano',
-        alineacion: 'centro',
         ancho: 'mediano',
         colorFondo: '#ffffff',
         colorTexto: '#002237',
-        icono: '',
-        posicionIcono: 'izquierda',
         destino: { tipo: 'enlace', urlEnlace: '' },
         resaltado: false,
+        colorResaltado: '',
       },
+      // La posición ya no es un campo del botón (sale de «Espaciado y Ancho», `caja.alineacion`) y
+      // el botón suelto ya no lleva ícono. Al abrir un botón guardado, `migrarBoton` pasa la posición
+      // a la caja y limpia el ícono.
+      resolveData: migrarBoton,
       render: (props: BlockRender<ComponentProps<typeof BotonPersonalizado>>) => (
         <BotonPersonalizado {...props} />
       ),

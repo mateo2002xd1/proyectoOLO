@@ -5,6 +5,62 @@
 
 ---
 
+## sesión 24-10-2026 (5.ª parte): «Page › Botón personalizado» en una fila y el panel del botón en dos acordeones
+
+**Qué pidió el usuario:** alinear en una sola fila «Page» y «Botón personalizado» en la cabecera del panel de campos, y meter en dos acordeones las opciones del botón y «Espaciado y Ancho».
+
+**Por qué estaban en dos filas:** el `globals.css` de `3000-sitio-web` tenía una regla `.olo-editor [class*="Breadcrumbs"] { width: 100% }` que, por ser una búsqueda por subcadena, alcanzaba también a cada miga (`Breadcrumbs-breadcrumb`), y la regla de `SidebarSection-breadcrumbs` las apilaba en columna. Cada pieza ocupaba una fila entera.
+
+**Qué se hizo**
+- `3000-sitio-web/src/style/globals.css`: las migas y el título van en fila (`flex-direction: row`, `flex-wrap: wrap`, anchos `auto`). Con bloques anidados («Page › Sección › Botón») la fila se parte entre migas, no encima del título. La intranet no tenía esa regla y ya los mostraba en fila.
+- Nuevo `packages/blocks-renderer/src/primitives/campos-agrupados.tsx`: `CamposAgrupados` usa el override `fields` de Puck, que recibe todos los campos del bloque como `children` (un elemento por campo con su nombre en `key`), y los reparte: los campos propios del bloque en «Opciones del botón» (abierto al inicio) y `caja` en un acordeón «Espaciado y Ancho» (cerrado, con sus acordeones de dentro). La lista de bloques agrupados es `GRUPOS_DE_CAMPOS`; hoy solo `BotonPersonalizado`. Los demás bloques se pintan como siempre.
+- `campos-en-acordeon.tsx`: `TituloYaPuestoContext`; el grupo de «Espaciado y Ancho» no repite su título cuando ya lo pone el acordeón de fuera.
+- `puck-editor-wrapper.tsx` de las dos apps: `overrides.fields = CamposDelPanel`, que lee el tipo del bloque seleccionado con `createUsePuck` (el paquete no depende de Puck, así que la app se lo pasa).
+- Solo cambia dónde se pinta cada campo; los valores y el JSON guardado no se tocan.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| `CamposAgrupados` con campos simulados del botón (`key` = nombre del campo) | «Opciones del botón» con todos los campos propios; «Espaciado y Ancho» aparte con sus 7 filas; el título de la sección sale una sola vez |
+| `CamposAgrupados` con otro tipo de bloque | Devuelve los campos tal cual |
+| Navegador con Puck real (cabecera en fila, acordeones, escribir en un campo del acordeón, deshacer) | **No se hizo**: queda por probar a mano |
+
+**Pendiente al cierre**
+- El espaciado entre campos dentro de «Opciones del botón» (16 px) es una estimación; ajústalo al verlo.
+- Si se quiere lo mismo en otros bloques, basta añadirlos a `GRUPOS_DE_CAMPOS`.
+
+---
+
+## sesión 24-10-2026 (4.ª parte): «Botón personalizado» pierde la alineación y el ícono; el resaltado admite color
+
+**Qué pidió el usuario:** quitar la opción «Alineación horizontal» de las configuraciones del botón y que esa función la haga la «Posición» de «Espaciado y Ancho»; quitar también «Ícono del botón» y «Posición del ícono»; y que «Resaltar botón» permita escoger un color.
+
+**Qué se hizo**
+- `3000-sitio-web` y `3001-intranet` (`puck.config.tsx`): fuera el campo `alineacion` y su valor por defecto del `BotonPersonalizado`.
+- `boton-personalizado.tsx`: el botón lee `caja.alineacion` (la «Posición» de la caja) para colocarse en su fila. Hizo falta que lo lea él: la caja solo mueve su envoltorio, y eso solo se nota con un «Ancho máximo»; el botón, en cambio, es más angosto que su fila aunque no haya ancho. `alineacionDelBoton()` resuelve el valor.
+- **Páginas ya guardadas:** un botón con el campo suelto `alineacion: 'derecha'` sigue a la derecha. Mientras la caja esté en «Centrado» (su valor por defecto) se respeta el campo viejo. Al abrir la página en el editor, `migrarAlineacionDelBoton` (`resolveData`) lo pasa a `caja.alineacion` y borra el campo suelto, así se puede volver a «Centrado» sin que el viejo mande.
+- Con ancho máximo y posición a un lado, el envoltorio y el botón quedan los dos al mismo lado: es coherente, no se duplica el desplazamiento.
+- **Íconos:** fuera `icono` y `posicionIcono` del botón suelto (y `campoIcono` sin uso en `3000-sitio-web`). El componente sigue pudiendo pintar un ícono porque «Sección de botones con íconos» lo usa con sus propios campos. Un botón suelto guardado con ícono lo sigue mostrando hasta que se abra y se guarde la página: `migrarBoton` (antes `migrarAlineacionDelBoton`) borra `icono` y `posicionIcono` al abrirlo.
+- **Resaltado con color:** campo nuevo `colorResaltado` (selector de color; vacío = verde SENA `#7db828`, como siempre). El botón lo pone en `--olo-btn-resaltado` y `.olo-btn-resaltado` (con `!important`, en el `globals.css` de las dos apps) lo lee; el halo se saca del mismo color con `color-mix`. Solo se acepta `#rrggbb`: cualquier otro texto vuelve al verde. Los botones ya resaltados no cambian.
+- `SeccionBotonesIcono` no cambia: pinta sus botones con ancho completo y no usaba esa opción.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| Botón sin caja / caja derecha / caja izquierda | `center` / `flex-end` / `flex-start` |
+| Botón con `alineacion: 'derecha'` suelto (guardado antes) | `flex-end` (igual que antes) |
+| Suelto `derecha` + caja `izquierda` | `flex-start` (manda la caja) |
+| `migrarAlineacionDelBoton` con suelto `izquierda` y caja `centro` | `caja.alineacion: 'izquierda'`, el suelto desaparece |
+| `migrarAlineacionDelBoton` con suelto y sin caja / ya migrado | Crea la caja con la posición / no toca nada |
+| Botón resaltado sin color / con `#ff0000` / con `red;background:url(x)` | Verde `#7db828` / rojo en borde, halo y variable / vuelve al verde |
+| `migrarBoton` con ícono, posición del ícono y alineación sueltos / solo ícono / nada | Deja `caja.alineacion` y borra el ícono / borra el ícono / no toca nada |
+| Navegador: elegir «Posición» y un color de resaltado y ver el lienzo | **No se hizo**: queda por probar a mano |
+
+**Pendiente al cierre**
+- Las páginas guardadas con la posición suelta o un ícono se migran al abrirlas en el editor; quedan marcadas como modificadas, y los íconos de botones sueltos desaparecen al guardar. En producción siguen viéndose igual hasta entonces.
+
+---
+
 ## sesión 24-10-2026 (3.ª parte): «Espaciado y Ancho» del editor pasa a medida libre en rem
 
 **Qué pidió el usuario:** que las opciones globales de «Espaciado y Ancho» reciban medidas responsivas (rem u otra unidad que no se descuadre entre breakpoints) y que los valores se escriban a mano, sin límite, para personalizar más.

@@ -29,7 +29,9 @@
 
 import React, {
   cloneElement,
+  createContext,
   isValidElement,
+  useContext,
   useEffect,
   useId,
   useState,
@@ -115,6 +117,12 @@ const estiloControl: React.CSSProperties = {
   fontFamily: 'inherit',
   boxSizing: 'border-box',
 };
+
+/**
+ * `true` cuando un acordeón de fuera ya pone el título del grupo (ver `campos-agrupados.tsx`):
+ * el grupo no lo repite.
+ */
+export const TituloYaPuestoContext = createContext(false);
 
 // ─── Medidas libres ──────────────────────────────────────────────────────────
 const MEDIDA = /^(-?(?:\d+\.?\d*|\.\d+))(rem|em|vw|vh|ch|px|%)$/;
@@ -550,6 +558,33 @@ export function campoEnAcordeon(campo: CampoDeAcordeon, opciones: OpcionesDeAcor
   };
 }
 
+function GrupoEnAcordeones({
+  label,
+  campos,
+  value,
+  onChange,
+}: {
+  label: string;
+  campos: Record<string, CampoDeAcordeon>;
+  value?: Record<string, any>;
+  onChange: (v: Record<string, any>) => void;
+}) {
+  const tituloYaPuesto = useContext(TituloYaPuestoContext);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {!tituloYaPuesto && <span style={{ fontSize: '14px', fontWeight: 600, color: COLOR_TEXTO }}>{label}</span>}
+      {Object.entries(campos).map(([clave, campo]) => (
+        <FilaDeAcordeon
+          key={clave}
+          campo={campo}
+          valor={value?.[clave]}
+          onChange={(v) => onChange({ ...(value ?? {}), [clave]: v })}
+        />
+      ))}
+    </div>
+  );
+}
+
 /** Un grupo con valor objeto (como `caja`), un acordeón por clave bajo un título. */
 export function campoGrupoEnAcordeones(label: string, campos: Record<string, CampoDeAcordeon>) {
   return {
@@ -557,17 +592,7 @@ export function campoGrupoEnAcordeones(label: string, campos: Record<string, Cam
     label,
     campos,
     render: ({ value, onChange }: { value?: Record<string, any>; onChange: (v: Record<string, any>) => void }) => (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: COLOR_TEXTO }}>{label}</span>
-        {Object.entries(campos).map(([clave, campo]) => (
-          <FilaDeAcordeon
-            key={clave}
-            campo={campo}
-            valor={value?.[clave]}
-            onChange={(v) => onChange({ ...(value ?? {}), [clave]: v })}
-          />
-        ))}
-      </div>
+      <GrupoEnAcordeones label={label} campos={campos} value={value} onChange={onChange} />
     ),
   };
 }

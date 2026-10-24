@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Puck, createUsePuck, Data, blocksPlugin, outlinePlugin } from '@puckeditor/core';
 import '@puckeditor/core/dist/index.css';
@@ -14,7 +14,7 @@ import { useAutoguardado, MS_ENTRE_AUTOGUARDADOS } from '../hooks/use-autoguarda
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
-import { ObjetoEnAcordeon } from '@olo/blocks-renderer';
+import { CamposAgrupados, ObjetoEnAcordeon } from '@olo/blocks-renderer';
 import { TITULOS_TENDENCIA, type TipoTendenciaOcupacional } from '@/shared/lib/tendencia-ocupacional';
 
 /**
@@ -104,6 +104,15 @@ interface PuckEditorWrapperProps {
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
 const usePuckSel = createUsePuck();
+
+/**
+ * Campos del bloque seleccionado: los de `GRUPOS_DE_CAMPOS` (hoy el botón) van en
+ * acordeones; el resto de bloques, como siempre.
+ */
+function CamposDelPanel({ children }: { children?: ReactNode }) {
+  const tipo = usePuckSel((s) => s.selectedItem?.type);
+  return <CamposAgrupados tipo={tipo}>{children}</CamposAgrupados>;
+}
 
 interface AccionesCabeceraProps {
   bloqueado: boolean;
@@ -885,6 +894,7 @@ export function PuckEditorWrapper({
       // Los `object` marcados con `campoObjetoEnAcordeon` se pliegan como los demás
       // campos del panel; el resto se pinta como siempre.
       fieldTypes: { object: ObjetoEnAcordeon },
+      fields: CamposDelPanel,
       headerActions: () => (
         // Puck envuelve esto en su propio `PuckHeader-tools`, que es
         // `display:flex; justify-content:flex-end` — un `marginRight:auto` interno
