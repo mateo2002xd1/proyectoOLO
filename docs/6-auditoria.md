@@ -5,6 +5,18 @@
 
 ---
 
+## sesión 23-10-2026 (9.ª parte): CLAUDE.md con el mapa de agentes y skills de `.claude/`
+
+**Qué pidió el usuario:** que las sesiones usen los agentes y skills nuevos de `.claude/` sin tener que pedírselo cada vez, o saber si hacía falta un agente que los conecte.
+
+**Qué se hizo.** Se descartó el agente enrutador (una sesión en frío más solo para decidir). Se creó `CLAUDE.md` en la raíz, que se carga en cada sesión: tabla de cuándo se lanza cada agente (`auditor-*` solo con `/auditar`, consejo para decisiones de riesgo, pentest y auditorías solo a petición), lista de skills que se usan solas y lista de las de pentesting ofensivo genérico que solo se usan si se nombran. Se repiten ahí las reglas fijas del usuario (español, no commitear, migraciones en Neon).
+
+**Para el usuario:** `.claude/` está en `.gitignore`, así que los agentes y skills solo existen en esta máquina; `CLAUDE.md` sí se versiona y lo vería otro dev sin las piezas. El hook de `settings.local.json` que hace `git add` a cada archivo editado choca con «yo no preparo cambios»; queda pendiente que decida si lo quiere. No se borró ninguna skill.
+
+**Verificación:** solo documentación; no hay código que probar.
+
+---
+
 ## sesión 23-10-2026 (8.ª parte): cambiar la dirección vuelve a ser de quien aprueba (DIR-01)
 
 **Qué pidió el usuario:** la opción (b) de DIR-01: volver a `puedePublicar`, con su prueba.
