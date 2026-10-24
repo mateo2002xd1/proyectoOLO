@@ -5,6 +5,29 @@
 
 ---
 
+## sesión 24-10-2026 (6.ª parte): cada opción del botón en su acordeón, con las mismas medidas y una línea de ayuda
+
+**Qué pidió el usuario:** dentro de «Opciones del botón», cada subsección en acordeón (texto, tamaño, ancho, color de fondo, color del texto, destino, resaltar, color del resaltado); simetría, margen y esquina iguales en todos los controles; y un mensaje muy breve, en letra pequeña, que explique cada ajuste a quien lo usa por primera vez.
+
+**Qué se hizo**
+- `3000-sitio-web` y `3001-intranet` (`puck.config.tsx`): tamaño, ancho, colores, resaltar y color del resaltado pasan de campos de Puck sueltos a `campoEnAcordeon` (borde, esquina de 8, 40 de alto y una línea de `ayuda` bajo el control). Se acortaron las opciones: «Pequeño / Mediano / Grande / Extra grande» y «Ajustado / Mediano / Grande / Completo» (los valores guardados no cambian).
+- **El texto sigue siendo un `text` nativo de Puck** (`contentEditable`: también se escribe sobre la página, y un campo propio perdería eso). `CamposAgrupados` lo mete en su acordeón («Texto del botón», con el texto actual en la cabecera) y le aplica las mismas medidas con una hoja corta (`data-olo-campo-nativo`). Su etiqueta de Puck se oculta con el override `fieldLabel` (`crearEtiquetaDeCampo`, `puck-editor-wrapper.tsx` de las dos apps) para no repetir el título.
+- `selector-destino-boton-field.tsx`: el selector de destino se igualó a los demás (esquina de 8, input de 40, botones de modo de 32 con foco visible) y se añadió `campoDestinoBotonEnAcordeon`, con su resumen («Archivo», «Sin acción» o la dirección). `campoDestinoBoton` se conserva.
+- Ayudas, todas de una frase: texto, tamaño, ancho, colores, destino, resaltar y color del resaltado. En «Espaciado y Ancho» se acortaron las de espacios y ancho (antes eran párrafos) y se añadieron las de «Posición» y «Color de fondo», que no tenían.
+- `GRUPOS_DE_CAMPOS` ahora describe también los campos nativos que se envuelven (`envueltos`). Los valores guardados no cambian.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| Panel del botón renderizado con los campos reales y capturado en Chrome headless, todo abierto | Nueve acordeones de primer nivel con el mismo borde, esquina y alto; la ayuda gris pequeña bajo cada control; «Espaciado y Ancho» aparte, con su título una sola vez |
+| Navegador con Puck real (etiqueta del texto oculta, escribir sobre la página y en el panel, deshacer, resumen del texto en la cabecera) | **No se hizo**: queda por probar a mano. En la captura de prueba el texto muestra su etiqueta porque no pasa por el override de Puck |
+
+**Pendiente al cierre**
+- El texto del botón conserva el aspecto de Puck por dentro (se igualó con CSS por tipo de input, no con un campo propio); si se ve distinto, hay que ajustar `ESTILO_NATIVO` en `campos-agrupados.tsx`.
+- El `next dev` puede servir CSS viejo (ver [[next-dev-css-a-medias]]); esta vez no se tocó `globals.css`.
+
+---
+
 ## sesión 24-10-2026 (5.ª parte): «Page › Botón personalizado» en una fila y el panel del botón en dos acordeones
 
 **Qué pidió el usuario:** alinear en una sola fila «Page» y «Botón personalizado» en la cabecera del panel de campos, y meter en dos acordeones las opciones del botón y «Espaciado y Ancho».

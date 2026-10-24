@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
 import { formatearBytes } from './formato-archivos';
+import { campoEnAcordeon } from './campos-en-acordeon';
+import { CLASE_CONTROL, CLASE_ENFOCABLE, EstilosDeCampos } from './estilos-de-campos';
 
 export interface DestinoBotonConfig {
   tipo: 'enlace' | 'archivo' | 'ninguno';
@@ -100,8 +102,9 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
     (config.urlArchivo ? decodeURIComponent(config.urlArchivo.split('?')[0].split('/').pop() ?? '') : '');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-      {/* Selector de modo: Enlace vs Archivo vs Ninguno */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+      <EstilosDeCampos />
+      {/* Selector de modo: Enlace vs Archivo vs Ninguno (mismas medidas que los demás controles del panel: 8 de esquina, 40 de alto) */}
       <div
         style={{
           display: 'grid',
@@ -109,17 +112,21 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
           gap: '4px',
           background: '#f3f4f6',
           padding: '3px',
-          borderRadius: '6px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          boxSizing: 'border-box',
         }}
       >
         <button
           type="button"
+          className={CLASE_ENFOCABLE}
           onClick={() => cambiarTipo('enlace')}
           style={{
+            minHeight: '32px',
             padding: '6px 8px',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: config.tipo === 'enlace' ? 600 : 400,
-            borderRadius: '4px',
+            borderRadius: '6px',
             border: 'none',
             background: config.tipo === 'enlace' ? '#ffffff' : 'transparent',
             color: config.tipo === 'enlace' ? '#002237' : '#4b5563',
@@ -132,12 +139,14 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
 
         <button
           type="button"
+          className={CLASE_ENFOCABLE}
           onClick={() => cambiarTipo('archivo')}
           style={{
+            minHeight: '32px',
             padding: '6px 8px',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: config.tipo === 'archivo' ? 600 : 400,
-            borderRadius: '4px',
+            borderRadius: '6px',
             border: 'none',
             background: config.tipo === 'archivo' ? '#ffffff' : 'transparent',
             color: config.tipo === 'archivo' ? '#002237' : '#4b5563',
@@ -150,12 +159,14 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
 
         <button
           type="button"
+          className={CLASE_ENFOCABLE}
           onClick={() => cambiarTipo('ninguno')}
           style={{
+            minHeight: '32px',
             padding: '6px 8px',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: config.tipo === 'ninguno' ? 600 : 400,
-            borderRadius: '4px',
+            borderRadius: '6px',
             border: 'none',
             background: config.tipo === 'ninguno' ? '#ffffff' : 'transparent',
             color: config.tipo === 'ninguno' ? '#002237' : '#4b5563',
@@ -175,15 +186,22 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
             value={config.urlEnlace || ''}
             onChange={(e) => onChange({ ...config, urlEnlace: e.target.value })}
             placeholder="https://ejemplo.com o /ruta-interna"
+            aria-label="Dirección del enlace"
+            className={CLASE_CONTROL}
             style={{
-              padding: '7px 10px',
-              fontSize: '13px',
+              width: '100%',
+              minHeight: '40px',
+              padding: '8px 10px',
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              color: '#333333',
+              background: '#ffffff',
               border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              outline: 'none',
+              borderRadius: '8px',
+              boxSizing: 'border-box',
             }}
           />
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#4b5563', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4b5563', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={Boolean(config.abrirNuevaPestana)}
@@ -201,7 +219,7 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
           <div
             style={{
               padding: '10px 12px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               border: '1px dashed #cbd5e1',
               background: '#f8fafc',
               fontSize: '12px',
@@ -229,11 +247,12 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                minHeight: '40px',
                 padding: '8px 14px',
                 background: '#002237',
                 color: '#ffffff',
-                borderRadius: '6px',
-                fontSize: '12px',
+                borderRadius: '8px',
+                fontSize: '13px',
                 fontWeight: 600,
                 cursor: subiendo ? 'wait' : 'pointer',
                 opacity: subiendo ? 0.7 : 1,
@@ -270,3 +289,25 @@ export const campoDestinoBoton = (label = 'Destino del botón') => ({
     </div>
   ),
 });
+
+/**
+ * El mismo selector dentro de su acordeón, con su línea de ayuda. La cabecera ya dice
+ * «Destino del botón», así que no se repite la etiqueta que lleva `campoDestinoBoton`.
+ */
+export const campoDestinoBotonEnAcordeon = (label = 'Destino del botón', ayuda?: string) =>
+  campoEnAcordeon(
+    {
+      type: 'custom',
+      label,
+      ayuda,
+      render: ({ value, onChange }) => <SelectorDestinoBotonField value={value} onChange={onChange} />,
+    },
+    {
+      resumen: (valor: DestinoBotonConfig | undefined) =>
+        valor?.tipo === 'archivo'
+          ? 'Archivo'
+          : valor?.tipo === 'ninguno'
+          ? 'Sin acción'
+          : valor?.urlEnlace || 'Sin dirección',
+    }
+  );

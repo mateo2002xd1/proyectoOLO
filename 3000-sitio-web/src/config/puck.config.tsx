@@ -20,7 +20,7 @@ import {
   BotonPersonalizado,
   migrarBoton,
   SeccionBotonesIcono,
-  campoDestinoBoton,
+  campoDestinoBotonEnAcordeon,
   IconSelectorField,
 } from '@olo/blocks-renderer';
 import { ExternalPortals, type TarjetaDePortal } from '@/shared/lib/blocks/external-portals';
@@ -1687,39 +1687,59 @@ const puckConfigBase: Config = {
     BotonPersonalizado: {
       label: 'Botón personalizado',
       fields: {
+        // Nativo a propósito: solo un `text` de Puck se edita también sobre la página. Su acordeón
+        // lo pone `CamposAgrupados` (ver `GRUPOS_DE_CAMPOS`).
         texto: { type: 'text', label: 'Texto del botón', contentEditable: true },
-        tamano: {
+        tamano: campoEnAcordeon({
           type: 'select',
-          label: 'Tamaño del botón (altura y texto)',
+          label: 'Tamaño del botón',
+          ayuda: 'Qué tan alto y grande se ve el botón.',
           options: [
-            { label: 'Pequeño (sm)', value: 'pequeno' },
-            { label: 'Mediano (md - Estilo OLO)', value: 'mediano' },
-            { label: 'Grande (lg)', value: 'grande' },
-            { label: 'Extra grande (xl)', value: 'extraGrande' },
+            { label: 'Pequeño', value: 'pequeno' },
+            { label: 'Mediano', value: 'mediano' },
+            { label: 'Grande', value: 'grande' },
+            { label: 'Extra grande', value: 'extraGrande' },
           ],
-        },
-        ancho: {
+        }),
+        ancho: campoEnAcordeon({
           type: 'radio',
           label: 'Ancho del botón',
+          ayuda: '«Ajustado» se adapta a su texto; «Completo» ocupa toda la fila.',
           options: [
-            { label: 'Ajustado al texto (Auto)', value: 'auto' },
-            { label: 'Mediano (320px)', value: 'mediano' },
-            { label: 'Grande (480px)', value: 'grande' },
-            { label: 'Ancho completo (100%)', value: 'completo' },
+            { label: 'Ajustado', value: 'auto' },
+            { label: 'Mediano', value: 'mediano' },
+            { label: 'Grande', value: 'grande' },
+            { label: 'Completo', value: 'completo' },
           ],
-        },
-        colorFondo: campoColor('Color de fondo (por defecto blanco)'),
-        colorTexto: campoColor('Color del texto (por defecto color del título #002237)'),
-        destino: campoDestinoBoton('Destino del botón (Enlace o Archivo)'),
-        resaltado: {
+        }),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo',
+          ayuda: 'Relleno del botón. Vacío = blanco.',
+        }),
+        colorTexto: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del texto',
+          ayuda: 'Color de las letras. Vacío = azul oscuro del título.',
+        }),
+        destino: campoDestinoBotonEnAcordeon(
+          'Destino del botón',
+          'A dónde lleva el clic: un enlace, un archivo o nada.'
+        ),
+        resaltado: campoEnAcordeon({
           type: 'radio',
           label: 'Resaltar botón',
+          ayuda: 'Añade un borde y un halo de color para que destaque.',
           options: [
             { label: 'Normal', value: false },
             { label: 'Resaltado', value: true },
           ],
-        },
-        colorResaltado: campoColor('Color del resaltado (por defecto verde SENA #7db828)'),
+        }),
+        colorResaltado: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del resaltado',
+          ayuda: 'Color del borde y el halo; solo se ve si el botón está resaltado. Vacío = verde SENA.',
+        }),
       },
       defaultProps: {
         texto: 'Nuevo botón',

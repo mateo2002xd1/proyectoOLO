@@ -178,8 +178,7 @@ function enRem(medida: string): string {
  * bloque. Cada opción es un acordeón con su valor actual a la vista
  * (`campos-en-acordeon.tsx`).
  */
-const AYUDA_ESPACIO =
-  'Escribe cualquier número, sin tope. En rem (1 rem ≈ 16 px) sigue al tamaño de letra y no se descuadra entre pantallas; en móvil se reduce solo. Vacío = sin espacio.';
+const AYUDA_ESPACIO = 'Escribe el número que quieras. 1 rem ≈ 16 px. En móvil se reduce solo.';
 
 const campoEspacio = (label: string, negativo = false): CampoDeAcordeon => ({
   type: 'medida',
@@ -188,7 +187,7 @@ const campoEspacio = (label: string, negativo = false): CampoDeAcordeon => ({
   negativo,
   vacio: 'Ninguno',
   normalizar: (valor) => enRem(espacioComoMedida(valor, negativo)),
-  ayuda: negativo ? `${AYUDA_ESPACIO} Un número negativo acerca los bloques hasta solaparlos.` : AYUDA_ESPACIO,
+  ayuda: negativo ? `${AYUDA_ESPACIO} Un negativo acerca los bloques.` : AYUDA_ESPACIO,
 });
 
 const CAMPOS_CAJA: Record<string, CampoDeAcordeon> = {
@@ -202,12 +201,12 @@ const CAMPOS_CAJA: Record<string, CampoDeAcordeon> = {
     unidades: ['rem', '%', 'vw', 'ch'],
     vacio: 'Todo el ancho',
     normalizar: (valor) => enRem(anchoComoMedida(valor)),
-    ayuda:
-      'Escribe cualquier número, sin tope. Vacío = todo el ancho. Es un máximo: en pantallas más angostas el bloque se ajusta solo. En % es la parte del espacio disponible; en ch, caracteres de texto (65 ch ≈ una línea cómoda de leer).',
+    ayuda: 'Lo máximo que puede medir. Vacío = todo el ancho. En pantallas angostas se ajusta solo.',
   },
   alineacion: {
     type: 'radio' as const,
     label: 'Posición',
+    ayuda: 'Dónde queda el bloque dentro de su fila.',
     options: [
       { label: 'Centrado', value: 'centro' },
       { label: 'Izquierda', value: 'izquierda' },
@@ -229,7 +228,7 @@ const CAMPOS_CAJA: Record<string, CampoDeAcordeon> = {
    * dos capas. Y como el editor enseña el resultado mientras se elige, el
    * comportamiento se ve, no hay que adivinarlo.
    */
-  fondo: { type: 'color', label: 'Color de fondo' },
+  fondo: { type: 'color', label: 'Color de fondo', ayuda: 'Color detrás del bloque. Vacío = sin color.' },
 };
 
 export const campoCaja = campoGrupoEnAcordeones('Espaciado y Ancho', CAMPOS_CAJA);

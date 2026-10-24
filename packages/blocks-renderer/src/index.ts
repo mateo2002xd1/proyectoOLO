@@ -30,7 +30,7 @@ export {
   ObjetoEnAcordeon,
 } from './primitives/campos-en-acordeon';
 export type { CampoDeAcordeon, OpcionesDeAcordeon, OpcionesDeLista } from './primitives/campos-en-acordeon';
-export { CamposAgrupados, GRUPOS_DE_CAMPOS } from './primitives/campos-agrupados';
+export { CamposAgrupados, GRUPOS_DE_CAMPOS, crearEtiquetaDeCampo } from './primitives/campos-agrupados';
 export type { GrupoDeCampos } from './primitives/campos-agrupados';
 
 // ─── Campo de texto enriquecido con la barra de formato del OLO ───
@@ -41,7 +41,7 @@ export { IconSelectorField, campoIcono, IconoRenderer, ICONOS_DISPONIBLES } from
 export type { IconSelectorFieldProps, IconoDelCatalogo } from './primitives/icon-selector-field';
 
 // ─── Selector de Destino para Botón (Enlace o Archivo) ───
-export { SelectorDestinoBotonField, campoDestinoBoton } from './primitives/selector-destino-boton-field';
+export { SelectorDestinoBotonField, campoDestinoBoton, campoDestinoBotonEnAcordeon } from './primitives/selector-destino-boton-field';
 export type { DestinoBotonConfig } from './primitives/selector-destino-boton-field';
 
 // ─── Controles de espaciado y ancho para cualquier bloque ───

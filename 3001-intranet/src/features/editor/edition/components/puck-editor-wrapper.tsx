@@ -14,14 +14,14 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Puck, createUsePuck, type Data, blocksPlugin, outlinePlugin } from "@puckeditor/core";
+import { FieldLabel, Puck, createUsePuck, type Data, blocksPlugin, outlinePlugin } from "@puckeditor/core";
 import "@puckeditor/core/dist/index.css";
 import { configDeEdicion, type ContextoDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta, rutaPublicaDeSlug } from "../../model/rutas";
 import { PaginaEnEdicionContext } from "../lib/pagina-en-edicion";
 import { registrarSubidaPendiente, descartarEdicion } from "../services/edicion.service";
 import type { ContenidoPagina, PaginaVersion } from "../../model/pagina.types";
-import { CamposAgrupados } from "@olo/blocks-renderer";
+import { CamposAgrupados, crearEtiquetaDeCampo } from "@olo/blocks-renderer";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 import { AvisoRechazo, type Rechazo } from "./aviso-rechazo";
 import { useAutoguardado, MS_ENTRE_AUTOGUARDADOS } from "../hooks/use-autoguardado";
@@ -90,9 +90,16 @@ const usePuckSel = createUsePuck();
  * acordeones; el resto de bloques, como siempre.
  */
 function CamposDelPanel({ children }: { children?: ReactNode }) {
-  const tipo = usePuckSel((s) => s.selectedItem?.type);
-  return <CamposAgrupados tipo={tipo}>{children}</CamposAgrupados>;
+  const bloque = usePuckSel((s) => s.selectedItem);
+  return (
+    <CamposAgrupados tipo={bloque?.type} valores={bloque?.props}>
+      {children}
+    </CamposAgrupados>
+  );
 }
+
+/** Los campos nativos dentro de un acordeón no repiten su etiqueta; los demás, la de Puck. */
+const EtiquetaDeCampo = crearEtiquetaDeCampo(FieldLabel);
 
 interface AccionesCabeceraProps {
   bloqueado: boolean;
@@ -812,6 +819,7 @@ export function PuckEditorWrapper({
   const overrides = useMemo(
     () => ({
       fields: CamposDelPanel,
+      fieldLabel: EtiquetaDeCampo,
       headerActions: () => (
         // Puck envuelve esto en su propio `PuckHeader-tools`, que es
         // `display:flex; justify-content:flex-end` — un `marginRight:auto` interno

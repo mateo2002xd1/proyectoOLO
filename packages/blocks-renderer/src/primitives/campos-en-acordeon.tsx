@@ -228,6 +228,11 @@ function CampoMedida({
   );
 }
 
+/** La línea de ayuda bajo un control: pequeña y gris, una sola frase. */
+export function AyudaDeCampo({ children }: { children: ReactNode }) {
+  return <p style={{ margin: '8px 0 0', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{children}</p>;
+}
+
 // ─── Acordeón ────────────────────────────────────────────────────────────────
 export function AcordeonDeCampo({
   etiqueta,
@@ -539,9 +544,7 @@ function FilaDeAcordeon({
       abiertoAlInicio={opciones.abierto}
     >
       <ControlDeCampo campo={campo} valor={valor} onChange={onChange} props={props} />
-      {campo.ayuda && (
-        <p style={{ margin: '8px 0 0', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{campo.ayuda}</p>
-      )}
+      {campo.ayuda && <AyudaDeCampo>{campo.ayuda}</AyudaDeCampo>}
     </AcordeonDeCampo>
   );
 }
