@@ -2940,6 +2940,14 @@ body:has(.fab-speed-dial) .olo-boton-subir {
   overflow-y: auto;
 }
 
+/* Un diálogo largo (el paso a paso de «Eliminar página») no puede quedar más alto que la
+   pantalla: sin esto el fondo, que es fijo y centrado, recorta arriba y abajo y no se llega a
+   los botones. Solo el tope y el desplazamiento; el ancho sigue siendo el de la caja normal. */
+.nueva-seccion-caja--con-scroll {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
 .nueva-seccion-acciones--simetricas {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2959,7 +2967,7 @@ body:has(.fab-speed-dial) .olo-boton-subir {
   white-space: normal;
 }
 
-@media (max-width: 30rem) {
+@media (width < 40rem) {
   .nueva-seccion-acciones--simetricas:not(.nueva-seccion-acciones--una) {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -6,6 +6,7 @@ import { useCierreAnimado } from '@/shared/lib/modals/use-cierre-animado';
 import { poppins } from '@/shared/lib/typography/fonts';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { ApiError } from '@/shared/lib/api/api-client';
+import { mensajeDeError } from '@/shared/lib/api/errors';
 import {
   cambiarDireccion,
   consultarUsoDeDireccion,
@@ -19,12 +20,12 @@ import { rutaPublicaDeSlug } from '../../model/rutas';
 /** Cuánto se espera tras la última tecla antes de preguntar si la dirección sirve. */
 const MS_DE_ESPERA = 350;
 
-/** El texto de error que mandó la API, o el de respaldo. */
-const mensajeDeError = (fallo: unknown, respaldo: string): string => {
-  if (fallo instanceof ApiError) return fallo.message;
-  if (fallo instanceof Error) return fallo.message;
-  return (fallo as { response?: { data?: { error?: string } } })?.response?.data?.error ?? respaldo;
-};
+/**
+ * El texto de error que mandó la API, o el de respaldo. Solo el mensaje de la API se enseña
+ * tal cual: el de un fallo de red («Failed to fetch») o un tiempo agotado viene en inglés.
+ */
+const textoDeError = (fallo: unknown, respaldo: string): string =>
+  fallo instanceof ApiError ? mensajeDeError(fallo, respaldo) : respaldo;
 
 export interface ModalEditarDireccionProps {
   slug: string;
@@ -95,7 +96,7 @@ export function ModalEditarDireccion({ slug, abierto, alCerrar }: ModalEditarDir
         if (vigente) setUso(resultado);
       })
       .catch((fallo) => {
-        if (vigente) setError(mensajeDeError(fallo, 'No se pudo consultar la página.'));
+        if (vigente) setError(textoDeError(fallo, 'No se pudo consultar la página.'));
       })
       .finally(() => {
         if (vigente) setCargando(false);
@@ -111,7 +112,9 @@ export function ModalEditarDireccion({ slug, abierto, alCerrar }: ModalEditarDir
   const refrescarUso = () => {
     consultarUsoDeDireccion(slug)
       .then(setUso)
-      .catch(() => undefined);
+      .catch(() =>
+        setError('No se pudo actualizar la lista de enlaces. Cierra el diálogo y vuelve a abrirlo.')
+      );
   };
 
   const texto = nueva.trim();
@@ -176,10 +179,9 @@ export function ModalEditarDireccion({ slug, abierto, alCerrar }: ModalEditarDir
       router.push(rutaPublicaDeSlug(cambio.slug));
       router.refresh();
     } catch (fallo) {
-      setError(mensajeDeError(fallo, 'No se pudo cambiar la dirección.'));
+      setError(textoDeError(fallo, 'No se pudo cambiar la dirección.'));
       setCambiando(false);
-      const status = fallo instanceof ApiError ? fallo.status : (fallo as { response?: { status?: number } })?.response?.status;
-      if (status === 409) refrescarUso();
+      if (fallo instanceof ApiError && fallo.status === 409) refrescarUso();
     }
   };
 
@@ -289,8 +291,8 @@ export function ModalEditarDireccion({ slug, abierto, alCerrar }: ModalEditarDir
                     continuar se actualizan a <code>/{resultado.valor}</code>:
                   </p>
                   <ul className="mt-2 max-h-40 list-disc space-y-1 overflow-y-auto pl-5">
-                    {ubicaciones.map((ubicacion, indice) => (
-                      <li key={indice}>
+                    {ubicaciones.map((ubicacion) => (
+                      <li key={`${ubicacion.pagina}|${ubicacion.bloque}|${ubicacion.campo}`}>
                         <span className="first-letter:uppercase">{ubicacion.lugar}</span>
                         {ubicacion.bloque && (
                           <>

@@ -54,8 +54,16 @@ export const lugarDe = (referencia: ReferenciaAEnlace): string =>
  * Traduce el bloque y la prop que manda la API a lo que se lee en el editor, con las
  * etiquetas de `puckConfig`.
  */
+/** Lo único que se lee de la definición de un bloque de Puck: sus etiquetas. */
+interface EtiquetasDelBloque {
+  label?: string;
+  fields?: Record<string, { label?: string } | undefined>;
+}
+
 function ubicacionEnElEditor(referencia: ReferenciaAEnlace): UbicacionEnElEditor {
-  const bloque = referencia.bloque ? (puckConfig.components as Record<string, any>)[referencia.bloque] : undefined;
+  const bloque = referencia.bloque
+    ? (puckConfig.components as Record<string, EtiquetasDelBloque | undefined>)[referencia.bloque]
+    : undefined;
   const campo = bloque && referencia.campo ? bloque.fields?.[referencia.campo] : undefined;
   return {
     pagina: referencia.titulo,

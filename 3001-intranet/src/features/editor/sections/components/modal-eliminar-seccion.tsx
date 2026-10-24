@@ -127,7 +127,10 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
+      <form
+        className={`nueva-seccion-caja nueva-seccion-caja--con-scroll olo-anim-caja ${poppins.className}`}
+        onSubmit={enviar}
+      >
         <h2 id="eliminar-seccion-titulo" className="nueva-seccion-titulo">
           {analisis ? (
             <>
@@ -221,8 +224,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                   <>
                     En el editor, abre cada uno de estos sitios (el bloque y, en el panel de la derecha, la lista):
                     <ul className="mt-2 list-disc space-y-1 pl-5">
-                      {ubicaciones.map((ubicacion, indice) => (
-                        <li key={indice}>
+                      {ubicaciones.map((ubicacion) => (
+                        <li key={`${ubicacion.pagina}|${ubicacion.bloque}|${ubicacion.campo}`}>
                           <strong className="font-semibold">«{ubicacion.bloque ?? 'Bloque con el enlace'}»</strong>
                           {ubicacion.campo && (
                             <>
@@ -253,8 +256,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                   <>
                     Elimina{' '}
                     {unirConY(
-                      ubicaciones.map((ubicacion, indice) => (
-                        <span key={indice}>
+                      ubicaciones.map((ubicacion) => (
+                        <span key={`${ubicacion.pagina}|${ubicacion.bloque}|${ubicacion.campo}`}>
                           <strong className="font-semibold">
                             {ubicacion.textos.length > 0
                               ? unirConY(ubicacion.textos.map((texto) => `«${texto}»`))
