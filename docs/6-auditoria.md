@@ -13683,3 +13683,64 @@ Comprobado:
 **No** probado: nada en un navegador (el aspecto de la cápsula y de la paginación a 360, 768 y 1280 px, el foco con teclado y el efecto de `focus-within`); el editor de Puck con el bloque, para confirmar que ya no guarda `paginas`; `next build`. Las páginas que ya guardaron `paginas` o `colorPaginacionActiva` las ignoran el bloque y el servidor, pero no se limpian solas hasta volver a guardarlas.
 
 **Para ti:** commitear en el orden de abajo y mirar el bloque en el editor y en una página real antes de integrarlo.
+
+## Sesión 23-10-2026: «Editar dirección» también para `tasa`, `matriz` y las encuestas de la intranet
+
+Pedido: «la funcionalidad de editar las rutas o cambiar el nombre de la ruta también debe extenderse a la intranet». El botón y el diálogo ya estaban en la intranet (`764de98c`, ya con la guarda de DIR-01). Lo que faltaba, según la respuesta del usuario («las páginas de fábrica»), es que sus páginas de siempre —`tasa`, `matriz`, `encuestas-calidad-de-formacion`, `encuestas-seguimiento-laboral`— salían como «Dirección del sistema» y no se podían renombrar.
+
+**Por qué estaban bloqueadas.** `SECCIONES_POR_AMBITO.intranet` (catálogo de permisos) las listaba como de fábrica y `esDireccionProtegida` protege lo que está en esa lista. Renombrarlas sin sacarlas de ahí habría dejado una sección fantasma: `esSeccionConocida` seguiría dando por buena la dirección vieja (y el editor la recrearía al guardar) y `sembrar:permisos` volvería a crear `editar.intranet.tasa`. Se comprobó que nada más depende de su slug: el catálogo de bloques del editor de la intranet solo distingue `menu-y-pie` del resto y «Eliminar página» ya no tiene guarda de fábrica.
+
+| Archivo | Cambio |
+|---|---|
+| `api/src/shared/catalogo-permisos.ts` | `SECCIONES_POR_AMBITO.intranet` queda en `menu-y-pie` e `inicio`, con el porqué escrito |
+| `api/src/use-cases/paginas/conceder-permiso-de-seccion.usecase.ts` (nuevo) | Crea la clave `editar.{ambito}.{slug}` y la concede a Administrador, Editor y los roles que se pidan. Es lo que hacía `crearSeccion` por dentro, sin cambio de comportamiento |
+| `crear-seccion.usecase.ts` | Usa la pieza compartida |
+| `sembrar-pagina-tasa.ts`, `sembrar-paginas-intranet.ts` | Crean la clave de su página al publicarla. Sin esto, una base nueva dejaba a Administrador y Editor sin acceso a `tasa`, `matriz` y las encuestas |
+| `cambiar-direccion.usecase.ts` | Solo los comentarios (la intranet ya no tiene más protegidas que `inicio` y `menu-y-pie`) |
+| `intranet/src/app/(pages)/[...puckPath]/page.tsx` | El envoltorio (fondo, `overflow-x-hidden` de la tabla ancha de matriz, `<main>` de las encuestas) se elige por el bloque de cabecera si el slug ya no está en el mapa. Sin esto, una `matriz` renombrada perdía fondo y desbordaba |
+| `scripts/verificaciones/verificar-idor.ts` | Crea la página y la clave de `matriz` y `tasa` si faltan, y las quita al terminar. Antes el catálogo las daba por existentes y dos controles negativos pasaban por un 404 sin probar el permiso |
+| `docs/` | `1-guia`, `plan-de-pruebas` (paso 11 nuevo) y `manual` |
+
+**Lo que sigue igual y conviene saber.**
+- En Neon y en el servidor no hay nada que migrar: sus claves siguen mientras exista la página.
+- Al renombrar, esas cinco páginas pierden el título SEO propio de `METADATA_POR_SLUG` y usan el título guardado.
+- `intranet-topbar.tsx` (respaldo) y `puck.config.tsx` (menú por defecto) todavía escriben `/tasa` y `/matriz`. El menú **guardado** en `menu-y-pie` sí se actualiza con «Actualizar enlaces y cambiar».
+- `npm run sembrar:tasa` y `sembrar:intranet` escriben por slug: corridos después de renombrar, recrean `tasa` o `matriz`.
+- No hay redirección desde la dirección vieja. Sigue siendo cosa de Superadmin y Administrador (DIR-01).
+
+Comprobado, en una base desechable (nunca Neon):
+- `tsc --noEmit` en la API y la intranet, y de los dos sembradores: sin errores.
+- Prueba de comportamiento del caso de uso (28 comprobaciones, todas correctas): `inicio` y `menu-y-pie` siguen protegidas; `tasa`, `matriz` y las encuestas ya no; renombrar `matriz` conserva el contenido publicado y el acceso de Administrador y Editor, no deja `editar.intranet.matriz` ni lo recrea `sembrar:permisos`, y `esSeccionConocida('matriz')` pasa a falso; un Editor recibe 403; «Nueva página» sigue concediendo a Administrador, Editor y al rol del creador.
+- `idor:verificar` **174 comprobaciones, 0 fallos** (tras el arreglo de la prueba; antes, 7 fallos por lo descrito arriba), `permisos`, `ambito`, `propiedad`, `auditoria` y `rutas:verificar` en verde, y `carreras:paginas` en verde.
+
+**No** probado: nada en un navegador (el botón sobre `tasa` en la intranet y el aspecto de una `matriz` renombrada); contra Neon; el resto de baterías (`xss`, `limites`, `carreras:http`…), que no tocan esta lista.
+
+**Para ti**: commitear estos 12 archivos (sin `filesystem/`, ver la entrada siguiente).
+
+```
+git add 4000-api-backend/src/shared/catalogo-permisos.ts 4000-api-backend/src/use-cases/paginas/conceder-permiso-de-seccion.usecase.ts 4000-api-backend/src/use-cases/paginas/crear-seccion.usecase.ts 4000-api-backend/src/use-cases/paginas/cambiar-direccion.usecase.ts 4000-api-backend/scripts/semillas/sembrar-pagina-tasa.ts 4000-api-backend/scripts/semillas/sembrar-paginas-intranet.ts 4000-api-backend/scripts/verificaciones/verificar-idor.ts "3001-intranet/src/app/(pages)/[...puckPath]/page.tsx" docs/1-guia-del-proyecto.md docs/plan-de-pruebas.md docs/manual-de-usuario-formato.md docs/6-auditoria.md
+git commit -m "feat(intranet): tasa, matriz y las encuestas dejan de ser de fábrica y se pueden renombrar con «Editar dirección»"
+```
+
+## Sesión 23-10-2026: auditoría de la pérdida de versiones de las páginas en Neon
+
+Pedido: la portada del sitio se veía «blanca» y con componentes de menos, y después «haz una auditoría para saber quién borró esa bd». Solo lectura: no se escribió nada en Neon.
+
+**Qué pasó.** El sitio no encontraba `inicio` (404 de `/api/paginas/publica/inicio`) y pintaba el respaldo del código (`homeFallbackData`, 6 bloques), con la plantilla de respaldo porque `menu-y-pie` tampoco estaba publicada. En Neon, las páginas del **sitio** (`inicio`, `menu-y-pie`, `tendencias`, `publicaciones`, `clasificacion-*`, `mapa-del-sitio`, `politica-de-privacidad`, `alertas-inversion`, `buscador-ocupaciones`, `programas-sobresalientes`…) tienen `version_publicada_id` vacío y **ninguna versión guardada**. La llave `fk_paginas_version_publicada` es `ON DELETE SET NULL`: al desaparecer las versiones, las páginas quedaron sin publicada. `paginas_versiones` acumula 735 borrados y tiene 10 filas vivas. Las de la intranet también perdieron su historial y se volvieron a crear con la versión 1 a las 20:01 UTC.
+
+**Cuándo.** Poco antes de las 19:27 UTC (14:27 hora Colombia) del 23-10: Neon limpió la tabla a las 19:27:39 y las primeras filas nuevas son de las 19:27:53 (`servicios-al-ciudadano`, `pagina-libre`, `comunicados-internos`); otras, a las 20:01 (intranet) y a las 20:28 (`bolsa-empleo`, `pagina-libre`).
+
+**Quién: no se puede decir.** Lo que hay:
+- La bitácora no tiene ningún borrado masivo; las acciones de la aplicación sí dejan entrada. El único `eliminar` cercano (18:05 UTC) quitó la versión 63 de `inicio` con el motivo «borrar prueba» y `paginaEliminada: false`.
+- Las filas de las 19:27, 20:01 y 20:28 no tienen autor ni entrada en la bitácora: no pasaron por la aplicación.
+- Todas las IP son locales (`::1`, `127.0.0.1`): cada persona corre su API contra el mismo Neon, así que la IP no distingue equipos. Hay unos 20 inicios de sesión de «Administrador SENA» con agente `node` entre las 19:31 y las 20:39 UTC: son baterías automáticas, no un navegador.
+- Neon no tiene `pg_stat_statements` ni conexiones abiertas, y `track_commit_timestamp` está apagado: no queda rastro de la sentencia.
+- Descartado: `eliminar-version` (solo borra la versión pedida y rechaza la publicada), `depurar-versiones` (solo archivadas; la bitácora no registra ninguna depuración) y las sesiones de Claude de esta máquina (ninguna ejecutó comandos en esas ventanas; la actividad de las 20:24 a las 20:30 fue contra una base desechable).
+- Hipótesis, sin confirmar: alguna batería con `DELETE FROM paginas…` (`verificar-idor`, `probar-carreras-http`) o `deploy.sh importar-paginas` corrida con la `DATABASE_URL` de Neon.
+
+**Aparte, en el árbol de trabajo.** 79 archivos rastreados de `filesystem/` (imágenes y PDF de `intranet/uploads`, `sitio/uploads` y `sitio/backup/*`) figuran borrados en `git status`. Esta sesión no los tocó (los borrados ya estaban cuando se miró, antes de correr ninguna prueba, y las pruebas usaron un `FILESYSTEM_DIR` aparte). `git restore filesystem/` los devuelve si estaban en `HEAD`; los que nunca se confirmaron no se pueden recuperar así.
+
+**Abierto.**
+- Recuperar el contenido: restaurar Neon a un punto anterior a las 14:27 (Colombia) del 23-10 en una rama para comparar, o importar `paginas` y `paginas_versiones` desde la copia del contenedor del servidor con un script que solo inserte lo que falta (no `importar-paginas-antes.sql`, que hace `DELETE FROM paginas`).
+- Que cada script de `scripts/verificaciones/` se niegue a correr si `DATABASE_URL` contiene `neon.tech`, y una rama de Neon por persona. No se hizo.
+- Que quienes corrieron baterías ayer revisen su historial de terminal entre las 14:15 y las 14:30.

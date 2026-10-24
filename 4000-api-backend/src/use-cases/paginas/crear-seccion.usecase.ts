@@ -35,11 +35,11 @@ import {
 } from '@olo/slug-policy';
 import sequelize from '../../config/database';
 import { tomarCandadoDeAviso } from '../../shared/seccion-critica';
-import { Pagina, Permission, Role, RolePermission } from '../../infrastructure/db/models';
+import { Pagina } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { resolverHref } from '../../shared/extraer-textos-puck';
-import { invalidarPermisosDeRol } from '../../shared/permisos-de-rol';
 import type { Ambito } from '../../shared/ambito';
+import { concederPermisoDeSeccion } from './conceder-permiso-de-seccion.usecase';
 
 /** Error con `status`, que es como el manejador de errores decide el código HTTP. */
 const fallo = (mensaje: string, status: number) =>
@@ -105,44 +105,15 @@ export const crearSeccion = async (
       { transaction }
     );
 
-    // `findOrCreate` y no `create`: la clave puede existir ya de una sección que se
-    // borró y se vuelve a crear con el mismo nombre, y ahí lo correcto es reutilizarla
-    // —conserva a quién se le había concedido— en vez de fallar por clave duplicada.
-    const [permiso] = await Permission.findOrCreate({
-      where: { name: clavePermiso },
-      defaults: { name: clavePermiso },
-      transaction,
-    });
-
-    // Asignar el permiso automáticamente al creador, admin y editor
-    const nombresRoles = ['admin', 'administrador', 'editor'];
-    if (rolDelCreador && !nombresRoles.includes(rolDelCreador.toLowerCase())) {
-      nombresRoles.push(rolDelCreador.toLowerCase());
-    }
-
-    const todosLosRoles = await Role.findAll({ transaction });
-    const rolesParaAsignar = todosLosRoles.filter(rol => 
-      nombresRoles.includes(rol.name.toLowerCase())
+    // La clave de edición y su concesión a admin, editor y al rol de quien crea la sección.
+    const { rolesConcedidos } = await concederPermisoDeSeccion(
+      ambito,
+      slug,
+      rolDelCreador ? [rolDelCreador] : [],
+      transaction
     );
 
-    if (rolesParaAsignar.length > 0) {
-      await RolePermission.bulkCreate(
-        rolesParaAsignar.map(rol => ({
-          role_id: rol.id,
-          permission_id: permiso.id,
-        })),
-        { ignoreDuplicates: true, transaction }
-      );
-
-      for (const rol of rolesParaAsignar) {
-        invalidarPermisosDeRol(rol.name);
-      }
-    }
-
-    return { 
-      pagina,
-      rolesConcedidos: rolesParaAsignar.map(r => r.name)
-    };
+    return { pagina, rolesConcedidos };
   };
 
   const resultado = tx ? await execute(tx) : await sequelize.transaction(execute);

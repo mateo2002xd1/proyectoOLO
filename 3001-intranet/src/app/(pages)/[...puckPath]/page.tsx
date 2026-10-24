@@ -105,6 +105,36 @@ const ENVOLTORIO_POR_SLUG: Record<string, { tag: 'div' | 'main'; className: stri
 
 const ENVOLTORIO_POR_DEFECTO = { tag: 'div' as const, className: 'pagina-slug' };
 
+type Envoltorio = { tag: 'div' | 'main'; className: string };
+
+/**
+ * Envoltorio por el bloque de cabecera de la página, para cuando su slug ya no está en el mapa:
+ * `tasa`, `matriz` y las encuestas se pueden renombrar con «Editar dirección», y con otro slug
+ * perderían el fondo y el `overflow-x-hidden` de la tabla ancha. Gana el primer tipo que aparece.
+ * El mapa por slug sigue mandando: es lo que usan `inicio` y las páginas que no se han tocado.
+ */
+const ENVOLTORIO_POR_BLOQUE: [string, Envoltorio][] = [
+  ['MatrizBanner', ENVOLTORIO_POR_SLUG.matriz],
+  ['EncuestaBanner', ENVOLTORIO_POR_SLUG['encuestas-calidad-de-formacion']],
+  ['TasaBanner', ENVOLTORIO_POR_SLUG.tasa],
+];
+
+/** Los tipos de los bloques de primer nivel. El contenido legado era un arreglo plano de bloques. */
+function tiposDeBloque(contenido: unknown): Set<string> {
+  const bloques = Array.isArray(contenido) ? contenido : (contenido as { content?: unknown } | null)?.content;
+  if (!Array.isArray(bloques)) return new Set();
+  return new Set(
+    bloques
+      .map((bloque) => (bloque as { type?: unknown } | null)?.type)
+      .filter((tipo): tipo is string => typeof tipo === 'string')
+  );
+}
+
+function envoltorioPorBloque(contenido: unknown): Envoltorio | undefined {
+  const tipos = tiposDeBloque(contenido);
+  return ENVOLTORIO_POR_BLOQUE.find(([tipo]) => tipos.has(tipo))?.[1];
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -147,7 +177,8 @@ export default async function PaginaDinamica({
     );
   }
 
-  const { tag: Tag, className } = ENVOLTORIO_POR_SLUG[slug] ?? ENVOLTORIO_POR_DEFECTO;
+  const { tag: Tag, className } =
+    ENVOLTORIO_POR_SLUG[slug] ?? envoltorioPorBloque(pagina.contenido) ?? ENVOLTORIO_POR_DEFECTO;
 
   return (
     <Tag className={className}>

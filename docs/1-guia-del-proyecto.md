@@ -235,7 +235,10 @@ bloqueadas (`FOR UPDATE`): un guardado del editor no puede pisar la reescritura.
 alguien tiene abierto el editor en la página o en una que habría que reescribir, y si la clave de
 permiso de la dirección nueva ya tiene accesos concedidos (no se fusionan). No cambian de
 dirección `inicio`, `menu-y-pie`, las páginas de fábrica ni las acopladas al código
-(`clasificacion-cno`, `clasificacion-cuoc`). Disponible en el sitio y en la intranet (`AMBITOS_HABILITADOS`). No deja
+(`clasificacion-cno`, `clasificacion-cuoc`). En la intranet las únicas de fábrica son `inicio` y
+`menu-y-pie` (`SECCIONES_POR_AMBITO`): `tasa`, `matriz` y las dos encuestas se pueden renombrar como
+cualquier página creada desde el editor (desde el 23-10-2026; su clave `editar.intranet.{slug}` la
+crean `sembrar:tasa` y `sembrar:intranet` con `concederPermisoDeSeccion`, no el catálogo). Disponible en el sitio y en la intranet (`AMBITOS_HABILITADOS`). No deja
 redirección: los enlaces de fuera del portal se rompen.
 
 Las migas de pan siguen la misma estructura: *Inicio › desplegable › página* (el desplegable

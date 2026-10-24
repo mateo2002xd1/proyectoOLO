@@ -24,6 +24,7 @@ import sequelize from '../../src/config/database';
 import { guardarBorrador } from '../../src/use-cases/paginas/guardar-borrador.usecase';
 import { enviarARevision } from '../../src/use-cases/paginas/enviar-a-revision.usecase';
 import { aprobarPagina } from '../../src/use-cases/paginas/aprobar-pagina.usecase';
+import { concederPermisoDeSeccion } from '../../src/use-cases/paginas/conceder-permiso-de-seccion.usecase';
 import { PaginaRepository } from '../../src/repositories/pagina.repository';
 
 const AMBITO = 'intranet' as const;
@@ -391,6 +392,9 @@ const sembrarUna = async (slug: string): Promise<void> => {
   await guardarBorrador(slug, contenido, '', AMBITO);
   await enviarARevision(slug, '', AMBITO, 'Contenido inicial de la intranet sembrado por script');
   await aprobarPagina(slug, '', AMBITO);
+
+  // Salvo `inicio`, ya no están en el catálogo de fábrica: nadie les crea la clave `editar.intranet.{slug}`.
+  await sequelize.transaction((tx) => concederPermisoDeSeccion(AMBITO, slug, [], tx));
 
   const guardada = await PaginaRepository.findBySlug(slug, AMBITO);
   if (!guardada?.versionPublicadaId) {

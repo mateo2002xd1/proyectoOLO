@@ -86,8 +86,9 @@ const fallo = (mensaje: string, status: number) =>
 
 /**
  * Los ámbitos en los que el cambio de dirección está disponible: los dos tienen botón y
- * diálogo. La intranet tiene sus propias convenciones de rutas (`encuestas-*`), que protege
- * `esSeccionDeFabrica`; un ámbito nuevo se añade aquí cuando tenga su botón y su diálogo.
+ * diálogo. En la intranet solo quedan protegidas `inicio` y `menu-y-pie`: `tasa`, `matriz` y las
+ * encuestas son páginas como las demás (ver `SECCIONES_POR_AMBITO`). Un ámbito nuevo se añade
+ * aquí cuando tenga su botón y su diálogo.
  */
 export const AMBITOS_HABILITADOS: ReadonlySet<Ambito> = new Set<Ambito>(['sitio', 'intranet']);
 
@@ -106,7 +107,7 @@ const ACOPLADAS_AL_CODIGO: Record<Ambito, readonly string[]> = {
 
 /**
  * Si el slug está escrito en el código y por eso no se puede renombrar: la portada y
- * `menu-y-pie`, las páginas de fábrica de su ámbito y las acopladas.
+ * `menu-y-pie`, las páginas de fábrica de su ámbito (en la intranet no hay más) y las acopladas.
  */
 export const esDireccionProtegida = (ambito: Ambito, slug: string): boolean =>
   DIRECCIONES_DEL_SISTEMA.has(slug) ||

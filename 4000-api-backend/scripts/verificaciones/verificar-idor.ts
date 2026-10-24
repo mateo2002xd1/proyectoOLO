@@ -205,6 +205,8 @@ const afirmar = (descripcion: string, condicion: boolean, detalle = '') =>
 // ---------------------------------------------------------------------------
 
 const rolesCreados: string[] = [];
+/** Claves de permiso que la prueba tuvo que crear porque la base no las traía (ver `crearRolConPermisos`). */
+const clavesCreadas: string[] = [];
 const usuariosCreados: string[] = [];
 const cargasCreadas: string[] = [];
 const archivosCreados: string[] = [];
@@ -231,6 +233,15 @@ const crearRolConPermisos = async (nombre: string, claves: string[]): Promise<st
   const id = await idDeRol(nombre);
   await ejecutar('DELETE FROM roles_permisos WHERE rol_id = :id', { id });
   for (const clave of claves) {
+    // `editar.intranet.matriz` ya no sale del catálogo: la crea el sembrador de su página (o «Nueva
+    // página»). En una base sin esa página no existe, y el INSERT de abajo no insertaría nada.
+    if (!(await consulta('SELECT 1 FROM permisos WHERE clave = :clave', { clave })).length) {
+      await ejecutar(
+        'INSERT INTO permisos (id, clave, created_at, updated_at) VALUES (gen_random_uuid(), :clave, now(), now())',
+        { clave }
+      );
+      clavesCreadas.push(clave);
+    }
     await ejecutar(
       'INSERT INTO roles_permisos (rol_id, permiso_id) SELECT :id, id FROM permisos WHERE clave = :clave',
       { id, clave }
@@ -294,6 +305,7 @@ const limpiar = async () => {
   if (cargasCreadas.length) await ejecutar('DELETE FROM cargas_datos WHERE id IN (:ids)', { ids: cargasCreadas });
   await ejecutar(`DELETE FROM usuarios WHERE email LIKE :p`, { p: `${PREFIJO_CORREO}%${DOMINIO}` });
   await ejecutar(`DELETE FROM roles WHERE nombre LIKE 'Editor Idor%'`);
+  if (clavesCreadas.length) await ejecutar('DELETE FROM permisos WHERE clave IN (:claves)', { claves: clavesCreadas });
   for (const f of archivosCreados) fs.rmSync(f, { force: true });
 };
 
@@ -840,6 +852,15 @@ const main = async () => {
     if ((await consulta('SELECT 1 FROM paginas WHERE ambito = :ambito AND slug = :slug', { ambito, slug })).length) {
       paginasQueYaEstaban.add(`${ambito}/${slug}`);
     }
+  }
+  // `matriz` y `tasa` de la intranet ya no son secciones de fábrica: existen porque alguien sembró su
+  // página. En una base sin ellas el editor responde 404 antes de mirar el permiso, y los controles de
+  // abajo dejarían de probar el permiso. Se crean aquí y `limpiar` quita las que no estaban.
+  for (const slug of ['matriz', 'tasa']) {
+    await ejecutar(
+      "INSERT INTO paginas (slug, titulo, ambito) VALUES (:slug, :slug, 'intranet') ON CONFLICT DO NOTHING",
+      { slug }
+    );
   }
   // Restos de una pasada anterior que no terminó
   await ejecutar(`DELETE FROM usuarios WHERE email LIKE :p`, { p: `${PREFIJO_CORREO}%${DOMINIO}` });

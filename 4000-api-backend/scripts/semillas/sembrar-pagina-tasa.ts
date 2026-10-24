@@ -16,6 +16,7 @@ import { guardarBorrador } from '../../src/use-cases/paginas/guardar-borrador.us
 import { enviarARevision } from '../../src/use-cases/paginas/enviar-a-revision.usecase';
 import { aprobarPagina } from '../../src/use-cases/paginas/aprobar-pagina.usecase';
 import { PaginaRepository } from '../../src/repositories/pagina.repository';
+import { concederPermisoDeSeccion } from '../../src/use-cases/paginas/conceder-permiso-de-seccion.usecase';
 
 const SLUG = 'tasa';
 const AMBITO = 'intranet' as const;
@@ -95,6 +96,9 @@ const sembrar = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO, '', AMBITO);
   await enviarARevision(SLUG, '', AMBITO, 'Página de la tasa sembrada por script');
   await aprobarPagina(SLUG, '', AMBITO);
+
+  // `tasa` ya no está en el catálogo de fábrica: nadie le crea la clave `editar.intranet.tasa`.
+  await sequelize.transaction((tx) => concederPermisoDeSeccion(AMBITO, SLUG, [], tx));
 
   const pagina = await PaginaRepository.findBySlug(SLUG, AMBITO);
   if (!pagina?.versionPublicadaId) {

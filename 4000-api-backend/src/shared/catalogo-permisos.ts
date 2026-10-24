@@ -34,17 +34,18 @@ import { AMBITOS, type Ambito } from './ambito';
  * tiene catálogo de bloques, es editable y necesita su permiso. Cuando se añada una
  * sección hay que tocar los dos sitios — el de allí decide qué bloques se pueden poner,
  * el de aquí quién puede ponerlos.
+ *
+ * **La intranet ya no lista `tasa`, `matriz` ni las dos encuestas** (23-10-2026). Eran de fábrica
+ * solo porque nacieron antes que el editor; su contenido y su bloque de cabecera viven en la base
+ * y nada del código depende de su slug. Estar aquí les impedía cambiar de dirección: la lista las
+ * protege, y renombrarlas dejaba una sección fantasma (`esSeccionConocida` seguía diciendo que sí
+ * y el sembrador devolvía su clave vieja). Ahora son páginas como las que se crean desde el editor:
+ * su clave `editar.intranet.{slug}` vive mientras exista la página (`sembrar-permisos-roles.ts`) y
+ * la crea `sembrar:intranet` con `concederPermisoDeSeccion`. Quedan aquí las que el código nombra.
  */
 export const SECCIONES_POR_AMBITO: Record<Ambito, string[]> = {
   sitio: ['menu-y-pie', 'inicio', 'politica-de-privacidad'],
-  intranet: [
-    'menu-y-pie',
-    'inicio',
-    'tasa',
-    'matriz',
-    'encuestas-calidad-de-formacion',
-    'encuestas-seguimiento-laboral',
-  ],
+  intranet: ['menu-y-pie', 'inicio'],
 };
 
 /**
