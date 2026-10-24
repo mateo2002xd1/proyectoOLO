@@ -195,7 +195,6 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const cabeceraRef = useRef<HTMLElement>(null);
   const hasSession = useSyncExternalStore(
     subscribeToCookies,
     getSessionSnapshot,
@@ -361,7 +360,6 @@ export function Header({
         </div>
       )}
       <header
-        ref={cabeceraRef}
         className="olo-header"
         id="main-header"
         data-block-id={block.id}

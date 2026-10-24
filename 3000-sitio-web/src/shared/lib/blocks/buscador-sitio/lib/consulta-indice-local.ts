@@ -1,4 +1,4 @@
-import type { PaginaIndiceBusqueda, ResultadoBusqueda } from '@/features/editor';
+import type { PaginaDelIndice, ResultadoDeBusqueda } from '../types';
 
 /**
  * Normaliza una cadena de texto para comparación insensible a mayúsculas y tildes.
@@ -147,10 +147,10 @@ export function esMismaPagina(
  * Excluye dinámicamente cualquier resultado perteneciente a la página en la que se encuentra montado el componente.
  */
 export function buscarEnIndiceLocal(
-  indice: PaginaIndiceBusqueda[],
+  indice: PaginaDelIndice[],
   consulta: string,
   rutaExcluida?: string
-): ResultadoBusqueda[] {
+): ResultadoDeBusqueda[] {
   if (!Array.isArray(indice) || !consulta || consulta.trim() === '') {
     return [];
   }
@@ -172,7 +172,7 @@ export function buscarEnIndiceLocal(
     }
   }
 
-  interface ResultadoConPuntaje extends ResultadoBusqueda {
+  interface ResultadoConPuntaje extends ResultadoDeBusqueda {
     puntaje: number;
   }
 
@@ -180,7 +180,7 @@ export function buscarEnIndiceLocal(
   const clavesVistas = new Set<string>();
 
   indice.forEach((page) => {
-    // Si la página coincide con la página actual donde se muestran los resultados, excluirla dinámicamente
+    // La página donde se muestran los resultados no se ofrece como resultado de sí misma.
     if (rutaExcluida && esMismaPagina(page.href, rutaExcluida, page.slug)) {
       return;
     }
@@ -226,13 +226,7 @@ export function buscarEnIndiceLocal(
     });
   });
 
-  // Ordenar por relevancia descendente
   resultados.sort((a, b) => b.puntaje - a.puntaje);
 
-  // Retornar resultados limpios excluyendo dinámicamente la propia página actual
-  const limpios = resultados.map(({ puntaje: _, ...resto }) => resto);
-  if (rutaExcluida) {
-    return limpios.filter((res) => !esMismaPagina(res.href, rutaExcluida));
-  }
-  return limpios;
+  return resultados.map(({ puntaje: _, ...resto }) => resto);
 }

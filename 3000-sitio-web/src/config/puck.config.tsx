@@ -50,7 +50,6 @@ import {
   type BuscadorSitioBloqueProps,
   type ResultadosBusquedaSitioProps,
 } from '@/shared/lib/blocks/buscador-sitio';
-import type { PaginaIndiceBusqueda } from '@/features/editor';
 
 import { CABECERA_POR_DEFECTO } from '@/features/editor/client';
 import {
@@ -2367,14 +2366,9 @@ const puckConfigBase: Config = {
       },
       render: ({
         puck,
-        id,
         ...props
       }: BlockRender<BuscadorSitioBloqueProps & { puck?: { isEditing?: boolean } }>) => (
-        <BuscadorSitioBloque
-          {...props}
-          id={id}
-          esEdicion={Boolean(puck?.isEditing)}
-        />
+        <BuscadorSitioBloque {...props} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     ResultadosBusquedaSitio: {
@@ -2518,38 +2512,22 @@ const puckConfigBase: Config = {
           label: 'Resaltado: Color de texto de la coincidencia',
           ayuda: 'Color de las letras dentro del fondo resaltado.',
         }),
-        colorPaginacionActiva: campoEnAcordeon({
-          type: 'color',
-          label: 'Paginación: Color del botón de página actual',
-          ayuda: 'Color de fondo del número de página activa.',
-        }),
       },
       defaultProps: {
         tituloResultados: 'Resultados de Búsqueda',
         resultadosPorPagina: 10,
         mostrarBarraRefinamiento: true,
       },
-      resolveData: async (data) => {
-        try {
-          const paginas = await obtenerIndiceBusqueda();
-          return {
-            props: {
-              ...data.props,
-              paginas,
-            },
-          };
-        } catch {
-          return { props: data.props };
-        }
-      },
+      // Sin `resolveData`: el índice de todo el sitio no se guarda dentro de esta página (se
+      // quedaría viejo y seguiría mostrando páginas retiradas). El bloque lo pide al servicio
+      // que se le inyecta aquí, que lo guarda cinco minutos.
       render: ({
         puck,
-        id,
         ...props
       }: BlockRender<ResultadosBusquedaSitioProps & { puck?: { isEditing?: boolean } }>) => (
         <ResultadosBusquedaSitio
           {...props}
-          id={id}
+          cargarIndice={obtenerIndiceBusqueda}
           mostrarBarraRefinamiento={props.mostrarBarraRefinamiento !== false}
           esEdicion={Boolean(puck?.isEditing)}
         />
