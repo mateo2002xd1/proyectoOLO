@@ -4208,7 +4208,8 @@ button.text-link,
    bloque. Van en una sola fila: «Page › Botón personalizado». Si la miga es larga
    (bloques anidados), la fila se parte entre migas y no encima del título. Antes
    se apilaban en columna a propósito, por si colisionaban; con `flex-wrap` y sin
-   anchos del 100 % ya no hace falta. */
+   anchos del 100 % ya no hace falta (la selección por subcadena `Breadcrumbs`
+   alcanza también a cada miga y a su botón: ninguno debe llevar `width: 100%`). */
 .olo-editor [class*="SidebarSection-breadcrumbs"] {
   display: flex !important;
   flex-direction: row !important;

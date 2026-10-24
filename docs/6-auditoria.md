@@ -23,6 +23,8 @@
 | `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
 | `CamposAgrupados` con campos simulados del botón (`key` = nombre del campo) | «Opciones del botón» con todos los campos propios; «Espaciado y Ancho» aparte con sus 7 filas; el título de la sección sale una sola vez |
 | `CamposAgrupados` con otro tipo de bloque | Devuelve los campos tal cual |
+| Cabecera reproducida en Chrome headless con el CSS de Puck: antes y después | Antes: «Page» / «›» / título en tres filas (igual que la captura del usuario). Después: «Page › Botón personalizado» en una fila |
+| CSS servido por el `next dev` (`curl`) | Seguía sirviendo la regla vieja (columna) aunque el archivo ya estaba bien: el fallo conocido del observador. Un cambio real del comentario lo despertó y ya sirve `flex-flow: wrap` |
 | Navegador con Puck real (cabecera en fila, acordeones, escribir en un campo del acordeón, deshacer) | **No se hizo**: queda por probar a mano |
 
 **Pendiente al cierre**
