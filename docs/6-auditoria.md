@@ -13570,3 +13570,104 @@ Comprobado:
 - Con el repositorio real, solo se simuló el `pre-push` con `dev` contra `OLO/dev` (no se subió nada).
 
 **No** probado: el comportamiento en Linux/macOS (el modo ejecutable del hook nuevo se fija con `git update-index --chmod=+x`, porque en Windows `core.fileMode` está en `false`).
+
+## Sesión 23-10-2026: auditoría de los commits de Mateo, lo que quedó tras DIR-01
+
+Pedido: auditar lo nuevo de Mateo («qué modificó, si afecta a todos los niveles, en funcionalidad y en lo visual») y «arreglar lo de mateo», dejando todo en la carpeta de trabajo `OLO-proyect`.
+
+**Alcance.** Dos commits de `mateo2002xd1` del 22-10: `764de98c` («fix(header)…», pero 16 archivos y 997 líneas) y `9bcbd6f0` (el manual de usuario). Auditados con `/auditar` (chequeo automático, tres inspectores y verificador): 23 hallazgos en bruto; el verificador confirmó 5, ajustó 7 y descartó 11.
+
+**Qué hizo `764de98c`.** API: las tres rutas de «Editar dirección» y el caso de uso pasan de `puedePublicar` a `puedeEditar` y se habilita la intranet. Sitio: se quita `esAprobador` del botón y `rutas-del-menu`/`Header` toleran enlaces sin `href`. Intranet: botón, modal de 380 líneas, servicio, CSS y un «Eliminar página» de cuatro pasos. Visual: coherente con el panel, salvo que «Eliminar página» no cabía en un móvil.
+
+**El hallazgo grave ya estaba cerrado** cuando se fue a corregir: `065feb4a` (DIR-01) devolvió `puedePublicar` a las rutas, al caso de uso y al catálogo, y `idor:verificar` ahora vigila al Editor con la clave. Esta sesión **no** lo repitió.
+
+**Lo que quedaba y se corrigió aquí:**
+
+| Hallazgo | Corrección |
+|---|---|
+| **S1, parte de la interfaz** (media) | Los botones de «Editar dirección» del sitio y de la intranet **seguían ofreciéndose a un Editor** al que la API ya respondía 403. Vuelve `esAprobador &&` en los dos (en la intranet recupera su uso: era el «código muerto» C5) |
+| **S3** Textos que decían «solo el sitio» / «todavía no tiene botón» | Corregidos en el caso de uso, el OpenAPI y `1-guia-del-proyecto.md` |
+| **C1** «Eliminar página» sin tope de altura ni scroll en móvil | Clase `nueva-seccion-caja--con-scroll` (`100dvh - 2rem` y scroll), solo en ese modal; el ancho no cambia |
+| **C2** `@media (max-width: 30rem)` (480 px) fuera de la escala | `@media (width < 40rem)` (640 px) |
+| **C6** `catch` vacío al refrescar tras un 409 | Muestra «No se pudo actualizar la lista de enlaces…» |
+| **C7** `mensajeDeError` propio, con restos de axios y errores de red en inglés | Usa `mensajeDeError` de `shared/lib/api/errors` solo para errores de la API; un fallo de red muestra el texto de respaldo en español |
+| **C8** `Record<string, any>` sin motivo | Tipo `EtiquetasDelBloque` |
+| **C11** `key={indice}` en las listas de ubicaciones | Clave `página\|bloque\|campo`, la misma con la que se agrupan |
+
+**No se corrigió, y por qué.** S2 (acceso al ámbito): decisión escrita, el ámbito no es frontera de permisos. S4 (slug sin codificar): no explotable, es el patrón del servicio entero. C9 y A7: la regla ya se cumple o no es de este rango. C12/A6 (`rutas-del-menu` tolera `null`): el menú viene del editor y un enlace nuevo puede no traer `href`; **queda para que Mateo diga qué dato real llegaba nulo**. A3 (duplicación sitio↔intranet): deuda declarada en `1-guia` §4.4. C10 (foco al abrir el modal): el patrón es el de todos los modales vecinos; se resuelve con un hook compartido. C3 (un commit mezcla tres temas): proceso, no código.
+
+**Carpetas.** Para no tocar este árbol mientras otras sesiones lo usaban, el trabajo se hizo en un worktree aparte (`OLO-fix-mateo`, rama `fix/auditoria-mateo`) y se trajo aquí. Al volver, `dev` ya incluía los commits de Mateo (merge `caf9c985`), DIR-01 y la actualización de Next. `OLO-next-16.4.3` (rama `chore/next-16.4.3`) quedó obsoleta: nació de la versión de `dev` anterior a la limpieza del historial, y su trabajo útil ya está en `dev` por cherry-pick. Ambas carpetas se retiraron con `git worktree remove`; queda una sola, `OLO-proyect`.
+
+Comprobado:
+- `tsc --noEmit` en **las tres apps** desde `OLO-proyect`, con sus `node_modules`: sin errores (la intranet en modo estricto).
+- Prueba del caso de uso real, sin base de datos, **en la carpeta final**: Editor, Director/Subdirector, Visitante, sin rol y rol vacío reciben **403** en `sitio` e `intranet`; Superadmin y Administrador (también en minúsculas y mayúsculas) pasan el guardia; un ámbito no habilitado da 400. Contra el código de Mateo sin arreglos, la misma prueba fallaba en los dos casos del Editor.
+- Los archivos de interfaz quedaron byte a byte iguales a los probados en el worktree; CRLF intacto.
+
+**No** probado: nada en un navegador. El tope de altura de «Eliminar página» a 360 px y el apilado de botones entre 480 y 639 px se deducen del CSS, no se vieron. Tampoco el aspecto de los botones del menú flotante con y sin permiso.
+
+**Para ti**: commitear estos 9 archivos. Si Mateo tenía una razón para el cambio de permisos, hay que decidirla por escrito, con política propia y verificador. Pedirle qué dato llegaba nulo a `rutas-del-menu`.
+
+## Sesión 23-10-2026: lo nuevo de Mateo frente al trabajo de hoy
+
+Pedido: «revisa los cambios de mateo con lo que he trabajado hoy». Solo revisión: no se cambió código.
+
+**Alcance.** Tres commits de Mateo que la auditoría anterior no cubrió: `b3a4a9db` (hoy 13:21, PR #154, ya en `dev`: buscador del sitio como dos bloques de Puck, 1.651 líneas) y `23fa837c` + `d62e326b` (hoy 15:20 y 15:49, solo en `OLO/mateo`: manual y plan de pruebas, más una línea en el bloque). Se auditó el código **sobre la punta de `dev`** (`065feb4`), con tus 21 commits de hoy ya dentro. `/auditar` (chequeo automático, tres inspectores, verificador): 32 elementos en bruto; confirmados 7, ajustados 12, descartados 7 (4 duplicados, 3 con premisa falsa o sin consecuencia).
+
+**Lo que sí encaja con tu trabajo de hoy:** el bloque pide el índice al servicio anónimo con `X-Ambito: sitio` (OBS-04 no le afecta y el caché varía por ámbito); no añade endpoints ni dependencias; sin `dangerouslySetInnerHTML`; el término se escapa y el índice solo trae páginas publicadas. SES-01/02, OBS-01/03, RED-01 y ROL-01 no lo tocan. La unión de `OLO/mateo` a `dev` sale **sin conflictos** (`git merge-tree`). El manual trata Director y Subdirector como un solo rol y no cita el rol ni las claves retiradas; los 15 minutos de inactividad coinciden con el código.
+
+**Lo que choca con tu trabajo de hoy:**
+- **Lint (C2).** «Lint a cero errores» se midió en la rama de Next, antes de que entrara el código de Mateo. En `dev` el sitio tiene hoy **2 errores y 5 avisos, todos de `resultados-busqueda-sitio.tsx`** (`react-hooks/set-state-in-effect`, líneas 159 y 166); la intranet sigue en 0.
+- **Manual frente a DIR-01 (X1).** El merge de hoy pisó la frase correcta que escribió `64a45149` («solo Superadmin y Administrador») por la de Mateo («Administrador o quien tenga el permiso») en 4 sitios del manual (líneas 218, 396, 2071 y 2502). Desde DIR-01 un rol hijo de Editor con el permiso recibe 403. Las dos ramas pendientes de Mateo conservan el texto equivocado.
+
+**Hallazgos del código de Mateo (`b3a4a9db`), ya verificados:**
+
+| Qué | Gravedad | Estado |
+|---|---|---|
+| **S1** Los colores de Puck se interpolan sin validar dentro de un `<style>`: CSS arbitrario en la página pública (XSS-07) | Alta | Confirmado |
+| **S2** `paginaResultados` sin `rutaInternaSegura`: `//dominio` saca al visitante del sitio (XSS-06) | Media | Confirmado |
+| **C7** El color por defecto de la ruta (`#98a2b3`) da 2,58:1 sobre blanco | Alta | Confirmado |
+| **S3** `resolveData` guarda el índice de todo el sitio dentro de la página y el público lo prefiere al índice vivo | Media | Confirmado el código; **no se ejecutó el editor** para ver si Puck lo persiste |
+| **A1** `shared/` importa de `features/editor` (CAR-06) | Media | Había precedente en `mapa-sitio.tsx` |
+| **A4** Paginación escrita a mano en vez de `Paginacion tono='publico'` | Media | A 360 px se comprime desde ~60 resultados y desborda hacia 9-10 páginas |
+| **A6/A7** Sin entrada de bitácora; el manual describe la lupa de la cabecera que se borró; el aviso del editor enseña `?buscar=` y el código usa `?busqueda=` | Media | Confirmado |
+| C9, C8, C12, C14, C3, C13, C15, A2, A5, C5, C16 | Media a baja | Ajustados |
+
+**Descartados.** S4 (la regex no hace backtracking), A9 (el slug es único por ámbito), C4, C6 (la promesa nunca rechaza), A8, C10 y C20 (duplicados).
+
+**No se probó:** nada en un navegador; el editor para S3; el aspecto a 360 px de la paginación (medido con las clases, no visto).
+
+**Para ti:** (1) S1, S2 y los dos errores de lint son arreglos pequeños y conviene hacerlos antes de seguir; (2) corregir las 4 frases del manual antes o justo después de unir `OLO/mateo`; (3) pedirle a Mateo que ponga su entrada en la bitácora y que use los validadores de `@olo/url-policy`.
+
+## Sesión 23-10-2026: correcciones del buscador de Mateo (`b3a4a9db`) y del manual
+
+Pedido: «arregla todo» lo verificado en la revisión de lo nuevo de Mateo frente al trabajo de hoy.
+
+**Qué se corrigió** (sitio-web, API y documentación):
+
+| Hallazgo | Corrección |
+|---|---|
+| **S1** (alta) Los colores de Puck se interpolaban en un `<style>`: CSS arbitrario en la página pública | Los colores pasan por `colorSeguro` (`buscador-sitio/lib/colores.ts`) y entran como variables CSS y valores de `style`; ya no hay ninguna etiqueta `<style>` con texto del editor. **El servidor** vacía además cualquier clave `color*` que no sea un color (hex, `rgb()`/`hsl()` numéricos, variable del tema o nombre), en `sanitizar-contenido.ts` |
+| **S2** (media) `paginaResultados` sin `rutaInternaSegura`: `//dominio` sacaba al visitante del sitio | `rutaDeLosResultados` (cliente) y regla `CAMPOS_RUTA_INTERNA` (servidor): solo una ruta de este sitio; con esquema o `//` se descarta |
+| **C7** (alta) Color por defecto de la ruta `#98a2b3` (2,58:1) | `#667085` (4,97:1); el borde por defecto de la cápsula también (`#d1d5db` daba ~1,5:1) |
+| **S3** (media) `resolveData` guardaba el índice de todo el sitio dentro de la página | Se quita `resolveData` y el prop `paginas`: el bloque pide el índice al servicio (caché de 5 minutos) |
+| **A1** `shared/` importaba de `features/editor` (CAR-06) | Tipos propios en `buscador-sitio/types.ts`; `puck.config.tsx` le inyecta `cargarIndice={obtenerIndiceBusqueda}` |
+| **A4/C10** Paginación a mano, comprimida y desbordada en móvil | Se usa `Paginacion tono='publico'` de `shared/ui`. **Se pierde el campo «Paginación: color del botón de página actual»**: la compartida tiene sus colores fijos |
+| **C2** 2 errores de eslint (`set-state-in-effect`) | `key={busqueda}` en la lista (se reinicia sola) y el índice se deriva; el único efecto pide datos. Sitio otra vez en **0 errores** |
+| **A5** `sm:` en vez de contenedor | `@container` y variantes `@xl:` |
+| **C8/C9/C12** Foco, lector de pantalla y tamaños táctiles | Foco con CSS puro (`focus-within`) y el token `ring-brand-focus`; el enlace de cada fila ya no pisa su nombre con `aria-label`; una sola región viva; lupa de 44 px en móvil y ayuda a 14 px |
+| **C5/C3/C13/C14/C15** | Un componente por archivo (`components/`), una sola cápsula en vez de dos copias, sin código muerto, nombres en español, `useMemo` en la búsqueda, un solo filtro de la página actual, JSDoc sin promesas que no se pueden comprobar |
+| **A7/C20** Aviso del editor `?buscar=` y cuatro alias | El aviso usa `PARAM_BUSQUEDA_SITIO`; la página de resultados lee solo `?busqueda=` (la lupa antigua no usaba ningún parámetro, así que no se rompe ningún enlace) |
+| **A8/C16** CSS y ref huérfanos de la lupa de la cabecera | Se quitan 24 reglas y 28 selectores de `globals.css` con `postcss` (ida y vuelta idéntica), el desvanecido `> *` y `cabeceraRef` |
+| **X1** (media) El manual contradecía DIR-01 | Cuatro frases corregidas («solo Superadmin y Administrador»; roles hijos de Editor: sin acceso) |
+| **A7** Manual y plan de pruebas | Se quita la lupa desplegable de la cabecera del manual; el plan deja de prometer un mensaje de bienvenida y «sin llamadas externas» |
+
+**No se hizo.** **A2** (mover el algoritmo de búsqueda a `packages/blocks-renderer` y que la intranet lo use): obliga a recompilar el paquete y copiarlo a `node_modules` de las dos apps y a tocar `intranet-topbar.tsx`; la verificación lo dejó en prioridad baja. **C10 del modal** (foco al abrir) queda como en los demás modales.
+
+Comprobado:
+- `tsc --noEmit` en sitio y API: sin errores. `eslint` del sitio: **0 errores** y 1 aviso previo (`mensaje-de-cierre.ts`, no es de Mateo).
+- `npm run xss:verificar`: **120 comprobaciones, todo correcto**, con 9 campos de color y 6 rutas hostiles nuevos más los valores legítimos que deben pasar intactos. Una rutina hostil que el propio verificador encontró (`https://…` se guardaba como `/https://…`) se cerró en servidor y cliente.
+- Prueba de comportamiento de los componentes **renderizados en el servidor** (49 comprobaciones): con colores y rutas hostiles el HTML sale sin la carga, sin `<style>`, con una sola región viva, `@container` y sin `aria-label` en el enlace; búsqueda, exclusión de la página actual y límite de 200 letras.
+
+**No** probado: nada en un navegador (el aspecto de la cápsula y de la paginación a 360, 768 y 1280 px, el foco con teclado y el efecto de `focus-within`); el editor de Puck con el bloque, para confirmar que ya no guarda `paginas`; `next build`. Las páginas que ya guardaron `paginas` o `colorPaginacionActiva` las ignoran el bloque y el servidor, pero no se limpian solas hasta volver a guardarlas.
+
+**Para ti:** commitear en el orden de abajo y mirar el bloque en el editor y en una página real antes de integrarlo.
