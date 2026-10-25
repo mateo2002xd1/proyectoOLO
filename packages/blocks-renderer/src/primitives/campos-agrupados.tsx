@@ -58,8 +58,8 @@ export const GRUPOS_DE_CAMPOS: Record<string, GrupoDeCampos> = {
   },
 };
 
-/** El azul oscuro del panel (`COLOR_FOCO_CAMPO`, #001631) al 7 %: cabecera de los acordeones padre. */
-const FONDO_PADRE = 'rgba(0, 22, 49, 0.07)';
+/** El azul #0033a0 del panel al 10 % de opacidad: cabecera de los acordeones padre. */
+const FONDO_PADRE = 'rgba(0, 51, 160, 0.10)';
 
 const nombreDelCampo = (hijo: ReactElement) => String(hijo.key ?? '').replace(/^\.\$/, '');
 
