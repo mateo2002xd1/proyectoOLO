@@ -427,6 +427,66 @@ function OpcionesSegmentadas({
   );
 }
 
+/**
+ * Interruptor de encendido/apagado: botón `role="switch"` con su texto al lado. Lo usa el campo
+ * `interruptor` y cualquier otro control del panel que sea un sí o un no. Con un solo texto
+ * (`textoSi` igual a `textoNo`) el texto es una etiqueta fija y solo se mueve el interruptor.
+ */
+export function Interruptor({
+  etiqueta,
+  encendido,
+  onChange,
+  textoSi = 'Sí',
+  textoNo = 'No',
+}: {
+  etiqueta: string;
+  encendido: boolean;
+  onChange: (encendido: boolean) => void;
+  textoSi?: string;
+  textoNo?: string;
+}) {
+  return (
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', minHeight: '40px', cursor: 'pointer' }}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={encendido}
+        aria-label={etiqueta}
+        className={CLASE_ENFOCABLE}
+        onClick={() => onChange(!encendido)}
+        style={{
+          position: 'relative',
+          flexShrink: 0,
+          width: '44px',
+          height: '24px',
+          padding: 0,
+          border: 0,
+          borderRadius: '999px',
+          background: encendido ? COLOR_ACENTO : '#d1d5db',
+          cursor: 'pointer',
+          transition: 'background 150ms ease',
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: '3px',
+            left: encendido ? '23px' : '3px',
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            background: '#ffffff',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.25)',
+            transition: 'left 150ms ease',
+          }}
+        />
+      </button>
+      <span style={{ fontSize: '14px', color: COLOR_TEXTO }}>{encendido ? textoSi : textoNo}</span>
+    </label>
+  );
+}
+
 function ControlDeCampo({
   campo,
   valor,
@@ -520,51 +580,16 @@ function ControlDeCampo({
       );
     case 'medida':
       return <CampoMedida campo={campo} valor={valor} onChange={onChange} />;
-    case 'interruptor': {
-      const encendido = valor === true;
+    case 'interruptor':
       return (
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', minHeight: '40px', cursor: 'pointer' }}>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={encendido}
-            aria-label={campo.label}
-            className={CLASE_ENFOCABLE}
-            onClick={() => onChange(!encendido)}
-            style={{
-              position: 'relative',
-              flexShrink: 0,
-              width: '44px',
-              height: '24px',
-              padding: 0,
-              border: 0,
-              borderRadius: '999px',
-              background: encendido ? COLOR_ACENTO : '#d1d5db',
-              cursor: 'pointer',
-              transition: 'background 150ms ease',
-            }}
-          >
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                top: '3px',
-                left: encendido ? '23px' : '3px',
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
-                background: '#ffffff',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.25)',
-                transition: 'left 150ms ease',
-              }}
-            />
-          </button>
-          <span style={{ fontSize: '14px', color: COLOR_TEXTO }}>
-            {encendido ? (campo.textoSi ?? 'Sí') : (campo.textoNo ?? 'No')}
-          </span>
-        </label>
+        <Interruptor
+          etiqueta={campo.label}
+          encendido={valor === true}
+          onChange={onChange}
+          textoSi={campo.textoSi}
+          textoNo={campo.textoNo}
+        />
       );
-    }
     case 'color':
       return <ColorPickerField value={valor} onChange={onChange} />;
     case 'custom':

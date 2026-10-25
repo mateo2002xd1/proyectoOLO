@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
 import { formatearBytes } from './formato-archivos';
-import { campoEnAcordeon } from './campos-en-acordeon';
+import { campoEnAcordeon, Interruptor } from './campos-en-acordeon';
 import { CLASE_CONTROL, CLASE_ENFOCABLE, EstilosDeCampos } from './estilos-de-campos';
 
 export interface DestinoBotonConfig {
@@ -201,14 +201,13 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
               boxSizing: 'border-box',
             }}
           />
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4b5563', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={Boolean(config.abrirNuevaPestana)}
-              onChange={(e) => onChange({ ...config, abrirNuevaPestana: e.target.checked })}
-            />
-            Abrir enlace en una nueva pestaña
-          </label>
+          <Interruptor
+            etiqueta="Abrir enlace en una nueva pestaña"
+            encendido={Boolean(config.abrirNuevaPestana)}
+            onChange={(encendido) => onChange({ ...config, abrirNuevaPestana: encendido })}
+            textoSi="Abrir enlace en una nueva pestaña"
+            textoNo="Abrir enlace en una nueva pestaña"
+          />
         </div>
       )}
 

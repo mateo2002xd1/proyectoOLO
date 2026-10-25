@@ -36,6 +36,7 @@
 
 - **«Tamaño y ancho» en un solo acordeón** (pedido después): siguen siendo dos campos con su propio valor (`tamano` y `ancho`); `CamposAgrupados` los reúne en pantalla (`FUSIONES`, por bloque) en un acordeón que se pinta donde está el primero. Dentro, cada uno lleva su etiqueta pequeña, su ayuda y su control (`ControlSueltoContext` hace que `FilaDeAcordeon` se pinte suelto), y la cabecera junta los dos resúmenes: «46 px · Mediano». Solo reúne campos `enAcordeon` y se salta la fusión si falta alguno.
 - **«Resaltar botón» y «Color del resaltado» en un solo acordeón** (pedido después): otra entrada de `FUSIONES`, titulada «Resaltar botón». La cabecera plegada dice solo «Sí» o «No» (`resumen: ['resaltado']`); el color se ve al abrir.
+- **«Abrir enlace en una nueva pestaña» con interruptor** (pedido después): el casillero del selector de destino pasa al mismo interruptor que «Resaltar botón», ahora un componente propio (`Interruptor`, en `campos-en-acordeon.tsx`) que usan los dos. Con el mismo texto encendido y apagado, el texto es una etiqueta fija. Guarda el mismo `abrirNuevaPestana`.
 - **«Resaltar botón» con interruptor** (pedido después): tipo de campo nuevo `interruptor` en `campos-en-acordeon.tsx` (botón con `role="switch"` y `aria-checked`, 44 × 24 px, encendido en el azul del panel). Dice «No» apagado y «Sí» encendido (los textos por defecto del tipo; se pueden cambiar con `textoSi` y `textoNo`), también en la cabecera. Sigue guardando el mismo booleano `resaltado`.
 
 **Pendiente al cierre**
