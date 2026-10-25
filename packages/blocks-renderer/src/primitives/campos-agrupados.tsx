@@ -28,7 +28,13 @@
  */
 
 import { Children, useContext, type ComponentType, type ReactElement, type ReactNode } from 'react';
-import { AcordeonDeCampo, AyudaDeCampo, SinLineasContext, TituloYaPuestoContext } from './campos-en-acordeon';
+import {
+  AcordeonDeCampo,
+  AyudaDeCampo,
+  ControlSueltoContext,
+  SinLineasContext,
+  TituloYaPuestoContext,
+} from './campos-en-acordeon';
 import { COLOR_FOCO_CAMPO } from './estilos-de-campos';
 
 export interface GrupoDeCampos {
@@ -39,6 +45,20 @@ export interface GrupoDeCampos {
 /** Bloques con un título propio para su acordeón de opciones; los demás, «Opciones del bloque». */
 export const GRUPOS_DE_CAMPOS: Record<string, GrupoDeCampos> = {
   BotonPersonalizado: { titulo: 'Opciones del botón' },
+};
+
+/**
+ * Campos que comparten un acordeón, por bloque. Son campos distintos (cada uno guarda su propio
+ * valor): el acordeón solo los reúne en pantalla, y se pone donde esté el primero. `resumen`
+ * limita qué campos hablan en la cabecera plegada (por defecto, todos). Deben ser
+ * campos `enAcordeon`, que saben pintarse sueltos (`ControlSueltoContext`).
+ */
+const FUSIONES: Record<string, { titulo: string; campos: string[]; resumen?: string[] }[]> = {
+  BotonPersonalizado: [
+    { titulo: 'Tamaño y ancho', campos: ['tamano', 'ancho'] },
+    // La cabecera dice solo si está resaltado; el color se ve al abrir.
+    { titulo: 'Resaltar botón', campos: ['resaltado', 'colorResaltado'], resumen: ['resaltado'] },
+  ],
 };
 
 const TITULO_POR_DEFECTO = 'Opciones del bloque';
@@ -109,8 +129,30 @@ export function CamposAgrupados({
   const opciones = hijos.filter((h) => nombreDelCampo(h) !== CAMPO_CAJA);
   const caja = hijos.find((h) => nombreDelCampo(h) === CAMPO_CAJA);
 
+  const fusiones = (Object.hasOwn(FUSIONES, tipo) ? FUSIONES[tipo] : []).filter((f) =>
+    f.campos.every((c) => hijos.some((h) => nombreDelCampo(h) === c) && campos[c]?.enAcordeon === true)
+  );
+
   const pintarCampo = (hijo: ReactElement) => {
     const nombre = nombreDelCampo(hijo);
+    const fusion = fusiones.find((f) => f.campos.includes(nombre));
+    if (fusion) {
+      // El acordeón se pinta una sola vez, donde está el primero de sus campos.
+      if (fusion.campos[0] !== nombre) return null;
+      const resumen = (fusion.resumen ?? fusion.campos)
+        .map((c) => campos[c].resumenDe?.(valores[c]))
+        .filter((r) => typeof r === 'string' && r !== '')
+        .join(' · ');
+      return (
+        <AcordeonDeCampo key={fusion.titulo} etiqueta={fusion.titulo} resumen={resumen}>
+          <ControlSueltoContext.Provider value={true}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {fusion.campos.map((c) => hijos.find((h) => nombreDelCampo(h) === c))}
+            </div>
+          </ControlSueltoContext.Provider>
+        </AcordeonDeCampo>
+      );
+    }
     const def = campos[nombre];
     if (!def || yaEsAcordeon(def) || !NATIVOS_SIMPLES.has(def.type)) return hijo;
     return (
