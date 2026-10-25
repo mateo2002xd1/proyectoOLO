@@ -100,6 +100,8 @@ export interface OpcionesDeAcordeon {
 
 // ─── Estilos ─────────────────────────────────────────────────────────────────
 const COLOR_BORDE = '#d1d5db';
+/** El borde claro que enmarca un acordeón abierto en los paneles sin líneas. */
+const COLOR_BORDE_ABIERTO = '#d9dde3';
 const COLOR_TEXTO = '#333333';
 const COLOR_SUAVE = '#6b7280';
 const COLOR_ACENTO = COLOR_FOCO_CAMPO;
@@ -265,8 +267,11 @@ export function AcordeonDeCampo({
   return (
     <div
       style={{
-        border: sinLineas ? 0 : `1px solid ${COLOR_BORDE}`,
-        borderRadius: '8px',
+        // Sin líneas, el acordeón solo se enmarca cuando está abierto (borde claro con las esquinas
+        // redondeadas, abajo también) para ver qué contiene; cerrado lleva el borde transparente
+        // para que no salte al abrir.
+        border: sinLineas ? `1px solid ${abierto ? COLOR_BORDE_ABIERTO : 'transparent'}` : `1px solid ${COLOR_BORDE}`,
+        borderRadius: sinLineas ? '12px' : '8px',
         background: '#ffffff',
         overflow: 'hidden',
       }}
@@ -340,7 +345,7 @@ export function AcordeonDeCampo({
         id={idContenido}
         hidden={!abierto}
         style={{
-          padding: anidado ? '4px 0 0' : '12px',
+          padding: anidado ? (sinLineas ? '4px 8px 8px' : '4px 0 0') : '12px',
           borderTop: sinLineas ? 0 : `1px solid ${COLOR_BORDE}`,
         }}
       >
@@ -566,6 +571,8 @@ function FilaDeAcordeon({
 export function campoEnAcordeon(campo: CampoDeAcordeon, opciones: OpcionesDeAcordeon = {}) {
   return {
     type: 'custom' as const,
+    /** Ya se pinta como acordeón: `CamposAgrupados` no lo vuelve a envolver. */
+    enAcordeon: true,
     label: campo.label,
     render: ({ value, onChange, ...props }: { value: any; onChange: (v: any) => void; [clave: string]: any }) => (
       <FilaDeAcordeon campo={campo} valor={value} onChange={onChange} opciones={opciones} props={props} />
@@ -604,6 +611,8 @@ function GrupoEnAcordeones({
 export function campoGrupoEnAcordeones(label: string, campos: Record<string, CampoDeAcordeon>) {
   return {
     type: 'custom' as const,
+    /** Ya se pinta como acordeón: `CamposAgrupados` no lo vuelve a envolver. */
+    enAcordeon: true,
     label,
     campos,
     render: ({ value, onChange }: { value?: Record<string, any>; onChange: (v: Record<string, any>) => void }) => (
@@ -651,6 +660,8 @@ export function campoGrupoEnUnAcordeon(
 ) {
   return {
     type: 'custom' as const,
+    /** Ya se pinta como acordeón: `CamposAgrupados` no lo vuelve a envolver. */
+    enAcordeon: true,
     label,
     campos,
     render: ({ value, onChange }: { value?: Record<string, any>; onChange: (v: Record<string, any>) => void }) => (
@@ -803,6 +814,8 @@ function ListaEnAcordeones({
 export function campoListaEnAcordeones(label: string, campos: Record<string, CampoDeAcordeon>, opciones: OpcionesDeLista) {
   return {
     type: 'custom' as const,
+    /** Ya se pinta como acordeón: `CamposAgrupados` no lo vuelve a envolver. */
+    enAcordeon: true,
     label,
     campos,
     render: ({ value, onChange }: { value?: Record<string, any>[]; onChange: (v: Record<string, any>[]) => void }) => (

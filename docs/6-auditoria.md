@@ -5,6 +5,60 @@
 
 ---
 
+## sesión 24-10-2026 (8.ª parte): el panel de opciones limpio se extiende a todos los bloques del sitio web
+
+**Qué pidió el usuario:** que el fondo de los acordeones padre pase de azul a gris translúcido, y que lo que se limpió en el botón (acordeones, sin rayas, medidas simétricas, esquinas) se aplique a las opciones de todos los componentes de `3000-sitio-web`, con una vista reutilizable como «Espaciado y Ancho»; si algo no se puede sin duplicar código, dejarlo como está.
+
+**Qué se hizo**
+- **Gris:** `FONDO_PADRE` (`campos-agrupados.tsx`) pasa a `rgba(107, 114, 128, 0.14)`; se probó 0.26 (menos transparente) y el usuario pidió volver a algo más claro: queda en 0.08.
+- **Una sola vista para todos:** `CamposAgrupados` ya no es solo del botón. Con `todos`, cualquier bloque lleva dos acordeones padre: «Opciones del bloque» (el botón conserva «Opciones del botón», por `GRUPOS_DE_CAMPOS`) y «Espaciado y Ancho». Lo pide `puck-editor-wrapper.tsx` de `3000-sitio-web`; el de la intranet sigue agrupando solo el botón («sitio web por el momento»). El wrapper ahora pasa también las definiciones de campo del bloque (`config.components[tipo].fields`).
+- **Cada campo según lo que es** (no hay lista por bloque):
+  - ya acordeón (`campoEnAcordeon`, grupos, listas, `campoObjetoEnAcordeon`; las cuatro fábricas llevan ahora la marca `enAcordeon`): se dejan;
+  - nativos simples (`text`, `textarea`, `number`, `select`, `radio`): se meten en su acordeón desde el agrupador, con resumen en la cabecera, la etiqueta de Puck oculta y la ayuda si el campo la declara en `metadata.ayuda` (Puck no admite una propiedad `ayuda` suelta);
+  - el resto (texto enriquecido, listas nativas, selectores de imagen o de icono propios de la app): se pintan como siempre dentro del grupo, ya sin el relleno y las rayas del envoltorio de Puck. Envolverlos duplicaría el título que dibujan ellos mismos o escondería el de sus campos hijos.
+- **Simetría en los nativos** (CSS por `data-olo-grupo`): inputs, áreas de texto y selects a 40 de alto, esquina de 8, borde gris y borde azul al enfocar; las opciones `radio` nativas pasan a botones separados con esquina de 12, como las de los acordeones.
+- **Colores:** las 18 llamadas a `campoColor` del catálogo del sitio pasan a `campoEnAcordeon({ type: 'color', … })` (con «Vacío = el color por defecto del bloque.»; se quitó el « (opcional)» de la etiqueta). `campoColor` sigue existiendo para la intranet.
+- **Botón:** la ayuda del texto pasa a `metadata.ayuda` del campo, en las dos apps.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| Bloque genérico con el marcado y el CSS reales de Puck (texto, área, select, radio nativos, color y «Espaciado y Ancho») en Chrome headless | Acordeones con cabecera gris, campos a ras, sin rayas, controles de 40 de alto y esquina de 8, opciones sueltas separadas con esquina de 12 |
+| Los 26 bloques del catálogo abiertos en el editor real | **No se hizo**: queda por revisar a mano, sobre todo `Header`, `Footer`, `Services`, `TendenciaOcupacional` y los que tienen listas |
+
+- **Borde al abrir** (pedido después): en los paneles sin líneas, un acordeón abierto se enmarca con un borde claro (`#d9dde3`) y esquinas de 12, también las de abajo, para ver qué contiene; cerrado lleva el borde transparente para que no salte. Los padre, al contener sub-acordeones, llevan 8 px de margen interior para que estos no toquen el borde.
+
+**Pendiente al cierre**
+- Las líneas de ayuda solo existen donde ya había (los `campoEnAcordeon` y el texto del botón). Los campos nativos del sitio no las tienen: habría que escribirlas una a una.
+- Los campos que quedan fuera (selector de imagen, texto enriquecido, listas nativas) siguen con su aspecto de siempre; pasarlos a acordeón exige tocar `ImageUploaderField` y similares en cada app.
+- Si algún bloque se ve mal agrupado, se puede excluir en `campos-agrupados.tsx` sin tocar el bloque.
+
+---
+
+## sesión 24-10-2026 (7.ª parte): el panel «Page» del editor enseña qué página se edita
+
+**Qué pidió el usuario:** usar ese campo solo para mostrar el slug o la página que se edita, con un mensaje breve de que se está en modo edición.
+
+**Antes:** sin ningún bloque seleccionado, Puck pintaba su campo `title` por defecto en el panel «Page». No cambiaba nada: el título de la pestaña sale de la base de datos (`pagina.titulo` en `generateMetadata`) y no se encontró nada que lea `root.title`.
+
+**Qué se hizo**
+- Nuevo `packages/blocks-renderer/src/primitives/campo-pagina-en-edicion.tsx`: campo de solo lectura (nunca llama a `onChange`) con un recuadro azul translúcido: la dirección en grande (`/clasificacion-cuoc`), el identificador debajo solo si dice algo que la dirección no dice (`encuestas-calidad`) y una frase: «Elige un componente de la página para ajustar sus opciones.» (se quitó también el rótulo «● Modo edición»; la primera versión decía que lo cambiado no se ve hasta que se apruebe; se cambió por esta instrucción a pedido del usuario)
+- `configDeEdicion` de `3000-sitio-web` y `3001-intranet` (`puck.config.tsx`): `root.fields = { modoEdicion }`, lo que quita el `title` de serie. Para `menu-y-pie` muestra «Menú y pie del sitio» / «Menú y pie de la intranet» en vez de una dirección. La dirección sale de `rutaPublicaDeSlug` de cada app (la de la intranet cuelga `encuestas-…` de `/encuestas/`).
+- No se guarda ningún valor nuevo en la página: el campo no tiene valor.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+| Campo renderizado y capturado en Chrome headless (página, encuesta de la intranet, menú y pie) | Se ve con el modo, el nombre y el mensaje; el identificador solo aparece cuando difiere de la dirección |
+| Navegador con Puck real (miga de pan con el nombre de la página, panel sin el campo `title`) | **No se hizo**: queda por probar a mano |
+
+**Después (mismo día): «Page» pasa a ser el nombre de la página.** Puck escribe «Page» en la miga de pan («Page › Texto enriquecido») y en el título del panel de la raíz, y lo toma de `config.root.label` (se leyó en su código: `useBreadcrumbs` y `FieldSideBar`). `configDeEdicion` define ahora `root.label` con la dirección de la página (`/clasificacion-cuoc`) o «Menú y pie del sitio / de la intranet». El mensaje del panel ya no repite el nombre ni lleva fondo ni relleno propio: queda el aviso y, solo si difiere de la dirección, el identificador.
+
+**Pendiente al cierre**
+- Las páginas que ya traen `root.props.title` en su JSON lo conservan sin efecto, igual que antes.
+
+---
+
 ## sesión 24-10-2026 (6.ª parte): cada opción del botón en su acordeón, con las mismas medidas y una línea de ayuda
 
 **Qué pidió el usuario:** dentro de «Opciones del botón», cada subsección en acordeón (texto, tamaño, ancho, color de fondo, color del texto, destino, resaltar, color del resaltado); simetría, margen y esquina iguales en todos los controles; y un mensaje muy breve, en letra pequeña, que explique cada ajuste a quien lo usa por primera vez.
