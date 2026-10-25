@@ -1733,13 +1733,9 @@ const puckConfigBase: Config = {
           'Elige a dónde lleva el clic.'
         ),
         resaltado: campoEnAcordeon({
-          type: 'radio',
+          type: 'interruptor',
           label: 'Resaltar botón',
           ayuda: 'Actívalo para que el botón destaque.',
-          options: [
-            { label: 'Normal', value: false },
-            { label: 'Resaltado', value: true },
-          ],
         }),
         colorResaltado: campoEnAcordeon({
           type: 'color',

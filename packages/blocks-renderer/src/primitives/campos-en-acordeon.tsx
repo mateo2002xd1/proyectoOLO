@@ -7,7 +7,7 @@
  * Puck no ofrece acordeones por campo, así que estos se entregan como campos
  * `custom` que pintan sus propios controles. Por eso entienden solo los tipos
  * que hoy se usan en los paneles que los adoptaron —`select`, `radio`, `text`,
- * `textarea`, `number`, `medida` (número libre + unidad, para espaciados y anchos),
+ * `textarea`, `number`, `interruptor` (encendido/apagado), `medida` (número libre + unidad, para espaciados y anchos),
  * `color` (el selector de `ColorPickerField`) y `custom`—; un `custom` interior
  * se pinta con su propio `render`, sin etiqueta, porque la etiqueta ya la pone
  * la cabecera del acordeón.
@@ -80,6 +80,14 @@ export type CampoDeAcordeon = (
       /** Convierte un valor guardado con un formato anterior en una medida «2.5rem». */
       normalizar?: (valor: unknown) => string;
     }
+  | {
+      type: 'interruptor';
+      label: string;
+      /** Lo que dice junto al interruptor (y en la cabecera) cuando está encendido. */
+      textoSi?: string;
+      /** Y cuando está apagado. */
+      textoNo?: string;
+    }
   | { type: 'color'; label: string }
   | {
       type: 'custom';
@@ -132,6 +140,13 @@ export const TituloYaPuestoContext = createContext(false);
  * Los controles de dentro conservan su borde.
  */
 export const SinLineasContext = createContext(false);
+
+/**
+ * `true` dentro de un acordeón que reúne varios campos (ver `FUSIONES` en `campos-agrupados.tsx`):
+ * cada campo se pinta solo —su etiqueta pequeña, su ayuda y su control— y no con su propio
+ * acordeón.
+ */
+export const ControlSueltoContext = createContext(false);
 
 // ─── Medidas libres ──────────────────────────────────────────────────────────
 const MEDIDA = /^(-?(?:\d+\.?\d*|\.\d+))(rem|em|vw|vh|ch|px|%)$/;
@@ -505,6 +520,51 @@ function ControlDeCampo({
       );
     case 'medida':
       return <CampoMedida campo={campo} valor={valor} onChange={onChange} />;
+    case 'interruptor': {
+      const encendido = valor === true;
+      return (
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', minHeight: '40px', cursor: 'pointer' }}>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={encendido}
+            aria-label={campo.label}
+            className={CLASE_ENFOCABLE}
+            onClick={() => onChange(!encendido)}
+            style={{
+              position: 'relative',
+              flexShrink: 0,
+              width: '44px',
+              height: '24px',
+              padding: 0,
+              border: 0,
+              borderRadius: '999px',
+              background: encendido ? COLOR_ACENTO : '#d1d5db',
+              cursor: 'pointer',
+              transition: 'background 150ms ease',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                top: '3px',
+                left: encendido ? '23px' : '3px',
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                background: '#ffffff',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.25)',
+                transition: 'left 150ms ease',
+              }}
+            />
+          </button>
+          <span style={{ fontSize: '14px', color: COLOR_TEXTO }}>
+            {encendido ? (campo.textoSi ?? 'Sí') : (campo.textoNo ?? 'No')}
+          </span>
+        </label>
+      );
+    }
     case 'color':
       return <ColorPickerField value={valor} onChange={onChange} />;
     case 'custom':
@@ -523,6 +583,7 @@ function resumenPorDefecto(campo: CampoDeAcordeon, valor: any): ReactNode {
     const medida = partirMedida(campo.normalizar ? campo.normalizar(valor) : valor);
     return medida ? `${medida.numero} ${medida.unidad}` : (campo.vacio ?? '');
   }
+  if (campo.type === 'interruptor') return valor === true ? (campo.textoSi ?? 'Sí') : (campo.textoNo ?? 'No');
   if (campo.type === 'color') {
     if (!valor) return 'Por defecto';
     return (
@@ -558,6 +619,18 @@ function FilaDeAcordeon({
   opciones?: OpcionesDeAcordeon;
   props?: Record<string, any>;
 }) {
+  const suelto = useContext(ControlSueltoContext);
+  if (suelto) {
+    return (
+      <div>
+        <span style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500, color: COLOR_TEXTO }}>
+          {campo.label}
+        </span>
+        {campo.ayuda && <AyudaDeCampo>{campo.ayuda}</AyudaDeCampo>}
+        <ControlDeCampo campo={campo} valor={valor} onChange={onChange} props={props} />
+      </div>
+    );
+  }
   return (
     <AcordeonDeCampo
       etiqueta={campo.label}
@@ -577,6 +650,8 @@ export function campoEnAcordeon(campo: CampoDeAcordeon, opciones: OpcionesDeAcor
     type: 'custom' as const,
     /** Ya se pinta como acordeón: `CamposAgrupados` no lo vuelve a envolver. */
     enAcordeon: true,
+    /** Lo que dice la cabecera con este valor: lo usan los acordeones que reúnen varios campos. */
+    resumenDe: (valor: any) => (opciones.resumen ? opciones.resumen(valor) : resumenPorDefecto(campo, valor)),
     label: campo.label,
     render: ({ value, onChange, ...props }: { value: any; onChange: (v: any) => void; [clave: string]: any }) => (
       <FilaDeAcordeon campo={campo} valor={value} onChange={onChange} opciones={opciones} props={props} />
