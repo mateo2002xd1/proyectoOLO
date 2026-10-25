@@ -608,6 +608,10 @@ importar_paginas() {
         aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las del origen."
     fi
     aviso "NO toca usuarios, roles, bitacora ni ninguna otra tabla. Las visitas se conservan."
+    if [ -n "$sin_respaldos" ]; then
+        aviso "TAMBIEN BORRA los archivos de sitio/ e intranet/ (uploads y backup) del volumen $VOLUMEN_DE_ARCHIVOS"
+        aviso "y deja los del repositorio (filesystem/). cargas-datos y la identidad visual no se tocan. Haz antes: ./docker/deploy.sh backup"
+    fi
     read -r -p "Continuar? (s/n): " -n 1 respuesta
     echo
     if [[ ! $respuesta =~ ^[Ss]$ ]]; then
@@ -819,12 +823,13 @@ copiar_archivos_al_volumen() {
     fi
 
     echo "=== Copiando los archivos subidos al volumen $VOLUMEN_DE_ARCHIVOS ==="
-    # Nunca pisa nada. El Excel heredado de "Fuentes futuras de empleo" no se copia: es del
+    # Por defecto nunca pisa ni borra nada; con el 2.º argumento (inicio limpio) deja sitio/ e
+    # intranet/ como el repositorio y sin respaldos. El Excel heredado de "Fuentes futuras de empleo" no se copia: es del
     # repositorio y la imagen de la API ya lo trae.
     MSYS_NO_PATHCONV=1 docker run --rm \
         --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem" \
         "${montajes[@]}" \
-        -e CARPETAS="$carpetas" -e SIN_RESPALDOS="$sin_respaldos" \
+        -e CARPETAS="$carpetas" -e SIN_RESPALDOS="$sin_respaldos" -e LIMPIAR="$sin_respaldos" \
         "$IMAGEN_UTILIDADES" sh -euc '
             # Archivo por archivo y no `cp -Rn origen/. destino/`: el cp de BusyBox (el de
             # alpine) no copia nada de esa forma si el destino ya existe, sin dar error.
@@ -843,6 +848,25 @@ copiar_archivos_al_volumen() {
             # Primero el de desarrollo, que ya tiene la estructura del volumen. Se copia
             # carpeta por carpeta para dejar fuera sus marcas `.mudado-*` de la raiz.
             pedida() { case " $CARPETAS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
+            # Con LIMPIAR (inicio limpio) el volumen queda igual que el repositorio: se vacian
+            # uploads/ y backup/ de cada ambito pedido antes de copiar. Solo esas dos carpetas:
+            # cargas-datos y panel (la identidad visual) no se tocan. Si el repositorio no trae
+            # ningun archivo de ese ambito (un `git pull` incompleto), no se borra nada: dejaria
+            # las paginas sin sus imagenes.
+            if [ -n "$LIMPIAR" ]; then
+                for ambito in sitio intranet; do
+                    pedida "$ambito" || continue
+                    if [ -z "$(find /origen/desarrollo/$ambito/uploads /origen/$ambito/uploads -type f 2>/dev/null | head -n1)" ]; then
+                        echo "  · $ambito: el repositorio no trae archivos, no se limpia"
+                        continue
+                    fi
+                    for sub in uploads backup; do
+                        [ -d "/filesystem/$ambito/$sub" ] || continue
+                        echo "  · $ambito/$sub: $(find "/filesystem/$ambito/$sub" -type f | wc -l) archivo(s) del volumen se borran"
+                        find "/filesystem/$ambito/$sub" -mindepth 1 -delete
+                    done
+                done
+            fi
             for d in sitio intranet cargas-datos; do
                 if pedida "$d"; then copiar "/origen/desarrollo/$d" "/filesystem/$d"; fi
             done

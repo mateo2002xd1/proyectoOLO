@@ -238,6 +238,7 @@
 - `npm run paginas:volcar` genera por defecto el **inicio limpio**: solo las páginas con versión publicada, con **solo esa versión**, renumerada como la 1 (`comentario_cambios` = «Versión inicial»), con **0 visitas**, sin autor, y con los permisos de edición de esas páginas. Volcado definitivo del 25-10-2026: 16 páginas, 16 versiones, 48 permisos (se sumaron `cno` y `cuoc` al publicarlas en local). Quedan fuera las que no tienen nada publicado (`empleo`, `programas-sobresalientes`) y `prueba` de la intranet (lista `EXCLUIDAS` en el script). `programas-sobresalientes` tiene su ruta fija en `3000-sitio-web`, así que no depende de esa fila.
 - `--con-historial` conserva el comportamiento anterior (todas las versiones y las visitas).
 - El volcado declara su modo en la cabecera (`-- modo: inicio-limpio`). `importar-paginas --desde-archivo` lo lee y, en el inicio limpio, **no copia `filesystem/*/backup/`**: serían respaldos de versiones archivadas que ya no existen. Los `uploads/` sí van.
+- **El inicio limpio también deja el volumen como el repositorio.** Antes `copiar_archivos_al_volumen` solo agregaba lo que faltaba y los archivos viejos del servidor se quedaban. Ahora, con el volcado en modo `inicio-limpio`, borra `uploads/` y `backup/` de `sitio` e `intranet` y copia los de `filesystem/`. No toca `cargas-datos` ni `filesystem/panel`; no limpia un ámbito si el repositorio no trae archivos de él; la confirmación avisa del borrado y recomienda `deploy.sh backup`. En los otros modos sigue sin borrar nada.
 - Nuevo `./docker/deploy.sh exportar-paginas [--con-historial]`: el otro extremo del flujo, en el equipo de desarrollo (sin Docker; lee `4000-api-backend/.env`). Imprime los comandos de git y del servidor que siguen.
 - Auditoría: `importar-paginas` no toca `auditoria_cambios`; en el servidor arranca vacía. No queda registro de que esas páginas «se crearon»: aparece solo aquí.
 - `volcado-sql.ts`: `volcar` acepta `fijar` (valor fijo por columna).
@@ -247,6 +248,7 @@
 | `./docker/deploy.sh exportar-paginas` y con una opción desconocida | 14 páginas / 14 versiones; la opción rara se rechaza |
 | Postgres 18 desechable (47 migraciones), servidor sin páginas pero con una cuenta, pasos de carga copiados tal cual | 14 páginas, 14 versiones, todas `numero_version` 1 y `publicado`, 0 visitas, 0 versiones con autor; la cuenta sigue; `auditoria_cambios` en 0; ninguna de `prueba`, `empleo`, `programas-sobresalientes` |
 | Copia de archivos (`copiar_archivos_al_volumen` con volumen anónimo) | Con respaldos: sitio/uploads 23, sitio/backup 16, intranet/uploads 3. Sin respaldos: 23 y 3 |
+| Limpieza (carpeta con archivos viejos montada en lugar del volumen, con `cargas-datos` y `panel`) | Se borraron los 3 viejos, quedaron 23 en `sitio/uploads` y 3 en `intranet/uploads`, 0 respaldos; `cargas-datos/excel.xlsx` y `panel/logo.png` intactos |
 | `guardar-borrador.usecase.ts` (leído) | La versión nueva es «última + 1»: el primer cambio en el servidor será la 2 |
 | `deploy.sh importar-paginas --desde-archivo` completo con Compose | **No se ejecutó**: queda para el servidor |
 

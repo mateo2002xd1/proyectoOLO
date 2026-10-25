@@ -287,6 +287,13 @@ diferencias:
   Con `./docker/deploy.sh exportar-paginas --con-historial` viajan todas las páginas con
   todas sus versiones (borradores y en revisión incluidos) y sus visitas, y los respaldos
   también se copian.
+- **Los archivos también quedan como en el repositorio.** En el inicio limpio, antes de copiar,
+  se **borran** del volumen `uploads/` y `backup/` de `sitio` e `intranet` y se copian los de
+  `filesystem/`. No se tocan `cargas-datos` (los Excel) ni `filesystem/panel` (la identidad
+  visual). Si el repositorio no trae ningún archivo de un ámbito (un `git pull` incompleto), ese
+  ámbito no se limpia. El comando lo avisa antes de pedir confirmación; haz antes
+  `./docker/deploy.sh backup`. Con `--con-historial` o con el origen en vivo solo se agrega lo
+  que falta, sin borrar.
 - Es una foto de la base de desarrollo: lo que no esté **publicado** allí no llega, y lo que
   se edite después tampoco hasta volver a generar el archivo.
 - Si el archivo no cuadra al terminar de cargar (faltan páginas o versiones), la importación
