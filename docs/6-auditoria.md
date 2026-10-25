@@ -18,6 +18,8 @@
 | `tsc --noEmit` en `3000-sitio-web` | Sin errores |
 | Montar y desmontar el campo con Editor.js real, en el navegador | **No se hizo**: el editor exige sesión. Queda por comprobar a mano que ya no se duplica al seleccionar el bloque |
 
+**Color del texto del bloque (pedido después):** «Texto enriquecido» gana el campo `colorTexto` (selector de color en acordeón: «Elige el color de todo el texto.»), que queda en «Opciones del bloque» junto a lo demás. `EditorjsWrapper` en modo lectura aplica el color en línea a cada título, párrafo, lista, cita y bloque genérico, porque cada uno trae su gris por clase de Tailwind y un color en el contenedor no llegaba; solo se acepta `#rrggbb`. Vacío = los grises de siempre. El editor de dentro del panel no cambia de color: el color se ve en la página y en el lienzo. Las páginas guardadas no cambian. Comprobado: con `#ff0000` los cuatro tipos de bloque salen con `color:#ff0000`; vacío o un valor inválido (`red;background:url(x)`), sin color.
+
 **Decisión de producto (misma sesión):** hay dos editores de texto —el de bloques de Editor.js (guarda una lista de bloques en JSON, se edita solo en el panel) y el texto enriquecido de Puck (guarda HTML, se edita también sobre la página)—. Para los campos donde se escribe mucho texto, el usuario indicará campo por campo cuál usar; no se cambian todos de golpe porque el formato guardado es distinto y habría que migrar páginas y lo que lee ese HTML (el buscador del sitio, `extraer-textos-puck.ts`).
 
 ---

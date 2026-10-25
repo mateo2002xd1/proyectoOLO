@@ -346,8 +346,14 @@ const RichTextBlock = {
         <EditorjsWrapper data={value} onChange={onChange} />
       ),
     },
+    colorTexto: campoEnAcordeon({
+      type: 'color',
+      label: 'Color del texto',
+      ayuda: 'Elige el color de todo el texto.',
+    }),
   },
   defaultProps: {
+    colorTexto: '',
     content: {
       blocks: [
         {
@@ -359,9 +365,9 @@ const RichTextBlock = {
       ],
     },
   },
-  render: ({ content }: BlockRender<{ content?: OutputData }>) => (
+  render: ({ content, colorTexto }: BlockRender<{ content?: OutputData; colorTexto?: string }>) => (
     <div className="w-full max-w-[1200px] mx-auto px-6 py-6 rich-text">
-      <EditorjsWrapper data={content} readOnly />
+      <EditorjsWrapper data={content} readOnly colorTexto={colorTexto} />
     </div>
   ),
 };

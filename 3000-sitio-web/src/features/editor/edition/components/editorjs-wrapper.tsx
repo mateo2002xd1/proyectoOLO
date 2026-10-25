@@ -8,6 +8,8 @@ interface EditorjsWrapperProps {
   data?: OutputData;
   onChange?: (data: OutputData) => void;
   readOnly?: boolean;
+  /** Color de todo el texto (#rrggbb); sin él, los grises de siempre. Solo en modo lectura. */
+  colorTexto?: string;
 }
 
 type ItemLista = string | { content?: string; items?: ItemLista[] };
@@ -33,8 +35,11 @@ function renderizarItemsLista(items: ItemLista[], estilo: string) {
   });
 }
 
-function renderizarBloque(bloque: OutputBlockData, index: number) {
+function renderizarBloque(bloque: OutputBlockData, index: number, colorTexto?: string) {
   const clave = bloque.id || index;
+  // Cada tipo de bloque trae su color por clase de Tailwind, así que el color elegido va en línea:
+  // gana a la clase y no hace falta CSS en cada app.
+  const estiloColor = colorTexto ? { color: colorTexto } : undefined;
   switch (bloque.type) {
     case 'header': {
       const nivel = Math.min(Math.max(bloque.data?.level || 2, 1), 6);
@@ -51,6 +56,7 @@ function renderizarBloque(bloque: OutputBlockData, index: number) {
         <Tag
           key={clave}
           className={clasesNivel[nivel] ?? clasesNivel[2]}
+          style={estiloColor}
           dangerouslySetInnerHTML={{ __html: bloque.data?.text || '' }}
         />
       );
@@ -60,6 +66,7 @@ function renderizarBloque(bloque: OutputBlockData, index: number) {
         <p
           key={clave}
           className="text-base leading-relaxed text-zinc-700 dark:text-zinc-300 mb-4 last:mb-0"
+          style={estiloColor}
           dangerouslySetInnerHTML={{ __html: bloque.data?.text || '' }}
         />
       );
@@ -72,7 +79,7 @@ function renderizarBloque(bloque: OutputBlockData, index: number) {
         : 'list-disc pl-6 mb-4 space-y-1 text-zinc-700 dark:text-zinc-300';
 
       return (
-        <ListTag key={clave} className={claseLista}>
+        <ListTag key={clave} className={claseLista} style={estiloColor}>
           {renderizarItemsLista(bloque.data?.items || [], esOrdenada ? 'ordered' : 'unordered')}
         </ListTag>
       );
@@ -84,6 +91,7 @@ function renderizarBloque(bloque: OutputBlockData, index: number) {
           className={`my-4 border-l-4 border-[#4C7A1C] pl-4 py-2 italic text-zinc-700 dark:text-zinc-300 bg-zinc-50/80 dark:bg-zinc-800/40 rounded-r ${
             bloque.data?.alignment === 'center' ? 'text-center' : 'text-left'
           }`}
+          style={estiloColor}
         >
           <div dangerouslySetInnerHTML={{ __html: bloque.data?.text || '' }} />
           {bloque.data?.caption && (
@@ -124,6 +132,7 @@ function renderizarBloque(bloque: OutputBlockData, index: number) {
           <div
             key={clave}
             className="mb-4 text-zinc-700 dark:text-zinc-300"
+            style={estiloColor}
             dangerouslySetInnerHTML={{ __html: bloque.data.text }}
           />
         );
@@ -152,7 +161,9 @@ function tieneContenido(data?: OutputData): boolean {
   });
 }
 
-export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWrapperProps) {
+const COLOR_VALIDO = /^#[0-9a-fA-F]{3,8}$/;
+
+export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto }: EditorjsWrapperProps) {
   const editorRef = useRef<EditorJSInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ultimoObjetoEmitidoRef = useRef<OutputData | null>(null);
@@ -320,7 +331,9 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
 
     return (
       <div className="w-full">
-        {data!.blocks.map((bloque, index) => renderizarBloque(bloque, index))}
+        {data!.blocks.map((bloque, index) =>
+          renderizarBloque(bloque, index, colorTexto && COLOR_VALIDO.test(colorTexto.trim()) ? colorTexto.trim() : undefined)
+        )}
       </div>
     );
   }
