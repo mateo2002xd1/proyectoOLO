@@ -214,22 +214,26 @@ function CampoMedida({
         }}
         style={{ ...estiloControl, width: '7rem' }}
       />
-      <select
-        aria-label={`${campo.label}: unidad`}
-        className={CLASE_CONTROL}
-        value={unidad}
-        onChange={(e) => {
-          setUnidad(e.target.value);
-          guardar(texto, e.target.value);
-        }}
-        style={{ ...estiloControl, width: 'auto', cursor: 'pointer' }}
-      >
-        {unidades.map((u) => (
-          <option key={u} value={u}>
-            {u}
-          </option>
-        ))}
-      </select>
+      {unidades.length === 1 ? (
+        <span style={{ color: COLOR_SUAVE, fontSize: '14px' }}>{unidades[0]}</span>
+      ) : (
+        <select
+          aria-label={`${campo.label}: unidad`}
+          className={CLASE_CONTROL}
+          value={unidad}
+          onChange={(e) => {
+            setUnidad(e.target.value);
+            guardar(texto, e.target.value);
+          }}
+          style={{ ...estiloControl, width: 'auto', cursor: 'pointer' }}
+        >
+          {unidades.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+      )}
       {numero !== null && (unidad === 'rem' || unidad === 'em') && (
         <span style={{ color: COLOR_SUAVE, fontSize: '12px' }}>≈ {Math.round(numero * 16 * 10) / 10} px</span>
       )}

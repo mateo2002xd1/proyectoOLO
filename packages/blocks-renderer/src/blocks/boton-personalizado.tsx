@@ -2,6 +2,7 @@
 
 import { enlaceSeguro } from '@olo/url-policy';
 import React, { useState, type ReactNode } from 'react';
+import { partirMedida } from '../primitives/campos-en-acordeon';
 import { IconoRenderer } from '../primitives/icon-selector-field';
 import type { DestinoBotonConfig } from '../primitives/selector-destino-boton-field';
 
@@ -16,7 +17,8 @@ export interface BotonPersonalizadoProps {
   colorFondo?: string;
   colorTexto?: string;
   colorBorde?: string;
-  tamano?: TamanoBoton;
+  /** Alto del botón en px («48px»), o una de las medidas fijas de antes (`mediano`…). */
+  tamano?: TamanoBoton | string | number;
   ancho?: AnchoBoton | string;
   /**
    * Campo suelto de antes: la posición ahora sale de «Espaciado y Ancho» (`caja.alineacion`).
@@ -42,6 +44,33 @@ const TAMANOS_CLASES: Record<TamanoBoton, { paddingY: string; paddingX: string; 
   grande: { paddingY: '12px', paddingX: '24px', fontSize: '16px', iconSize: 22 },
   extraGrande: { paddingY: '16px', paddingX: '32px', fontSize: '18px', iconSize: 24 },
 };
+
+/**
+ * Alto en px de cada medida fija de antes, para enseñarla como número en el editor. Se
+ * eligieron redondos y cerca de lo que esas medidas daban (casi todas topaban con el alto
+ * mínimo de 42 px).
+ */
+const ALTO_DE_LAS_FIJAS: Record<TamanoBoton, number> = { pequeno: 40, mediano: 42, grande: 46, extraGrande: 56 };
+
+/** El tamaño guardado como medida en px («48px»); `''` si no hay ninguno válido. */
+export function tamanoDelBotonEnPx(tamano: unknown): string {
+  if (typeof tamano === 'string' && Object.hasOwn(ALTO_DE_LAS_FIJAS, tamano)) {
+    return `${ALTO_DE_LAS_FIJAS[tamano as TamanoBoton]}px`;
+  }
+  const medida = typeof tamano === 'number' ? { numero: tamano, unidad: 'px' } : partirMedida(tamano);
+  return medida && medida.unidad === 'px' && medida.numero > 0 ? `${medida.numero}px` : '';
+}
+
+/** Letra, relleno y ícono de un botón de alto libre, en la misma proporción que el «mediano» (42 → 15 / 18). */
+function medidasDeAlto(alto: number) {
+  const limitar = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+  return {
+    paddingY: '4px',
+    paddingX: `${Math.round(alto * 0.43)}px`,
+    fontSize: `${limitar(Math.round(alto * 0.36), 10, 48)}px`,
+    iconSize: limitar(Math.round(alto * 0.43), 12, 48),
+  };
+}
 
 /** Verde SENA: el resaltado de siempre. */
 const COLOR_RESALTADO = '#7db828';
@@ -112,7 +141,12 @@ export function BotonPersonalizado({
   const [mensajeToast, setMensajeToast] = useState<string | null>(null);
   const alineacion = alineacionDelBoton(caja, alineacionHeredada);
 
-  const configTamano = TAMANOS_CLASES[tamano] || TAMANOS_CLASES.mediano;
+  const altoLibre =
+    typeof tamano === 'string' && Object.hasOwn(TAMANOS_CLASES, tamano) ? null : Number.parseFloat(tamanoDelBotonEnPx(tamano)) || null;
+  const configTamano =
+    altoLibre !== null
+      ? medidasDeAlto(altoLibre)
+      : TAMANOS_CLASES[tamano as TamanoBoton] || TAMANOS_CLASES.mediano;
   const colorTextoFinal = colorTexto || '#002237';
   const colorFondoFinal = colorFondo || '#ffffff';
 
@@ -209,7 +243,7 @@ export function BotonPersonalizado({
     transition: 'all 0.18s ease-in-out',
     width: anchoFinal,
     maxWidth: '100%',
-    minHeight: '42px',
+    minHeight: `${altoLibre ?? 42}px`,
     cursor: esEnlace ? 'pointer' : 'default',
     boxSizing: 'border-box',
     // El CSS del resaltado (`.olo-btn-resaltado`, con !important) toma el color de esta variable.

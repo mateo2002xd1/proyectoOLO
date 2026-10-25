@@ -32,6 +32,8 @@
 
 - **La ayuda va arriba** (pedido después): la línea de ayuda de cada opción se pinta encima de su control, no debajo (`AyudaDeCampo`, `FilaDeAcordeon` y los grupos y listas de `campos-en-acordeon.tsx`, y los nativos de `campos-agrupados.tsx`). Vale para todos los paneles que usan acordeones, no solo para el botón.
 
+- **«Tamaño del botón» es un alto libre en px, sin medidas fijas** (pedido después): el desplegable Pequeño/Mediano/Grande/Extra grande pasa a un número con «px» (`campoEnAcordeon` tipo `medida`, una sola unidad: sin selector). Sin ayuda: se quitó «Elige qué tan grande se ve», que se prestaba a doble lectura, y también «Elige cuánto espacio ocupa» del ancho. Vacío (el valor por defecto del bloque nuevo) = el alto de siempre, 42 px, resumen «Automático». Con un número, `BotonPersonalizado` lo usa como alto mínimo y saca la letra (36 %) y el relleno lateral (43 %) de él, la misma proporción del «mediano» (42 → 15 px de letra, 18 de relleno); la letra se limita a 10–48 px. Los botones guardados con una medida fija se ven igual que antes y el editor los enseña convertidos (`pequeno` 40, `mediano` 42, `grande` 46, `extraGrande` 56 px); `SeccionBotonesIcono` sigue pasando esas medidas fijas. Solo se acepta px: `3rem` o un negativo caen al alto de siempre.
+
 **Pendiente al cierre**
 - Las líneas de ayuda solo existen donde ya había (los `campoEnAcordeon` y el texto del botón). Los campos nativos del sitio no las tienen: habría que escribirlas una a una.
 - Los campos que quedan fuera (selector de imagen, texto enriquecido, listas nativas) siguen con su aspecto de siempre; pasarlos a acordeón exige tocar `ImageUploaderField` y similares en cada app.

@@ -86,6 +86,7 @@ export type { ImagenDestacadaProps } from './blocks/imagen-destacada';
 export {
   BotonPersonalizado,
   alineacionDelBoton,
+  tamanoDelBotonEnPx,
   migrarBoton,
 } from './blocks/boton-personalizado';
 export type {

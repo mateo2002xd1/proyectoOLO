@@ -19,6 +19,7 @@ import {
   TarjetaArticulo,
   BotonPersonalizado,
   migrarBoton,
+  tamanoDelBotonEnPx,
   SeccionBotonesIcono,
   campoDestinoBotonEnAcordeon,
   IconSelectorField,
@@ -1697,21 +1698,19 @@ const puckConfigBase: Config = {
           // Lo lee `CamposAgrupados` para la línea de ayuda del acordeón.
           metadata: { ayuda: 'Escribe el nombre del botón.' },
         },
+        // Un alto libre en px, sin medidas fijas. Vacío = el alto de siempre (42 px). Las medidas fijas
+        // de antes (`mediano`…) se enseñan convertidas a px.
         tamano: campoEnAcordeon({
-          type: 'select',
+          type: 'medida',
           label: 'Tamaño del botón',
-          ayuda: 'Elige qué tan grande se ve.',
-          options: [
-            { label: 'Pequeño', value: 'pequeno' },
-            { label: 'Mediano', value: 'mediano' },
-            { label: 'Grande', value: 'grande' },
-            { label: 'Extra grande', value: 'extraGrande' },
-          ],
+          unidades: ['px'],
+          placeholder: 'px',
+          vacio: 'Automático',
+          normalizar: tamanoDelBotonEnPx,
         }),
         ancho: campoEnAcordeon({
           type: 'radio',
           label: 'Ancho del botón',
-          ayuda: 'Elige cuánto espacio ocupa.',
           options: [
             { label: 'Ajustado', value: 'auto' },
             { label: 'Mediano', value: 'mediano' },
@@ -1750,7 +1749,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         texto: 'Nuevo botón',
-        tamano: 'mediano',
+        tamano: '',
         ancho: 'mediano',
         colorFondo: '#ffffff',
         colorTexto: '#002237',
