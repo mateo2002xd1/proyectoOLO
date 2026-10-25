@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 24-10-2026 (9.ª parte): el botón conserva el margen lateral de la página en pantallas pequeñas
+
+**Qué reportó el usuario:** un «Botón personalizado» con ancho/posición ajustados quedaba pegado al borde en pantallas pequeñas, sin la indentación que traen los demás bloques; pidió evaluar la mejor decisión con el consejo (`llm-council`) y las skills de frontend.
+
+**Causa (verificada en el código):** el margen lateral no está en el layout de la página, lo trae cada bloque por dentro (`TextoRico` y `ImagenDestacada`: `max-w-[1200px] mx-auto px-6`; `SeccionBotonesIcono`: `px-4 sm:px-6 lg:px-8`). `BotonPersonalizado` no traía ninguno y `.olo-caja` tampoco lo pone. La skill `senior-frontend` del proyecto es genérica (plantillas y scripts de bundle) y no aportó; se usaron las reglas de `2-convenciones-del-proyecto.md` §10.
+
+**Veredicto del consejo (5 asesores + revisión cruzada):** el defecto es del bloque, no de la caja (se descartan margen mínimo en `.olo-caja` y `min(ancho, 100% − 2·gutter)`); el interruptor «Margen lateral de la página» se rechaza (apagado, el fallo reaparece en cada página nueva; encendido solo en lo nuevo, el mismo bloque se comporta de dos maneras); el margen único en el layout de la página es el destino pero hoy cambia todas las páginas publicadas: queda como deuda con inventario previo. Corrección mía a su propuesta: ponerlo en el `render` del bloque duplicaría margen cuando el botón va dentro de «Sección de botones con íconos» (el slot usa ese mismo `render`), así que el margen va en el CSS del contenedor del botón con una regla que lo anula dentro de la sección.
+
+**Qué se hizo** (`globals.css` de `3000-sitio-web` y de `3001-intranet`; sin tocar componentes)
+- `.olo-btn-contenedor`: `max-width: 1200px`, `margin-inline: auto` y `padding-inline: 1.5rem`, los mismos valores que `TextoRico`. Con el tope, en pantalla ancha el botón queda alineado con el texto vecino (a pedido del usuario: copiar el tope). Se usó 1.5rem fijo y no la escala `px-4 sm:px-6 lg:px-8` que se había propuesto: así el borde izquierdo coincide con el de `TextoRico` en todos los anchos.
+- `.olo-seccion-botones .olo-btn-contenedor`: sin tope ni margen, para que dentro de la sección (botones de su lista y botones soltados en su slot) no se sume un segundo margen.
+- **Cambio visible en lo publicado, declarado:** todos los botones ya publicados ganan 24 px de margen por lado; uno de ancho completo se estrecha 48 px, y en pantallas de 1280 px o más los botones a la izquierda o derecha se acercan al ancho del texto en vez de ir al borde de la pantalla.
+
+| Verificación | Resultado |
+|---|---|
+| Chrome headless con el CSS real y el botón real, anchos 500 (mínimo de la ventana), 752, 1264 y 1424: borde izquierdo de un botón a la izquierda, uno de ancho completo y uno a la derecha frente a un bloque de texto con las medidas de `TextoRico` | Coinciden en todos: 24, 24, 56 y 136 px del borde; el de ancho completo deja el mismo margen a los dos lados |
+| Mismo botón dentro de `.olo-seccion-botones` | Queda a 16 px (solo el margen de la sección), sin doble margen |
+| `scrollWidth` frente a `innerWidth` | Iguales en todos los anchos |
+| 320 y 375 px reales, y dentro del editor de Puck | **No se hizo** (la ventana de Chrome headless no baja de 500 px). Las reglas no tienen `@media`, así que el comportamiento es el mismo; falta confirmarlo a mano |
+
+**Pendiente al cierre**
+- Otros bloques del catálogo pueden tener el mismo defecto sin que nadie lo haya auditado; el inventario de qué bloques traen su propio margen es el paso previo para mover el margen al layout.
+- Si el editor fija «Espacio interior · a los lados» en la caja, se suma al margen del botón; es decisión suya.
+
+---
+
 ## sesión 24-10-2026 (8.ª parte): el panel de opciones limpio se extiende a todos los bloques del sitio web
 
 **Qué pidió el usuario:** que el fondo de los acordeones padre pase de azul a gris translúcido, y que lo que se limpió en el botón (acordeones, sin rayas, medidas simétricas, esquinas) se aplique a las opciones de todos los componentes de `3000-sitio-web`, con una vista reutilizable como «Espaciado y Ancho»; si algo no se puede sin duplicar código, dejarlo como está.
