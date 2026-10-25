@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 24-10-2026 (10.ª parte): el editor de texto del bloque «Texto enriquecido» ya no se duplica
+
+**Qué reportó el usuario:** en el panel de «Texto enriquecido» el contenido se veía dos veces dentro de la misma tarjeta.
+
+**Causa:** los iconos «+» y «⠿» de la segunda copia son de Editor.js. `EditorjsWrapper` (`3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx`) lo inicializa en un efecto asíncrono (importa cinco módulos y luego hace `new EditorJS`). Si el efecto se limpiaba antes de que esa carga terminara (React vuelve a montar el campo: modo estricto en desarrollo, o un cambio de lugar dentro del panel), la limpieza no encontraba editor que destruir y la carga vieja seguía y creaba otro dentro del mismo contenedor: dos editores en la misma caja.
+
+**Qué se hizo:** una marca `cancelado` que la limpieza activa y que la carga comprueba antes de crear el editor; la limpieza destruye la instancia que exista (la local o la de la referencia); y el contenedor se vacía justo antes de crear la nueva, por si una instancia anterior dejó marcado. Solo cambia ese archivo.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web` | Sin errores |
+| Montar y desmontar el campo con Editor.js real, en el navegador | **No se hizo**: el editor exige sesión. Queda por comprobar a mano que ya no se duplica al seleccionar el bloque |
+
+**Decisión de producto (misma sesión):** hay dos editores de texto —el de bloques de Editor.js (guarda una lista de bloques en JSON, se edita solo en el panel) y el texto enriquecido de Puck (guarda HTML, se edita también sobre la página)—. Para los campos donde se escribe mucho texto, el usuario indicará campo por campo cuál usar; no se cambian todos de golpe porque el formato guardado es distinto y habría que migrar páginas y lo que lee ese HTML (el buscador del sitio, `extraer-textos-puck.ts`).
+
+---
+
 ## sesión 24-10-2026 (9.ª parte): el botón conserva el margen lateral de la página en pantallas pequeñas
 
 **Qué reportó el usuario:** un «Botón personalizado» con ancho/posición ajustados quedaba pegado al borde en pantallas pequeñas, sin la indentación que traen los demás bloques; pidió evaluar la mejor decisión con el consejo (`llm-council`) y las skills de frontend.

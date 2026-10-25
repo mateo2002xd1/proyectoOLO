@@ -170,6 +170,11 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
   useEffect(() => {
     if (readOnly) return;
     let editorInstance: EditorJSInstance | null = null;
+    // La carga de Editor.js es asíncrona: si el efecto se limpia antes de que termine (React
+    // vuelve a montar el componente, p. ej. el modo estricto en desarrollo o un cambio de
+    // lugar en el panel), la carga vieja seguía y creaba un segundo editor dentro del mismo
+    // contenedor, que se veía duplicado. `cancelado` la corta.
+    let cancelado = false;
     const container = containerRef.current;
     if (!container) return;
 
@@ -197,6 +202,10 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
         const Header = (await import('@editorjs/header')).default;
         const List = (await import('@editorjs/list')).default;
         const Quote = (await import('@editorjs/quote')).default;
+
+        if (cancelado) return;
+        // Por si una instancia anterior dejó su marcado en el contenedor.
+        container.innerHTML = '';
 
         editorInstance = new EditorJS({
           holder: container,
@@ -254,14 +263,16 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
       container.removeEventListener('paste', guardarInmediato, true);
       container.removeEventListener('cut', guardarInmediato, true);
 
-      if (editorRef.current && typeof editorRef.current.destroy === 'function') {
+      cancelado = true;
+      const activo = editorInstance ?? editorRef.current;
+      if (activo && typeof activo.destroy === 'function') {
         try {
-          editorRef.current.destroy();
+          activo.destroy();
         } catch (e) {
           console.error(e);
         }
-        editorRef.current = null;
       }
+      editorRef.current = null;
     };
     // El editor se inicializa una sola vez al montar; las actualizaciones posteriores
     // de data se sincronizan en el efecto inferior para no destruir el estado ni mover el cursor.
