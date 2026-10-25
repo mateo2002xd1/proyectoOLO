@@ -228,6 +228,20 @@
 
 ---
 
+## sesión 25-10-2026: lo nuevo de Mateo (rama `OLO/mateo`) sobre el buscador
+
+**Qué pidió el usuario:** traer a `dev` lo que Mateo dejó en su rama sobre el buscador.
+
+**Qué trajo** (2 commits de `mateo2002xd1`, 23-10-2026, encima de `b3a4a9db`, que ya estaba integrado): (1) `docs/manual-de-usuario-formato.md`, ~350 líneas añadidas y ~116 cambiadas; (2) `docs/plan-de-pruebas.md`, que deja de citar el «Kit UI GOV.CO, Página 20» y habla de «estándares de GOV.CO»; (3) un cambio de un comentario en `buscador-sitio-bloque.tsx` con la misma idea. Ningún cambio de lógica ni de permisos.
+
+**Conflicto:** solo en `buscador-sitio-bloque.tsx`. Mateo reescribió el comentario del bloque, pero en `dev` el bloque ya fue refactorizado (`CampoBusquedaCapsula`, `colores.ts`) y ese comentario no existe. Se conservó la versión de `dev`; el cambio de Mateo en ese archivo era solo el comentario, así que no se pierde código. Los dos `.md` se fusionaron solos.
+
+**Estado:** merge de `OLO/mateo` hecho **sin commit** (el usuario lo commitea). Los `.md` quedan con CRLF consistente.
+
+**No verificado:** el manual no se contrastó línea por línea con el código (en sesiones anteriores mezclaba lo implementado con lo deseado). Solo documentación: no hay código que probar.
+
+---
+
 ## sesión 24-10-2026 (2.ª parte): el volcado de páginas pasa a «inicio limpio»: cada página como versión 1
 
 **Qué pidió el usuario:** que en producción la aplicación empiece de cero: las páginas que hoy tiene en local, cada una como versión 1, sin registros de auditoría ni respaldos; y organizar esos comandos en `deploy.sh`. Quien da vida a la aplicación es el usuario creado con `crear-admin`, que empieza a editar desde la versión 1.
