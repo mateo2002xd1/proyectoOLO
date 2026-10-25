@@ -1933,10 +1933,15 @@ a.olo-carrusel__boton:focus-visible {
   padding: 0.25rem 0;
 }
 
+/* El borde envuelve la tarjeta entera (portada y pie) para que cada publicación se lea
+   como una pieza aparte. */
 .publicaciones-tarjeta {
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   height: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d9dee5;
   border-radius: 1.5rem;
   text-align: left;
   text-decoration: none;
@@ -1961,7 +1966,7 @@ a.olo-carrusel__boton:focus-visible {
   width: 100%;
   aspect-ratio: 400 / 280;
   border: 1px solid #d9dee5;
-  border-radius: 1.25rem;
+  border-radius: 0.875rem;
   overflow: hidden;
   background-color: #f3f4f6;
   /* La portada no debe interceptar el ratón: el enlace es la tarjeta entera. */

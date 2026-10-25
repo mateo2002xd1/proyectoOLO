@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 25-10-2026 (5.ª parte): borde en cada tarjeta de «Últimas publicaciones»
+
+**Qué pidió el usuario:** que cada tarjeta del bloque «Últimas publicaciones» lleve un borde con esquinas redondeadas, para distinguir una noticia de otra. Dijo «en los dos» al preguntar si era el sitio web, la intranet o ambos.
+
+**Qué se hizo** (solo CSS; el componente `publicaciones.tsx` de cada app no cambió):
+
+- `.publicaciones-tarjeta` pasa a llevar `padding: 0.75rem` y `border: 1px solid #d9dee5` (el mismo gris de borde que ya tenía la portada), con su esquina de 1.5rem de siempre. El borde envuelve portada y pie, no solo la imagen.
+- `.publicaciones-card-img-wrapper`: la esquina de la portada baja de 1.25rem a 0.875rem para que sea concéntrica con la de la tarjeta (1.5rem − 0.75rem de relleno); con la anterior las dos curvas no eran paralelas. La portada conserva su borde fino: una página de PDF es blanca y, sin él, se confundiría con el fondo de la tarjeta.
+- Mismos valores en `3000-sitio-web/src/style/globals.css` y `3001-intranet/src/style/globals.css`, como pide el comentario de cabecera del componente.
+
+| Verificación | Resultado |
+|---|---|
+| CSS servido por los `next dev` ya en marcha (3000 y 3001) | Traen la regla nueva |
+| Sitio web, `/inicio`, medido en el navegador a 1280, 768 y 375 px | Borde 1 px `#d9dee5`, esquina 24 px, sin desborde horizontal en los tres anchos |
+| Tamaño de la tarjeta | 320 × 309 (1280), 320 × 307 (768) y 300 × 291 (375): la portada se estrecha 26 px y la tarjeta crece unos 7 px de alto |
+| Captura a 1280 y 375 px | Cada tarjeta se ve como una pieza aparte; la flecha de «ir a la publicación» sigue colgando del borde de la portada |
+
+**Lo que no se hizo:** la intranet no se vio en pantalla (pide sesión); se comprobó que sirve el mismo CSS, y como las reglas son idénticas se espera el mismo resultado. Tampoco se revisó el estado con el ratón encima ni la tarjeta con la portada de respaldo (sin PDF ni miniatura).
+
+**Código tocado:** `3000-sitio-web/src/style/globals.css` y `3001-intranet/src/style/globals.css`.
+
+---
 ## sesión 25-10-2026 (4.ª parte): prueba de secuestro de WebSocket entre sitios (CSWSH)
 
 **Qué pidió el usuario:** probar CSWSH. Resultado: **sin hallazgo**, porque el proyecto no expone ningún WebSocket propio (CSW-01 en `3-seguridad-del-proyecto.md` §4.10).
