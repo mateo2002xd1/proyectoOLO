@@ -89,8 +89,8 @@ export const createUser = (data: any, actor?: Actor) => crearUsuario(data, actor
  */
 type Actor = { id?: string; role?: string | null };
 
-/** Lo único que alguien puede cambiarse a sí mismo sin ser administrador. */
-const CAMPOS_DE_AUTOSERVICIO = ['name', 'apellidos', 'email'] as const;
+/** Lo único que alguien puede cambiarse a sí mismo sin ser administrador. Sin `email`: el 409 de «ya registrado» servía de oráculo de cuentas (ENU-01). */
+const CAMPOS_DE_AUTOSERVICIO = ['name', 'apellidos'] as const;
 
 /**
  * Cuántas cuentas activas administran usuarios ahora mismo (Superadmin o

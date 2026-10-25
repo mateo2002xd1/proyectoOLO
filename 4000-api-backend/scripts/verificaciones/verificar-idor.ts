@@ -366,6 +366,19 @@ const probarCuentas = async (m: Mundo) => {
   niega('el Editor no se restablece la contraseña por la puerta de «Mi perfil»', reset);
   afirmar('…y no se filtró ninguna contraseña temporal', !/temporaryPassword/.test(reset.texto));
   niega('el Editor no se quita la caducidad ni toca su estado', await llamar(m.ed1, 'PATCH', `/api/users/${m.ed1.id}`, { cuerpo: { status: 'inactive' } }));
+  // ENU-01: el correo propio no es autoservicio. Antes, uno ya registrado daba 409 y uno libre 200:
+  // con la sesión de cualquier rol se averiguaba qué correos tienen cuenta.
+  const correoOcupado = await llamar(m.ed1, 'PATCH', `/api/users/${m.ed1.id}`, { cuerpo: { email: m.ed2.email } });
+  const correoLibre = await llamar(m.ed1, 'PATCH', `/api/users/${m.ed1.id}`, {
+    cuerpo: { email: `${PREFIJO_CORREO}libre-${randomUUID().slice(0, 6)}${DOMINIO}` },
+  });
+  niega('el Editor no cambia su propio correo (uno ocupado)', correoOcupado);
+  niega('el Editor no cambia su propio correo (uno libre)', correoLibre);
+  afirmar(
+    'sin enumeración: correo ocupado y correo libre responden igual',
+    correoOcupado.status === correoLibre.status && JSON.stringify(correoOcupado.json) === JSON.stringify(correoLibre.json)
+  );
+  afirmar('…y el correo del Editor sigue siendo el suyo', (await campoDe(m.ed1.id, 'email')) === m.ed1.email);
 
   // Borrado
   niega('el Editor no borra la cuenta de otro', await llamar(m.ed1, 'DELETE', `/api/users/${m.ed2.id}`));
