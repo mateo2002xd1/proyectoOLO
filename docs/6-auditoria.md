@@ -5,6 +5,62 @@
 
 ---
 
+## sesión 25-10-2026 (4.ª parte): prueba de secuestro de WebSocket entre sitios (CSWSH)
+
+**Qué pidió el usuario:** probar CSWSH. Resultado: **sin hallazgo**, porque el proyecto no expone ningún WebSocket propio (CSW-01 en `3-seguridad-del-proyecto.md` §4.10).
+
+**Cómo se hizo:** búsqueda en todo el repositorio de `socket.io`, `ws`, `WebSocketServer`, `on('upgrade'`, SSE y librerías de colaboración; handshake manual (`Upgrade: websocket`, `Origin` ajeno y la cookie de sesión de una cuenta de prueba puesta a mano) contra una copia desechable del API compilada, sin tocar Neon; y el mismo handshake, solo lectura, contra los `next dev` que ya tenías en los puertos 3000 y 3001.
+
+| Verificación | Resultado |
+|---|---|
+| Servidores de WebSocket en `3000-sitio-web`, `3001-intranet`, `4000-api-backend` | Ninguno. El `ws` del API (`config/database.ts`) es el cliente que usa el conector de Neon |
+| nginx (`docker/nginx/nginx.servidor.conf`) | Reenvía `Upgrade` y `Connection` de forma global; no hay nada detrás que lo acepte |
+| API: handshake con `Origin: https://evil.example` y la cookie de la víctima en 10 rutas (`/`, `/api`, `/ws`, `/socket.io/`, `/graphql`, `/api/me`…) | Ningún 101. El API ignora `Upgrade` y responde como a un GET (`/api/me` dio 200 con su JSON, sin abrir socket) |
+| Cookie de sesión | `HttpOnly` y `SameSite=Lax`; `Secure` en producción. Desde un sitio ajeno el navegador no la envía |
+| HMR de `next dev` (`/_next/hmr?id=…`, Next 16) con `Origin` propio | 101 (el control funciona) |
+| …con `Origin` `https://evil.example`, `null` y `http://127.0.0.1:3000` | Rechazado |
+| …con `Origin` de otro puerto de `localhost` (`:3001`→`:3000`, `:3000`→`:3001`, `:4000`→`:3000`) o sin `Origin` | 101: Next acepta cualquier puerto de `localhost` y los clientes que no son navegador |
+
+**Lo que se descubrió por el camino:** la primera sonda usó `/_next/webpack-hmr` y no dio 101 ni con el `Origin` propio; ese resultado no probaba nada (el control fallaba). La ruta real del HMR de Next 16 es `/_next/hmr`, que se encontró en el JavaScript que sirve el propio dev.
+
+**Alcance y límites:** el HMR solo existe en desarrollo y no autentica con cookies; lo que expondría es información del build (rutas de archivos, errores de compilación), no sesiones. Que acepte cualquier puerto de `localhost` es el comportamiento por omisión de `allowedDevOrigins`; no se cambió nada. Los `next dev` escuchan en `0.0.0.0`, así que alguien de tu misma red puede abrir ese socket sin `Origin`; si te importa, `next dev -H 127.0.0.1`. **No se probó** nginx ni el servidor real (no se levantó), ni las reescrituras de Next hacia `/api-backend/*` con un Upgrade (el API respondería 404, como arriba).
+
+**Código tocado:** ninguno. Solo documentación.
+
+---
+## sesión 25-10-2026 (3.ª parte): prueba de enumeración de cuentas en el login y la recuperación
+
+**Qué pidió el usuario:** una prueba de enumeración de usuarios en el login, con Claude como agente principal orientando a las skills y a los agentes.
+
+**Cómo se hizo:** entorno desechable —Postgres 18 en el puerto 55432, Redis 7 en el 56379 (base 7) y una copia del API **sin `.env`** en la carpeta temporal de la sesión—, de modo que nada llegó a Neon ni al dev. Siete cuentas sembradas: activa, sin preguntas, inactiva, caducada, temporal vencida, bloqueada y una segunda activa. Metodología de la skill `broken-authentication`; el agente `security-auditor` revisó por lectura las rutas públicas, los proxies de las dos apps y el limitador. No se lanzó `penetration-tester`: la parte dinámica cabía en scripts cortos.
+
+**Qué se encontró** (IDs en `3-seguridad-del-proyecto.md` §4.10):
+
+| ID | Hallazgo | Estado |
+|---|---|---|
+| ENU-01 | Con la sesión de **cualquier rol**, cambiar el propio correo respondía 409 si el correo ya existía y 200 si estaba libre (y lo cambiaba) | **Corregido** |
+| ENU-02 a ENU-05 | Diferencias de tiempo entre cuenta real e inexistente en `verify`, `user-questions` y el login; y el dominio ajeno sin bcrypt | Abiertos; medidas, sin explotar |
+| ENU-06 | Cuentas con hash nulo o de otro coste se compararían al instante | Abierto; hay una consulta para Neon |
+| RED-02 | Con `COMANDO_TIMEOUT_MS` a 300 ms los limitadores se apagaron en silencio al arrancar el API de prueba | Abierto; hay que mirar el log del servidor real |
+
+**Qué se hizo:** `email` sale de `CAMPOS_DE_AUTOSERVICIO` en `4000-api-backend/src/use-cases/usuarios/listar-usuarios.usecase.ts` (la lista blanca queda en `name` y `apellidos`). «Mi perfil» se eliminó el 2026-10-20 y el modal de edición solo lo ven quienes administran usuarios, así que ninguna pantalla usaba el cambio de correo propio. Las comprobaciones nuevas están en `scripts/verificaciones/verificar-idor.ts`. Los administradores no cambian: siguen pudiendo editar correos, y ya ven la lista completa de cuentas.
+
+| Verificación | Resultado |
+|---|---|
+| Login con contraseña equivocada, 9 casos (activa, sin preguntas, inactiva, caducada, temporal vencida, bloqueada, inexistente, otro dominio, mayúsculas con espacios) | Una sola firma: 401, mismo cuerpo, mismas cabeceras |
+| Login con contraseña correcta | 200 / 403 / 403 / 403 / 423 según el estado: esperado, solo lo ve quien ya sabe la contraseña |
+| ENU-01 antes del cambio (Editor, correo propio) | 409 con un correo ocupado, 200 con uno libre |
+| ENU-01 después | 403 y 403, mismo mensaje; el correo no cambia |
+| `idor:verificar` en la base desechable | 178 comprobaciones, 0 fallos, 2 avisos (`GET /api/paginas/respaldos` y `GET /api/paginas/publicadas` solo exigen sesión; no tienen que ver con este cambio) |
+| `tsc --noEmit` en `4000-api-backend` | Sin errores |
+| Tiempos de los casos de uso, 25 muestras intercaladas, base local | Login real − inexistente: +4,4 ms; `verify`: +13,2 ms; `user-questions`: +1,7 ms; dominio ajeno: −229,8 ms |
+| Limitador por correo, 12 intentos fallidos a un correo real y a uno inexistente (JS compilado, `COMANDO_TIMEOUT_MS` a 5000 en la copia) | Misma secuencia: diez 401 y 429 desde el 11.º, mismo cuerpo y misma cabecera `RateLimit` |
+
+**Lo que no se hizo:** las mediciones de tiempo son contra una base local, sin la latencia de Neon; no se pasó por HTTP el flujo `user-questions` → `verify` → `recover-password` (se midieron sus casos de uso); no se corrió la batería completa de 23 verificaciones, solo `idor:verificar`; y la consulta de ENU-06 no se corrió en Neon. La revisión del auditor sobre las rutas públicas (sin hallazgo en las que no son de acceso) y sobre los proxies BFF es por lectura.
+
+**Pendiente:** decidir si se cierran ENU-02 a ENU-05 (ENU-05 es una línea; ENU-02 toca la recuperación y pide consejo y `auditor-*` antes de aplicar); correr la consulta de ENU-06 en Neon; y buscar en el log del servidor real la línea de RED-02.
+
+---
 ## sesión 24-10-2026 (10.ª parte): el editor de texto del bloque «Texto enriquecido» ya no se duplica
 
 **Qué reportó el usuario:** en el panel de «Texto enriquecido» el contenido se veía dos veces dentro de la misma tarjeta.
