@@ -237,9 +237,9 @@ function CampoMedida({
   );
 }
 
-/** La línea de ayuda bajo un control: pequeña y gris, una sola frase. */
+/** La línea de ayuda sobre un control: pequeña y gris, una sola frase. */
 export function AyudaDeCampo({ children }: { children: ReactNode }) {
-  return <p style={{ margin: '8px 0 0', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{children}</p>;
+  return <p style={{ margin: '0 0 8px', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{children}</p>;
 }
 
 // ─── Acordeón ────────────────────────────────────────────────────────────────
@@ -560,8 +560,8 @@ function FilaDeAcordeon({
       resumen={opciones.resumen ? opciones.resumen(valor) : resumenPorDefecto(campo, valor)}
       abiertoAlInicio={opciones.abierto}
     >
-      <ControlDeCampo campo={campo} valor={valor} onChange={onChange} props={props} />
       {campo.ayuda && <AyudaDeCampo>{campo.ayuda}</AyudaDeCampo>}
+      <ControlDeCampo campo={campo} valor={valor} onChange={onChange} props={props} />
     </AcordeonDeCampo>
   );
 }
@@ -638,14 +638,14 @@ function ControlesDeGrupo({
           <span style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500, color: COLOR_TEXTO }}>
             {campo.label}
           </span>
+          {campo.ayuda && (
+            <p style={{ margin: '0 0 6px', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{campo.ayuda}</p>
+          )}
           <ControlDeCampo
             campo={campo}
             valor={value?.[clave]}
             onChange={(v) => onChange({ ...(value ?? {}), [clave]: v })}
           />
-          {campo.ayuda && (
-            <p style={{ margin: '6px 0 0', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{campo.ayuda}</p>
-          )}
         </div>
       ))}
     </div>

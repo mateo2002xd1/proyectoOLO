@@ -115,9 +115,9 @@ export function CamposAgrupados({
     if (!def || yaEsAcordeon(def) || !NATIVOS_SIMPLES.has(def.type)) return hijo;
     return (
       <AcordeonDeCampo key={nombre} etiqueta={def.label ?? nombre} resumen={resumenNativo(def, valores[nombre])}>
+        {typeof def.metadata?.ayuda === 'string' && <AyudaDeCampo>{def.metadata.ayuda}</AyudaDeCampo>}
         {/* La cabecera ya dice el título: Puck no lo repite sobre el control. */}
         <TituloYaPuestoContext.Provider value={true}>{hijo}</TituloYaPuestoContext.Provider>
-        {typeof def.metadata?.ayuda === 'string' && <AyudaDeCampo>{def.metadata.ayuda}</AyudaDeCampo>}
       </AcordeonDeCampo>
     );
   };

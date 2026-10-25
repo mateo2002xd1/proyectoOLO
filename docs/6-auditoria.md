@@ -28,6 +28,10 @@
 
 - **Borde al abrir** (pedido después): en los paneles sin líneas, un acordeón abierto se enmarca con un borde claro (`#d9dde3`) y esquinas de 12, también las de abajo, para ver qué contiene; cerrado lleva el borde transparente para que no salte. Los padre, al contener sub-acordeones, llevan 8 px de margen interior para que estos no toquen el borde.
 
+- **Ayudas del botón más cortas** (pedido después): una frase en imperativo, sin explicaciones: «Escribe el nombre del botón.», «Elige qué tan grande se ve.», «Elige cuánto espacio ocupa.», «Elige el color de fondo.», «Elige el color de las letras.», «Elige a dónde lleva el clic.», «Actívalo para que el botón destaque.», «Elige el color del borde resaltado.». Dejaron de decir los valores por defecto (blanco, verde SENA); el campo de color ya dice «Usar el color por defecto». En las dos apps.
+
+- **La ayuda va arriba** (pedido después): la línea de ayuda de cada opción se pinta encima de su control, no debajo (`AyudaDeCampo`, `FilaDeAcordeon` y los grupos y listas de `campos-en-acordeon.tsx`, y los nativos de `campos-agrupados.tsx`). Vale para todos los paneles que usan acordeones, no solo para el botón.
+
 **Pendiente al cierre**
 - Las líneas de ayuda solo existen donde ya había (los `campoEnAcordeon` y el texto del botón). Los campos nativos del sitio no las tienen: habría que escribirlas una a una.
 - Los campos que quedan fuera (selector de imagen, texto enriquecido, listas nativas) siguen con su aspecto de siempre; pasarlos a acordeón exige tocar `ImageUploaderField` y similares en cada app.
