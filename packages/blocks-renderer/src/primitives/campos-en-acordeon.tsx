@@ -124,6 +124,13 @@ const estiloControl: React.CSSProperties = {
  */
 export const TituloYaPuestoContext = createContext(false);
 
+/**
+ * `true` en los paneles que pintan sus acordeones sin líneas (el del botón, ver
+ * `campos-agrupados.tsx`): sin borde alrededor ni raya entre la cabecera y el contenido.
+ * Los controles de dentro conservan su borde.
+ */
+export const SinLineasContext = createContext(false);
+
 // ─── Medidas libres ──────────────────────────────────────────────────────────
 const MEDIDA = /^(-?(?:\d+\.?\d*|\.\d+))(rem|em|vw|vh|ch|px|%)$/;
 
@@ -238,20 +245,27 @@ export function AcordeonDeCampo({
   etiqueta,
   resumen,
   abiertoAlInicio = false,
+  anidado = false,
+  fondoCabecera,
   children,
 }: {
   etiqueta: string;
   resumen?: ReactNode;
   abiertoAlInicio?: boolean;
+  /** Su contenido son otros acordeones: sin relleno propio, para que queden a ras de su cabecera. */
+  anidado?: boolean;
+  /** Color de fondo de la cabecera (los acordeones padre lo llevan teñido). */
+  fondoCabecera?: string;
   children: ReactNode;
 }) {
   const [abierto, setAbierto] = useState(abiertoAlInicio);
   const idContenido = useId();
+  const sinLineas = useContext(SinLineasContext);
 
   return (
     <div
       style={{
-        border: `1px solid ${COLOR_BORDE}`,
+        border: sinLineas ? 0 : `1px solid ${COLOR_BORDE}`,
         borderRadius: '8px',
         background: '#ffffff',
         overflow: 'hidden',
@@ -272,7 +286,7 @@ export function AcordeonDeCampo({
           minHeight: '44px',
           padding: '8px 12px',
           border: 0,
-          background: abierto ? '#f9fafb' : '#ffffff',
+          background: fondoCabecera ?? (abierto ? '#f9fafb' : '#ffffff'),
           color: COLOR_TEXTO,
           fontFamily: 'inherit',
           fontSize: '14px',
@@ -325,7 +339,10 @@ export function AcordeonDeCampo({
       <div
         id={idContenido}
         hidden={!abierto}
-        style={{ padding: '12px', borderTop: `1px solid ${COLOR_BORDE}` }}
+        style={{
+          padding: anidado ? '4px 0 0' : '12px',
+          borderTop: sinLineas ? 0 : `1px solid ${COLOR_BORDE}`,
+        }}
       >
         {children}
       </div>
@@ -349,15 +366,9 @@ function OpcionesSegmentadas({
     <div
       role="radiogroup"
       aria-label={etiqueta}
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        border: `1px solid ${COLOR_BORDE}`,
-        borderRadius: '8px',
-        overflow: 'hidden',
-      }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
     >
-      {opciones.map((opcion, i) => {
+      {opciones.map((opcion) => {
         const elegida = opcion.value === valor;
         return (
           <button
@@ -370,11 +381,12 @@ function OpcionesSegmentadas({
             style={{
               flex: '1 1 auto',
               minHeight: '40px',
-              padding: '8px 10px',
-              border: 0,
-              borderLeft: i === 0 ? 0 : `1px solid ${COLOR_BORDE}`,
+              padding: '8px 14px',
+              // Cada opción es un botón aparte, con su propio borde y esquina redondeada.
+              border: `1px solid ${elegida ? COLOR_ACENTO : COLOR_BORDE}`,
+              borderRadius: '12px',
               background: elegida ? FONDO_ACENTO : '#ffffff',
-              // La elegida lleva su propio borde azul por dentro, sin mover a las vecinas.
+              // El borde azul de la elegida se refuerza por dentro, sin mover a las vecinas.
               boxShadow: elegida ? `inset 0 0 0 1px ${COLOR_ACENTO}` : 'none',
               color: elegida ? COLOR_ACENTO : COLOR_TEXTO,
               fontFamily: 'inherit',

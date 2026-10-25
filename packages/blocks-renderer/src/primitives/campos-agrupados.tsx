@@ -24,7 +24,7 @@
  */
 
 import { Children, useContext, type ComponentType, type ReactElement, type ReactNode } from 'react';
-import { AcordeonDeCampo, AyudaDeCampo, TituloYaPuestoContext } from './campos-en-acordeon';
+import { AcordeonDeCampo, AyudaDeCampo, SinLineasContext, TituloYaPuestoContext } from './campos-en-acordeon';
 import { COLOR_FOCO_CAMPO } from './estilos-de-campos';
 
 export interface CampoEnvuelto {
@@ -58,17 +58,30 @@ export const GRUPOS_DE_CAMPOS: Record<string, GrupoDeCampos> = {
   },
 };
 
+/** El azul oscuro del panel (`COLOR_FOCO_CAMPO`, #001631) al 7 %: cabecera de los acordeones padre. */
+const FONDO_PADRE = 'rgba(0, 22, 49, 0.07)';
+
 const nombreDelCampo = (hijo: ReactElement) => String(hijo.key ?? '').replace(/^\.\$/, '');
 
 /**
  * Un campo nativo de Puck (texto) con las medidas de los demás controles del panel:
  * 40 de alto, esquina de 8, borde gris y el mismo borde azul al enfocarlo.
  */
+/**
+ * Cada campo llega de Puck dentro de un `div` suyo con 16 px de relleno y, entre vecinos, una
+ * raya arriba (`PuckFields-field`). Dentro de estos acordeones sobra: sangraba los campos y
+ * dibujaba líneas entre ellos. Se anula aquí, y el margen de los lados lo pone el grupo.
+ */
+const ESTILO_GRUPO = `
+[data-olo-grupo] [class*="PuckFields-field"]{padding:0!important;margin:0!important;border:0!important}
+`;
+
 const ESTILO_NATIVO = `
 [data-olo-campo-nativo] input[type="text"]{width:100%;min-height:40px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#333;font:inherit;font-size:14px;box-sizing:border-box;transition:border-color 150ms ease,box-shadow 150ms ease}
 [data-olo-campo-nativo] input[type="text"]:focus,[data-olo-campo-nativo] input[type="text"]:focus-visible{outline:none;border-color:${COLOR_FOCO_CAMPO};box-shadow:0 0 0 3px rgba(0,22,49,.14)}
 `;
 
+/* Los acordeones de estos grupos se pintan sin líneas (`SinLineasContext`). */
 export function CamposAgrupados({
   tipo,
   valores = {},
@@ -86,43 +99,49 @@ export function CamposAgrupados({
   const propios = hijos.filter((h) => !Object.hasOwn(grupo.aparte, nombreDelCampo(h)));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <AcordeonDeCampo etiqueta={grupo.titulo} abiertoAlInicio>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {propios.map((hijo) => {
-            const envuelto = Object.hasOwn(grupo.envueltos, nombreDelCampo(hijo))
-              ? grupo.envueltos[nombreDelCampo(hijo)]
-              : undefined;
-            if (!envuelto) return hijo;
-            return (
-              <AcordeonDeCampo
-                key={nombreDelCampo(hijo)}
-                etiqueta={envuelto.titulo}
-                resumen={envuelto.resumen?.(valores)}
-              >
-                <style href="olo-estilos-de-campo-nativo" precedence="default">
-                  {ESTILO_NATIVO}
-                </style>
-                <div data-olo-campo-nativo>
-                  <TituloYaPuestoContext.Provider value={true}>{hijo}</TituloYaPuestoContext.Provider>
-                </div>
-                <AyudaDeCampo>{envuelto.ayuda}</AyudaDeCampo>
-              </AcordeonDeCampo>
-            );
-          })}
-        </div>
-      </AcordeonDeCampo>
-      {Object.entries(grupo.aparte).map(([campo, titulo]) => {
-        const hijo = hijos.find((h) => nombreDelCampo(h) === campo);
-        if (!hijo) return null;
-        return (
-          <AcordeonDeCampo key={campo} etiqueta={titulo}>
-            {/* El acordeón de fuera ya dice el título: el grupo de dentro no lo repite. */}
-            <TituloYaPuestoContext.Provider value={true}>{hijo}</TituloYaPuestoContext.Provider>
-          </AcordeonDeCampo>
-        );
-      })}
-    </div>
+    <SinLineasContext.Provider value={true}>
+      {/* 16 px a los lados, como el relleno que Puck da a sus propios campos. */}
+      <div data-olo-grupo style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px 16px' }}>
+        <style href="olo-estilos-de-grupo" precedence="default">
+          {ESTILO_GRUPO}
+        </style>
+        <AcordeonDeCampo etiqueta={grupo.titulo} abiertoAlInicio anidado fondoCabecera={FONDO_PADRE}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {propios.map((hijo) => {
+              const envuelto = Object.hasOwn(grupo.envueltos, nombreDelCampo(hijo))
+                ? grupo.envueltos[nombreDelCampo(hijo)]
+                : undefined;
+              if (!envuelto) return hijo;
+              return (
+                <AcordeonDeCampo
+                  key={nombreDelCampo(hijo)}
+                  etiqueta={envuelto.titulo}
+                  resumen={envuelto.resumen?.(valores)}
+                >
+                  <style href="olo-estilos-de-campo-nativo" precedence="default">
+                    {ESTILO_NATIVO}
+                  </style>
+                  <div data-olo-campo-nativo>
+                    <TituloYaPuestoContext.Provider value={true}>{hijo}</TituloYaPuestoContext.Provider>
+                  </div>
+                  <AyudaDeCampo>{envuelto.ayuda}</AyudaDeCampo>
+                </AcordeonDeCampo>
+              );
+            })}
+          </div>
+        </AcordeonDeCampo>
+        {Object.entries(grupo.aparte).map(([campo, titulo]) => {
+          const hijo = hijos.find((h) => nombreDelCampo(h) === campo);
+          if (!hijo) return null;
+          return (
+            <AcordeonDeCampo key={campo} etiqueta={titulo} anidado fondoCabecera={FONDO_PADRE}>
+              {/* El acordeón de fuera ya dice el título: el grupo de dentro no lo repite. */}
+              <TituloYaPuestoContext.Provider value={true}>{hijo}</TituloYaPuestoContext.Provider>
+            </AcordeonDeCampo>
+          );
+        })}
+      </div>
+    </SinLineasContext.Provider>
   );
 }
 
