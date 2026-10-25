@@ -14,7 +14,7 @@
 -- (usa tablas temporales que crea ese paso).
 --
 -- Regenerar desde la base de desarrollo:  ./docker/deploy.sh exportar-paginas
--- Generado el 2026-10-25T02:18:51.200Z
+-- Generado el 2026-10-25T19:30:07.001Z
 -- modo: inicio-limpio
 -- conteo: paginas=16 paginas_versiones=16
 
