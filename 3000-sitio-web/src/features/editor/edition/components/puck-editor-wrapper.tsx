@@ -106,13 +106,15 @@ interface PuckEditorWrapperProps {
 const usePuckSel = createUsePuck();
 
 /**
- * Campos del bloque seleccionado: los de `GRUPOS_DE_CAMPOS` (hoy el botón) van en
- * acordeones; el resto de bloques, como siempre.
+ * Campos del bloque seleccionado: todos los bloques del sitio van en dos acordeones padre
+ * («Opciones del bloque» y «Espaciado y Ancho»); ver `campos-agrupados.tsx`.
  */
 function CamposDelPanel({ children }: { children?: ReactNode }) {
   const bloque = usePuckSel((s) => s.selectedItem);
+  const config = usePuckSel((s) => s.config);
+  const campos = bloque ? (config.components as Record<string, { fields?: Record<string, unknown> }>)[bloque.type]?.fields : undefined;
   return (
-    <CamposAgrupados tipo={bloque?.type} valores={bloque?.props}>
+    <CamposAgrupados tipo={bloque?.type} campos={campos} valores={bloque?.props} todos>
       {children}
     </CamposAgrupados>
   );
