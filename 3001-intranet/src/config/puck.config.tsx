@@ -630,12 +630,12 @@ const puckConfigBase: Config = {
           label: 'Texto del botón',
           contentEditable: true,
           // Lo lee `CamposAgrupados` para la línea de ayuda del acordeón.
-          metadata: { ayuda: 'Lo que dice el botón. También se escribe directo sobre la página.' },
+          metadata: { ayuda: 'Escribe el nombre del botón.' },
         },
         tamano: campoEnAcordeon({
           type: 'select',
           label: 'Tamaño del botón',
-          ayuda: 'Qué tan alto y grande se ve el botón.',
+          ayuda: 'Elige qué tan grande se ve.',
           options: [
             { label: 'Pequeño', value: 'pequeno' },
             { label: 'Mediano', value: 'mediano' },
@@ -646,7 +646,7 @@ const puckConfigBase: Config = {
         ancho: campoEnAcordeon({
           type: 'radio',
           label: 'Ancho del botón',
-          ayuda: '«Ajustado» se adapta a su texto; «Completo» ocupa toda la fila.',
+          ayuda: 'Elige cuánto espacio ocupa.',
           options: [
             { label: 'Ajustado', value: 'auto' },
             { label: 'Mediano', value: 'mediano' },
@@ -657,21 +657,21 @@ const puckConfigBase: Config = {
         colorFondo: campoEnAcordeon({
           type: 'color',
           label: 'Color de fondo',
-          ayuda: 'Relleno del botón. Vacío = blanco.',
+          ayuda: 'Elige el color de fondo.',
         }),
         colorTexto: campoEnAcordeon({
           type: 'color',
           label: 'Color del texto',
-          ayuda: 'Color de las letras. Vacío = azul oscuro del título.',
+          ayuda: 'Elige el color de las letras.',
         }),
         destino: campoDestinoBotonEnAcordeon(
           'Destino del botón',
-          'A dónde lleva el clic: un enlace, un archivo o nada.'
+          'Elige a dónde lleva el clic.'
         ),
         resaltado: campoEnAcordeon({
           type: 'radio',
           label: 'Resaltar botón',
-          ayuda: 'Añade un borde y un halo de color para que destaque.',
+          ayuda: 'Actívalo para que el botón destaque.',
           options: [
             { label: 'Normal', value: false },
             { label: 'Resaltado', value: true },
@@ -680,7 +680,7 @@ const puckConfigBase: Config = {
         colorResaltado: campoEnAcordeon({
           type: 'color',
           label: 'Color del resaltado',
-          ayuda: 'Color del borde y el halo; solo se ve si el botón está resaltado. Vacío = verde SENA.',
+          ayuda: 'Elige el color del borde resaltado.',
         }),
       },
       defaultProps: {
