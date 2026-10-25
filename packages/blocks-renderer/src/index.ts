@@ -30,6 +30,7 @@ export {
   ObjetoEnAcordeon,
 } from './primitives/campos-en-acordeon';
 export type { CampoDeAcordeon, OpcionesDeAcordeon, OpcionesDeLista } from './primitives/campos-en-acordeon';
+export { campoPaginaEnEdicion } from './primitives/campo-pagina-en-edicion';
 export { CamposAgrupados, GRUPOS_DE_CAMPOS, crearEtiquetaDeCampo } from './primitives/campos-agrupados';
 export type { GrupoDeCampos } from './primitives/campos-agrupados';
 

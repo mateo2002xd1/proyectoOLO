@@ -7,8 +7,8 @@ import {
   conCaja,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
-  campoColor,
   campoEnAcordeon,
+  campoPaginaEnEdicion,
   campoGrupoEnUnAcordeon,
   campoListaEnAcordeones,
   campoObjetoEnAcordeon,
@@ -38,6 +38,7 @@ import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
 import { TAMANOS_TEXTO_MENU } from '@/shared/lib/blocks/tamanos-texto-menu';
+import { rutaPublicaDeSlug } from '@/features/editor/model/rutas';
 import { crearCamposDelPie, resolverGruposDelPie } from '@/features/editor/navegation/campos-del-pie';
 import { resolverGruposDeProps } from '@/features/editor/navegation/grupos-de-props';
 import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA } from '@/shared/lib/blocks/disposicion-de-franja';
@@ -757,7 +758,7 @@ const puckConfigBase: Config = {
           label: 'Título de la sección',
           contentEditable: true,
         },
-        colorTitle: campoColor('Color del título (opcional)'),
+        colorTitle: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
         services: {
           type: 'array' as const,
           label: 'Lista de servicios',
@@ -1006,7 +1007,7 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: campoTextoRico('Título'),
-        fondo: campoColor('Color de fondo (opcional)'),
+        fondo: campoEnAcordeon({ type: 'color', label: 'Color de fondo', ayuda: 'Vacío = el color por defecto del bloque.' }),
         movimiento: {
           type: 'radio' as const,
           label: 'Se mueve solo',
@@ -1099,8 +1100,8 @@ const puckConfigBase: Config = {
       fields: {
         titulo: campoTextoRico('Título (h1 de la página)'),
         intro: campoTextoRico('Párrafos de introducción'),
-        colorTitulo: campoColor('Color del título (opcional)'),
-        colorContenido: campoColor('Color de la introducción / contenido (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
+        colorContenido: campoEnAcordeon({ type: 'color', label: 'Color de la introducción / contenido', ayuda: 'Vacío = el color por defecto del bloque.' }),
       },
       defaultProps: {
         id: 'politica-encabezado-1',
@@ -1135,7 +1136,7 @@ const puckConfigBase: Config = {
       label: 'Visor de documentos normativos',
       fields: {
         titulo: campoTextoRico('Título de la sección'),
-        colorTitulo: campoColor('Color del título (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
         documentos: {
           type: 'array' as const,
           label: 'Documentos',
@@ -1195,8 +1196,8 @@ const puckConfigBase: Config = {
       fields: {
         titulo: campoTextoRico('Título de la sección'),
         intro: campoTextoRico('Párrafo de introducción'),
-        colorTitulo: campoColor('Color del título (opcional)'),
-        colorContenido: campoColor('Color del contenido / introducción (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
+        colorContenido: campoEnAcordeon({ type: 'color', label: 'Color del contenido / introducción', ayuda: 'Vacío = el color por defecto del bloque.' }),
         canales: {
           type: 'array' as const,
           label: 'Canales',
@@ -1455,7 +1456,7 @@ const puckConfigBase: Config = {
           {
             parrafo: campoTextoRico('Párrafo'),
             // El de la franja del texto, aparte del banner de imágenes.
-            colorFondo: campoColor('Color de fondo'),
+            colorFondo: campoEnAcordeon({ type: 'color', label: 'Color de fondo', ayuda: 'Vacío = el color por defecto del bloque.' }),
           },
           { abierto: true }
         ),
@@ -1536,9 +1537,9 @@ const puckConfigBase: Config = {
         subtitulo: campoTextoRico('Subtítulo'),
         contenido: campoTextoRico('Contenido'),
         fondo: campoFondo,
-        colorTitulo: campoColor('Color del título (opcional)'),
-        colorContenido: campoColor('Color del contenido (opcional)'),
-        colorTexto: campoColor('Color del texto (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
+        colorContenido: campoEnAcordeon({ type: 'color', label: 'Color del contenido', ayuda: 'Vacío = el color por defecto del bloque.' }),
+        colorTexto: campoEnAcordeon({ type: 'color', label: 'Color del texto', ayuda: 'Vacío = el color por defecto del bloque.' }),
         ancho: {
           type: 'radio',
           label: 'Ancho',
@@ -1689,7 +1690,13 @@ const puckConfigBase: Config = {
       fields: {
         // Nativo a propósito: solo un `text` de Puck se edita también sobre la página. Su acordeón
         // lo pone `CamposAgrupados` (ver `GRUPOS_DE_CAMPOS`).
-        texto: { type: 'text', label: 'Texto del botón', contentEditable: true },
+        texto: {
+          type: 'text',
+          label: 'Texto del botón',
+          contentEditable: true,
+          // Lo lee `CamposAgrupados` para la línea de ayuda del acordeón.
+          metadata: { ayuda: 'Lo que dice el botón. También se escribe directo sobre la página.' },
+        },
         tamano: campoEnAcordeon({
           type: 'select',
           label: 'Tamaño del botón',
@@ -1789,8 +1796,8 @@ const puckConfigBase: Config = {
           ],
         },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
-        colorTitulo: campoColor('Color del título (opcional)'),
-        colorSubtitulo: campoColor('Color del subtítulo / contenido (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
+        colorSubtitulo: campoEnAcordeon({ type: 'color', label: 'Color del subtítulo / contenido', ayuda: 'Vacío = el color por defecto del bloque.' }),
         columnas: {
           type: 'radio',
           label: 'Columnas en escritorio',
@@ -1852,7 +1859,7 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
-        colorTitulo: campoColor('Color del título (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
         mostrarDescripcion: {
           type: 'radio',
           label: 'Mostrar descripción',
@@ -1883,7 +1890,7 @@ const puckConfigBase: Config = {
             { label: 'Por mapa', value: 'mapa' },
           ],
         },
-        colorDescripcion: campoColor('Color de la descripción (opcional)'),
+        colorDescripcion: campoEnAcordeon({ type: 'color', label: 'Color de la descripción', ayuda: 'Vacío = el color por defecto del bloque.' }),
       },
       defaultProps: {
         modoSeleccionDepartamento: 'mapa',
@@ -2069,7 +2076,7 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
-        colorTitulo: campoColor('Color del título (opcional)'),
+        colorTitulo: campoEnAcordeon({ type: 'color', label: 'Color del título', ayuda: 'Vacío = el color por defecto del bloque.' }),
         mostrarSubtitulo: {
           type: 'radio',
           label: 'Mostrar subtítulo',
@@ -2091,7 +2098,7 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
-        colorSubtitulo: campoColor('Color del subtítulo (opcional)'),
+        colorSubtitulo: campoEnAcordeon({ type: 'color', label: 'Color del subtítulo', ayuda: 'Vacío = el color por defecto del bloque.' }),
         mostrarDescripcion: {
           type: 'radio',
           label: 'Mostrar descripción',
@@ -2113,7 +2120,7 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
-        colorDescripcion: campoColor('Color de la descripción (opcional)'),
+        colorDescripcion: campoEnAcordeon({ type: 'color', label: 'Color de la descripción', ayuda: 'Vacío = el color por defecto del bloque.' }),
       },
       defaultProps: {
         tipoTendencia: 'mas-menos',
@@ -2733,6 +2740,20 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
         // Una categoría que se queda sin bloques no debe salir como grupo vacío.
         .filter(([, categoria]) => categoria.components.length > 0)
     ) as Config['categories'],
+    // Sin esto Puck pinta un campo `title` que no cambia nada (el título sale de la base de datos):
+    // el panel de la raíz solo dice qué página se edita y que se está en modo edición. `label` es
+    // lo que Puck escribe donde antes decía «Page» (la miga de pan «Page › Bloque», el título del panel).
+    root: {
+      ...puckConfig.root,
+      label: slug === SLUG_DE_PLANTILLA ? 'Menú y pie del sitio' : rutaPublicaDeSlug(slug),
+      fields: {
+        modoEdicion: campoPaginaEnEdicion(
+          slug === SLUG_DE_PLANTILLA
+            ? { nombre: 'Menú y pie del sitio', slug }
+            : { ruta: rutaPublicaDeSlug(slug), slug }
+        ),
+      },
+    } as Config['root'],
   };
 
   if (slug === SLUG_DE_PLANTILLA) {

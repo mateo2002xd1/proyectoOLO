@@ -28,6 +28,7 @@ import {
   conCaja,
   conCajaEnTodos,
   campoEnAcordeon,
+  campoPaginaEnEdicion,
   BLOQUES_SIN_CAJA,
   campoColor,
   campoIcono,
@@ -40,6 +41,7 @@ import {
 } from '@olo/blocks-renderer';
 import { Render, RichTextMenu, type Config, type Data } from '@puckeditor/core';
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { rutaPublicaDeSlug } from '@/features/editor/model/rutas';
 import { ImageUploaderField } from '@/features/editor/edition/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/editor/edition/components/archivo-uploader-field';
 
@@ -623,7 +625,13 @@ const puckConfigBase: Config = {
       fields: {
         // Nativo a propósito: solo un `text` de Puck se edita también sobre la página. Su acordeón
         // lo pone `CamposAgrupados` (ver `GRUPOS_DE_CAMPOS`).
-        texto: { type: 'text', label: 'Texto del botón', contentEditable: true },
+        texto: {
+          type: 'text',
+          label: 'Texto del botón',
+          contentEditable: true,
+          // Lo lee `CamposAgrupados` para la línea de ayuda del acordeón.
+          metadata: { ayuda: 'Lo que dice el botón. También se escribe directo sobre la página.' },
+        },
         tamano: campoEnAcordeon({
           type: 'select',
           label: 'Tamaño del botón',
@@ -1403,6 +1411,20 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
         // Una categoría que se queda sin bloques no debe salir como grupo vacío.
         .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
     ) as Config['categories'],
+    // Sin esto Puck pinta un campo `title` que no cambia nada (el título sale de la base de datos):
+    // el panel de la raíz solo dice qué página se edita y que se está en modo edición. `label` es
+    // lo que Puck escribe donde antes decía «Page» (la miga de pan «Page › Bloque», el título del panel).
+    root: {
+      ...puckConfig.root,
+      label: slug === SLUG_DE_PLANTILLA ? 'Menú y pie de la intranet' : rutaPublicaDeSlug(slug),
+      fields: {
+        modoEdicion: campoPaginaEnEdicion(
+          slug === SLUG_DE_PLANTILLA
+            ? { nombre: 'Menú y pie de la intranet', slug }
+            : { ruta: rutaPublicaDeSlug(slug), slug }
+        ),
+      },
+    } as Config['root'],
   };
 
   if (slug === SLUG_DE_PLANTILLA) {
