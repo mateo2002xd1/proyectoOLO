@@ -270,9 +270,37 @@ setup() {
     echo "Ejecuta: ./docker/deploy.sh start"
 }
 
+# Las imagenes que se construyen desde el repositorio (`name:` del compose + servicio).
+IMAGENES_PROPIAS=(api-backend worker migraciones sitio-web intranet)
+PROYECTO_COMPOSE="olo-web-app"
+
+# Se niega a arrancar si alguna imagen es mas vieja que el ultimo commit. Si el build de
+# una falla, Compose cancela tambien las demas y `up` las levanta con el codigo anterior
+# sin decir nada: el 2026-10-26 la intranet llevaba desde el 22-oct sin compilar
+# (next/headers en el bundle de cliente) y el sitio no se actualizaba con ella.
+comprobar_imagenes() {
+    command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1 || return 0
+    local commit servicio creada viejas=()
+    commit=$(git log -1 --format=%ct)
+    for servicio in "${IMAGENES_PROPIAS[@]}"; do
+        creada=$(docker image inspect --format '{{.Created}}' "$PROYECTO_COMPOSE-$servicio" 2>/dev/null) ||
+            { viejas+=("$servicio (no existe)"); continue; }
+        [ "$(date -d "$creada" +%s)" -ge "$commit" ] || viejas+=("$servicio ($(date -d "$creada" '+%Y-%m-%d %H:%M'))")
+    done
+    if [ ${#viejas[@]} -gt 0 ]; then
+        rojo "Estas imagenes son anteriores al ultimo commit ($(git log -1 --format='%h %cd' --date=format:'%Y-%m-%d %H:%M')):"
+        printf '  - %s\n' "${viejas[@]}"
+        echo ""
+        echo "Arrancarlas serviria el codigo de antes. Ejecuta ./docker/deploy.sh build y revisa que"
+        echo "termine sin errores (si falla una imagen, las demas tampoco se actualizan)."
+        exit 1
+    fi
+}
+
 start() {
     comprobar_requisitos
     comprobar_entorno
+    comprobar_imagenes
 
     # Las migraciones van ANTES de levantar la API, no despues: `server.ts` aborta si
     # encuentra alguna pendiente, y con `restart: unless-stopped` eso es un bucle de
