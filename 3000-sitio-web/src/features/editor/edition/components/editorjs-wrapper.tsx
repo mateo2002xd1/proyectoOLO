@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import type EditorJSInstance from '@editorjs/editorjs';
-import type { OutputData, OutputBlockData } from '@editorjs/editorjs';
+import type { OutputData, OutputBlockData, ToolConstructable } from '@editorjs/editorjs';
+import { mantenerMenusVisibles } from '../lib/editorjs-menus-visibles';
 
 interface EditorjsWrapperProps {
   data?: OutputData;
@@ -10,8 +11,14 @@ interface EditorjsWrapperProps {
   readOnly?: boolean;
   /** Color de todo el texto (#rrggbb); sin él, los grises de siempre. Solo en modo lectura. */
   colorTexto?: string;
-  /** Clases que se suman al contenedor del editor del panel; en modo lectura no cuentan. */
-  className?: string;
+  /** Sin la herramienta de cita. Solo cuenta en el editor del panel. */
+  sinCita?: boolean;
+  /**
+   * Con color para las palabras elegidas (barra al seleccionar texto) y alineación por bloque
+   * (menú «⠿»). Solo cuenta en el editor del panel; quien pinta el texto lee la alineación del
+   * bloque (`tunes.alineacion`), y el color ya va dentro del texto.
+   */
+  conFormato?: boolean;
 }
 
 type ItemLista = string | { content?: string; items?: ItemLista[] };
@@ -165,7 +172,14 @@ function tieneContenido(data?: OutputData): boolean {
 
 const COLOR_VALIDO = /^#[0-9a-fA-F]{3,8}$/;
 
-export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, className }: EditorjsWrapperProps) {
+export function EditorjsWrapper({
+  data,
+  onChange,
+  readOnly = false,
+  colorTexto,
+  sinCita = false,
+  conFormato = false,
+}: EditorjsWrapperProps) {
   const editorRef = useRef<EditorJSInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ultimoObjetoEmitidoRef = useRef<OutputData | null>(null);
@@ -188,6 +202,8 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
     // lugar en el panel), la carga vieja seguía y creaba un segundo editor dentro del mismo
     // contenedor, que se veía duplicado. `cancelado` la corta.
     let cancelado = false;
+    // Los menús flotantes de Editor.js se mantienen a la vista (ver `editorjs-menus-visibles.ts`).
+    let dejarDeCuidarLosMenus: (() => void) | null = null;
     const container = containerRef.current;
     if (!container) return;
 
@@ -215,6 +231,12 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
         const Header = (await import('@editorjs/header')).default;
         const List = (await import('@editorjs/list')).default;
         const Quote = (await import('@editorjs/quote')).default;
+        const formato = conFormato
+          ? {
+              ColorEnLinea: (await import('../lib/editorjs-color')).ColorEnLinea,
+              AlineacionDeBloque: (await import('../lib/editorjs-alineacion')).AlineacionDeBloque,
+            }
+          : null;
 
         if (cancelado) return;
         // Por si una instancia anterior dejó su marcado en el contenedor.
@@ -224,7 +246,11 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
           holder: container,
           data: dataInicialRef.current || { blocks: [] },
           readOnly: false,
-          minHeight: 120,
+          // Es el relleno bajo el último bloque (Editor.js lo escribe en el `padding-bottom` del
+          // área de edición): lo justo para poder pulsar debajo del texto. La caja se ajusta a lo
+          // escrito. No se ajusta con una clase de Tailwind: dentro de `[&_…]` un `__` se compila
+          // como dos espacios y la regla no llega a aplicarse.
+          minHeight: 12,
           placeholder: 'Escribe aquí tu contenido...',
           tools: {
             paragraph: {
@@ -243,17 +269,24 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
               class: List,
               inlineToolbar: true,
             },
-            quote: {
-              class: Quote,
-              inlineToolbar: true,
-            },
+            ...(sinCita ? {} : { quote: { class: Quote, inlineToolbar: true } }),
+            // `ToolConstructable` es el tipo de las herramientas de bloque: una herramienta en
+            // línea y un ajuste de bloque no encajan, aunque Editor.js los acepta así.
+            ...(formato
+              ? {
+                  color: { class: formato.ColorEnLinea as unknown as ToolConstructable },
+                  alineacion: { class: formato.AlineacionDeBloque as unknown as ToolConstructable },
+                }
+              : {}),
           },
+          ...(formato ? { tunes: ['alineacion'] } : {}),
           onChange: () => {
             guardarInmediato();
           },
         });
 
         editorRef.current = editorInstance;
+        dejarDeCuidarLosMenus = mantenerMenusVisibles(container);
       } catch (error) {
         console.error('Failed to initialize EditorJS', error);
       }
@@ -277,6 +310,7 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
       container.removeEventListener('cut', guardarInmediato, true);
 
       cancelado = true;
+      dejarDeCuidarLosMenus?.();
       const activo = editorInstance ?? editorRef.current;
       if (activo && typeof activo.destroy === 'function') {
         try {
@@ -289,7 +323,7 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
     };
     // El editor se inicializa una sola vez al montar; las actualizaciones posteriores
     // de data se sincronizan en el efecto inferior para no destruir el estado ni mover el cursor.
-  }, [readOnly]);
+  }, [readOnly, sinCita, conFormato]);
 
   // Si data cambia externamente (ej. deshacer/rehacer en Puck) en modo edición
   useEffect(() => {
@@ -344,8 +378,7 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, 
   return (
     <div
       ref={containerRef}
-      className={`w-full rounded-lg border border-zinc-200 bg-white p-3 text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_.codex-editor__redactor]:!pb-8 ${className ?? ''}`}
-      style={{ minHeight: 180 }}
+      className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_h1.ce-header]:text-3xl [&_h1.ce-header]:font-bold [&_h2.ce-header]:text-2xl [&_h2.ce-header]:font-bold [&_h3.ce-header]:text-xl [&_h3.ce-header]:font-semibold [&_h4.ce-header]:text-lg [&_h4.ce-header]:font-semibold"
     />
   );
 }

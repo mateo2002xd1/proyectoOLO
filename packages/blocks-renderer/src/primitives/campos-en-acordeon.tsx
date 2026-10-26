@@ -292,7 +292,10 @@ export function AcordeonDeCampo({
         border: sinLineas ? `1px solid ${abierto ? COLOR_BORDE_ABIERTO : 'transparent'}` : `1px solid ${COLOR_BORDE}`,
         borderRadius: sinLineas ? '12px' : '8px',
         background: '#ffffff',
-        overflow: 'hidden',
+        // Cerrado recorta lo que sobra de la cabecera en las esquinas. Abierto no recorta nada:
+        // los menús flotantes de lo que lleva dentro (el de Editor.js, p. ej.) se cortaban en el
+        // borde del acordeón. La cabecera lleva entonces las esquinas de arriba redondeadas.
+        overflow: abierto ? 'visible' : 'hidden',
       }}
     >
       <EstilosDeCampos />
@@ -303,6 +306,7 @@ export function AcordeonDeCampo({
         aria-expanded={abierto}
         aria-controls={idContenido}
         style={{
+          borderRadius: abierto ? `${(sinLineas ? 12 : 8) - 1}px ${(sinLineas ? 12 : 8) - 1}px 0 0` : 0,
           display: 'flex',
           alignItems: 'center',
           gap: '8px',

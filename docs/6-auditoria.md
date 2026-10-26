@@ -5,6 +5,122 @@
 
 ---
 
+## sesión 25-10-2026 (15.ª parte): el nivel de los encabezados (H1 a H4) y su negrita llegan al bloque «Buscador de ocupaciones»
+
+**Qué pidió el usuario:** que lo que cambia en el campo del editor al escoger H1 a H4 (el tamaño y la negrita) también cambie en el bloque, en tiempo real.
+
+**Por qué no cambiaba:** el bloque nunca usó el nivel del encabezado. `nodosDeTextos` lo decía en un comentario («el nivel que se elige en el encabezado no cambia el titular») y el titular tenía siempre el tamaño y el peso del diseño. El tamaño y la negrita por nivel que se añadieron en la parte anterior eran solo del campo del editor, por eso se veían ahí y no en el bloque.
+
+**Sobre «tiempo real»:** según el código de Puck (0.22), al editar un campo pasa los datos por `resolveData` y espera a que termine antes de repintar el bloque, así que el cambio de nivel llega al bloque en cuanto se escoge. No hizo falta tocar la sincronía (leído en el código; no se vio en el panel real).
+
+**Qué se hizo:**
+
+- `3000-sitio-web/src/shared/lib/buscador-ocupaciones/components/textos-del-buscador.tsx`: el titular toma el estilo del nivel igual que el campo del editor: H1 y H2 en negrita, H3 y H4 en seminegrita; H1 un 20 % más grande que el diseño, H3 un 85 % y H4 un 70 %; H2 mide lo que mide el diseño. Los tamaños van en `em`, así que siguen al del diseño en cada pantalla. En el recuadro azul el encabezado ya salía en negrita; ahora además cambia de tamaño (H1 125 %, H3 90 %, H4 80 %).
+- El nivel semántico del titular (el que leen los lectores de pantalla) no cambia: sigue siendo el de `TituloRico`. Escoger H1 en un campo no crea un segundo `h1` en la página.
+- `docs/manual-de-usuario-formato.md`: una frase.
+
+| Verificación | Resultado |
+|---|---|
+| Chrome con el código real de `nodosDeTextos` y el CSS real de Tailwind, a 1280 px | Titular: H1 48 px, H2 40, H3 34, H4 28 (pesos 700, 700, 600, 600). Recuadro: 27,5 / 22 / 19,8 / 17,6 px, todo en negrita |
+| Lo mismo a 400 px (móvil) | Titular: 33,6 / 28 / 23,8 / 19,6 px. Recuadro: 21,3 / 17 / 15,3 / 13,6 px |
+| Negrita puesta con el botón «B» sobre unas palabras (`<b>`) | 700 en el titular, la descripción y el recuadro |
+| `tsc --noEmit` y `eslint` | Sin errores ni avisos |
+
+**Cambia el aspecto por defecto, y es del usuario decidir si se queda así:** el titular que trae la portada es un H2, y ahora sale entero en negrita; antes salía en peso normal con las palabras en negrita que marcaba el diseño («¿Sabes qué es una **ocupación**?»). Para dejar el H2 como el diseño basta quitar `font-bold` del nivel 2 en `ESTILO_DEL_TITULAR` (y el campo del editor, `editorjs-wrapper.tsx`, para que se vea igual).
+
+**Lo que falta, y es del usuario:** verlo en el lienzo de Puck (pide sesión; no se abrió el panel). No se probó el cambio de nivel con el menú «Convert to» dentro de Puck, solo el reparto de estilos con el código real.
+
+**Código tocado:** `3000-sitio-web/src/shared/lib/buscador-ocupaciones/components/textos-del-buscador.tsx`, `docs/manual-de-usuario-formato.md`.
+
+---
+
+## sesión 25-10-2026 (14.ª parte): los encabezados H1 a H4 del editor tienen tamaño y los menús de Editor.js ya no se cortan
+
+**Qué pidió el usuario:** (1) al escoger H1 a H4 en el editor de texto, el tamaño del texto no cambiaba; (2) al abrir opciones como «Convert to» el contenedor las cortaba, y pidió subirlas de capa para que no se corten.
+
+**Por qué los encabezados no cambiaban:** el reinicio de estilos de Tailwind (`preflight`) deja `h1` a `h6` con `font-size: inherit`, y la herramienta de encabezados de Editor.js no trae tamaños propios. En el repositorio nunca hubo una regla para `.ce-header`: los cuatro niveles medían lo mismo que un párrafo (16 px).
+
+**Por qué se cortaban los menús (no era un asunto de capa):** el acordeón tenía `overflow: hidden`, que recorta lo que sobresale por abajo; y la lista de «Convert to» (200 px) se abría a la izquierda del menú «⠿» (otros 200), que en una columna de unos 350 px se sale de la pantalla. Un `z-index` no arregla ninguna de las dos.
+
+**Qué se hizo:**
+
+- `3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx`: tamaños por nivel en la caja del editor (H1 30 px y negrita, H2 24 y negrita, H3 20 y seminegrita, H4 18 y seminegrita; el párrafo, 16). Van como clases de Tailwind sobre `h1.ce-header` … sin guiones bajos dentro de los corchetes (ver la 13.ª parte: ahí se rompen).
+- `3000-sitio-web/src/features/editor/edition/lib/editorjs-menus-visibles.ts` (nuevo), activado desde el wrapper: mientras hay un menú de Editor.js abierto, la caja del editor sube de capa (`z-index` 50), y cada menú se corre en horizontal (`translate`, que no choca con su animación) lo justo para caber en la columna que se desplaza y en la pantalla. Lo recalcula cada vez que un menú se abre o se cierra. Cuando no caben los dos (menú y lista), la lista se superpone al menú, a modo de cajón.
+- `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx`: el acordeón abierto ya no recorta (`overflow: visible`) y su cabecera lleva las esquinas de arriba redondeadas; cerrado sigue recortando. Es el paquete compartido: también cambia en la intranet, sin efecto visible salvo que sus menús ya no se cortan.
+
+| Verificación | Resultado |
+|---|---|
+| Chrome real con Editor.js 2.31.6, una columna de 355 px que se desplaza, el acordeón, el menú «⠿» con la alineación y una tarjeta debajo, y el CSS real de Tailwind | **Antes:** la lista de «Convert to» queda entre x = −78 y 122 (fuera de pantalla) y el menú «⠿» se recorta abajo; los cuatro niveles miden 16 px. **Después:** la lista queda entre 8 y 208, todos los menús se ven enteros y por encima de las tarjetas de abajo; los niveles miden 30, 24, 20 y 18 px |
+| `tsc --noEmit` en `3000-sitio-web`, `3001-intranet` y `packages/blocks-renderer` | Sin errores en lo tocado |
+| `eslint` sobre `editorjs-menus-visibles.ts` y el wrapper | Sin avisos |
+
+**Lo que falta, y es del usuario:** mirarlo en el panel real (la prueba fue en una página que imita la columna de Puck, no en el panel con sesión). La lista de «Convert to» tapa la parte izquierda del menú mientras está abierta: en 350 px no caben los dos lado a lado. Los tamaños son los de móvil del sitio publicado (el sitio sube un escalón en pantallas anchas); los de la portada del buscador los fija su propio componente.
+
+**Código tocado:** `3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx`, `3000-sitio-web/src/features/editor/edition/lib/editorjs-menus-visibles.ts` (nuevo), `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx`.
+
+---
+
+## sesión 25-10-2026 (13.ª parte): el editor de texto deja de reservar espacio vacío y «Textos del buscador» pierde su «Color del texto»
+
+**Qué pidió el usuario:** que el campo de texto de Editor.js no deje ese espacio vacío debajo y se ajuste al texto; y quitar «Color del texto» de «Textos del buscador», porque el color ya se elige en el propio Editor.js.
+
+**Por qué quedaba el espacio:** Editor.js escribe su configuración `minHeight` (120) como relleno inferior del área de edición, y la caja lo contrarrestaba con la clase `[&_.codex-editor__redactor]:!pb-8`. Tailwind 4 convierte cada `_` de una clase con corchetes en un espacio, así que `codex-editor__redactor` se compilaba como `.codex-editor  redactor` y la regla nunca se aplicaba: el relleno de 120 px quedaba entero. Encima, la caja llevaba `minHeight: 180`. Medido en Chrome con el mismo texto: 133 px vacíos bajo el último párrafo.
+
+**Qué se hizo:**
+
+- `3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx`: `minHeight` de Editor.js pasa de 120 a 12 (el relleno justo para poder pulsar bajo el último bloque), se quita la clase que no hacía nada y se quita la altura mínima de 180 de la caja. Con 12 queda un hueco de unos 25 px, parecido al margen de arriba. Afecta a todos los campos que usan este editor (los del buscador y «Texto enriquecido»).
+- `3000-sitio-web/src/config/puck.config.tsx`: «Textos del buscador» ya no tiene el campo «Color del texto». `resolveData` vacía el `colorTexto` que una portada hubiera guardado antes con ese campo (al abrirla en el editor), para que no quede un color aplicado sin dónde cambiarlo; la portada ya publicada se ve igual hasta que se vuelva a publicar. El render (`HeroBuscadorOcupaciones`) sigue aceptando la prop y no se tocó.
+- `docs/manual-de-usuario-formato.md`: la frase de «Textos del buscador» y su color.
+
+| Verificación | Resultado |
+|---|---|
+| Chrome real, Editor.js 2.31.6, mismo texto: hueco bajo el último párrafo | Antes 133 px; con relleno de 32, 45 px; con el definitivo (12), unos 25 px |
+| `tsc --noEmit` en `3000-sitio-web` | Sin errores |
+
+**Lo que falta, y es del usuario:** mirar el campo en el panel real. Quedan dos clases con el mismo defecto en esa misma línea del `className` (`[&_.ce-block__content]:max-w-none` y `[&_.ce-toolbar__content]:max-w-none`, que tampoco se aplican); no se tocaron porque en una caja estrecha no se nota y arreglarlas cambiaría el ancho de los bloques en las anchas. «Texto bloque y placeholder» conserva su «Color del texto bloque»: no se quitó porque la petición nombraba solo «Color del texto».
+
+**Código tocado:** `3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx`, `3000-sitio-web/src/config/puck.config.tsx`, `docs/manual-de-usuario-formato.md`.
+
+---
+
+## sesión 25-10-2026 (12.ª parte): un solo selector de color para Editor.js y para Puck — «Color del texto» pasa a un cuadro con panel libre
+
+**Qué pidió el usuario:** mejorar el selector de color del editor para que se vea moderno y simétrico. Después precisó: en la herramienta de color de Editor.js (el botón «A ▾» de la barra al seleccionar texto) quitar la lista de colores fijos y mostrar solo un cuadro con el color del texto, sin letras; al pulsarlo, un selector donde se escoja cualquier color. Por último dio una captura de referencia (panel oscuro con área de color, matiz, cuentagotas, formato Hex, y una rejilla de muestras abajo) y pidió que así se vea la opción de Editor.js y el selector de color («el fondo puede ser blanco o ese mismo negro»).
+
+**Antes de hacerlo:** se descartó `react-color` en versión Material. Su picker «Material» es solo un campo hex y tres campos R, G y B (sin área de color), la última versión es de junio de 2022 y trae `lodash` y `lodash-es` a la vez. El selector nativo del navegador (`<input type="color">`) no se puede diseñar ni vive dentro de la barra de Editor.js. Por eso el panel es propio, en JavaScript puro y sin paquetes nuevos.
+
+**Qué se hizo:**
+
+- `packages/blocks-renderer/src/primitives/panel-de-color.ts` (nuevo): el panel, una sola vez. Área de saturación y brillo, barra de matiz, cuentagotas (solo donde el navegador tiene `EyeDropper`: Chrome y Edge), formato **Hex o RGB** (el elegido se recuerda), rejilla de colores ya usados cuando quien lo usa se los pasa, y «Quitar color». Fondo oscuro como la referencia; `TEMA_DEL_PANEL_DE_COLOR` (`'oscuro'` o `'claro'`) lo cambia en los dos sitios a la vez. Es JavaScript puro porque Editor.js dibuja su barra con DOM, no con React. Se exporta desde `@olo/blocks-renderer` (`crearPanelDeColor`, `hexAHsv`, `hsvAHex`, `normalizarHex`, `rgbAHex`).
+- `3000-sitio-web/src/features/editor/edition/lib/editorjs-color.ts` (reescrito): el botón es un cuadro liso con el color que tiene el texto seleccionado (el del `span` o, sin él, el heredado), sin flechita ni tooltip con letras; el nombre para lector de pantalla va dentro del dibujo. Al pulsarlo abre el panel con los colores que ya se usaron en ese mismo editor. La lista `COLORES_DEL_TEXTO` ya no existe.
+- `packages/blocks-renderer/src/primitives/color-picker-field.tsx` (campo de color de Puck): la muestra ya no abre el selector nativo; abre el mismo panel en una ventana flotante bajo la caja (portal al `body`, porque las columnas del editor recortan lo que sobresale), que se cierra con Esc (el foco vuelve a la muestra), con un clic fuera, al desplazar o al cambiar el tamaño. La caja sigue con esquinas concéntricas (12 por fuera, 8 por dentro), muestra y botón de quitar del mismo tamaño, y el hex a mano acepta «ff0000» sin almohadilla. Sin colores predeterminados en este campo.
+- `estilos-de-campos.tsx`: la caja del campo queda marcada mientras el panel está abierto.
+- El color se entrega al terminar (soltar el ratón o una flecha, Intro o salir de un campo, clic en una muestra, cuentagotas), no a cada movimiento: así se guarda una vez y no diez por segundo. Mientras se arrastra, cambia la vista.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `3000-sitio-web`, `3001-intranet` y `packages/blocks-renderer` | Sin errores en los archivos tocados (los de `@olo/url-policy` ya estaban) |
+| `eslint` sobre `editorjs-color.ts` | Sin avisos |
+| Chrome real por CDP, Editor.js 2.31.6, ratón y teclado reales: 29 comprobaciones (cuadro en vez de «A», sin flechita, selector sin lista, arrastre, segunda pasada sin anidar `span`, colores ya usados con el elegido marcado, hex con Intro, hex inválido, matiz, formato RGB, `onChange` de Editor.js al cambiar solo el color de un `span`, «Quitar color», `save()` sin `span`) | 29 de 29 |
+| jsdom sobre el campo de Puck: 22 comprobaciones (abre y cierra con la muestra, Esc con foco de vuelta, clic fuera, elegir llama a `onChange`, «Quitar color», sin `<input type="color">`, no queda nada en el `body` al desmontar) | 22 de 22 |
+
+**Seguridad:** el formato guardado no cambia: `<span style="color:#rrggbb">`, siempre 6 dígitos en minúscula, escrito con `setAttribute`. `COLOR_PERMITIDO` y el sanitizador de campos de color del API no se tocaron y siguen siendo la barrera. El color del cuadro del botón sale de un hex que fabrica el propio código, nunca del texto del usuario; en el campo de Puck, lo que se pinta en la muestra pasa por una lista corta de formas de color (nada de `url(...)`).
+
+**Opacidad: no está, a propósito.** La referencia traía un control de opacidad («100 %»). Admitirlo obliga a aceptar colores con transparencia en el API (`#rrggbbaa` o `rgba()`), que es ampliar la regla de seguridad de XSS-09 y su verificación; no se hizo sin pedirlo.
+
+**Trampas de Editor.js 2.31.6 que quedaron resueltas (por si vuelven):**
+
+- El menú anidado mide 200 px de ancho y 270 de alto y recorta lo que sobra: se amplía con `.ce-popover--nested:has(.olo-pc-panel)`.
+- Poner o escribir el valor de un `<input>` dispara `selectionchange`; Editor.js lo toma por un cambio de selección del texto y reconstruye la barra, que vuelve a poner el valor, y así en bucle cada ~190 ms. El panel detiene ese evento.
+- Pintar por primera vez envuelve el texto en un `span` y mueve la selección: Editor.js reconstruye la barra dos veces (al soltar el ratón y 180 ms después). La herramienta recuerda el color y vuelve a abrir el panel durante 700 ms. Si el texto ya tiene color, solo se cambia el `span` y no se toca la selección, así un campo no pierde el foco.
+- Los tres campos RGB se entregan juntos (al salir del grupo o con Intro), no al pasar de uno a otro.
+
+**Lo que falta, y es del usuario:** la prueba fue en una página aparte con Editor.js y el mismo CSS, y el campo de Puck en jsdom, no dentro del panel real (pide la API y una sesión). Falta mirarlo en «Texto enriquecido», en «Textos del buscador» y en cualquier campo de color de Puck, y en pantallas de hasta 650 px, donde Editor.js muestra los menús como hoja inferior: ahí no se probó. Las páginas ya guardadas no cambian. Decisiones abiertas: fondo oscuro o blanco (un solo valor, `TEMA_DEL_PANEL_DE_COLOR`) y si se quiere opacidad (ver arriba).
+
+**Código tocado:** `3000-sitio-web/src/features/editor/edition/lib/editorjs-color.ts`; `packages/blocks-renderer/src/primitives/panel-de-color.ts` (nuevo), `color-picker-field.tsx` y `estilos-de-campos.tsx`; `packages/blocks-renderer/src/index.ts`; `docs/manual-de-usuario-formato.md`.
+
+---
+
 ## sesión 25-10-2026 (11.ª parte): SUB-01, Fase 3 — el worker de la cola pasa a su propio proceso
 
 **Qué pidió el usuario:** decidir ya lo que había quedado pendiente de SUB-01 (Fases 2 y 3), tras preguntárselo al cierre de la parte anterior.
