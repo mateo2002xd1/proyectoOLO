@@ -14,18 +14,20 @@ export { ErrorDeExcelFuentesFuturas } from './leer-excel-fuentes-futuras';
  * (`consultar-fuentes-futuras-actual.usecase.ts`). Son dos docenas de filas de cuatro
  * columnas, así que se resuelve en la misma petición y no depende de Redis.
  *
- * El archivo se parsea **antes** de guardarlo: un Excel con otras columnas se rechaza sin
- * dejar fila en `archivos` ni copia en disco. Lo que se guarda es, por tanto, siempre algo
- * que el portal sabe leer.
+ * El archivo se valida **antes** de parsearlo (SUB-03): hasta el 2026-10-25 era al revés y
+ * `exceljs` abría cualquier byte que llegara, tipo real o no, antes de que
+ * `validarYGuardarExcel` mirara magic bytes y extensión. Un Excel con otras columnas sigue
+ * rechazándose sin dejar fila en `archivos` ni copia en disco, solo que ahora ese rechazo
+ * llega después de confirmar que sí es un `.xlsx` de verdad.
  */
 export async function iniciarCargaFuentesFuturas(
   datos: Buffer,
   nombreOriginal: string,
   subidoPor: string | null
 ): Promise<{ cargaId: string; filas: number }> {
-  const registros = await leerRegistrosDeBuffer(datos);
-
   const { archivoId } = await validarYGuardarExcel(datos, nombreOriginal, subidoPor, { requiereCola: false });
+
+  const registros = await leerRegistrosDeBuffer(datos);
 
   const mensaje = `Publicados ${registros.length.toLocaleString('es-CO')} registros desde ${nombreOriginal}.`;
   const carga = await Repo.crearCargaCompletada(archivoId, subidoPor, registros.length, mensaje);
