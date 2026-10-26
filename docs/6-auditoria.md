@@ -765,6 +765,20 @@ El texto que trae el bloque recién puesto es el mismo de antes, ya en esa forma
 
 ---
 
+## sesión 26-10-2026: volcado de páginas actualizado, y 22 archivos que citan las páginas no están en `filesystem/`
+
+**Qué pidió el usuario:** actualizar el volcado (`./docker/deploy.sh exportar-paginas`).
+
+**Qué cambió:** el volcado sigue en 16 páginas y 16 versiones (todas `publicado`, «Versión inicial»), sin páginas nuevas ni quitadas. Cambiaron el contenido de `sitio/inicio` y de `sitio/resultados-de-busqueda` (publicados el 26-10-2026, ~01:48Z).
+
+**Hallazgo.** El contenido publicado cita **22 archivos subidos que no están en `filesystem/`** (la API local no tiene `FILESYSTEM_DIR`, así que usa esa carpeta; tampoco están en `4000-api-backend/uploads` ni en `public/`): `sitio/inicio` (9 imágenes y 2 PDF), `sitio/menu-y-pie` (1 imagen), `intranet/inicio` (7 PDF con nombre), `intranet/matriz` y `encuestas-*` (`Presentación1.pptx`), `intranet/tasa` (`tasa.pptx`) y un Excel de `encuestas-calidad-de-formacion`. Con el inicio limpio, `importar-paginas --desde-archivo` **vacía** `uploads/` y `backup/` del volumen del servidor antes de copiar el repositorio: si esos archivos solo existen en el servidor, se pierden y las páginas quedan con enlaces rotos. En este equipo ya estaban rotos.
+
+**No se cambió código.** Queda como decisión: traer esos archivos al repositorio (desde el volumen del servidor) antes de importar, o importar sin la limpieza.
+
+**Verificación:** cruce de cada `/uploads/...` del volcado con `filesystem/{sitio,intranet}` (22 ausentes de 45 distintos). Solo lectura.
+
+---
+
 ## sesión 25-10-2026: lo nuevo de Mateo (rama `OLO/mateo`) sobre el buscador
 
 **Qué pidió el usuario:** traer a `dev` lo que Mateo dejó en su rama sobre el buscador.
