@@ -40,9 +40,29 @@ const app = express();
  */
 app.set('trust proxy', 1);
 
+/**
+ * Qué peticiones no merecen una línea en el log.
+ *
+ * El `healthcheck` de `api-backend` (ver `docker-compose.servidor.yml`) pide `/health` desde
+ * dentro del contenedor cada 30 s. Anotar cada una son 2 880 líneas al día que tapan lo que de
+ * verdad se busca en `docker logs api`: los errores y los eventos raros.
+ *
+ * Solo se salta lo que cumple las tres cosas a la vez: es `/health`, salió bien y llegó por el
+ * socket del propio contenedor. Esto último se mira en `req.socket.remoteAddress` y no en
+ * `req.ip`: `req.ip` sale de `X-Forwarded-For`, que escribe quien llama, y una consulta de
+ * fuera —que sí interesa ver— podría disfrazarse de sonda local. Una sonda que falla, o un
+ * `/health` que llega desde nginx, se siguen anotando.
+ */
+const DIRECCIONES_DEL_PROPIO_CONTENEDOR = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+const esSondaDelPropioContenedor = (req: express.Request, res: express.Response): boolean =>
+  req.path === '/health' &&
+  res.statusCode < 400 &&
+  DIRECCIONES_DEL_PROPIO_CONTENEDOR.has(req.socket.remoteAddress ?? '');
+
 app.use(helmet());
 app.use(cors({ origin: [config.frontendUrl, config.intranetUrl], credentials: true }));
-app.use(morgan('dev'));
+app.use(morgan('dev', { skip: esSondaDelPropioContenedor }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
@@ -53,10 +73,18 @@ app.use(cookieParser());
  *     tags: [Sistema]
  *     summary: Estado del servicio
  *     description: |
- *       Sonda de vida. La consultan nginx y Docker en bucle para decidir si el
- *       contenedor está sano, así que no toca la base de datos ni exige sesión: si
- *       dependiera de Postgres, una base caída se llevaría por delante al propio
- *       contenedor en vez de dejarlo responder que sigue en pie.
+ *       Sonda de vida. La consulta Docker en bucle (el `healthcheck` de `api-backend` en
+ *       `docker-compose.servidor.yml`) para decidir si el contenedor está sano, así que no
+ *       toca la base de datos ni exige sesión: si dependiera de Postgres, una base caída se
+ *       llevaría por delante al propio contenedor en vez de dejarlo responder que sigue en pie.
+ *
+ *       **No es un estado de las dependencias, y no debe llegar a serlo.** Responde 200 con
+ *       Postgres o Redis caídos y solo devuelve `status` y `timestamp`. Sin sesión, cualquier
+ *       otro dato (qué componente falla, versiones, el error del driver) es información para
+ *       quien busca huecos, y consultar la base aquí pondría a trabajar a cada petición
+ *       anónima, porque esta ruta va antes del limitador general. Para saber si la base
+ *       responde están el `healthcheck` de `db` (`./docker/deploy.sh status`) y el log. Lo
+ *       vigila `npm run salud:verificar` (SAL-01).
  *     security: []
  *     responses:
  *       200:
@@ -84,8 +112,8 @@ montarDocumentacion(app);
 app.use('/api/archivos', archivosRoutes);
 
 // Techo general de la API: ninguna ruta queda sin límite aunque su router no declare
-// el suyo. Va después de `/health` a propósito — nginx y Docker lo consultan en bucle
-// y no tiene sentido gastarles cupo.
+// el suyo. Va después de `/health` a propósito — Docker lo consulta en bucle y no tiene
+// sentido gastarle cupo.
 app.use(limitadorGlobal);
 
 app.use('/api', authRoutes);
@@ -142,4 +170,4 @@ app.use((_req, res) => {
 
 app.use(errorHandler);
 
-export { app };
+export { app, esSondaDelPropioContenedor };

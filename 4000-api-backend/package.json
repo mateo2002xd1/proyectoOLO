@@ -49,6 +49,7 @@
     "limites:verificar": "ts-node scripts/verificaciones/verificar-limites-de-tasa.ts",
     "limites:redis": "ts-node scripts/verificaciones/verificar-limites-redis.ts",
     "rutas:verificar": "ts-node scripts/verificaciones/verificar-contencion-de-rutas.ts",
+    "salud:verificar": "ts-node scripts/verificaciones/verificar-salud.ts",
     "sesion:permisos": "ts-node scripts/verificaciones/verificar-permisos-en-sesion.ts",
     "carreras:paginas": "ts-node scripts/verificaciones/probar-carreras-paginas.ts",
     "carreras:acceso": "ts-node scripts/verificaciones/probar-carreras-acceso.ts",

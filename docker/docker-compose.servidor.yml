@@ -10,6 +10,17 @@
 
 name: olo-web-app
 
+# Tope de los registros de cada contenedor (lo que muestra `docker logs`). Sin él, Docker
+# guarda cada línea para siempre en un archivo que solo crece, y un servidor que lleva meses
+# encendido acaba llenando el disco. Con estos valores cada servicio conserva como mucho 5
+# archivos de 10 MB: al llenarse el último, descarta el más viejo. Se aplica a todos los
+# servicios con `logging: *logging`.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   db:
     # 18 y no 16: es la versión de la base de origen (Neon, 18.6). Con la misma versión
@@ -17,6 +28,7 @@ services:
     image: postgres:18-alpine
     container_name: db
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -39,6 +51,7 @@ services:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
+    logging: *logging
     command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_data:/data
@@ -56,6 +69,7 @@ services:
       dockerfile: 4000-api-backend/Dockerfile
     container_name: api
     restart: unless-stopped
+    logging: *logging
     env_file:
       - .env
     environment:
@@ -75,6 +89,20 @@ services:
       # Ver `src/infrastructure/storage/filesystem.ts`. Es también el valor por
       # defecto dentro de la imagen; va explícito para que se lea junto al volumen.
       FILESYSTEM_DIR: /filesystem
+      # SUB-01 (Fase 2, parcial): V8 se corta solo antes de que el proceso reserve más de
+      # esto, con su propio error de memoria en vez de que el kernel mate el contenedor a
+      # ciegas (SIGKILL de OOM-killer) a mitad de lo que estuviera escribiendo. Deja margen
+      # bajo el tope del contenedor (de abajo) para el resto del proceso: buffers, los
+      # módulos ya cargados, el propio V8 fuera del heap.
+      NODE_OPTIONS: --max-old-space-size=1536
+    # Segunda defensa de SUB-01, por si el tope de tamaño descomprimido de
+    # `guardar-excel-de-carga.ts` no alcanzara a cortar algo (es un campo que declara el
+    # propio archivo, no una medición real — ver el comentario de esa función). Sin esto,
+    # hasta ahora, un proceso sin memoria de sobra podía llevarse por delante toda la
+    # máquina, no solo este contenedor. El número es generoso a propósito: esto es una
+    # contención de última instancia, no un ajuste fino — una carga legítima grande no
+    # debe fallar por esto.
+    mem_limit: 2048m
     volumes:
       # Todo lo que sube la gente: los adjuntos de las páginas del sitio y de la
       # intranet (PDF, imágenes, Excel, Word, PowerPoint, con su backup por página) y los
@@ -86,6 +114,19 @@ services:
       # Los formatos de ejemplo de "Actualizaciones" son código, no datos: vienen con el
       # repositorio y se montan de solo lectura para poder cambiarlos sin reconstruir.
       - ./4000-api-backend/uploads/formatos-carga:/app/uploads/formatos-carga:ro
+    # Docker sondea `/health` de la propia API cada 30 s y `status` muestra `(healthy)` o
+    # `(unhealthy)`. Es una sonda de **vida**: dice que el proceso responde, no que Postgres
+    # o Redis estén bien (por qué, en el comentario de `/health` en `src/app.ts`); eso lo
+    # dicen los healthcheck de `db` y `redis`. La hace Node con el `fetch` que ya trae la
+    # imagen —no lleva curl ni wget— contra el 127.0.0.1 del propio contenedor, y sigue el
+    # PORT que tenga. `start_period` deja arrancar a la API (conecta a la base, comprueba
+    # las migraciones, levanta el worker) sin contar los fallos de ese rato.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     depends_on:
       db:
         condition: service_healthy
@@ -102,6 +143,7 @@ services:
       dockerfile: 4000-api-backend/Dockerfile
       target: builder
     profiles: ["tools"]
+    logging: *logging
     command: ["npm", "run", "migrate"]
     env_file:
       - .env
@@ -128,6 +170,7 @@ services:
         NEXT_PUBLIC_INTRANET_URL: ${INTRANET_URL_PUBLICA}
     container_name: sitio-web
     restart: unless-stopped
+    logging: *logging
     env_file:
       - .env
     environment:
@@ -156,6 +199,7 @@ services:
         NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
     container_name: intranet
     restart: unless-stopped
+    logging: *logging
     env_file:
       - .env
     environment:
@@ -173,6 +217,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     restart: unless-stopped
+    logging: *logging
     ports:
       # Solo en 127.0.0.1: la única entrada es el túnel, que corre en este mismo equipo.
       # Por eso nginx puede fiarse de la IP que el túnel le pasa en X-Forwarded-For
