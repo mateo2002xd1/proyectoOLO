@@ -120,13 +120,60 @@ services:
     # dicen los healthcheck de `db` y `redis`. La hace Node con el `fetch` que ya trae la
     # imagen —no lleva curl ni wget— contra el 127.0.0.1 del propio contenedor, y sigue el
     # PORT que tenga. `start_period` deja arrancar a la API (conecta a la base, comprueba
-    # las migraciones, levanta el worker) sin contar los fallos de ese rato.
+    # las migraciones) sin contar los fallos de ese rato.
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 40s
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - olo-network
+
+  # Procesa la cola `heavy-jobs` (los Excel de "Actualizaciones"): la misma imagen que
+  # `api-backend`, con el mismo entorno, pero con `dist/worker.js` en vez de
+  # `dist/server.js` y sin el puerto 4000 (SUB-01, Fase 3, 2026-10-25).
+  #
+  # Antes `api-backend` levantaba este worker en el mismo proceso: abrir un Excel grande
+  # con `exceljs` (sin streaming) reservaba toda esa memoria en el proceso que también
+  # sirve login y páginas públicas. El tope de tamaño descomprimido (`guardar-excel-de-
+  # carga.ts`) cierra el vector conocido; esto cierra la clase entera —cualquier otro
+  # agotamiento de memoria en el procesamiento de un archivo subido tumba solo este
+  # contenedor, que `restart: unless-stopped` reinicia, sin llevarse por delante la API.
+  #
+  # `mem_limit` y `NODE_OPTIONS` repiten los de `api-backend`: el riesgo que motivó
+  # ponérselos a la API vive ahora aquí, no allá.
+  #
+  # Sin healthcheck: no hay servidor HTTP que sondear (ver `worker.ts`). Un cuelgue sin
+  # crash no se nota por aquí; se nota en el panel, en una carga que no avanza.
+  worker:
+    build:
+      context: .
+      dockerfile: 4000-api-backend/Dockerfile
+    container_name: worker
+    command: ["node", "dist/worker.js"]
+    restart: unless-stopped
+    logging: *logging
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DB_SSL: "false"
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+      FILESYSTEM_DIR: /filesystem
+      NODE_OPTIONS: --max-old-space-size=1536
+    mem_limit: 2048m
+    volumes:
+      # El mismo volumen que `api-backend`: el worker lee de aquí el Excel que la API
+      # guardó, y no necesita nada que la API no necesite también.
+      - filesystem:/filesystem
+      - ./4000-api-backend/uploads/formatos-carga:/app/uploads/formatos-carga:ro
     depends_on:
       db:
         condition: service_healthy

@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 25-10-2026 (11.ª parte): SUB-01, Fase 3 — el worker de la cola pasa a su propio proceso
+
+**Qué pidió el usuario:** decidir ya lo que había quedado pendiente de SUB-01 (Fases 2 y 3), tras preguntárselo al cierre de la parte anterior.
+
+**Cómo se decidió:** no se reconvocó el consejo —ya había dado su recomendación completa en la parte anterior, con los 5 textos literales—. En vez de eso se revisó el código del worker (`infrastructure/redis/queue.ts` y los tres `procesarCarga*.usecase.ts`): las tres cargas ya envuelven su propio trabajo en `try/catch`, y BullMQ además captura la promesa del procesador antes de que llegue a ser un `unhandledRejection` del proceso. No hay hoy una ruta real por la que un fallo del worker se escape como `unhandledRejection` genérico — la alarma del consejo sobre esto era sobre un riesgo futuro, no uno demostrado en el código actual. Con eso, la Fase 2 (qué hacer con el `process.exit(1)` genérico) deja de ser una decisión con dos salidas en tensión: separando el worker (Fase 3), el radio de cualquier fallo —el que ya está contenido hoy, y el que pueda aparecer con una librería nueva mañana— queda acotado a un proceso que ya no es el que sirve login ni páginas públicas. Las Fases 2 y 3 se resuelven con un solo cambio.
+
+**Qué se hizo:**
+
+- `4000-api-backend/src/worker.ts` (nuevo): el mismo arranque que tenía `server.ts` (conectar, exigir migraciones al día, `setupWorker()`) pero sin `app.listen` ni nada de HTTP. Su propio `unhandledRejection` sí mata el proceso sin matices — aquí es correcto, porque Docker lo reinicia (`restart: unless-stopped`) sin tocar la API.
+- `server.ts`: ya no llama a `setupWorker()`. Sigue llamando a `cerrarCola()` al apagar, porque la API sigue siendo quien ENCOLA los trabajos (`getHeavyJobsQueue().add(...)`), solo que ya no los procesa.
+- `docker-compose.servidor.yml`: servicio `worker` nuevo, misma imagen que `api-backend`, `command: ["node", "dist/worker.js"]`, sin puerto ni healthcheck (no hay servidor HTTP que sondear), con el mismo `mem_limit`/`NODE_OPTIONS` que se le puso a la API en la Fase 1 — el riesgo que los motivó vive ahora aquí. No hizo falta tocar el `Dockerfile`: ya copia todo `dist/`, y `worker.ts` compila a `dist/worker.js` con el mismo `npm run build`.
+- `package.json`: `dev:worker` y `start:worker`, a la par de `dev`/`start`.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `4000-api-backend` | Sin errores |
+| `docker compose config` sobre el compose del servidor (con un `.env` vacío temporal, que no se dejó) | Sin errores de sintaxis; el servicio `worker` queda bien formado |
+| Worker real contra la base y Redis desechables: arranca, conecta, deja sus tres líneas de arranque | Arranca sin tocar HTTP ni el puerto 4000 |
+| Se encoló un trabajo con un nombre que no existe | El worker lo recibe, lo marca fallido (`El trabajo 1 ha fallado`) y **sigue corriendo** — no se cae |
+| `SIGTERM` al proceso del worker | No se pudo confirmar en Windows: ni `Stop-Process` de PowerShell ni `child_process.kill` de Node entregan una señal POSIX real a un proceso de `ts-node` en este sistema operativo — es una limitación de probar señales Unix desde Windows, no del código. El código de apagado (`cerrarCola()` tras `SIGTERM`/`SIGINT`) es el mismo, línea por línea, que ya corría en `server.ts` antes de este cambio; solo se movió de archivo |
+| API (`server.ts`) sola, sin el worker | Arranca, responde `/health` en 200, nunca imprime el antiguo «Background worker started» |
+| `idor:verificar` tras los cambios | 178 comprobaciones, 0 fallos, los mismos 2 avisos de siempre |
+
+**Qué se hizo con 3-seguridad-del-proyecto.md:** la fila SUB-01 se actualizó para incluir la Fase 3 y explicar por qué la Fase 2 queda resuelta por construcción; se quitó la fila SUB-01b de "Abiertos" (ya no aplica).
+
+**Lo que falta, y es del usuario:** el servicio `worker` es nuevo en el compose — el servidor real necesita `docker compose up -d worker` (o el paso equivalente en `deploy.sh`) para que exista; no se despliega solo con un `restart` de lo que ya corría. Confirmar en el servidor real, con `docker stop` (sí manda `SIGTERM` de verdad en Linux), que el worker cierra limpio y no deja un trabajo a medias.
+
+---
 ## sesión 25-10-2026 (10.ª parte): "SOLUCIONA TODO" — se cierran SUB-01 (Fase 1), SUB-02, SUB-04, SUB-05 y SUB-06
 
 **Qué pidió el usuario:** solucionar todos los hallazgos de la prueba de subida de archivos (parte anterior).
@@ -34,6 +62,43 @@
 - **SUB-02, la automatización de la limpieza de huérfanos**: el script ya existe y borra de verdad con `--aplicar`; automatizarlo sin que nadie revise antes es cambiar su naturaleza de "dry-run por defecto" a "borra solo", que es su propia decisión de riesgo.
 - **SUB-07**: sigue siendo una decisión de producto (¿lo retirado se borra o solo se mueve a `backup/`? ¿la intranet necesita ACL por página sobre adjuntos?), no de código. No se decidió por el usuario.
 - **`docker-compose.servidor.yml`**: el cambio de SUB-01 (fase 1, el `NODE_OPTIONS`/`mem_limit`) está escrito en el archivo, pero esa misma hoja tiene mezclados cambios de otra sesión/edición (el healthcheck y la rotación de logs, `SAL-01`) que no son de esta tarea. No se separó con `git add -p` para evitar tocar lo ajeno a ciegas: queda sin añadir a ningún commit mío, a la espera de que se junte con el resto de cambios de ese archivo.
+
+---
+## sesión 25-10-2026 (10.ª parte): color de palabras y alineación de bloque en los Editor.js del «Buscador de ocupaciones»
+
+**Qué pidió el usuario:** si es posible agregar el color a las opciones del campo de texto (la barra que sale al seleccionar texto: `T`, enlace, negrita, cursiva) y también justificar, centrar y alinear a la izquierda y a la derecha. Es posible; se hizo en los dos Editor.js del buscador («Textos del buscador» y «Texto bloque»). El bloque «Texto enriquecido» no cambia (queda a una sola prop de tenerlo).
+
+**Qué se agregó**
+
+| Opción | Dónde sale | Cómo se guarda |
+|---|---|---|
+| Color de las palabras elegidas | Barra al seleccionar texto, botón «A» con paleta: negro, azul OLO, verde SENA, verde oscuro, rojo, naranja, amarillo, gris, blanco y «Sin color» | Dentro del texto: `<span style="color:#aa0000">…</span>` |
+| Alineación: izquierda, centro, derecha y justificado | Menú «⠿» de cada bloque | En el bloque, `tunes: { alineacion: { alineacion: 'center' } }`; a la izquierda no guarda valor |
+
+La paleta es cerrada (sin selector libre): lo que el editor puede escribir ya es lo que el API acepta. Las herramientas son propias (`features/editor/edition/lib/editorjs-color.ts` y `editorjs-alineacion.ts`), sin paquetes nuevos; `EditorjsWrapper` las activa con la prop `conFormato`. El sitio las pinta en `shared/lib/buscador-ocupaciones/` (`alineacionDe`, y las listas centradas llevan las viñetas dentro del texto). La ayuda de cada campo lo dice.
+
+**Seguridad — esto sí abre algo.** El API borraba todo `style` salvo `text-align` (XSS-09), así que el color se habría perdido al guardar. Se agregó una excepción en `4000-api-backend/src/shared/sanitizar-contenido.ts` (`COLOR_PERMITIDO`): un `style` pasa **solo si está en un `span` y es exactamente `color:#rgb` o `color:#rrggbb`**. Nombres de color, `rgb()`, `var()`, `url()`, `!important`, otras propiedades junto al color, o el mismo `style` en un `p`, `div` o `a`, se siguen quitando. La CSP no limita `style-src`, así que esos estilos se pintan; por eso el color debe ser cerrado y no libre. Una alineación o un color en `tunes` son cadenas sin `<` y pasan por el saneado general sin cambios.
+
+| Verificación | Resultado |
+|---|---|
+| `npm run xss:verificar` (4000-api-backend) | 124 comprobaciones, 0 fallos. Nuevas: el color #hex de 3 y 6 dígitos sobrevive; 13 usos que no son #hex en un `span` pierden el `style` (nombre, `rgb()`, 4 dígitos, letras fuera de rango, `!important`, color + `position`, color + `url(javascript:…)`, `expression()`, `var()`, otra propiedad primero, y el color en `p`, `div` y `a`); el texto se conserva; en un bloque de EditorJS el color y los `tunes` se conservan |
+| `tsc --noEmit` en `3000-sitio-web` y en `4000-api-backend`, `eslint` en lo tocado | Sin errores |
+| Editor.js en Chrome (página temporal, borrada después), con ratón: doble clic en «mundo» | La barra trae conversión de bloque, enlace, negrita, cursiva y color |
+| …pulsar «A» y elegir rojo | Paleta de 9 colores y «Sin color»; el texto queda `Hola <span style="color:#AA0000">mundo</span> bonito` y así lo emite el editor |
+| …«Sin color» | Quita el `span` |
+| …menú «⠿» del bloque | Alinear a la izquierda, Centrar, Alinear a la derecha, Justificar (más los de siempre); «Centrar» guarda `alineacion: "center"` y el párrafo se ve centrado, el titular de debajo no |
+| Sitio, con un bloque de prueba (página temporal, borrada después) | Titular centrado con una palabra verde; descripción justificada con palabras rojas; una lista centrada, una línea a la derecha y una sin ajuste; el texto del recuadro centrado con una palabra amarilla |
+
+**Lo que no se hizo / límites**
+
+- No se abrió el editor de Puck (pide sesión): lo probado es el editor de bloques suelto y el render, no el bloque dentro del panel.
+- El color de una selección que cruza varios ítems de una lista no se aplica (el código lo evita para no partir la lista; no se probó); se aplica palabra por palabra dentro de un ítem.
+- Cada bloque guarda `tunes: { alineacion: {} }` aunque esté a la izquierda: es lo que emite Editor.js, y el render lo ignora.
+- La alineación y el color solo se pintan donde el render los lee: el buscador de ocupaciones. Otro bloque que use `EditorjsWrapper` con `conFormato` tendría que leer `tunes.alineacion` (`alineacionDe`) y pintar el `span` (ya lo hace el HTML).
+- `docs/3-seguridad-del-proyecto.md` (XSS-09) todavía dice que el `style` solo lleva la alineación: no se editó porque tiene cambios sin subir de otra sesión; conviene añadirle esta excepción.
+- Las paletas del editor (`COLORES_DEL_TEXTO`) y la regla del API (`COLOR_PERMITIDO`) están en archivos distintos: la regla acepta cualquier #hex de 3 o 6 dígitos, no solo los de la paleta.
+
+**Código tocado:** `3000-sitio-web/src/features/editor/edition/lib/editorjs-color.ts` y `editorjs-alineacion.ts` (nuevos), `.../components/editorjs-wrapper.tsx`, `src/config/puck.config.tsx`, `src/shared/lib/buscador-ocupaciones/lib/textos-del-buscador.ts` y `components/textos-del-buscador.tsx`; `4000-api-backend/src/shared/sanitizar-contenido.ts` y `scripts/verificaciones/verificar-xss-contenido.ts`; `docs/manual-de-usuario-formato.md`.
 
 ---
 ## sesión 25-10-2026 (9.ª parte): color del texto en las dos tarjetas de texto del «Buscador de ocupaciones»
