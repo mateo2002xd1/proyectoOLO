@@ -58,7 +58,10 @@ const peligrosoEn = (html: string): string[] => {
         const valor = attr.value.replace(/[\u0000- ]/g, '');
         if (/^[a-z][a-z0-9+.-]*:/i.test(valor) && !PROTOCOLO_OK.test(valor)) hallazgos.push(`${attr.name}="${attr.value.slice(0, 30)}"`);
       }
-      if (attr.name === 'style' && !/^\s*text-align:\s*(left|center|right|justify)\s*;?\s*$/i.test(attr.value)) hallazgos.push(`style="${attr.value.slice(0, 30)}"`);
+      // Solo se admite la alineación y, en un `span`, un color #hex (el de «Color del texto»).
+      const esAlineacion = /^\s*text-align:\s*(left|center|right|justify)\s*;?\s*$/i.test(attr.value);
+      const esColorDeSpan = nombre === 'span' && /^\s*color:\s*#[0-9a-f]{3}(?:[0-9a-f]{3})?\s*;?\s*$/i.test(attr.value);
+      if (attr.name === 'style' && !esAlineacion && !esColorDeSpan) hallazgos.push(`style="${attr.value.slice(0, 30)}"`);
     }
   });
   return hallazgos;
@@ -133,6 +136,58 @@ const verificarHtml = (): void => {
   const restos = new JSDOM(sinClases).window.document.querySelectorAll('[class],[id]').length;
   informar(restos === 0, 'una clase de utilidad o un id (DOM clobbering) se quitan', sinClases.slice(0, 80));
   informar(sinClases.includes('Hola') && sinClases.includes('href="/estudios"'), 'el texto y el enlace de ese HTML se conservan');
+
+  console.log('\n=== HTML: el color de unas palabras (`span`) pasa solo con un #hex ===');
+  const conColor = (html: string) =>
+    (sanitizarContenidoPuck({ content: [{ type: 'T', props: { texto: html } }] }) as any).content[0].props.texto as string;
+  const colorBueno = conColor('<p>Un <span style="color:#aa0000">rojo</span> y un <span style="color: #0F0;">verde</span></p>');
+  informar(
+    colorBueno.includes('style="color:#aa0000"') && /style="color: #0F0;?"/.test(colorBueno),
+    'color:#hex de 6 y de 3 dígitos en un span sobreviven',
+    colorBueno.slice(0, 90)
+  );
+  const COLORES_MALOS: Array<[string, string]> = [
+    ['nombre de color', '<span style="color:red">x</span>'],
+    ['rgb()', '<span style="color:rgb(170,0,0)">x</span>'],
+    ['hex de 4 dígitos', '<span style="color:#aa00">x</span>'],
+    ['hex con letras fuera de rango', '<span style="color:#gggggg">x</span>'],
+    ['con !important', '<span style="color:#aa0000 !important">x</span>'],
+    ['color y otra propiedad', '<span style="color:#aa0000;position:fixed;top:0;left:0">x</span>'],
+    ['color y url()', '<span style="color:#aa0000;background:url(javascript:alert(1))">x</span>'],
+    ['expression()', '<span style="color:expression(alert(1))">x</span>'],
+    ['var()', '<span style="color:var(--x)">x</span>'],
+    ['otra propiedad primero', '<span style="background:#aa0000">x</span>'],
+    ['color en un <p>', '<p style="color:#aa0000">x</p>'],
+    ['color en un <div>', '<div style="color:#aa0000">x</div>'],
+    ['color en un <a>', '<a href="/x" style="color:#aa0000">x</a>'],
+  ];
+  const coladas = COLORES_MALOS.filter(([, carga]) => /style=/i.test(conColor(carga)));
+  informar(
+    coladas.length === 0,
+    `${COLORES_MALOS.length} usos que no son un #hex en un span: el style se quita`,
+    coladas.map(([nombre]) => nombre).join('; ')
+  );
+  informar(conColor('<span style="color:red">texto</span>').includes('texto'), 'al quitar el style, el texto se conserva');
+  const bloqueConFormato = (
+    sanitizarContenidoPuck({
+      content: [
+        {
+          type: 'T',
+          props: {
+            content: {
+              blocks: [
+                { type: 'paragraph', data: { text: 'a <span style="color:#39A900">b</span>' }, tunes: { alineacion: { alineacion: 'center' } } },
+              ],
+            },
+          },
+        },
+      ],
+    }) as any
+  ).content[0].props.content.blocks[0];
+  informar(
+    bloqueConFormato.data.text.includes('style="color:#39A900"') && bloqueConFormato.tunes?.alineacion?.alineacion === 'center',
+    'en un bloque de EditorJS, el color y la alineación (tunes) se conservan'
+  );
 };
 
 // ── 2. URLs sueltas ──────────────────────────────────────────────────────────

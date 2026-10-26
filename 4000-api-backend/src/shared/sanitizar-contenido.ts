@@ -64,7 +64,8 @@ const ETIQUETAS_PERMITIDAS = [
  *  - `href`, `src`: llevan direcciones; `URI_PERMITIDA` deja fuera `javascript:` y los `data:`.
  *  - `target`, `rel`: sin ellos un enlace no puede abrirse en otra pestaña; `rel` se conserva
  *    para no perder `noopener`.
- *  - `style`: solo la alineación (hook de `ALINEACION_PERMITIDA`).
+ *  - `style`: solo la alineación y, en un `span`, un color `#hex` (hook de `ALINEACION_PERMITIDA`
+ *    y `COLOR_PERMITIDO`).
  *  - **No hay `class` ni `id`** (quitados el 2026-10-22). Ningún editor del OLO está configurado para escribirlos (ni
  *    la barra de Puck ni las herramientas de EditorJS que se cargan), y los dos son superficie:
  *    una clase de utilidad de Tailwind (`fixed inset-0 z-50 bg-white`) tapa la página entera igual
@@ -77,7 +78,7 @@ const ATRIBUTOS_PERMITIDOS = [
   'target', 'rel', 'width', 'height',
   'colspan', 'rowspan',
   'data-type', 'data-id',  // atributos de datos de Puck (internos, no peligrosos)
-  'style',  // solo `text-align`: lo demás lo quita el hook de `ALINEACION_PERMITIDA`
+  'style',  // solo `text-align` y, en un `span`, `color:#hex`: lo demás lo quita el hook de más abajo
 ];
 
 /**
@@ -88,8 +89,20 @@ const ATRIBUTOS_PERMITIDOS = [
  */
 const ALINEACION_PERMITIDA = /^\s*text-align:\s*(left|center|right|justify)\s*;?\s*$/i;
 
-purify.addHook('uponSanitizeAttribute', (_nodo, datos) => {
-  if (datos.attrName === 'style' && !ALINEACION_PERMITIDA.test(datos.attrValue)) datos.keepAttr = false;
+/**
+ * El otro `style` que se guarda: el color de unas palabras, `<span style="color:#aa0000">` (la
+ * herramienta «Color del texto» de Editor.js, `features/editor/edition/lib/editorjs-color.ts` del
+ * sitio web). Solo en un `span` y solo con un `#hex` de 3 o 6 dígitos: sin nombres de color,
+ * `rgb()`, `var()`, `url()`, `!important` ni otras propiedades. Es de lo único que el `style`
+ * puede llevar además de la alineación; si la herramienta cambia su formato, cambia esta regla.
+ */
+const COLOR_PERMITIDO = /^\s*color:\s*#(?:[0-9a-f]{3}|[0-9a-f]{6})\s*;?\s*$/i;
+
+purify.addHook('uponSanitizeAttribute', (nodo, datos) => {
+  if (datos.attrName !== 'style') return;
+  const esAlineacion = ALINEACION_PERMITIDA.test(datos.attrValue);
+  const esColorDeSpan = nodo.nodeName === 'SPAN' && COLOR_PERMITIDO.test(datos.attrValue);
+  if (!esAlineacion && !esColorDeSpan) datos.keepAttr = false;
 });
 
 /**
