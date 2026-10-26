@@ -1,21 +1,22 @@
 import type { OutputBlockData, OutputData } from '@editorjs/editorjs';
 
 /**
- * Los textos de la sección «¿Sabes qué es una ocupación?» de la portada, en un solo campo de
- * Editor.js. El campo no sabe de zonas: cada bloque va a una según su tipo.
+ * Los textos de la sección «¿Sabes qué es una ocupación?» de la portada, en dos campos de
+ * Editor.js:
  *
- *  - encabezado → el titular, arriba;
- *  - párrafo y lista → la descripción, bajo el titular;
- *  - cita → el texto del recuadro azul, sobre el buscador.
+ *  - «Textos del buscador» (`contenido`): cada bloque va a una zona según su tipo. El
+ *    encabezado es el titular, arriba; el párrafo y la lista son la descripción, bajo el titular.
+ *  - «Texto bloque» (`textoBloque`): el texto del recuadro azul, sobre el buscador. Va aparte;
+ *    todos sus bloques salen ahí.
  *
- * Antes eran tres campos `richtext` de Puck (`tituloSeccion`, `descripcion` y `titulo`).
- * Una portada guardada así se pinta como siempre hasta que se abre en el editor, y entonces
- * `contenidoDesdeHtml` la pasa al campo nuevo.
+ * Antes eran tres campos `richtext` de Puck (`tituloSeccion`, `descripcion` y `titulo`), y
+ * durante un tiempo el texto del recuadro fue la «cita» de `contenido`. Una portada guardada
+ * así se pinta como siempre hasta que se abre en el editor, y entonces se pasa a los campos
+ * nuevos (`contenidoDesdeHtml`, `textoBloqueDesdeHtml`, `separarCitas`).
  */
 export interface TextosRepartidos {
   titular: OutputBlockData[];
   descripcion: OutputBlockData[];
-  recuadro: OutputBlockData[];
 }
 
 /** El HTML de los tres campos `richtext` de antes. */
@@ -42,22 +43,50 @@ function textoPlano(html: unknown): string {
     .trim();
 }
 
-function tieneTexto(bloque: OutputBlockData): boolean {
+/** Si el bloque dice algo; los de otro tipo (imagen, separador…) cuentan como vacíos. */
+export function tieneTexto(bloque?: OutputBlockData): boolean {
+  if (!bloque) return false;
   if (bloque.type === 'list') return Array.isArray(bloque.data?.items) && bloque.data.items.length > 0;
   return textoPlano(bloque.data?.text) !== '';
 }
 
-/** Reparte los bloques del campo entre las tres zonas; los vacíos y los de otro tipo se descartan. */
-export function repartirTextos(contenido?: OutputData): TextosRepartidos {
-  const reparto: TextosRepartidos = { titular: [], descripcion: [], recuadro: [] };
+/**
+ * La alineación elegida para un bloque (el ajuste `alineacion` de Editor.js,
+ * `features/editor/edition/lib/editorjs-alineacion.ts`); a la izquierda, que es la de siempre,
+ * no hay nada que aplicar.
+ */
+export function alineacionDe(bloque: OutputBlockData): 'center' | 'right' | 'justify' | undefined {
+  const valor = bloque.tunes?.alineacion?.alineacion;
+  return valor === 'center' || valor === 'right' || valor === 'justify' ? valor : undefined;
+}
+
+function bloquesDe(contenido?: OutputData): OutputBlockData[] {
   const bloques = contenido?.blocks;
-  for (const bloque of Array.isArray(bloques) ? bloques : []) {
-    if (!bloque || !tieneTexto(bloque)) continue;
+  return Array.isArray(bloques) ? bloques : [];
+}
+
+/** Reparte los bloques de `contenido` entre el titular y la descripción; el resto se descarta. */
+export function repartirTextos(contenido?: OutputData): TextosRepartidos {
+  const reparto: TextosRepartidos = { titular: [], descripcion: [] };
+  for (const bloque of bloquesDe(contenido)) {
+    if (!tieneTexto(bloque)) continue;
     if (bloque.type === 'header') reparto.titular.push(bloque);
-    else if (bloque.type === 'quote') reparto.recuadro.push(bloque);
     else if (bloque.type === 'paragraph' || bloque.type === 'list') reparto.descripcion.push(bloque);
   }
   return reparto;
+}
+
+/**
+ * Las citas que `contenido` llevó cuando el texto del recuadro era una cita de ese campo, y
+ * lo que queda sin ellas. El campo ya no ofrece la herramienta de cita: se sacan al abrir la
+ * portada en el editor (y el render las usa mientras tanto), para que no se pierdan.
+ */
+export function separarCitas(contenido?: OutputData): { sinCitas: OutputData; citas: OutputBlockData[] } {
+  const bloques = bloquesDe(contenido);
+  return {
+    sinCitas: { ...contenido, blocks: bloques.filter((bloque) => bloque?.type !== 'quote') },
+    citas: bloques.filter((bloque) => bloque?.type === 'quote' && tieneTexto(bloque)),
+  };
 }
 
 /**
@@ -85,46 +114,52 @@ function partesDe(html: string): Array<{ etiqueta: string; interior: string }> {
 }
 
 /**
- * Los tres textos guardados como HTML, pasados al campo único: el titular, en encabezados; la
- * descripción, en párrafos y listas; el recuadro, en una sola cita. Lo que falta o está vacío
- * se completa con el texto del diseño, como lo pintaba la portada.
+ * Un HTML de Puck como bloques de Editor.js: párrafos y listas o, con `comoEncabezados`, un
+ * encabezado por cada bloque (el titular).
  */
-export function contenidoDesdeHtml(guardados: TextosEnHtml): OutputData {
-  const textos = {
-    tituloSeccion: guardados.tituloSeccion || TEXTOS_EN_HTML_POR_DEFECTO.tituloSeccion,
-    descripcion: guardados.descripcion || TEXTOS_EN_HTML_POR_DEFECTO.descripcion,
-    titulo: guardados.titulo || TEXTOS_EN_HTML_POR_DEFECTO.titulo,
-  };
-  const blocks: OutputBlockData[] = [];
-
-  for (const { interior } of partesDe(textos.tituloSeccion)) {
-    // Un salto de línea en un encabezado no sobrevive a Editor.js: se lee como un espacio.
-    const text = enLineaDeEditorjs(interior).replace(/<br\s*\/?>/gi, ' ');
-    if (textoPlano(text)) blocks.push({ type: 'header', data: { text, level: 2 } });
-  }
-
-  for (const { etiqueta, interior } of partesDe(textos.descripcion)) {
-    if (etiqueta === 'ul' || etiqueta === 'ol') {
+function bloquesDeHtml(html: string, comoEncabezados = false): OutputBlockData[] {
+  const bloques: OutputBlockData[] = [];
+  for (const { etiqueta, interior } of partesDe(html)) {
+    if (comoEncabezados) {
+      // Un salto de línea en un encabezado no sobrevive a Editor.js: se lee como un espacio.
+      const text = enLineaDeEditorjs(interior).replace(/<br\s*\/?>/gi, ' ');
+      if (textoPlano(text)) bloques.push({ type: 'header', data: { text, level: 2 } });
+    } else if (etiqueta === 'ul' || etiqueta === 'ol') {
       const items = Array.from(interior.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi), (item) =>
         enLineaDeEditorjs(item[1])
       )
         .filter((contenido) => textoPlano(contenido))
         .map((content) => ({ content, meta: {}, items: [] }));
-      if (items.length) blocks.push({ type: 'list', data: { style: etiqueta === 'ol' ? 'ordered' : 'unordered', meta: {}, items } });
+      if (items.length) {
+        bloques.push({ type: 'list', data: { style: etiqueta === 'ol' ? 'ordered' : 'unordered', meta: {}, items } });
+      }
     } else {
       const text = enLineaDeEditorjs(interior);
-      if (textoPlano(text)) blocks.push({ type: 'paragraph', data: { text } });
+      if (textoPlano(text)) bloques.push({ type: 'paragraph', data: { text } });
     }
   }
+  return bloques;
+}
 
-  const recuadro = partesDe(textos.titulo)
-    .map(({ interior }) => enLineaDeEditorjs(interior))
-    .filter((texto) => textoPlano(texto))
-    .join('<br>');
-  if (recuadro) blocks.push({ type: 'quote', data: { text: recuadro, caption: '', alignment: 'left' } });
+/**
+ * El titular y la descripción guardados como HTML, pasados a `contenido`: el titular, en
+ * encabezados; la descripción, en párrafos y listas. Lo que falta o está vacío se completa con
+ * el texto del diseño, como lo pintaba la portada.
+ */
+export function contenidoDesdeHtml(guardados: Pick<TextosEnHtml, 'tituloSeccion' | 'descripcion'>): OutputData {
+  return {
+    blocks: [
+      ...bloquesDeHtml(guardados.tituloSeccion || TEXTOS_EN_HTML_POR_DEFECTO.tituloSeccion, true),
+      ...bloquesDeHtml(guardados.descripcion || TEXTOS_EN_HTML_POR_DEFECTO.descripcion),
+    ],
+  };
+}
 
-  return { blocks };
+/** El texto del recuadro guardado como HTML, pasado a `textoBloque`; vacío, el del diseño. */
+export function textoBloqueDesdeHtml(titulo?: string): OutputData {
+  return { blocks: bloquesDeHtml(titulo || TEXTOS_EN_HTML_POR_DEFECTO.titulo) };
 }
 
 /** Lo que trae el bloque recién puesto en la página. */
 export const CONTENIDO_DEL_BUSCADOR_POR_DEFECTO: OutputData = contenidoDesdeHtml(TEXTOS_EN_HTML_POR_DEFECTO);
+export const TEXTO_BLOQUE_POR_DEFECTO: OutputData = textoBloqueDesdeHtml();

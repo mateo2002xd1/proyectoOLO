@@ -34,6 +34,10 @@ export interface PortadaBuscadorOcupacionesProps {
   transparenciaFondo?: number | '';
   /** Color del recuadro y del botón de buscar. Vacío = azul del diseño. */
   colorRecuadro?: string;
+  /** Color del titular y de la descripción. Vacío = el del diseño (azul y negro). */
+  colorTexto?: string;
+  /** Color del texto del recuadro. Vacío = blanco. */
+  colorTextoRecuadro?: string;
   onSearch?: (valor: string) => void;
 }
 
@@ -52,6 +56,8 @@ export function PortadaBuscadorOcupaciones({
   imagenFondo,
   transparenciaFondo,
   colorRecuadro,
+  colorTexto,
+  colorTextoRecuadro,
   onSearch,
 }: PortadaBuscadorOcupacionesProps) {
   const idCampo = useId();
@@ -65,7 +71,7 @@ export function PortadaBuscadorOcupaciones({
   }
 
   return (
-    <section className="relative isolate w-full overflow-hidden bg-white">
+    <section className="relative isolate w-full overflow-hidden">
       {/* La imagen va en su propia capa: la opacidad de un fondo CSS no se puede bajar
           sin bajar también el texto que lleva encima. */}
       {imagenFondo && (
@@ -85,13 +91,16 @@ export function PortadaBuscadorOcupaciones({
           // `TituloRico` y no `<h2>`: el titular puede traer un H1–H6 de la barra de formato.
           <TituloRico
             className="text-[28px] leading-[1.2] font-normal sm:text-[36px] lg:text-[40px] [&_p]:m-0 [&_strong]:font-bold [&_b]:font-bold"
-            style={{ color: AZUL_PORTADA }}
+            style={{ color: colorTexto || AZUL_PORTADA }}
           >
             {tituloSeccion}
           </TituloRico>
         )}
         {descripcion && (
-          <div className="mt-5 text-[17px] leading-[1.35] text-[#111111] sm:mt-8 sm:text-[20px] lg:text-[22px] [&_p]:m-0 [&_p+p]:mt-3 [&_ul+p]:mt-3 [&_ol+p]:mt-3">
+          <div
+            style={colorTexto ? { color: colorTexto } : undefined}
+            className="mt-5 text-[17px] leading-[1.35] text-[#111111] sm:mt-8 sm:text-[20px] lg:text-[22px] [&_p]:m-0 [&_p+p]:mt-3 [&_ul+p]:mt-3 [&_ol+p]:mt-3"
+          >
             {descripcion}
           </div>
         )}
@@ -101,7 +110,10 @@ export function PortadaBuscadorOcupaciones({
           style={{ backgroundColor: azul }}
         >
           {textoRecuadro && (
-            <div className="text-[17px] leading-[1.3] text-white sm:text-[20px] lg:text-[22px] [&_em]:font-light [&_i]:font-light [&_p]:m-0 [&_p+p]:mt-2 [&_strong]:font-bold [&_b]:font-bold">
+            <div
+              style={colorTextoRecuadro ? { color: colorTextoRecuadro } : undefined}
+              className="text-[17px] leading-[1.3] text-white sm:text-[20px] lg:text-[22px] [&_em]:font-light [&_i]:font-light [&_p]:m-0 [&_p+p]:mt-2 [&_strong]:font-bold [&_b]:font-bold"
+            >
               {textoRecuadro}
             </div>
           )}

@@ -6,7 +6,8 @@ import { useBuscadorActivo } from '@/shared/lib/rutas-del-menu';
 import { useBuscarEnPagina } from '../hooks/use-buscar-en-pagina';
 import { ConsultaOcupaciones } from './consulta-ocupaciones';
 import { AZUL_PORTADA, PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
-import { nodosDeTextos } from './textos-del-buscador';
+import { separarCitas } from '../lib/textos-del-buscador';
+import { nodosDelBloque, nodosDeTextos } from './textos-del-buscador';
 
 /*
  * Textos del diseño. Puck entrega un campo `richtext` vacío —o ausente, como en una
@@ -28,13 +29,22 @@ const TEXTO_RECUADRO_POR_DEFECTO = (
   </>
 );
 
+/** Solo un color hexadecimal llega al `style`; lo demás deja el color del diseño. */
+function colorHex(color?: string): string | undefined {
+  const limpio = typeof color === 'string' ? color.trim() : '';
+  return /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(limpio) ? limpio : undefined;
+}
+
 export interface HeroBuscadorOcupacionesProps {
   /**
-   * Los tres textos en un solo campo de Editor.js (ver `repartirTextos`). Si viene, manda
-   * sobre `tituloSeccion`, `descripcion` y `titulo`, y una zona sin texto queda vacía.
+   * El titular y la descripción en un campo de Editor.js, «Textos del buscador» (ver
+   * `repartirTextos`). Si viene, manda sobre `tituloSeccion` y `descripcion`, y una zona sin
+   * texto queda vacía.
    */
   contenido?: OutputData;
-  /** Los tres de abajo son los de una portada guardada antes del campo único. */
+  /** El texto del recuadro, en su propio campo de Editor.js, «Texto bloque». Manda sobre `titulo`. */
+  textoBloque?: OutputData;
+  /** Los tres de abajo son los de una portada guardada antes de los campos de Editor.js. */
   tituloSeccion?: ReactNode;
   descripcion?: ReactNode;
   /** Texto del recuadro sobre el buscador. Se llama `titulo` desde antes del rediseño. */
@@ -45,6 +55,10 @@ export interface HeroBuscadorOcupacionesProps {
   transparenciaFondo?: number | '';
   /** Color del recuadro del buscador (antes, del banner azul). */
   colorFondo?: string;
+  /** Color del titular y de la descripción (#rrggbb); vacío, el del diseño. */
+  colorTexto?: string;
+  /** Color del texto del recuadro (#rrggbb); vacío, blanco. */
+  colorTextoBloque?: string;
   /** Dentro del editor la búsqueda no navega. */
   esEdicion?: boolean;
   className?: string;
@@ -60,6 +74,7 @@ export interface HeroBuscadorOcupacionesProps {
  */
 export function HeroBuscadorOcupaciones({
   contenido,
+  textoBloque,
   tituloSeccion,
   descripcion,
   titulo,
@@ -67,6 +82,8 @@ export function HeroBuscadorOcupaciones({
   imagenFondo,
   transparenciaFondo,
   colorFondo,
+  colorTexto,
+  colorTextoBloque,
   esEdicion = false,
   className = 'w-full',
 }: HeroBuscadorOcupacionesProps) {
@@ -77,17 +94,26 @@ export function HeroBuscadorOcupaciones({
   if (!activo && !esEdicion) return null;
 
   const textos = contenido ? nodosDeTextos(contenido) : null;
+  // En la primera versión del campo único, el texto del recuadro era una cita de `contenido`:
+  // mientras la portada no se abra en el editor (`resolveData`), se sigue leyendo de ahí.
+  const citas = contenido ? separarCitas(contenido).citas : [];
+  const bloque = textoBloque ?? (citas.length > 0 ? { blocks: citas } : undefined);
+  let recuadro: ReactNode = titulo ?? TEXTO_RECUADRO_POR_DEFECTO;
+  if (bloque) recuadro = nodosDelBloque(bloque);
+  else if (contenido) recuadro = false;
 
   return (
     <div className={className}>
       <PortadaBuscadorOcupaciones
         tituloSeccion={textos ? textos.titular : (tituloSeccion ?? TITULO_SECCION_POR_DEFECTO)}
         descripcion={textos ? textos.descripcion : (descripcion ?? DESCRIPCION_POR_DEFECTO)}
-        textoRecuadro={textos ? textos.recuadro : (titulo ?? TEXTO_RECUADRO_POR_DEFECTO)}
+        textoRecuadro={recuadro}
         placeholder={searchPlaceholder || 'Buscar ocupación, código o denominación'}
         imagenFondo={imagenFondo}
         transparenciaFondo={transparenciaFondo}
         colorRecuadro={colorFondo}
+        colorTexto={colorHex(colorTexto)}
+        colorTextoRecuadro={colorHex(colorTextoBloque)}
         onSearch={buscar}
       />
 
