@@ -743,9 +743,12 @@ function ControlesDeGrupo({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {Object.entries(campos).map(([clave, campo]) => (
         <div key={clave}>
-          <span style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500, color: COLOR_TEXTO }}>
-            {campo.label}
-          </span>
+          {/* Con la etiqueta vacía no se pinta: lo dice ya el título del acordeón. */}
+          {campo.label && (
+            <span style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500, color: COLOR_TEXTO }}>
+              {campo.label}
+            </span>
+          )}
           {campo.ayuda && (
             <p style={{ margin: '0 0 6px', color: COLOR_SUAVE, fontSize: '12px', lineHeight: 1.45 }}>{campo.ayuda}</p>
           )}
