@@ -5,6 +5,7 @@ import { TendenciaOcupacionalController } from '../controllers/tendencia-ocupaci
 import { FuentesFuturasEmpleoController } from '../controllers/fuentes-futuras-empleo.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoObservatorio } from '../middlewares/permisos.middleware';
+import { limitadorDeSubidaDeArchivos } from '../middlewares/rate-limit.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
 import { cargaTendenciaSchema, publicarCortesSchema } from '../validators/tendencia-ocupacional.validators';
 import { LIMITE_ABSOLUTO_BYTES } from '@olo/upload-policy';
@@ -151,7 +152,7 @@ router.use(requierePermisoObservatorio('puedeActualizarDatos'));
  *       415: { description: Tipo de archivo no permitido. }
  */
 router.get('/cargas', ObservatorioController.listarCargas);
-router.post('/cargas', subidaEnMemoria.single('file'), ObservatorioController.subir);
+router.post('/cargas', limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file'), ObservatorioController.subir);
 
 /**
  * @openapi
@@ -261,6 +262,7 @@ router.get('/formatos/:formato', ObservatorioController.descargarFormato);
 router.get('/fuentes-futuras-empleo/cargas', FuentesFuturasEmpleoController.listarCargas);
 router.post(
   '/fuentes-futuras-empleo/cargas',
+  limitadorDeSubidaDeArchivos,
   subidaEnMemoria.single('file'),
   FuentesFuturasEmpleoController.subir
 );
@@ -340,6 +342,7 @@ router.delete('/fuentes-futuras-empleo/cargas/:id', FuentesFuturasEmpleoControll
 router.get('/tendencia-ocupacional/cargas', TendenciaOcupacionalController.listarCargas);
 router.post(
   '/tendencia-ocupacional/cargas',
+  limitadorDeSubidaDeArchivos,
   subidaEnMemoria.single('file'),
   validarCuerpo(cargaTendenciaSchema),
   TendenciaOcupacionalController.subir

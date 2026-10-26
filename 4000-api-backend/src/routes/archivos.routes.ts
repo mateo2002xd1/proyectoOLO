@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ArchivosController } from '../controllers/archivos.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoPagina } from '../middlewares/permisos.middleware';
-import { limitadorGlobal } from '../middlewares/rate-limit.middleware';
+import { limitadorGlobal, limitadorDeSubidaDeArchivos, limitadorDeDescargaDeArchivos } from '../middlewares/rate-limit.middleware';
 import { recibirArchivo } from '../middlewares/recibir-archivo.middleware';
 
 /**
@@ -26,8 +26,19 @@ const router = Router();
  * Subir: quien puede editar páginas, con el mismo criterio que guardar un borrador. Los
  * route handlers de los frontends que hacían esto antes solo pedían sesión; cualquier
  * cuenta, aunque no editara nada, podía llenar el disco.
+ *
+ * `limitadorDeSubidaDeArchivos` va DESPUÉS de `requireAuth` (SUB-02): cuenta por usuario,
+ * y antes de que haya sesión no hay `req.user` del que sacar la clave — contaría por IP
+ * igual que `limitadorGlobal`, perdiendo el sentido de ponerlo (que atacar con una cuenta
+ * no agote el cupo de subida de toda la sede detrás del mismo NAT).
  */
-const guardiasDeSubida = [limitadorGlobal, requireAuth, requierePermisoPagina('puedeEditar'), recibirArchivo()];
+const guardiasDeSubida = [
+  limitadorGlobal,
+  requireAuth,
+  requierePermisoPagina('puedeEditar'),
+  limitadorDeSubidaDeArchivos,
+  recibirArchivo(),
+];
 
 /**
  * @openapi
@@ -104,7 +115,17 @@ router.post('/intranet', ...guardiasDeSubida, ArchivosController.subir('intranet
  *       304: { description: El navegador ya tiene esta versión }
  *       404: { description: No existe o no se sirve }
  */
-router.get('/sitio/*ruta', ArchivosController.servir('sitio'));
+/**
+ * `limitadorDeDescargaDeArchivos` (SUB-06): esta ruta no lleva `limitadorGlobal` (ver el
+ * porqué arriba, en el comentario del router) ni el `limit_req` de nginx —a diferencia de
+ * `/api-backend/`, `/uploads/` y `/backup/` no lo tienen—, así que hasta ahora no tenía
+ * ningún límite de tasa. Es pública y sirve PDFs hasta de 50 MB: un vector de ancho de
+ * banda sin autenticación. El límite es por IP (aquí nunca hay sesión) y generoso a
+ * propósito, para no repetir el problema que ya resolvió el comentario de arriba: una
+ * página que pide una docena de imágenes de golpe desde una sede con IP compartida no
+ * debe notarlo.
+ */
+router.get('/sitio/*ruta', limitadorDeDescargaDeArchivos, ArchivosController.servir('sitio'));
 
 /**
  * @openapi
@@ -129,6 +150,7 @@ router.get(
   '/intranet/*ruta',
   requireAuth,
   requierePermisoPagina('puedeVer'),
+  limitadorDeDescargaDeArchivos,
   ArchivosController.servir('intranet')
 );
 

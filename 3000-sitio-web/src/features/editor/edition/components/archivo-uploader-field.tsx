@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { nombreDeArchivoDecodificado } from '@olo/url-policy';
 import { registrarSubidaPendiente } from '../services/edicion.service';
 import { usePaginaEnEdicion, useRegistrarSubida } from '../lib/pagina-en-edicion';
 
@@ -87,7 +88,7 @@ export function ArchivoUploaderField({
   const nombreVisible =
     nombreOriginal ||
     nombreDeUrl ||
-    (value ? decodeURIComponent(value.split('?')[0].split('/').pop() ?? '') : '');
+    (value ? nombreDeArchivoDecodificado(value.split('?')[0].split('/').pop() ?? '') : '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

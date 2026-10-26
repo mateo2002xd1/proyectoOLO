@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { nombreDeArchivoDecodificado } from '@olo/url-policy';
 import { TituloRico } from './titulo-rico';
 
 /**
@@ -245,7 +246,7 @@ function nombreDeDescarga(publicacion: PublicacionItem): string | true {
   return (
     publicacion.nombreArchivo ||
     (publicacion.pdfUrl?.includes('?nombre=')
-      ? decodeURIComponent(publicacion.pdfUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
+      ? nombreDeArchivoDecodificado(publicacion.pdfUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
       : '') ||
     (typeof publicacion.titulo === 'string' && publicacion.titulo
       ? `${publicacion.titulo.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}.pdf`

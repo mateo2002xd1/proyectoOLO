@@ -106,6 +106,106 @@ export type DetectorDeTipo = (
   datos: Uint8Array
 ) => Promise<{ mime: string; ext: string } | undefined>;
 
+/**
+ * Los tres tipos de `TIPOS_PERMITIDOS` que son en realidad un ZIP (el formato Office Open
+ * XML): el detector de magic bytes solo sabe que el primer archivo del ZIP empieza por
+ * `word/`, `xl/` o `ppt/` — eso basta para decir "es un .docx", pero es EXACTAMENTE lo mismo
+ * que trae un `.docm` con macros: la extensión con macros usa la misma carpeta interna, y la
+ * única diferencia es un archivo más dentro del ZIP (`vbaProject.bin`) que el detector de
+ * magic bytes no mira (SUB-04).
+ */
+const EXTENSIONES_OOXML = new Set(['docx', 'xlsx', 'pptx']);
+
+/** Las tres rutas donde el estándar OOXML guarda el proyecto de macros, una por aplicación. */
+const ENTRADAS_DE_MACROS = ['word/vbaProject.bin', 'xl/vbaProject.bin', 'ppt/vbaProject.bin'];
+
+/** Una entrada del directorio central de un ZIP: lo mínimo que hace falta de cada una. */
+export interface EntradaDeZip {
+  nombre: string;
+  /** Lo que pesa esta entrada ya descomprimida (el campo del directorio central, no una medición real). */
+  tamanoDescomprimido: number;
+}
+
+/**
+ * Lee el directorio central de un ZIP: el nombre y el tamaño descomprimido *declarado* de
+ * cada entrada, sin descomprimir nada (ambos son campos del directorio central, que va sin
+ * comprimir). Sirve de base a dos controles (SUB-01, SUB-04): cuánto pesaría el archivo
+ * entero una vez abierto, y si trae una entrada de macros.
+ *
+ * Cada campo que se lee se acota siempre contra el tamaño real del buffer, así que leer
+ * esto nunca reserva ni descomprime más de lo que el propio archivo ya pesa en disco.
+ *
+ * Devuelve `null` si el ZIP no tiene un directorio central con la forma esperada (truncado,
+ * corrupto, o el caso raro de ZIP64 con más de 65 535 entradas, que ningún documento de
+ * Office real alcanza): **a propósito**, porque esto es una segunda capa sobre la lista
+ * blanca y el tamaño comprimido, no la única, y negarse a aceptar cualquier ZIP real que
+ * esta lectura simplificada no entienda sería peor que dejar pasar el caso raro que de
+ * verdad no se puede leer así. Quien llama decide qué hacer con `null`.
+ */
+export function leerDirectorioCentralDeZip(datos: Uint8Array): EntradaDeZip[] | null {
+  // El "End Of Central Directory": 22 bytes fijos + hasta 65 535 de comentario, al final
+  // del archivo. Se busca su firma desde el final hacia atrás, sin ir más allá del
+  // comienzo del buffer.
+  const EOCD_MIN = 22;
+  const inicioBusqueda = Math.max(0, datos.length - EOCD_MIN - 65535);
+  let posEocd = -1;
+  for (let i = datos.length - EOCD_MIN; i >= inicioBusqueda; i--) {
+    if (
+      datos[i] === 0x50 &&
+      datos[i + 1] === 0x4b &&
+      datos[i + 2] === 0x05 &&
+      datos[i + 3] === 0x06
+    ) {
+      posEocd = i;
+      break;
+    }
+  }
+  if (posEocd === -1) return null;
+
+  const leerUint16 = (p: number) => datos[p] | (datos[p + 1] << 8);
+  const leerUint32 = (p: number) => (datos[p] | (datos[p + 1] << 8) | (datos[p + 2] << 16) | (datos[p + 3] << 24)) >>> 0;
+
+  const totalEntradas = leerUint16(posEocd + 10);
+  let posEntrada = leerUint32(posEocd + 16);
+  // 0xFFFFFFFF en cualquiera de los dos marca ZIP64, con el conteo y la posición reales en
+  // un registro aparte que esta lectura simplificada no sigue: se trata como "no se pudo
+  // verificar" (ver el porqué arriba de la función).
+  if (totalEntradas === 0xffff || posEntrada === 0xffffffff) return null;
+
+  const FIRMA_CDFH = 0x02014b50;
+  const entradas: EntradaDeZip[] = [];
+  for (let i = 0; i < totalEntradas; i++) {
+    // Cabecera fija de 46 bytes; cualquier campo que se saldría del buffer deja el
+    // directorio por sospechoso de corrupto, no por confirmado.
+    if (posEntrada + 46 > datos.length) return null;
+    if (leerUint32(posEntrada) !== FIRMA_CDFH) return null;
+
+    const tamanoDescomprimido = leerUint32(posEntrada + 24);
+    const longitudNombre = leerUint16(posEntrada + 28);
+    const longitudExtra = leerUint16(posEntrada + 30);
+    const longitudComentario = leerUint16(posEntrada + 32);
+    const inicioNombre = posEntrada + 46;
+    if (inicioNombre + longitudNombre > datos.length) return null;
+
+    // `TextDecoder` y no `Buffer`: este paquete no asume Node (ver la nota de arriba del
+    // archivo). Los nombres que importan a quien llama son ASCII siempre, así que basta con esto.
+    const nombre = new TextDecoder().decode(datos.slice(inicioNombre, inicioNombre + longitudNombre));
+    entradas.push({ nombre, tamanoDescomprimido });
+
+    posEntrada = inicioNombre + longitudNombre + longitudExtra + longitudComentario;
+  }
+  return entradas;
+}
+
+/**
+ * ¿Trae este ZIP una de las tres entradas de macros? `null` del directorio central (no se
+ * pudo leer) se trata igual que `false`: ver el porqué en `leerDirectorioCentralDeZip`.
+ */
+function traeProyectoDeMacros(datos: Uint8Array): boolean {
+  const entradas = leerDirectorioCentralDeZip(datos);
+  return entradas?.some((e) => ENTRADAS_DE_MACROS.includes(e.nombre)) ?? false;
+}
+
 export interface SubidaAceptada {
   ok: true;
   /** Nombre con el que debe escribirse en disco: UUID + extensión canónica. */
@@ -204,6 +304,18 @@ export async function validarArchivoSubido(
     };
   }
 
+  // SUB-04: un .docm/.xlsm/.pptm se detecta por magic bytes como su contraparte sin
+  // macros (misma carpeta interna del ZIP); esta es la única diferencia que el detector
+  // de tipo no mira. Va después de la lista blanca y antes de aceptar, no al revés: un
+  // PDF o una imagen nunca pasan por aquí.
+  if (EXTENSIONES_OOXML.has(permitido.ext) && traeProyectoDeMacros(datos)) {
+    return {
+      ok: false,
+      status: 415,
+      error: 'El documento trae macros. Guárdalo sin macros antes de subirlo.',
+    };
+  }
+
   return {
     ok: true,
     nombreArchivo: `${generarId()}.${permitido.ext}`,
@@ -232,4 +344,35 @@ export function esRutaDeSubidaSegura(
 ): boolean {
   if (typeof url !== 'string' || !url.startsWith('/uploads/')) return false;
   return rutaResuelta.startsWith(directorioDeSubidas + separador);
+}
+
+/** Cuántos caracteres del nombre original de un archivo se conservan. */
+const LARGO_MAXIMO_NOMBRE = 120;
+
+/**
+ * El nombre original de un archivo (`nombreOriginal`/`nombre_original`), tal cual lo
+ * manda el navegador, nunca se usa para escribir en disco (SUB-05): eso ya lo cierra el
+ * nombre UUID que devuelve `validarArchivoSubido`. Pero ese nombre original SÍ viaja —en
+ * el contenido de la página, en el historial de cargas— y se pinta como texto o como
+ * nombre de descarga en varias pantallas. Sin normalizar, tres cosas podían pasar: un
+ * carácter de control o de control de dirección de texto (RTL) alteraba cómo se lee el
+ * nombre en pantalla; un nombre largo desbordaba el layout; y un `%` suelto delataba que
+ * nadie decodifica esto con cuidado.
+ *
+ * Esto no reemplaza el `try/catch` de quien decodifica después (`nombreDeArchivoDecodificado`
+ * en `@olo/url-policy`): un nombre ya sembrado antes de este cambio sigue necesitando esa
+ * defensa. Esto es para que los nombres NUEVOS salgan limpios desde el origen.
+ */
+export function normalizarNombreOriginal(nombre: unknown): string {
+  if (typeof nombre !== 'string' || nombre.length === 0) return 'archivo';
+
+  const sinControlNiBidi = nombre
+    .normalize('NFC')
+    // Controles ASCII (incluido DEL) y los seis marcadores de dirección de texto que
+    // Unicode define para forzar RTL/LTR: ninguno debe sobrevivir a un nombre de archivo.
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f‎‏‪-‮⁦-⁩]/g, '');
+
+  const limpio = sinControlNiBidi.trim();
+  return limpio.length === 0 ? 'archivo' : limpio.slice(0, LARGO_MAXIMO_NOMBRE);
 }

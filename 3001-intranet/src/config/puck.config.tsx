@@ -1,5 +1,6 @@
 'use client';
 
+import { nombreDeArchivoDecodificado } from '@olo/url-policy';
 import { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/intranet-topbar-wrapper';
 // La barra "pelada", sin el envoltorio que le inyecta la sesión: el contexto
@@ -1033,7 +1034,7 @@ const puckConfigBase: Config = {
             if (titulo) return titulo;
             if (item.pdfUrl) {
               const nombre = item.pdfUrl.split('/').pop() || 'Archivo PDF';
-              return `PDF: ${decodeURIComponent(nombre)}`;
+              return `PDF: ${nombreDeArchivoDecodificado(nombre)}`;
             }
             return 'Publicación sin configurar';
           },

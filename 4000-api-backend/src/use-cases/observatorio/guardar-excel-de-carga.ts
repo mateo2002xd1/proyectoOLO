@@ -8,7 +8,7 @@ import { UniqueConstraintError } from 'sequelize';
 // `fromBuffer`, no `fileTypeFromBuffer`, pero con la misma forma que
 // `@olo/upload-policy` espera de un `DetectorDeTipo`.
 import { fromBuffer as detectarTipoDeArchivo } from 'file-type';
-import { validarArchivoSubido, fueRechazada } from '@olo/upload-policy';
+import { validarArchivoSubido, fueRechazada, leerDirectorioCentralDeZip, normalizarNombreOriginal } from '@olo/upload-policy';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
 import { redisEstaListo } from '../../infrastructure/redis';
 import {
@@ -20,6 +20,13 @@ import {
 // El Excel de carga no se sirve nunca al público, a diferencia de los adjuntos de las
 // páginas: vive en `cargas-datos/` del filesystem, que ninguna ruta de
 // `/api/archivos` expone, porque solo lo lee el worker, una vez, para parsearlo.
+
+/**
+ * Tope de cuánto puede pesar un .xlsx ya descomprimido (SUB-01). El tamaño comprimido de
+ * entrada ya está acotado en 50 MB por `@olo/upload-policy`; esto es lo que se permite que
+ * esos 50 MB se conviertan en memoria.
+ */
+const LIMITE_DESCOMPRIMIDO_BYTES = 400 * 1024 * 1024;
 
 /** Rechazo de una subida con el código HTTP que debe ver el panel. */
 export class ErrorDeSubida extends Error {
@@ -63,10 +70,16 @@ async function restaurarSiFalta(rutaRelativa: string, datos: Buffer): Promise<vo
  */
 export async function validarYGuardarExcel(
   datos: Buffer,
-  nombreOriginal: string,
+  nombreOriginalCrudo: string,
   subidoPor: string | null,
   { requiereCola = true }: { requiereCola?: boolean } = {}
-): Promise<{ archivoId: string; rutaAbsoluta: string }> {
+): Promise<{ archivoId: string; rutaAbsoluta: string; nombreOriginal: string }> {
+  // SUB-05: normalizado antes de que se use para nada (el mensaje de la carga, la fila de
+  // `archivos`), no solo al guardar — sin controles, sin marcas de dirección de texto,
+  // con un tope de longitud. Nunca se usó para el nombre en disco (ese es UUID, ver
+  // `validarArchivoSubido`); esto es solo lo que se le muestra a quien mira el historial.
+  const nombreOriginal = normalizarNombreOriginal(nombreOriginalCrudo);
+
   // Lo primero, antes de guardar el archivo o crear la carga. Con Redis caído,
   // `getHeavyJobsQueue().add()` no falla: se queda esperando para siempre
   // (`maxRetriesPerRequest: null`, que BullMQ exige), así que sin esta comprobación la
@@ -92,6 +105,41 @@ export async function validarYGuardarExcel(
   if (resultado.ext !== 'xlsx') {
     throw new ErrorDeSubida('Este módulo solo acepta archivos Excel (.xlsx).', 415);
   }
+
+  // SUB-01: hasta aquí solo se había comprobado el tamaño COMPRIMIDO (50 MB, en
+  // `validarArchivoSubido`). Un .xlsx es un ZIP, y nada impedía que esos 50 MB
+  // descomprimieran a varios GB antes de que `exceljs.load()` —en el worker, que
+  // corre en el mismo proceso que la API (`server.ts: setupWorker()`)— reservara esa
+  // memoria entera de golpe. Los topes de filas de cada módulo (`MAX_FILAS`) no
+  // protegían de esto: se comprueban DESPUÉS de cargar el libro completo.
+  //
+  // Este tope lee el directorio central del ZIP —nombres y tamaños declarados, sin
+  // descomprimir nada— y suma cuánto pesaría el archivo entero una vez abierto.
+  // Único punto de entrada de las 4 cargas de "Actualizaciones": un solo lugar que
+  // tocar y que probar. 400 MB es generoso frente a los 50 MB de entrada (un .xlsx
+  // tabular normal rara vez pasa de 10:1); un zip bomb de cientos de GB no.
+  //
+  // Lo que esto NO cierra por sí solo (abierto como SUB-01 en 3-seguridad §4.10, con
+  // el resto del arreglo pendiente de decisión): el campo que se lee es el que
+  // declara el propio ZIP, no una medición real, así que sigue haciendo falta un
+  // límite duro de memoria en el contenedor como segunda defensa; y el proceso de la
+  // API sigue siendo el mismo que el del worker.
+  const entradasDelZip = leerDirectorioCentralDeZip(datos);
+  if (entradasDelZip) {
+    const descomprimido = entradasDelZip.reduce((total, e) => total + e.tamanoDescomprimido, 0);
+    if (descomprimido > LIMITE_DESCOMPRIMIDO_BYTES) {
+      throw new ErrorDeSubida(
+        `El archivo descomprime a más de ${LIMITE_DESCOMPRIMIDO_BYTES / (1024 * 1024)} MB. ` +
+          'Revisa que no tenga hojas u objetos de más.',
+        413
+      );
+    }
+  }
+  // `entradasDelZip === null` (ZIP sin directorio central legible): se deja pasar. Es el
+  // mismo criterio que `traeProyectoDeMacros` — negarse a aceptar cualquier `.xlsx` real
+  // que esta lectura simplificada no entienda sería peor que dejar pasar el caso raro que
+  // de verdad no se puede leer así, y `validarArchivoSubido` ya confirmó que es un ZIP con
+  // la forma de un `.xlsx` real.
 
   const hashSha256 = crypto.createHash('sha256').update(datos).digest('hex');
 
@@ -129,5 +177,8 @@ export async function validarYGuardarExcel(
   return {
     archivoId: archivo.get('id') as string,
     rutaAbsoluta: resolverRutaDeCarga(archivo.get('rutaRelativa') as string),
+    // Para que quien llama use el mismo nombre ya normalizado en sus propios mensajes
+    // (ver `iniciarCargaFuentesFuturas`), en vez de repetir el normalizado con el crudo.
+    nombreOriginal,
   };
 }

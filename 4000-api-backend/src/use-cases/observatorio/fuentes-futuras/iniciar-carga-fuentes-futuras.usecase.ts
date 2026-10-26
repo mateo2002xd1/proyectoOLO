@@ -25,11 +25,19 @@ export async function iniciarCargaFuentesFuturas(
   nombreOriginal: string,
   subidoPor: string | null
 ): Promise<{ cargaId: string; filas: number }> {
-  const { archivoId } = await validarYGuardarExcel(datos, nombreOriginal, subidoPor, { requiereCola: false });
+  // El nombre que devuelve ya pasó por `normalizarNombreOriginal` (SUB-05): se usa este y
+  // no el parámetro crudo para que el mensaje de abajo muestre el mismo nombre que quedó
+  // en la fila de `archivos`, no dos versiones distintas de él.
+  const { archivoId, nombreOriginal: nombreNormalizado } = await validarYGuardarExcel(
+    datos,
+    nombreOriginal,
+    subidoPor,
+    { requiereCola: false }
+  );
 
   const registros = await leerRegistrosDeBuffer(datos);
 
-  const mensaje = `Publicados ${registros.length.toLocaleString('es-CO')} registros desde ${nombreOriginal}.`;
+  const mensaje = `Publicados ${registros.length.toLocaleString('es-CO')} registros desde ${nombreNormalizado}.`;
   const carga = await Repo.crearCargaCompletada(archivoId, subidoPor, registros.length, mensaje);
 
   // La carga recién creada es la vigente: lo que el portal tenga leído ya no vale.

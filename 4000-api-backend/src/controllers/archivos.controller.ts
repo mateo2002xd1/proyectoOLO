@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { Request, Response, NextFunction } from 'express';
+import { normalizarNombreOriginal } from '@olo/upload-policy';
 import { subirArchivoDePagina } from '../use-cases/archivos/subir-archivo-de-pagina.usecase';
 import { resolverArchivoServible } from '../infrastructure/storage/filesystem';
 import type { Ambito } from '../shared/ambito';
@@ -44,7 +45,18 @@ export const ArchivosController = {
 
       // La misma forma que devolvía el route handler de cada frontend: los campos de
       // subida del editor leen `url` y `nombreOriginal`.
-      res.json({ success: true, url, nombreOriginal: archivo.originalname, peso: archivo.size });
+      //
+      // SUB-05: `originalname` lo escribió el navegador de quien subió, tal cual venía
+      // en su máquina. Este nombre viaja al contenido de la página y se pinta como texto
+      // y como nombre de descarga: sin normalizar, un carácter de control, uno de
+      // dirección de texto (RTL) o un nombre larguísimo llegaban intactos a esas
+      // pantallas.
+      res.json({
+        success: true,
+        url,
+        nombreOriginal: normalizarNombreOriginal(archivo.originalname),
+        peso: archivo.size,
+      });
     } catch (error) {
       next(error);
     }

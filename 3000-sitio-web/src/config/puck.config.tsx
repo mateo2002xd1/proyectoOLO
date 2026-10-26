@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { nombreDeArchivoDecodificado } from '@olo/url-policy';
 import {
   primitiveComponents,
   crearGridConfig,
@@ -59,7 +60,10 @@ import {
   BuscadorOcupacionesView,
   PaginaDeResultadosOcupaciones,
   CONTENIDO_DEL_BUSCADOR_POR_DEFECTO,
+  TEXTO_BLOQUE_POR_DEFECTO,
   contenidoDesdeHtml,
+  textoBloqueDesdeHtml,
+  separarCitas,
   type TextosEnHtml,
 } from '@/shared/lib/buscador-ocupaciones';
 import { AlertasInversionView } from '@/shared/lib/alertas-inversion';
@@ -131,6 +135,54 @@ const campoImagenDeFondo = () =>
   campoGrupoEnUnAcordeon('Imagen de fondo', CAMPOS_IMAGEN_DE_FONDO, {
     resumen: (fondo) => (fondo?.imagen ? 'Cargada' : 'Sin imagen'),
   });
+
+/**
+ * Los campos de la tarjeta «Textos del buscador» del buscador de ocupaciones (`Hero`). La
+ * tarjeta los guarda en `grupoTextos` y `resolveData` los copia a las props sueltas
+ * `contenido` y `colorTexto`, que son las que lee el render.
+ */
+const CAMPOS_TEXTOS_DEL_BUSCADOR = {
+  contenido: {
+    type: 'custom',
+    label: 'Titular y descripción',
+    ayuda: 'El tipo de bloque decide dónde sale cada texto: el encabezado es el titular y los párrafos y las listas son la descripción. Al seleccionar palabras sale su color; la alineación de cada bloque está en su menú «⠿».',
+    render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
+      <EditorjsWrapper data={value} onChange={onChange} sinCita conFormato />
+    ),
+  },
+  colorTexto: {
+    type: 'color',
+    label: 'Color del texto',
+    ayuda: 'El del titular y la descripción. Vacío: el del diseño (azul y negro).',
+  },
+} satisfies Record<string, CampoDeAcordeon>;
+
+/**
+ * Los campos de la tarjeta «Texto bloque y placeholder» del buscador de ocupaciones
+ * (`Hero`). La tarjeta los guarda en `grupoRecuadro` y `resolveData` los copia a las props
+ * sueltas `textoBloque`, `searchPlaceholder` y `colorTextoBloque`, que son las que lee el render.
+ */
+const CAMPOS_RECUADRO_DEL_BUSCADOR = {
+  textoBloque: {
+    type: 'custom',
+    label: 'Texto bloque',
+    ayuda: 'El texto del recuadro azul, sobre la casilla del buscador. Al seleccionar palabras sale su color; la alineación de cada bloque está en su menú «⠿».',
+    render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
+      <EditorjsWrapper data={value} onChange={onChange} sinCita conFormato />
+    ),
+  },
+  searchPlaceholder: {
+    type: 'text',
+    label: 'Placeholder',
+    placeholder: 'Buscar ocupación, código o denominación',
+    ayuda: 'El texto de ejemplo que se ve dentro de la casilla del buscador, mientras está vacía.',
+  },
+  colorTextoBloque: {
+    type: 'color',
+    label: 'Color del texto bloque',
+    ayuda: 'El del texto del recuadro azul. Vacío: blanco.',
+  },
+} satisfies Record<string, CampoDeAcordeon>;
 
 /**
  * Todos los textos enriquecidos llevan la misma barra: H1–H6, viñetas, negrita,
@@ -645,37 +697,22 @@ const puckConfigBase: Config = {
      * recuadro) para que la portada guardada siga sirviendo; `imageUrl`, `imageAlt`,
      * `modelSrc` y `modelAlt` quedan en el JSON viejo y ya no se leen.
      *
-     * Los tres textos van en un solo campo de Editor.js, «Textos» (`contenido`): el tipo de
-     * bloque decide la zona (ver `repartirTextos`). Antes eran tres campos `richtext` de Puck,
-     * primero sueltos y luego en la tarjeta `textos`: `resolveData` los pasa al campo nuevo al
-     * abrir el editor, y hasta que se vuelva a publicar el render los sigue leyendo como
-     * estaban (`htmlGuardado`).
+     * Los textos van en dos campos de Editor.js: «Textos del buscador» (`contenido`), donde el
+     * tipo de bloque decide la zona (encabezado = titular; párrafo y lista = descripción, ver
+     * `repartirTextos`), y «Texto bloque» (`textoBloque`), el texto del recuadro azul. Antes eran
+     * tres campos `richtext` de Puck, primero sueltos y luego en la tarjeta `textos`:
+     * `resolveData` los pasa a los campos nuevos al abrir el editor, y hasta que se vuelva a
+     * publicar el render los sigue leyendo como estaban (`htmlGuardado`).
      */
     Hero: {
       label: 'Buscador de ocupaciones',
       fields: {
-        contenido: campoEnAcordeon(
-          {
-            type: 'custom',
-            label: 'Textos',
-            ayuda:
-              'El tipo de bloque decide dónde sale cada texto: el encabezado es el titular, los párrafos y las listas son la descripción, y la cita (con «+» → Cita) es el texto del recuadro azul.',
-            // La cita no muestra su pie en la sección: se esconde para no pedir un texto que no sale.
-            render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
-              <EditorjsWrapper data={value} onChange={onChange} className="[&_.cdx-quote__caption]:hidden" />
-            ),
-          },
-          { abierto: true }
-        ),
-        searchPlaceholder: campoEnAcordeon({
-          type: 'text',
-          label: 'Texto de ejemplo del buscador',
-          placeholder: 'Buscar ocupación, código o denominación',
-        }),
+        grupoTextos: campoGrupoEnUnAcordeon('Textos del buscador', CAMPOS_TEXTOS_DEL_BUSCADOR, { abierto: true }),
+        grupoRecuadro: campoGrupoEnUnAcordeon('Texto bloque y placeholder', CAMPOS_RECUADRO_DEL_BUSCADOR),
         imagenFondo: campoEnAcordeon(
           {
             ...campoImagen('Imagen de fondo'),
-            ayuda: 'Cubre toda la sección y se recorta para llenarla. Es decorativa: no lleva texto alternativo. Sin imagen, el fondo queda blanco.',
+            ayuda: 'Cubre toda la sección y se recorta para llenarla. Es decorativa: no lleva texto alternativo. Sin imagen, la sección no lleva fondo y se ve el de la página.',
           },
           { abierto: true, resumen: (src) => (src ? 'Cargada' : 'Sin imagen') }
         ),
@@ -686,7 +723,7 @@ const puckConfigBase: Config = {
           max: 100,
           sufijo: '%',
           placeholder: '0',
-          ayuda: '0 %: la imagen se ve tal cual. 100 %: no se ve y queda el fondo blanco. Vacío: 0 %.',
+          ayuda: '0 %: la imagen se ve tal cual. 100 %: no se ve. Vacío: 0 %.',
         }),
         colorFondo: campoEnAcordeon({
           type: 'color',
@@ -697,37 +734,73 @@ const puckConfigBase: Config = {
       defaultProps: {
         id: 'hero-1',
         contenido: CONTENIDO_DEL_BUSCADOR_POR_DEFECTO,
+        colorTexto: '',
+        textoBloque: TEXTO_BLOQUE_POR_DEFECTO,
         searchPlaceholder: 'Buscar ocupación, código o denominación',
+        colorTextoBloque: '',
+        grupoTextos: { contenido: CONTENIDO_DEL_BUSCADOR_POR_DEFECTO, colorTexto: '' },
+        grupoRecuadro: {
+          textoBloque: TEXTO_BLOQUE_POR_DEFECTO,
+          searchPlaceholder: 'Buscar ocupación, código o denominación',
+          colorTextoBloque: '',
+        },
         imagenFondo: '',
         transparenciaFondo: '',
         colorFondo: '',
       },
-      // Una portada guardada antes del campo único trae los tres textos como HTML, en la
-      // tarjeta `textos` o sueltos (y una de antes del rediseño, sin titular ni descripción):
-      // se pasan al campo al abrirla en el editor, completando lo que falte, para que se vean
-      // y se puedan corregir.
+      // Una portada guardada antes de los campos de Editor.js trae los tres textos como HTML,
+      // en la tarjeta `textos` o sueltos (y una de antes del rediseño, sin titular ni
+      // descripción): se pasan a los campos al abrirla en el editor, completando lo que falte,
+      // para que se vean y se puedan corregir. Al final, las dos tarjetas de texto: grupo ⇄
+      // props sueltas (ver `grupos-de-props.ts`).
       resolveData: ({ props }: { props: Record<string, unknown> }) => {
-        if (props.contenido) return { props };
+        const conTarjetas = (sueltas: Record<string, unknown>) => ({
+          props: resolverGruposDeProps(sueltas, {
+            grupoTextos: Object.keys(CAMPOS_TEXTOS_DEL_BUSCADOR),
+            grupoRecuadro: Object.keys(CAMPOS_RECUADRO_DEL_BUSCADOR),
+          }),
+        });
+        const tarjetaTextos = (props.grupoTextos ?? null) as Record<string, unknown> | null;
+        const guardado = (tarjetaTextos?.contenido ?? props.contenido) as OutputData | undefined;
+        if (guardado) {
+          // La primera versión del campo único llevaba el texto del recuadro como una cita de
+          // `contenido`; el campo ya no ofrece la cita: pasa a «Texto bloque».
+          const { sinCitas, citas } = separarCitas(guardado);
+          if (!citas.length) return conTarjetas(props);
+          const enParrafos = citas.map(({ data }) => ({ type: 'paragraph', data: { text: data.text } }));
+          const textos = tarjetaTextos ?? { colorTexto: props.colorTexto };
+          const recuadro = (props.grupoRecuadro ?? {
+            searchPlaceholder: props.searchPlaceholder,
+            colorTextoBloque: props.colorTextoBloque,
+          }) as Record<string, unknown>;
+          return conTarjetas({
+            ...props,
+            contenido: sinCitas,
+            grupoTextos: { ...textos, contenido: sinCitas },
+            grupoRecuadro: { ...recuadro, textoBloque: recuadro.textoBloque ?? props.textoBloque ?? { blocks: enParrafos } },
+          });
+        }
         const { textos, tituloSeccion, descripcion, titulo, ...resto } = props;
         const enTarjeta = (typeof textos === 'object' && textos !== null ? textos : {}) as Record<string, unknown>;
         const enHtml = (clave: keyof TextosEnHtml, suelto: unknown) => {
           const valor = enTarjeta[clave] ?? suelto;
           return typeof valor === 'string' ? valor : undefined;
         };
-        return {
-          props: {
-            ...resto,
-            contenido: contenidoDesdeHtml({
-              tituloSeccion: enHtml('tituloSeccion', tituloSeccion),
-              descripcion: enHtml('descripcion', descripcion),
-              titulo: enHtml('titulo', titulo),
-            }),
-          },
-        };
+        return conTarjetas({
+          ...resto,
+          contenido: contenidoDesdeHtml({
+            tituloSeccion: enHtml('tituloSeccion', tituloSeccion),
+            descripcion: enHtml('descripcion', descripcion),
+          }),
+          textoBloque: textoBloqueDesdeHtml(enHtml('titulo', titulo)),
+        });
       },
       render: ({
         puck,
         contenido,
+        colorTexto,
+        textoBloque,
+        colorTextoBloque,
         textos,
         tituloSeccion,
         descripcion,
@@ -739,8 +812,11 @@ const puckConfigBase: Config = {
       }: BlockRender<{
         puck?: { isEditing?: boolean };
         contenido?: OutputData;
-        // Los textos de una portada guardada antes del campo único, en la tarjeta o sueltos:
-        // HTML que Puck ya no convierte a nodos.
+        colorTexto?: string;
+        textoBloque?: OutputData;
+        colorTextoBloque?: string;
+        // Los textos de una portada guardada antes de los campos de Editor.js, en la tarjeta o
+        // sueltos: HTML que Puck ya no convierte a nodos.
         textos?: TextosEnHtml;
         tituloSeccion?: string;
         descripcion?: string;
@@ -752,6 +828,9 @@ const puckConfigBase: Config = {
       }>) => (
         <HeroBuscadorOcupaciones
           contenido={contenido}
+          colorTexto={colorTexto}
+          textoBloque={textoBloque}
+          colorTextoBloque={colorTextoBloque}
           tituloSeccion={htmlGuardado(textos?.tituloSeccion ?? tituloSeccion)}
           descripcion={htmlGuardado(textos?.descripcion ?? descripcion)}
           titulo={htmlGuardado(textos?.titulo ?? titulo)}
@@ -1062,7 +1141,7 @@ const puckConfigBase: Config = {
             const titulo = typeof item.titulo === 'string' ? item.titulo.replace(/\s+/g, ' ').trim() : '';
             if (titulo) return titulo;
             if (item.pdfUrl) {
-              const nombre = decodeURIComponent(item.pdfUrl.split('/').pop() ?? 'Documento PDF');
+              const nombre = nombreDeArchivoDecodificado(item.pdfUrl.split('/').pop() ?? 'Documento PDF');
               return `PDF: ${nombre}`;
             }
             return 'Publicación sin título';

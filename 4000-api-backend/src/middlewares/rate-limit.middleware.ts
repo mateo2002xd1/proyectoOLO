@@ -286,6 +286,41 @@ export const limitadorDeEscritura = crearLimitador({
 });
 
 /**
+ * Subir un archivo: adjuntos de página (`/api/archivos/{sitio,intranet}`) y las 4 cargas
+ * de Excel del Observatorio (SUB-02). Las dos cosas ya exigen sesión y un permiso
+ * concreto —esto no sustituye eso—, pero antes no llevaban ningún límite propio:
+ * `limitadorGlobal` cuenta por IP y se salta sin `X-Forwarded-For` (solo alcanzable
+ * desde dentro de la red, pero alcanzable), así que una sola cuenta podía llenar el
+ * disco sin que nada se lo impidiera. Por usuario, no por IP: la red de una sede
+ * comparte dirección y no debe compartir cupo de subida.
+ *
+ * El número es bajo a propósito frente a `limitadorDeEscritura` (30/min): subir un
+ * archivo no es una tecla de autoguardado, y 20 en 10 minutos ya es más de lo que
+ * una sesión de trabajo normal necesita.
+ */
+export const limitadorDeSubidaDeArchivos = crearLimitador({
+  nombre: 'subida-archivos',
+  ventanaMs: 10 * 60 * 1000,
+  limite: 20,
+  mensaje: 'Demasiadas subidas de archivos. Espera un momento antes de continuar.',
+});
+
+/**
+ * Descargar un adjunto (SUB-06): `archivosRoutes` se monta antes de `limitadorGlobal` a
+ * propósito (ver el comentario de `archivos.routes.ts`) y nginx no le pone `limit_req` a
+ * `/uploads/`/`/backup/`, así que esta ruta no llevaba ningún límite — pública, sin sesión
+ * en el ámbito del sitio, sirviendo hasta 50 MB por archivo. El número es alto a
+ * propósito, igual que `limitadorGlobal`: lo que corta es una descarga masiva sostenida,
+ * no que una página cargue sus imágenes de golpe.
+ */
+export const limitadorDeDescargaDeArchivos = crearLimitador({
+  nombre: 'descarga-archivos',
+  ventanaMs: 60 * 1000,
+  limite: 300,
+  mensaje: 'Demasiadas solicitudes. Espera un momento antes de continuar.',
+});
+
+/**
  * Visitas de páginas públicas. La ruta no tiene sesión y suma a un contador que sale
  * en el panel, así que sin esto un bucle de `curl` lo infla a voluntad: el techo
  * global (300/min por IP) dejaba subir miles de visitas por hora desde una sola IP.

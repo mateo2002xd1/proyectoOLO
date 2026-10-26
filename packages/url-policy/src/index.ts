@@ -239,3 +239,21 @@ export function rutaInternaSegura(valor: unknown, porDefecto: string): string {
   if (tieneControlOBarraInvertida(valor)) return porDefecto;
   return valor;
 }
+
+/**
+ * `decodeURIComponent` sin que un `%` mal formado tumbe el render (SUB-05).
+ *
+ * El nombre original de un adjunto viaja en la URL del contenido (`?nombre=...`) y lo
+ * puso quien subió el archivo — con sesión de editor, no anónimo, pero sigue siendo un
+ * dato de entrada. Un `%` suelto en esa cadena hace que `decodeURIComponent` lance
+ * `URIError`, y varias pantallas (el visor de documentos, "Publicaciones", la tarjeta de
+ * descarga) lo llamaban directo: sin este envoltorio, ese único adjunto rompía el render
+ * de toda la página pública que lo mostrara.
+ */
+export function nombreDeArchivoDecodificado(valor: string): string {
+  try {
+    return decodeURIComponent(valor);
+  } catch {
+    return valor;
+  }
+}

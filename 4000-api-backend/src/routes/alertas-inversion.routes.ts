@@ -3,6 +3,7 @@ import multer from 'multer';
 import { AlertasInversionController } from '../controllers/alertas-inversion.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoAlertasInversion } from '../middlewares/permisos.middleware';
+import { limitadorDeSubidaDeArchivos } from '../middlewares/rate-limit.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
 import { crearProyectoManualSchema } from '../validators/alertas-inversion.validators';
 import { LIMITE_ABSOLUTO_BYTES } from '@olo/upload-policy';
@@ -100,7 +101,7 @@ router.use(requierePermisoAlertasInversion('puedeActualizarDatos'));
  *       415: { description: Tipo de archivo no permitido. }
  */
 router.get('/cargas', AlertasInversionController.listarCargas);
-router.post('/cargas', subidaEnMemoria.single('file'), AlertasInversionController.subir);
+router.post('/cargas', limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file'), AlertasInversionController.subir);
 
 /**
  * @openapi
@@ -246,7 +247,7 @@ router.post('/proyectos', validarCuerpo(crearProyectoManualSchema), AlertasInver
  *       404: { description: El formato no está disponible en el servidor. }
  */
 router.get('/formatos/sectores', AlertasInversionController.descargarFormatoSectores);
-router.post('/sectores', subidaEnMemoria.single('file'), AlertasInversionController.actualizarSectores);
+router.post('/sectores', limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file'), AlertasInversionController.actualizarSectores);
 
 router.get('/proyectos', AlertasInversionController.listarProyectos);
 router.delete('/proyectos', AlertasInversionController.eliminarTodosLosProyectos);

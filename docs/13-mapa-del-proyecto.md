@@ -305,13 +305,13 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/alertas-inversion/listado` | 🔓 — | AlertasInversionController.listado |
 | GET | `/api/alertas-inversion/opciones` | 🔓 — | AlertasInversionController.opciones |
 | GET | `/api/alertas-inversion/cargas` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarCargas |
-| POST | `/api/alertas-inversion/cargas` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), subidaEnMemoria.single('file') | AlertasInversionController.subir |
+| POST | `/api/alertas-inversion/cargas` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file') | AlertasInversionController.subir |
 | GET | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.obtenerCarga |
 | DELETE | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarCarga |
 | GET | `/api/alertas-inversion/formatos/plantilla` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormato |
 | POST | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), validarCuerpo(crearProyectoManualSchema) | AlertasInversionController.crearManual |
 | GET | `/api/alertas-inversion/formatos/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormatoSectores |
-| POST | `/api/alertas-inversion/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), subidaEnMemoria.single('file') | AlertasInversionController.actualizarSectores |
+| POST | `/api/alertas-inversion/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file') | AlertasInversionController.actualizarSectores |
 | GET | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarProyectos |
 | DELETE | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarTodosLosProyectos |
 | DELETE | `/api/alertas-inversion/proyectos/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarProyecto |
@@ -322,8 +322,8 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | POST | `/api/archivos/sitio` | 🔓 ...guardiasDeSubida | ArchivosController.subir('sitio') |
 | POST | `/api/archivos/intranet` | 🔓 ...guardiasDeSubida | ArchivosController.subir('intranet') |
-| GET | `/api/archivos/sitio/*ruta` | 🔓 — | ArchivosController.servir('sitio') |
-| GET | `/api/archivos/intranet/*ruta` | requireAuth, requierePermisoPagina('puedeVer') | ArchivosController.servir('intranet') |
+| GET | `/api/archivos/sitio/*ruta` | 🔓 limitadorDeDescargaDeArchivos | ArchivosController.servir('sitio') |
+| GET | `/api/archivos/intranet/*ruta` | requireAuth, requierePermisoPagina('puedeVer'), limitadorDeDescargaDeArchivos | ArchivosController.servir('intranet') |
 
 ### `routes/audit.routes.ts`
 
@@ -363,15 +363,15 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/observatorio/tendencia-ocupacional/opciones` | 🔓 — | TendenciaOcupacionalController.opciones |
 | GET | `/api/observatorio/fuentes-futuras-empleo` | 🔓 — | FuentesFuturasEmpleoController.obtenerActual |
 | GET | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.listarCargas |
-| POST | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | ObservatorioController.subir |
+| POST | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file') | ObservatorioController.subir |
 | GET | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.obtenerCarga |
 | DELETE | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.eliminarCarga |
 | GET | `/api/observatorio/formatos/:formato` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.descargarFormato |
 | GET | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.listarCargas |
-| POST | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | FuentesFuturasEmpleoController.subir |
+| POST | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file') | FuentesFuturasEmpleoController.subir |
 | DELETE | `/api/observatorio/fuentes-futuras-empleo/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.eliminarCarga |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.listarCargas |
-| POST | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file'), validarCuerpo(cargaTendenciaSchema) | TendenciaOcupacionalController.subir |
+| POST | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), limitadorDeSubidaDeArchivos, subidaEnMemoria.single('file'), validarCuerpo(cargaTendenciaSchema) | TendenciaOcupacionalController.subir |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.obtenerCarga |
 | DELETE | `/api/observatorio/tendencia-ocupacional/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), requierePermisoObservatorio('puedePublicarDatos') | TendenciaOcupacionalController.eliminarCarga |
 | GET | `/api/observatorio/tendencia-ocupacional/estado` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.estado |

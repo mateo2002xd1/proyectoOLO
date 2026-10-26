@@ -11,7 +11,7 @@
  * que las secciones que solo tienen video no cambian.
  */
 import type { ReactNode } from 'react';
-import { ATRIBUTOS_DE_IFRAME_SEGURO, enlaceSeguro, iframeSeguro } from '@olo/url-policy';
+import { ATRIBUTOS_DE_IFRAME_SEGURO, enlaceSeguro, iframeSeguro, nombreDeArchivoDecodificado } from '@olo/url-policy';
 
 export interface TasaVideoProps {
   tituloInicio?: ReactNode;
@@ -75,7 +75,7 @@ export function TasaVideo({
             download={
               descargaNombre ||
               (descargaUrl?.includes('?nombre=')
-                ? decodeURIComponent(descargaUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
+                ? nombreDeArchivoDecodificado(descargaUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
                 : '') ||
               (typeof descargaEtiqueta === 'string' && descargaEtiqueta.trim()
                 ? descargaEtiqueta.trim()
