@@ -5,6 +5,22 @@
 
 ---
 
+## sesión 25-10-2026 (16.ª parte): el panel de color pasa a fondo blanco
+
+**Qué pidió el usuario:** el fondo del selector de color, blanco y no oscuro.
+
+**Qué se hizo:** `TEMA_DEL_PANEL_DE_COLOR` (`packages/blocks-renderer/src/primitives/panel-de-color.ts`) pasa de `'oscuro'` a `'claro'`. Es el único valor que decide el fondo, así que cambia a la vez en la herramienta «Color del texto» de Editor.js y en el campo de color de Puck. El tema claro ya existía en el panel (fondo blanco, campos grises claros, borde fino y sombra); no hubo que dibujar nada. Volver al oscuro es cambiar ese mismo valor.
+
+| Verificación | Resultado |
+|---|---|
+| Chrome real, Editor.js 2.31.6: las 29 comprobaciones del selector (cuadro del botón, arrastre, hex, RGB, colores ya usados, quitar, `onChange`, `save()`) | 29 de 29 |
+| jsdom, campo de Puck: 22 comprobaciones | 22 de 22 |
+| Captura de los dos sitios | Fondo blanco, esquinas y simetría iguales; las bolitas del área y del matiz se distinguen sobre el blanco |
+
+**Código tocado:** `packages/blocks-renderer/src/primitives/panel-de-color.ts`.
+
+---
+
 ## sesión 25-10-2026 (15.ª parte): el nivel de los encabezados (H1 a H4) y su negrita llegan al bloque «Buscador de ocupaciones»
 
 **Qué pidió el usuario:** que lo que cambia en el campo del editor al escoger H1 a H4 (el tamaño y la negrita) también cambie en el bloque, en tiempo real.
