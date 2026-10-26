@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
+import { PopoverDelPanelDeColor } from '@olo/blocks-renderer';
 import { Button } from '@/shared/ui/atoms/button';
 import { SeccionAcordeon } from '@/shared/ui/molecules/seccion-acordeon';
 import {
@@ -267,8 +268,9 @@ function FilaDeColor({
 }
 
 /**
- * El selector nativo del navegador (`<input type="color">`): en el móvil abre el de
- * sistema y con teclado se usa como cualquier campo. 44 px, la medida táctil del panel.
+ * La muestra de un color y su código; al pulsarla se abre el panel de color del OLO (el mismo
+ * del editor, de `@olo/blocks-renderer`). Siempre hay un color: el panel no trae «Quitar».
+ * 44 px, la medida táctil del panel.
  */
 function SelectorDeColor({
   etiqueta,
@@ -283,20 +285,44 @@ function SelectorDeColor({
   disabled: boolean;
   onCambiar: (valor: string) => void;
 }) {
+  const [abierto, setAbierto] = useState(false);
+  const boton = useRef<HTMLButtonElement>(null);
+
   return (
-    <label className={`inline-flex items-center gap-2 text-sm ${disabled ? 'opacity-60' : 'cursor-pointer'}`}>
-      <input
-        type="color"
-        value={valor}
+    <>
+      <button
+        ref={boton}
+        type="button"
         disabled={disabled}
         aria-label={nombreAccesible}
-        onChange={(evento) => onCambiar(evento.target.value)}
-        className="size-11 shrink-0 cursor-pointer appearance-none rounded-full border border-gray-300 bg-transparent p-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus disabled:cursor-not-allowed dark:border-[#2d3649] [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0"
-      />
-      <span className="flex flex-col leading-tight">
-        <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">{etiqueta}</span>
-        <code className="text-xs text-gray-500 uppercase dark:text-[#94a3b8]">{valor}</code>
-      </span>
-    </label>
+        aria-haspopup="dialog"
+        aria-expanded={abierto}
+        onClick={() => setAbierto((a) => !a)}
+        className={`inline-flex items-center gap-2 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus rounded-full ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+      >
+        <span
+          aria-hidden="true"
+          className="size-11 shrink-0 rounded-full border border-gray-300 p-0.5 dark:border-[#2d3649]"
+        >
+          <span className="block size-full rounded-full" style={{ backgroundColor: valor }} />
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">{etiqueta}</span>
+          <code className="text-xs text-gray-500 uppercase dark:text-[#94a3b8]">{valor}</code>
+        </span>
+      </button>
+
+      {abierto && (
+        <PopoverDelPanelDeColor
+          ancla={boton}
+          valor={valor}
+          onElegir={onCambiar}
+          onCerrar={(devolverFoco) => {
+            setAbierto(false);
+            if (devolverFoco) boton.current?.focus();
+          }}
+        />
+      )}
+    </>
   );
 }

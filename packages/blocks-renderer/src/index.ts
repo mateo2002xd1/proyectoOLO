@@ -20,6 +20,20 @@ export type { DestinoTabConfig } from './primitives/destino-tab-field';
 // ─── Campo de color (selector visual + hex) para cualquier bloque ───
 export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';
+// El panel de color que abre ese campo, también para la herramienta «Color del texto» de Editor.js
+// y para los selectores de color del panel de administración (`PopoverDelPanelDeColor`).
+export { PopoverDelPanelDeColor } from './primitives/popover-del-panel-de-color';
+export type { PopoverDelPanelDeColorProps } from './primitives/popover-del-panel-de-color';
+export {
+  crearPanelDeColor,
+  hexAHsv,
+  hsvAHex,
+  inyectarEstilosDelPanelDeColor,
+  normalizarHex,
+  rgbAHex,
+  TEMA_DEL_PANEL_DE_COLOR,
+} from './primitives/panel-de-color';
+export type { Hsv, OpcionesDelPanelDeColor, PanelDeColor, TemaDelPanelDeColor } from './primitives/panel-de-color';
 export {
   AcordeonDeCampo,
   campoEnAcordeon,

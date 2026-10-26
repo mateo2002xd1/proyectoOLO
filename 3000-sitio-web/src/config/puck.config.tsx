@@ -138,22 +138,19 @@ const campoImagenDeFondo = () =>
 
 /**
  * Los campos de la tarjeta «Textos del buscador» del buscador de ocupaciones (`Hero`). La
- * tarjeta los guarda en `grupoTextos` y `resolveData` los copia a las props sueltas
- * `contenido` y `colorTexto`, que son las que lee el render.
+ * tarjeta los guarda en `grupoTextos` y `resolveData` los copia a la prop suelta `contenido`,
+ * que es la que lee el render. No hay color global: el color se pone por palabras con la
+ * herramienta «Color del texto» del propio Editor.js.
  */
 const CAMPOS_TEXTOS_DEL_BUSCADOR = {
   contenido: {
     type: 'custom',
-    label: 'Titular y descripción',
+    // Sin etiqueta: la tarjeta ya se llama «Textos del buscador» y no tiene otro campo.
+    label: '',
     ayuda: 'El tipo de bloque decide dónde sale cada texto: el encabezado es el titular y los párrafos y las listas son la descripción. Al seleccionar palabras sale su color; la alineación de cada bloque está en su menú «⠿».',
     render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
       <EditorjsWrapper data={value} onChange={onChange} sinCita conFormato />
     ),
-  },
-  colorTexto: {
-    type: 'color',
-    label: 'Color del texto',
-    ayuda: 'El del titular y la descripción. Vacío: el del diseño (azul y negro).',
   },
 } satisfies Record<string, CampoDeAcordeon>;
 
@@ -389,7 +386,7 @@ const RichTextBlock = {
       type: 'custom' as const,
       label: 'Contenido enriquecido',
       render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
-        <EditorjsWrapper data={value} onChange={onChange} />
+        <EditorjsWrapper data={value} onChange={onChange} conColor />
       ),
     },
     colorTexto: campoEnAcordeon({
@@ -738,7 +735,7 @@ const puckConfigBase: Config = {
         textoBloque: TEXTO_BLOQUE_POR_DEFECTO,
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         colorTextoBloque: '',
-        grupoTextos: { contenido: CONTENIDO_DEL_BUSCADOR_POR_DEFECTO, colorTexto: '' },
+        grupoTextos: { contenido: CONTENIDO_DEL_BUSCADOR_POR_DEFECTO },
         grupoRecuadro: {
           textoBloque: TEXTO_BLOQUE_POR_DEFECTO,
           searchPlaceholder: 'Buscar ocupación, código o denominación',
@@ -755,10 +752,15 @@ const puckConfigBase: Config = {
       // props sueltas (ver `grupos-de-props.ts`).
       resolveData: ({ props }: { props: Record<string, unknown> }) => {
         const conTarjetas = (sueltas: Record<string, unknown>) => ({
-          props: resolverGruposDeProps(sueltas, {
-            grupoTextos: Object.keys(CAMPOS_TEXTOS_DEL_BUSCADOR),
-            grupoRecuadro: Object.keys(CAMPOS_RECUADRO_DEL_BUSCADOR),
-          }),
+          props: {
+            ...resolverGruposDeProps(sueltas, {
+              grupoTextos: Object.keys(CAMPOS_TEXTOS_DEL_BUSCADOR),
+              grupoRecuadro: Object.keys(CAMPOS_RECUADRO_DEL_BUSCADOR),
+            }),
+            // «Textos del buscador» ya no tiene color global (se pone por palabras en el
+            // Editor.js): uno guardado antes se vacía, para que no quede aplicado sin campo.
+            colorTexto: '',
+          },
         });
         const tarjetaTextos = (props.grupoTextos ?? null) as Record<string, unknown> | null;
         const guardado = (tarjetaTextos?.contenido ?? props.contenido) as OutputData | undefined;
@@ -768,7 +770,7 @@ const puckConfigBase: Config = {
           const { sinCitas, citas } = separarCitas(guardado);
           if (!citas.length) return conTarjetas(props);
           const enParrafos = citas.map(({ data }) => ({ type: 'paragraph', data: { text: data.text } }));
-          const textos = tarjetaTextos ?? { colorTexto: props.colorTexto };
+          const textos = tarjetaTextos ?? {};
           const recuadro = (props.grupoRecuadro ?? {
             searchPlaceholder: props.searchPlaceholder,
             colorTextoBloque: props.colorTextoBloque,

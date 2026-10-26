@@ -19,6 +19,11 @@ interface EditorjsWrapperProps {
    * bloque (`tunes.alineacion`), y el color ya va dentro del texto.
    */
   conFormato?: boolean;
+  /**
+   * Solo el color de las palabras elegidas, sin la alineación por bloque: para los textos cuyo
+   * render no lee `tunes.alineacion` (el de «Texto enriquecido»). `conFormato` ya lo incluye.
+   */
+  conColor?: boolean;
 }
 
 type ItemLista = string | { content?: string; items?: ItemLista[] };
@@ -179,6 +184,7 @@ export function EditorjsWrapper({
   colorTexto,
   sinCita = false,
   conFormato = false,
+  conColor = false,
 }: EditorjsWrapperProps) {
   const editorRef = useRef<EditorJSInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -231,12 +237,8 @@ export function EditorjsWrapper({
         const Header = (await import('@editorjs/header')).default;
         const List = (await import('@editorjs/list')).default;
         const Quote = (await import('@editorjs/quote')).default;
-        const formato = conFormato
-          ? {
-              ColorEnLinea: (await import('../lib/editorjs-color')).ColorEnLinea,
-              AlineacionDeBloque: (await import('../lib/editorjs-alineacion')).AlineacionDeBloque,
-            }
-          : null;
+        const ColorEnLinea = conFormato || conColor ? (await import('../lib/editorjs-color')).ColorEnLinea : null;
+        const AlineacionDeBloque = conFormato ? (await import('../lib/editorjs-alineacion')).AlineacionDeBloque : null;
 
         if (cancelado) return;
         // Por si una instancia anterior dejó su marcado en el contenedor.
@@ -272,14 +274,10 @@ export function EditorjsWrapper({
             ...(sinCita ? {} : { quote: { class: Quote, inlineToolbar: true } }),
             // `ToolConstructable` es el tipo de las herramientas de bloque: una herramienta en
             // línea y un ajuste de bloque no encajan, aunque Editor.js los acepta así.
-            ...(formato
-              ? {
-                  color: { class: formato.ColorEnLinea as unknown as ToolConstructable },
-                  alineacion: { class: formato.AlineacionDeBloque as unknown as ToolConstructable },
-                }
-              : {}),
+            ...(ColorEnLinea ? { color: { class: ColorEnLinea as unknown as ToolConstructable } } : {}),
+            ...(AlineacionDeBloque ? { alineacion: { class: AlineacionDeBloque as unknown as ToolConstructable } } : {}),
           },
-          ...(formato ? { tunes: ['alineacion'] } : {}),
+          ...(AlineacionDeBloque ? { tunes: ['alineacion'] } : {}),
           onChange: () => {
             guardarInmediato();
           },
@@ -323,7 +321,7 @@ export function EditorjsWrapper({
     };
     // El editor se inicializa una sola vez al montar; las actualizaciones posteriores
     // de data se sincronizan en el efecto inferior para no destruir el estado ni mover el cursor.
-  }, [readOnly, sinCita, conFormato]);
+  }, [readOnly, sinCita, conFormato, conColor]);
 
   // Si data cambia externamente (ej. deshacer/rehacer en Puck) en modo edición
   useEffect(() => {

@@ -35,7 +35,8 @@ export interface OpcionesDelPanelDeColor {
   coloresEnUso?: string[];
   textoQuitar?: string;
   alElegir: (hex: string, hsv: Hsv) => void;
-  alQuitar: () => void;
+  /** Sin esto no hay botón de quitar: para un color que no puede quedar vacío. */
+  alQuitar?: () => void;
 }
 
 export interface PanelDeColor {
@@ -57,8 +58,8 @@ const CSS = `
 .olo-pc-popover{position:fixed;z-index:10000;width:240px;box-sizing:border-box;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.28);overflow:hidden}
 .olo-pc-popover[data-tema="oscuro"]{background:#2c2c2c;color:#fff}
 .olo-pc-popover[data-tema="claro"]{background:#fff;color:#111827;box-shadow:0 8px 30px rgba(0,0,0,.18),0 0 0 1px #e5e7eb}
-.olo-pc-panel{--pc-texto:#111827;--pc-suave:#6b7280;--pc-campo:#f3f4f6;--pc-fondo:#fff;--pc-linea:#e5e7eb;--pc-foco:#001631;--pc-anillo:rgba(0,0,0,.14);width:100%;padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;font-family:inherit;color:var(--pc-texto)}
-.olo-pc-panel[data-tema="oscuro"]{--pc-texto:#fff;--pc-suave:#a8a8a8;--pc-campo:#3b3b3b;--pc-fondo:#2c2c2c;--pc-linea:#434343;--pc-foco:#4da3ff;--pc-anillo:rgba(255,255,255,.2)}
+.olo-pc-panel{--pc-texto:#111827;--pc-suave:#6b7280;--pc-campo:#f3f4f6;--pc-campo-hover:#e5e7eb;--pc-fondo:#fff;--pc-linea:#e5e7eb;--pc-foco:#001631;--pc-anillo:rgba(0,0,0,.14);width:100%;padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;font-family:inherit;color:var(--pc-texto)}
+.olo-pc-panel[data-tema="oscuro"]{--pc-texto:#fff;--pc-suave:#a8a8a8;--pc-campo:#3b3b3b;--pc-campo-hover:#4a4a4a;--pc-fondo:#2c2c2c;--pc-linea:#434343;--pc-foco:#4da3ff;--pc-anillo:rgba(255,255,255,.2)}
 .olo-pc-panel [hidden]{display:none!important}
 .olo-pc-area{position:relative;height:148px;border-radius:8px;cursor:crosshair;touch-action:none;outline:none;background-image:linear-gradient(to top,#000,rgba(0,0,0,0)),linear-gradient(to right,#fff,rgba(255,255,255,0))}
 .olo-pc-matiz{position:relative;flex:1;min-width:0;height:16px;border-radius:8px;cursor:pointer;touch-action:none;outline:none}
@@ -86,15 +87,13 @@ const CSS = `
 .olo-pc-rejilla button{width:100%;aspect-ratio:1/1;padding:0;border:0;border-radius:4px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--pc-anillo);transition:transform 120ms ease}
 .olo-pc-rejilla button:hover{transform:scale(1.12)}
 .olo-pc-rejilla button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--pc-fondo),0 0 0 4px var(--pc-texto)}
-.olo-pc-quitar{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--pc-suave);font:inherit;font-size:12px;cursor:pointer;transition:background-color 150ms ease,color 150ms ease}
-.olo-pc-quitar:hover{background:var(--pc-campo);color:var(--pc-texto)}
+.olo-pc-quitar{display:inline-flex;align-items:center;justify-content:center;width:100%;height:32px;padding:0;border:0;border-radius:8px;background:var(--pc-campo);color:var(--pc-texto);font:inherit;font-size:12px;cursor:pointer;transition:background-color 150ms ease}
+.olo-pc-quitar:hover{background:var(--pc-campo-hover)}
 @media (prefers-reduced-motion:reduce){.olo-pc-icono,.olo-pc-quitar,.olo-pc-rejilla button{transition:none}.olo-pc-rejilla button:hover{transform:none}}
 `;
 
 const ICONO_CUENTAGOTAS =
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>';
-const ICONO_QUITAR =
-  '<svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const ICONO_FLECHA =
   '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="m2 3.5 3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -260,10 +259,12 @@ export function crearPanelDeColor(opciones: OpcionesDelPanelDeColor): PanelDeCol
   }
   filaMatiz.appendChild(matiz);
 
-  panel.append(area, filaMatiz, filaValor, crear('div', 'olo-pc-linea'));
+  panel.append(area, filaMatiz, filaValor);
 
   const muestrasEnUso: HTMLButtonElement[] = [];
   const enUso = (opciones.coloresEnUso ?? []).slice(0, MAX_COLORES_EN_USO);
+  // La raya separa el selector de lo de abajo; sin colores usados ni botón de quitar no hay nada abajo.
+  if (enUso.length > 0 || opciones.alQuitar) panel.appendChild(crear('div', 'olo-pc-linea'));
   if (enUso.length > 0) {
     const rejilla = crear('div', 'olo-pc-rejilla', { role: 'group', 'aria-label': 'Colores ya usados' });
     for (const hex of enUso) {
@@ -285,10 +286,13 @@ export function crearPanelDeColor(opciones: OpcionesDelPanelDeColor): PanelDeCol
     panel.appendChild(rejilla);
   }
 
-  const quitar = crear('button', 'olo-pc-quitar', { type: 'button' });
-  quitar.innerHTML = `${ICONO_QUITAR}<span>${opciones.textoQuitar ?? 'Quitar color'}</span>`;
-  quitar.addEventListener('click', () => opciones.alQuitar());
-  panel.appendChild(quitar);
+  const alQuitar = opciones.alQuitar;
+  if (alQuitar) {
+    const quitar = crear('button', 'olo-pc-quitar', { type: 'button' });
+    quitar.textContent = opciones.textoQuitar ?? 'Quitar color';
+    quitar.addEventListener('click', () => alQuitar());
+    panel.appendChild(quitar);
+  }
 
   // ── estado ──
 

@@ -5,11 +5,59 @@
 
 ---
 
-## sesión 25-10-2026 (16.ª parte): el panel de color pasa a fondo blanco
+## sesión 26-10-2026 (1.ª parte): el selector de color nuevo en todos los sitios que escogen un color
 
-**Qué pidió el usuario:** el fondo del selector de color, blanco y no oscuro.
+**Qué pidió el usuario:** replicar el selector de color (el panel nuevo) por todos los componentes que lo usen, y en el editor, tal cual funciona en «Textos del buscador».
+
+**Qué se revisó:** todos los campos de color de Puck de las dos apps (más de 80: `campoColor`, los de `campoEnAcordeon({ type: 'color' })`, los del pie, las pestañas, la caja y los bloques de maquetación) pasan ya por `ColorPickerField`, que abre el panel nuevo: ahí no había nada que cambiar. Ninguno de esos campos es de texto libre «Color…». Quedaban **dos** sitios sin el selector nuevo:
+
+- **Panel de administración, «Identidad visual» (colores de etiquetas y de botones):** usaba el selector nativo del navegador (`<input type="color">`).
+- **«Texto enriquecido» (Editor.js):** no tenía la herramienta «Color del texto».
+
+**Qué se hizo:**
+
+- `packages/blocks-renderer/src/primitives/popover-del-panel-de-color.tsx` (nuevo): la ventana flotante del panel (portal al `body`, se coloca bajo el elemento, Esc / clic fuera / desplazar / redimensionar la cierran) sale de `color-picker-field.tsx` a su propia pieza compartida, `PopoverDelPanelDeColor`, exportada por `@olo/blocks-renderer`. El campo de Puck y el panel de administración usan la misma.
+- `packages/blocks-renderer/src/primitives/panel-de-color.ts`: `alQuitar` pasa a ser opcional. Sin él no hay botón «Quitar color» ni la raya de arriba (a menos que haya colores usados): para un color que no puede quedar vacío.
+- `3000-sitio-web/src/features/admin-panel/configuration/components/colores-configurables.tsx`: cada «Fondo» y «Letra» es una muestra redonda de 44 px con su código; al pulsarla se abre el panel nuevo, sin «Quitar» (siempre hay un color). Los cambios siguen sin aplicarse hasta «Guardar», y el color se entrega al terminar de elegir (soltar el ratón, Intro…), con el contraste calculado como antes.
+- `3000-sitio-web/src/features/editor/edition/components/editorjs-wrapper.tsx` y `src/config/puck.config.tsx`: nueva opción `conColor` (solo el color de las palabras, sin la alineación por bloque, que el render de ese bloque no lee). «Texto enriquecido» la activa. `conFormato` sigue activando las dos cosas, como en el buscador.
+
+| Verificación | Resultado |
+|---|---|
+| jsdom, el popover como lo usa administración (con y sin «Quitar»): abre con el color actual, sin botón ni raya, entrega `#rrggbb`, Esc devuelve el foco, no deja nada al desmontar | 9 de 9 |
+| jsdom, campo de Puck (regresión) | 22 de 22 |
+| Chrome real, Editor.js 2.31.6 (regresión del selector de «Color del texto») | 29 de 29 |
+| `tsc --noEmit` en `3000-sitio-web`, `3001-intranet` y `packages/blocks-renderer`; `eslint` sobre el panel de administración y el wrapper | Sin errores ni avisos |
+
+**Seguridad:** no cambia nada del API. El color de las palabras sale como `<span style="color:#rrggbb">`, que es lo único que el sanitizador deja pasar (`COLOR_PERMITIDO`) en cualquier bloque de la página, no solo en el buscador. El selector de administración entrega siempre `#rrggbb`, el único formato que guarda la identidad visual.
+
+**Lo que falta, y es del usuario:** mirarlo en el panel real (pide sesión): el selector en «Identidad visual», con la ventana debajo de cada muestra y a ≤650 px; y la herramienta de color en «Texto enriquecido». No se probó el panel de administración con el modo oscuro del panel: el selector abre en blanco (`TEMA_DEL_PANEL_DE_COLOR`).
+
+**Código tocado:** `packages/blocks-renderer/src/primitives/popover-del-panel-de-color.tsx` (nuevo), `color-picker-field.tsx`, `panel-de-color.ts`, `src/index.ts`; `3000-sitio-web/src/features/admin-panel/configuration/components/colores-configurables.tsx`, `src/features/editor/edition/components/editorjs-wrapper.tsx`, `src/config/puck.config.tsx`; `docs/manual-de-usuario-formato.md`.
+
+---
+
+## sesión 25-10-2026 (17.ª parte): «Textos del buscador» sin la etiqueta «Titular y descripción»
+
+**Qué pidió el usuario:** quitar «Titular y descripción» del campo de texto del editor.
+
+**Qué se hizo:** la tarjeta «Textos del buscador» quedó con un solo campo (el Editor.js) desde que se quitó su «Color del texto», así que la etiqueta repetía lo que ya dice el título de la tarjeta. `3000-sitio-web/src/config/puck.config.tsx`: el campo `contenido` pasa a `label: ''`. `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx` (`ControlesDeGrupo`): una etiqueta vacía ya no pinta su `<span>` ni su hueco. La ayuda («El tipo de bloque decide dónde sale cada texto…») se queda, ahora como primera línea bajo el título de la tarjeta. Las demás tarjetas siguen con sus etiquetas, incluida «Texto bloque» en «Texto bloque y placeholder» (la petición nombraba solo esta).
+
+| Verificación | Resultado |
+|---|---|
+| Pintar la tarjeta con el código real: etiqueta vacía y etiqueta con texto | Vacía: sin `<span>` de etiqueta, con la ayuda y el editor; con texto: se pinta como antes (4 de 4) |
+| `tsc --noEmit` en `3000-sitio-web` y `3001-intranet` | Sin errores |
+
+**Código tocado:** `3000-sitio-web/src/config/puck.config.tsx`, `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx`.
+
+---
+
+## sesión 25-10-2026 (16.ª parte): el panel de color pasa a fondo blanco y «Quitar color» a un botón gris con solo texto
+
+**Qué pidió el usuario:** el fondo del selector de color, blanco y no oscuro; y que «Quitar color» lleve solo el texto, sin la X, y un fondo gris.
 
 **Qué se hizo:** `TEMA_DEL_PANEL_DE_COLOR` (`packages/blocks-renderer/src/primitives/panel-de-color.ts`) pasa de `'oscuro'` a `'claro'`. Es el único valor que decide el fondo, así que cambia a la vez en la herramienta «Color del texto» de Editor.js y en el campo de color de Puck. El tema claro ya existía en el panel (fondo blanco, campos grises claros, borde fino y sombra); no hubo que dibujar nada. Volver al oscuro es cambiar ese mismo valor.
+
+**«Quitar color»:** el botón pierde la X y queda con el texto centrado sobre el mismo gris claro de los campos (más oscuro al pasar el cursor), de lado a lado del panel. Es el mismo botón en los dos sitios. El ✕ de la caja del campo de Puck (el que borra el valor escrito) no se tocó.
 
 | Verificación | Resultado |
 |---|---|
