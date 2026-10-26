@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  MarcoSecciones,
   PaginasFabSpeedDial,
   RastreadorVisitas,
 } from '@/features/editor';
+import { MarcoSecciones } from '@/features/editor/server';
 import {
   obtenerSesion,
   puedeEditarPaginas,

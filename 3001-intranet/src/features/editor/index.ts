@@ -61,7 +61,7 @@ export { getPageSeed, isEmptyContent } from "./edition/lib/page-seeds";
 // menu-y-pie/ — la barra y el pie que comparten todas las secciones
 export { obtenerPlantilla, SLUG_PLANTILLA } from "./navegation/menu-y-pie";
 export type { Plantilla } from "./navegation/menu-y-pie";
-export { MarcoSecciones } from "./navegation/marco-secciones";
+// MarcoSecciones lee la sesión (next/headers): va por `server.ts`, no por aquí.
 
 // secciones/ — crear y eliminar secciones, botón flotante
 export {

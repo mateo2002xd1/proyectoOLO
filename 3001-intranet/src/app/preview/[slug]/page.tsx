@@ -2,10 +2,10 @@ import { notFound } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 import {
   ClientPuckRender,
-  MarcoSecciones,
   obtenerVersionEditable,
   SLUG_PLANTILLA,
 } from '@/features/editor';
+import { MarcoSecciones } from '@/features/editor/server';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/session/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/api/constants';
