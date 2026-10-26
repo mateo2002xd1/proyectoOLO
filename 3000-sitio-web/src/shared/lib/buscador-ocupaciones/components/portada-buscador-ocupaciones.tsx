@@ -84,14 +84,14 @@ export function PortadaBuscadorOcupaciones({
         {tituloSeccion && (
           // `TituloRico` y no `<h2>`: el titular puede traer un H1–H6 de la barra de formato.
           <TituloRico
-            className="text-[28px] leading-[1.2] font-normal sm:text-[36px] lg:text-[40px] [&_p]:m-0 [&_strong]:font-bold"
+            className="text-[28px] leading-[1.2] font-normal sm:text-[36px] lg:text-[40px] [&_p]:m-0 [&_strong]:font-bold [&_b]:font-bold"
             style={{ color: AZUL_PORTADA }}
           >
             {tituloSeccion}
           </TituloRico>
         )}
         {descripcion && (
-          <div className="mt-5 text-[17px] leading-[1.35] text-[#111111] sm:mt-8 sm:text-[20px] lg:text-[22px] [&_p]:m-0 [&_p+p]:mt-3">
+          <div className="mt-5 text-[17px] leading-[1.35] text-[#111111] sm:mt-8 sm:text-[20px] lg:text-[22px] [&_p]:m-0 [&_p+p]:mt-3 [&_ul+p]:mt-3 [&_ol+p]:mt-3">
             {descripcion}
           </div>
         )}
@@ -101,12 +101,12 @@ export function PortadaBuscadorOcupaciones({
           style={{ backgroundColor: azul }}
         >
           {textoRecuadro && (
-            <div className="text-[17px] leading-[1.3] text-white sm:text-[20px] lg:text-[22px] [&_em]:font-light [&_p]:m-0 [&_strong]:font-bold">
+            <div className="text-[17px] leading-[1.3] text-white sm:text-[20px] lg:text-[22px] [&_em]:font-light [&_i]:font-light [&_p]:m-0 [&_p+p]:mt-2 [&_strong]:font-bold [&_b]:font-bold">
               {textoRecuadro}
             </div>
           )}
 
-          <form onSubmit={enviar} className="relative mt-5 sm:mt-6">
+          <form onSubmit={enviar} className={`relative ${textoRecuadro ? 'mt-5 sm:mt-6' : ''}`}>
             <label htmlFor={idCampo} className="sr-only">
               {placeholder}
             </label>

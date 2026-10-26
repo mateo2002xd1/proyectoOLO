@@ -1,10 +1,12 @@
 'use client';
 
 import { Suspense, type ReactNode } from 'react';
+import type { OutputData } from '@editorjs/editorjs';
 import { useBuscadorActivo } from '@/shared/lib/rutas-del-menu';
 import { useBuscarEnPagina } from '../hooks/use-buscar-en-pagina';
 import { ConsultaOcupaciones } from './consulta-ocupaciones';
 import { AZUL_PORTADA, PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
+import { nodosDeTextos } from './textos-del-buscador';
 
 /*
  * Textos del diseño. Puck entrega un campo `richtext` vacío —o ausente, como en una
@@ -27,6 +29,12 @@ const TEXTO_RECUADRO_POR_DEFECTO = (
 );
 
 export interface HeroBuscadorOcupacionesProps {
+  /**
+   * Los tres textos en un solo campo de Editor.js (ver `repartirTextos`). Si viene, manda
+   * sobre `tituloSeccion`, `descripcion` y `titulo`, y una zona sin texto queda vacía.
+   */
+  contenido?: OutputData;
+  /** Los tres de abajo son los de una portada guardada antes del campo único. */
   tituloSeccion?: ReactNode;
   descripcion?: ReactNode;
   /** Texto del recuadro sobre el buscador. Se llama `titulo` desde antes del rediseño. */
@@ -51,6 +59,7 @@ export interface HeroBuscadorOcupacionesProps {
  * debajo de sí mismo. Con el buscador apagado no se pinta (ver `useBuscadorActivo`).
  */
 export function HeroBuscadorOcupaciones({
+  contenido,
   tituloSeccion,
   descripcion,
   titulo,
@@ -67,12 +76,14 @@ export function HeroBuscadorOcupaciones({
   const activo = useBuscadorActivo();
   if (!activo && !esEdicion) return null;
 
+  const textos = contenido ? nodosDeTextos(contenido) : null;
+
   return (
     <div className={className}>
       <PortadaBuscadorOcupaciones
-        tituloSeccion={tituloSeccion ?? TITULO_SECCION_POR_DEFECTO}
-        descripcion={descripcion ?? DESCRIPCION_POR_DEFECTO}
-        textoRecuadro={titulo ?? TEXTO_RECUADRO_POR_DEFECTO}
+        tituloSeccion={textos ? textos.titular : (tituloSeccion ?? TITULO_SECCION_POR_DEFECTO)}
+        descripcion={textos ? textos.descripcion : (descripcion ?? DESCRIPCION_POR_DEFECTO)}
+        textoRecuadro={textos ? textos.recuadro : (titulo ?? TEXTO_RECUADRO_POR_DEFECTO)}
         placeholder={searchPlaceholder || 'Buscar ocupación, código o denominación'}
         imagenFondo={imagenFondo}
         transparenciaFondo={transparenciaFondo}

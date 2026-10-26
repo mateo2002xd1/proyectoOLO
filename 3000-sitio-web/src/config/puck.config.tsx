@@ -58,6 +58,9 @@ import {
   HeroBuscadorOcupaciones,
   BuscadorOcupacionesView,
   PaginaDeResultadosOcupaciones,
+  CONTENIDO_DEL_BUSCADOR_POR_DEFECTO,
+  contenidoDesdeHtml,
+  type TextosEnHtml,
 } from '@/shared/lib/buscador-ocupaciones';
 import { AlertasInversionView } from '@/shared/lib/alertas-inversion';
 import { ProgramasSobresalientesView } from '@/shared/lib/programas-sobresalientes';
@@ -134,15 +137,6 @@ const campoImagenDeFondo = () =>
  * cursiva, subrayado y alineación (ver `crearCampoTextoRico`).
  */
 const campoTextoRico = crearCampoTextoRico(RichTextMenu);
-
-/** La tarjeta «Textos» del bloque «Buscador de ocupaciones» (`Hero`) recién puesto. */
-const TEXTOS_DEL_BUSCADOR_POR_DEFECTO = {
-  tituloSeccion: '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
-  descripcion:
-    '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
-  titulo:
-    '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
-};
 
 /**
  * Un texto enriquecido guardado en una prop que ya no es campo: Puck solo convierte a
@@ -651,19 +645,25 @@ const puckConfigBase: Config = {
      * recuadro) para que la portada guardada siga sirviendo; `imageUrl`, `imageAlt`,
      * `modelSrc` y `modelAlt` quedan en el JSON viejo y ya no se leen.
      *
-     * Los tres textos van en una sola tarjeta, «Textos» (`textos`). Antes eran props
-     * sueltas: `resolveData` las mueve al abrir el editor, y hasta que se vuelva a
-     * publicar el render las sigue leyendo sueltas (`htmlGuardado`).
+     * Los tres textos van en un solo campo de Editor.js, «Textos» (`contenido`): el tipo de
+     * bloque decide la zona (ver `repartirTextos`). Antes eran tres campos `richtext` de Puck,
+     * primero sueltos y luego en la tarjeta `textos`: `resolveData` los pasa al campo nuevo al
+     * abrir el editor, y hasta que se vuelva a publicar el render los sigue leyendo como
+     * estaban (`htmlGuardado`).
      */
     Hero: {
       label: 'Buscador de ocupaciones',
       fields: {
-        textos: campoObjetoEnAcordeon(
-          'Textos',
+        contenido: campoEnAcordeon(
           {
-            tituloSeccion: campoTextoRico('Titular'),
-            descripcion: campoTextoRico('Descripción'),
-            titulo: campoTextoRico('Texto del recuadro'),
+            type: 'custom',
+            label: 'Textos',
+            ayuda:
+              'El tipo de bloque decide dónde sale cada texto: el encabezado es el titular, los párrafos y las listas son la descripción, y la cita (con «+» → Cita) es el texto del recuadro azul.',
+            // La cita no muestra su pie en la sección: se esconde para no pedir un texto que no sale.
+            render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
+              <EditorjsWrapper data={value} onChange={onChange} className="[&_.cdx-quote__caption]:hidden" />
+            ),
           },
           { abierto: true }
         ),
@@ -696,31 +696,38 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         id: 'hero-1',
-        textos: TEXTOS_DEL_BUSCADOR_POR_DEFECTO,
+        contenido: CONTENIDO_DEL_BUSCADOR_POR_DEFECTO,
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         imagenFondo: '',
         transparenciaFondo: '',
         colorFondo: '',
       },
-      // Una portada guardada antes de la tarjeta «Textos» los trae sueltos (y una de
-      // antes del rediseño, sin titular ni descripción): se pasan a la tarjeta al abrirla
-      // en el editor, completando lo que falte, para que se vean y se puedan corregir.
+      // Una portada guardada antes del campo único trae los tres textos como HTML, en la
+      // tarjeta `textos` o sueltos (y una de antes del rediseño, sin titular ni descripción):
+      // se pasan al campo al abrirla en el editor, completando lo que falte, para que se vean
+      // y se puedan corregir.
       resolveData: ({ props }: { props: Record<string, unknown> }) => {
-        if (props.textos) return { props };
-        const { tituloSeccion, descripcion, titulo, ...resto } = props;
+        if (props.contenido) return { props };
+        const { textos, tituloSeccion, descripcion, titulo, ...resto } = props;
+        const enTarjeta = (typeof textos === 'object' && textos !== null ? textos : {}) as Record<string, unknown>;
+        const enHtml = (clave: keyof TextosEnHtml, suelto: unknown) => {
+          const valor = enTarjeta[clave] ?? suelto;
+          return typeof valor === 'string' ? valor : undefined;
+        };
         return {
           props: {
             ...resto,
-            textos: {
-              tituloSeccion: tituloSeccion ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.tituloSeccion,
-              descripcion: descripcion ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.descripcion,
-              titulo: titulo ?? TEXTOS_DEL_BUSCADOR_POR_DEFECTO.titulo,
-            },
+            contenido: contenidoDesdeHtml({
+              tituloSeccion: enHtml('tituloSeccion', tituloSeccion),
+              descripcion: enHtml('descripcion', descripcion),
+              titulo: enHtml('titulo', titulo),
+            }),
           },
         };
       },
       render: ({
         puck,
+        contenido,
         textos,
         tituloSeccion,
         descripcion,
@@ -731,10 +738,10 @@ const puckConfigBase: Config = {
         colorFondo,
       }: BlockRender<{
         puck?: { isEditing?: boolean };
-        // `ReactNode` y no `string`: Puck convierte los campos `richtext` a nodos
-        // antes de llamar al render, también dentro de un `object`.
-        textos?: { tituloSeccion?: ReactNode; descripcion?: ReactNode; titulo?: ReactNode };
-        // Los sueltos de una portada sin la tarjeta: HTML que Puck ya no convierte.
+        contenido?: OutputData;
+        // Los textos de una portada guardada antes del campo único, en la tarjeta o sueltos:
+        // HTML que Puck ya no convierte a nodos.
+        textos?: TextosEnHtml;
         tituloSeccion?: string;
         descripcion?: string;
         titulo?: string;
@@ -744,9 +751,10 @@ const puckConfigBase: Config = {
         colorFondo?: string;
       }>) => (
         <HeroBuscadorOcupaciones
-          tituloSeccion={textos ? textos.tituloSeccion : htmlGuardado(tituloSeccion)}
-          descripcion={textos ? textos.descripcion : htmlGuardado(descripcion)}
-          titulo={textos ? textos.titulo : htmlGuardado(titulo)}
+          contenido={contenido}
+          tituloSeccion={htmlGuardado(textos?.tituloSeccion ?? tituloSeccion)}
+          descripcion={htmlGuardado(textos?.descripcion ?? descripcion)}
+          titulo={htmlGuardado(textos?.titulo ?? titulo)}
           searchPlaceholder={searchPlaceholder}
           imagenFondo={imagenFondo}
           transparenciaFondo={transparenciaFondo}

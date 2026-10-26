@@ -10,6 +10,8 @@ interface EditorjsWrapperProps {
   readOnly?: boolean;
   /** Color de todo el texto (#rrggbb); sin él, los grises de siempre. Solo en modo lectura. */
   colorTexto?: string;
+  /** Clases que se suman al contenedor del editor del panel; en modo lectura no cuentan. */
+  className?: string;
 }
 
 type ItemLista = string | { content?: string; items?: ItemLista[] };
@@ -163,7 +165,7 @@ function tieneContenido(data?: OutputData): boolean {
 
 const COLOR_VALIDO = /^#[0-9a-fA-F]{3,8}$/;
 
-export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto }: EditorjsWrapperProps) {
+export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto, className }: EditorjsWrapperProps) {
   const editorRef = useRef<EditorJSInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ultimoObjetoEmitidoRef = useRef<OutputData | null>(null);
@@ -342,7 +344,7 @@ export function EditorjsWrapper({ data, onChange, readOnly = false, colorTexto }
   return (
     <div
       ref={containerRef}
-      className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_.codex-editor__redactor]:!pb-8"
+      className={`w-full rounded-lg border border-zinc-200 bg-white p-3 text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_.codex-editor__redactor]:!pb-8 ${className ?? ''}`}
       style={{ minHeight: 180 }}
     />
   );

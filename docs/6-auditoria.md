@@ -5,6 +5,104 @@
 
 ---
 
+## sesión 25-10-2026 (7.ª parte): los tres textos del «Buscador de ocupaciones» en un solo campo de Editor.js
+
+**Qué pidió el usuario:** que en el bloque «Buscador de ocupaciones» (el `Hero` de la portada) el texto se escriba en Editor.js, en **un solo campo** con las opciones para dar formato, en vez de los tres campos de Puck (Titular, Descripción y Texto del recuadro). Elegido entre tres formas de repartirlo: **por tipo de bloque**.
+
+**Cómo se reparte:** el campo «Textos» (`contenido`, formato `{ blocks: [...] }`) manda cada bloque a su zona según su tipo (`repartirTextos`):
+
+| Bloque de Editor.js | Dónde sale |
+|---|---|
+| Encabezado | El titular, arriba (azul, con el tamaño del diseño) |
+| Párrafo y lista | La descripción, bajo el titular |
+| Cita (con «+» → Cita) | El texto del recuadro azul, sobre el buscador |
+
+El texto que trae el bloque recién puesto es el mismo de antes, ya en esa forma. Una zona sin texto no se pinta (antes volvía el texto del diseño). El **nivel** del encabezado no cambia el titular: su tamaño y su nivel de encabezado siguen siendo los del diseño. El **pie de la cita** no se muestra en la sección y se esconde en el panel para no pedir un texto que no sale.
+
+**Qué pasa con las portadas ya guardadas:** traen los textos como HTML de Puck (sueltos o en la tarjeta `textos`). Hasta que se abren en el editor se pintan igual que antes (`htmlGuardado`); al abrirlas, `resolveData` los pasa al campo nuevo (`contenidoDesdeHtml`: `strong`→`b`, `em`→`i`, listas y enlaces se conservan). Se pierden el subrayado y la alineación, que Editor.js no tiene, y los saltos de línea del titular. Nada se escribe en Neon: se convierte al abrir y se guarda cuando alguien publica.
+
+**Qué se tocó:**
+
+- `3000-sitio-web/src/shared/lib/buscador-ocupaciones/lib/textos-del-buscador.ts` (nuevo): reparto, conversión desde HTML y texto por defecto.
+- `.../components/textos-del-buscador.tsx` (nuevo): pinta cada zona (párrafos, listas con sublistas, citas).
+- `.../components/hero-buscador-ocupaciones.tsx`: prop `contenido`; si viene, manda sobre las tres antiguas.
+- `.../components/portada-buscador-ocupaciones.tsx`: `b`/`i` igual que `strong`/`em`; un párrafo tras una lista y un recuadro sin texto (el buscador ya no lleva el hueco de arriba).
+- `features/editor/edition/components/editorjs-wrapper.tsx`: prop opcional `className` para el contenedor del panel (el bloque «Texto enriquecido» no cambia).
+- `config/puck.config.tsx` y `.../buscador-ocupaciones/index.ts`: el campo, el valor por defecto, `resolveData` y el render.
+- `docs/manual-de-usuario-formato.md`: la frase de «Textos».
+
+**Sin cambios a propósito:** la API ya sanea todo el contenido de una página sin mirar el nombre del campo (`sanitizar-contenido.ts`) y el extractor del buscador del sitio ya lee los `blocks` de Editor.js (`extraer-textos-puck.ts`), así que el campo nuevo entra en las dos sin tocarlas. La intranet no tiene este bloque.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` en `3000-sitio-web` | Sin errores |
+| Reparto y conversión (script aparte, 5 grupos de comprobaciones: valor por defecto, reparto, vacíos y bloques de otro tipo, HTML de Puck con listas, párrafos, subrayado, alineación y enlaces, y faltantes) | Todas pasan |
+| `/inicio` con los datos guardados de ahora (HTML de Puck) | Se pinta igual: titular, descripción y recuadro |
+| Página temporal con el campo nuevo (borrada después): valor por defecto, dos titulares + párrafos + lista con sublista + dos citas, y solo un titular | El valor por defecto queda igual que el diseño; cada bloque cae en su zona; el pie de la cita no sale; sin texto de recuadro el buscador queda sin hueco encima |
+
+**Lo que no se hizo:** no se abrió el editor de Puck (pide sesión), así que no se vio el campo de Editor.js dentro del acordeón del panel, ni se probó escribir en él, ni la conversión de una portada real al abrirla (se probó la función con HTML de ejemplo). La captura a 375 px salió recortada por el navegador sin interfaz; el ancho del recuadro no cambió. El texto de la portada ya no se edita sobre el lienzo, solo en el panel, como el bloque «Texto enriquecido». Los volcados (`paginas-volcado.sql`) y `home-fallback-data.ts` siguen con el HTML de antes; se leen por el camino de las portadas guardadas.
+
+**Código tocado:** los archivos de la lista.
+
+---
+## sesión 25-10-2026 (6.ª parte): la sonda `/health` — el manual decía otra cosa, nadie la consultaba y los logs no tenían tope
+
+**Qué pidió el usuario:** evaluar, con la skill de seguridad o el agente, si el endpoint de verificación de salud del API (sección 2.2.5.1 del manual) tiene riesgos o exposición que lleven a una vulnerabilidad; y, con el informe delante, «arregla todo».
+
+**Cómo se hizo:** skills `api-security-best-practices` y `security-best-practices` (con su guía de Express); lectura de `app.ts`, `nginx.servidor.conf`, el compose y el Dockerfile; y peticiones de solo lectura al dev del puerto 4000. No se lanzó `security-auditor` ni `api-security-audit`: la superficie era un handler de tres líneas y un agente arranca en frío para releer lo mismo. Para los arreglos: mutaciones sobre una copia sin `.env` y contenedores desechables de Docker con nombre propio (`olo-prueba-*`), borrados al terminar.
+
+**Veredicto del código:** `/health` no tiene vulnerabilidad. Solo atiende GET, no refleja la query, devuelve únicamente `status` y `timestamp`, `helmet` quita `X-Powered-By`, CORS tiene lista blanca, el 4000 no se publica (solo nginx, en 127.0.0.1) y por la puerta de la intranet la ruta ni existe. El riesgo estaba alrededor:
+
+| ID | Hallazgo | Estado |
+|---|---|---|
+| SAL-01 | El manual (2.2.5.1) describe `/api/health` con el estado de cada dependencia y un 503 si cae Postgres. El código sirve `/health`, devuelve solo `status` y `timestamp` y responde 200 con la base caída, **a propósito**. Hacer que el código cuadre con el manual publicaría, sin sesión y antes del limitador, qué componente falla, y haría que cada petición anónima consultara la base. Además `docker logs olo-api-backend` no existe: el contenedor se llama `api` | **Abierto:** falta pegar el párrafo corregido en el manual (está fuera del repo). El código queda vigilado por `salud:verificar` |
+| SAL-02 | Nadie consultaba `/health`: el comentario de `app.ts` decía que nginx y Docker lo hacían en bucle, pero `api-backend` no tenía `healthcheck`, el Dockerfile no tiene `HEALTHCHECK` y nginx no sondea su upstream. Una API caída pasaba sin aviso | Corregido en el repo; **falta desplegarlo** |
+| SAL-03 | Ningún servicio del compose tenía tope de logs | Corregido en el repo; **falta desplegarlo** |
+
+**Qué se hizo**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Compose | `docker/docker-compose.servidor.yml` | `x-logging` (5 archivos de 10 MB) con `logging: *logging` en los siete servicios; `healthcheck` de `api-backend`: Node con su `fetch` contra el 127.0.0.1 del contenedor y el `PORT` que tenga, cada 30 s, 5 s de espera, 3 intentos y 40 s de margen al arrancar |
+| API | `4000-api-backend/src/app.ts` | `morgan` no anota la sonda: solo `/health`, con estado menor de 400 y por el socket del propio contenedor (`req.socket.remoteAddress`, no `req.ip`, que sale de `X-Forwarded-For`); los dos comentarios que decían que nginx también sondeaba; el bloque OpenAPI explica que no es un estado de dependencias; se exporta `esSondaDelPropioContenedor` para la prueba |
+| Verificación | `scripts/verificaciones/verificar-salud.ts` y `salud:verificar` en `package.json` | 33 comprobaciones, sin base ni Redis |
+| Guía | `docker/guia-bash.md` | `status` espera `api` *healthy*; sección nueva «Comprobar que la API está viva» con su glosario; el comando que comprueba que Swagger sigue apagado |
+| Registro | `docs/3-seguridad-del-proyecto.md` | §4.9 (`salud:verificar`), familia `SAL`, filas SAL-01 a SAL-03; la prueba de NGX-01 ya no manda mirar un `access.log` que es un enlace, sino `docker logs nginx` |
+
+| Verificación | Resultado |
+|---|---|
+| `/health` en el dev (4000), solo lectura: GET, GET con `?q=<script>`, POST, `/api/health`, preflight desde `https://evil.example` | 200 con `status` y `timestamp`; la query no se refleja; POST 404; `/api/health` 404 `{"error":"Ruta no encontrada"}`; el preflight da 204 sin `Access-Control-Allow-Origin`; sin `X-Powered-By` |
+| `tsc --noEmit` en `4000-api-backend` | Sin errores |
+| `npm run salud:verificar` | 33/33. Entorno forzado: la base apunta a un puerto donde no escucha nadie, Redis sin configurar, y `sequelize.query`, `sequelize.authenticate` y `getRedis` son trampas que anotan y fallan |
+| Mutaciones sobre una copia desechable (13: control, 6 en `app.ts`, 6 en el compose) | El control pasa 33/33 y las 12 mutaciones rompen la prueba donde toca: `/health` consulta la base (8 fallos), añade `db` y `redis` al cuerpo, pasa a ir después del limitador, `morgan` sin `skip`, criterio por `req.ip`, criterio sin mirar el estado, healthcheck sobre `/api/health`, sin healthcheck, nginx sin tope, `api-backend` publicando el 4000, nginx en todas las interfaces, tope sin `max-size` |
+| El comando del healthcheck, extraído del compose y ejecutado como lo hace Docker (`node -e`, sin shell) | Servidor con 200 → salida 0; con 503 → 1; sin `/health` (404) → 1; puerto cerrado → 1; el dev real del 4000 → 0 |
+| `docker compose config` del compose real con la plantilla `.env.example` | Válido; los siete servicios con `max-size: 10m` y `max-file: 5`; `api-backend` con su healthcheck |
+| Contenedor desechable `node:20-alpine` con el `healthcheck` y el `x-logging` **copiados del compose** | `starting` → `healthy` a los 6 s (durante `start_period` Docker sondea cada 5 s); con `/health` dando 503, `unhealthy` a los 92 s con racha 3; `LogConfig` = `json-file`, 5 × 10m |
+| nginx real (`nginx.servidor.conf` montado tal cual) con tres servidores de mentira detrás | Puerta 8080: `/api-backend/health` → 200 y la API recibe `GET /health`. Puerta 8081: → 404 y la API recibe `GET /api/health`. `/health` a secas en la 8080 lo atiende el sitio. Ráfaga de 150 en paralelo: 23 × 200 y 127 × 429. Misma ráfaga con una `X-Forwarded-For` distinta en cada petición: 150 × 200, ninguna 429 (NGX-01 por el lado de nginx) |
+| Volumen nuevo montado en `/var/log/nginx` | `access.log -> /dev/stdout` y `error.log -> /dev/stderr`: no crece nada en el disco del volumen, y el acceso sale en `docker logs`, que es lo que acota el tope |
+
+**Lo que se intentó y se descartó**
+- **Que `/health` devuelva el estado de Postgres y Redis con un 503** (lo que pedía el manual): descartado por la exposición y la amplificación de arriba. Si algún día hace falta vigilar la base desde fuera: endpoint aparte (`/health/ready`), registrado después del limitador, sin publicar por nginx (como ya se corta `/api/revalidar`) o con un secreto en cabecera, que responda solo 200/503 sin detalle, con tiempo de espera corto y el resultado guardado unos segundos. Toca riesgo: consejo y `auditor-*` antes de aplicar.
+- **Sondear con `curl` o `wget`:** la imagen no garantiza ninguno; Node 20 ya trae `fetch`.
+- **Saltarse el log por `req.ip`:** descartado, sale de `X-Forwarded-For` y un `/health` de fuera podría disfrazarse de sonda local. La mutación 5 lo comprueba.
+- **Apagar `/api/docs` desde nginx:** no se tocó; la guía deja encenderlo detrás de una VPN o de una autenticación de nginx. Se dejó el comando que comprueba que sigue apagado.
+- **Que `sitio-web`, `intranet` o `nginx` esperen a que la API esté *healthy*:** no se cambió ninguna dependencia de arranque.
+- **Vigilar con rotación propia el volumen `nginx_logs`:** innecesario, son enlaces (ver arriba). Mi sospecha inicial de que crecía era infundada.
+
+> **Dos trampas de la propia prueba.** (1) Probar el comando de la sonda con `spawnSync` desde el mismo proceso que sirve las respuestas de prueba se cuelga hasta el límite de tiempo: el servidor no puede contestar mientras el hijo espera. Hay que usar `spawn` asíncrono. (2) La primera comprobación del compose aceptaba `/api/health` porque buscaba `/health` en cualquier parte de la línea; la mutación 7 lo cazó y ahora se lee la ruta exacta.
+
+> **`./docker/deploy.sh restart` no aplica nada de esto:** reinicia los contenedores que existen, con su configuración vieja. En el servidor hace falta `git pull` → `build` → `start`. `start` recrea todos los servicios (el tope de logs es configuración de cada uno), así que la base y Redis también se reinician unos segundos; sus datos están en volúmenes.
+
+**Lo que no se hizo:** no se tocó el servidor real ni se vio allí `(healthy)`. La prueba en Docker usó un servicio mínimo con los bloques copiados del compose y no la imagen de la API (construirla son 5 a 15 minutos y no cambia lo que se prueba). No se corrió la batería de 23 verificaciones, solo `salud:verificar` y `tsc`: el cambio en `app.ts` es un `skip` de `morgan`, comentarios y un export. Detrás de nginx se probó con servidores de mentira que copian las respuestas de la API real (200 en `/health`, 404 en lo demás); el 404 de `/api/health` sí se vio en el dev real. El `.env` del servidor no se leyó. En el árbol hay cambios que no son de esta sesión (`iniciar-carga-fuentes-futuras.usecase.ts` y dos archivos nuevos de `textos-del-buscador`); no se tocaron.
+
+**Pendiente al cierre**
+1. Pegar el párrafo corregido en la sección 2.2.5.1 del manual (SAL-01). El equivalente dentro del repo es «Comprobar que la API está viva» en `docker/guia-bash.md`.
+2. En el servidor real: `git pull` → `./docker/deploy.sh build` → `start`; luego `status` (la fila `api` en *healthy*), `curl -s http://localhost:8080/api-backend/health` y `docker inspect api --format '{{json .HostConfig.LogConfig}}'` (SAL-02 y SAL-03).
+3. En el servidor: `docker exec nginx ls -l /var/log/nginx` (que sean enlaces) y `curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/api-backend/api/docs.json` (tiene que dar 404: Swagger apagado).
+4. NGX-01 sigue abierto: nginx se fía de cualquier `X-Forwarded-For` (comprobado); falta saber si el túnel la reescribe.
+
+---
+
 ## sesión 25-10-2026 (5.ª parte): borde en cada tarjeta de «Últimas publicaciones»
 
 **Qué pidió el usuario:** que cada tarjeta del bloque «Últimas publicaciones» lleve un borde con esquinas redondeadas, para distinguir una noticia de otra. Dijo «en los dos» al preguntar si era el sitio web, la intranet o ambos.
@@ -25,6 +123,30 @@
 **Lo que no se hizo:** la intranet no se vio en pantalla (pide sesión); se comprobó que sirve el mismo CSS, y como las reglas son idénticas se espera el mismo resultado. Tampoco se revisó el estado con el ratón encima ni la tarjeta con la portada de respaldo (sin PDF ni miniatura).
 
 **Código tocado:** `3000-sitio-web/src/style/globals.css` y `3001-intranet/src/style/globals.css`.
+
+---
+## sesión 25-10-2026 (5.ª parte): prueba de subida de archivos sin restricciones (unrestricted file upload)
+
+**Qué pidió el usuario:** probar "unrestricted file upload", con Claude de agente principal orientando skill y agente.
+
+**Cómo se hizo:** lectura del código de `@olo/upload-policy`, las rutas de adjuntos (`archivos.routes.ts`), identidad del panel y las 4 cargas de Excel de "Actualizaciones"; el agente `security-auditor` revisó el parseo de Excel, el contenido de celdas, el nombre original, cuotas/abuso, los BFF de los dos frontales y el servido de archivos — se verificaron sus hallazgos de severidad alta antes de registrarlos, no se tomaron como ciertos sin comprobar. Pruebas dinámicas: la función real de validación (`validarArchivoSubido` + `file-type` real) contra fixtures benignos (PNG válido, GIF válido pero no permitido, texto sin cabecera, vacío, 60 MB), en el entorno desechable sin tocar Neon. No se construyó ningún archivo con macros ni ningún zip bomb real: el hallazgo de macros sale de leer el detector, no de ejecutarlo contra un payload.
+
+**Qué se encontró** (IDs en `3-seguridad-del-proyecto.md` §4.10): SUB-01 (ALTA, zip bomb contra `exceljs` + worker en el mismo proceso que la API — abierto, pide consejo y `auditor-*` antes de tocarlo por el tamaño del cambio), SUB-02 (sin cuota ni límite por usuario en subidas, huérfanos sin limpieza automática), SUB-03 (cerrado hoy), SUB-04 (`file-type` no distingue Office con macros del seguro), SUB-05 (nombre de archivo sin sanear en el render) y SUB-06/07 (descarga pública sin límite de tasa; `backup/` y adjuntos de la intranet sin ACL por página).
+
+**Qué se hizo:** en `iniciar-carga-fuentes-futuras.usecase.ts`, `validarYGuardarExcel` (magic bytes, extensión, tamaño) pasa a ejecutarse antes que `leerRegistrosDeBuffer` (que abre el archivo con `exceljs`). Antes, cualquier byte llegaba al parser sin haber pasado la lista blanca; ahora el orden es el mismo que en las otras tres cargas.
+
+| Verificación | Resultado |
+|---|---|
+| `validarArchivoSubido` real (PNG válido / GIF válido no permitido / sin cabecera / vacío / 60 MB) | Las 6 comprobaciones en verde: acepta el PNG, rechaza el resto con el status correcto (415/400/413) y el nombre de salida es siempre id + extensión |
+| Antes del cambio: un buffer sin cabecera de Excel en "Fuentes futuras" | `ErrorDeExcelFuentesFuturas` 422 («no se pudo abrir»): ya había pasado por `exceljs` sin validar el tipo |
+| Después del cambio, mismo buffer | `ErrorDeSubida` 415 de `upload-policy`, antes de tocar `exceljs` |
+| `tsc --noEmit` en `4000-api-backend` | Sin errores |
+
+**Lo que no se hizo:** no se implementó el tope de tamaño descomprimido (SUB-01) ni el límite por usuario (SUB-02): son cambios mayores a varias rutas o a la arquitectura del worker, y el primero es justo el tipo de decisión que el proyecto pide pasar por consejo y `auditor-*` antes de aplicar. No se corrió `npm audit` sobre `exceljs`/`file-type`/`jszip`. No se probó con un Excel real de cientos de MB descomprimidos (hubiera significado colgar el entorno desechable a propósito); el riesgo se deja razonado, no demostrado con un apagón real.
+
+**Nota:** durante esta parte aparecieron sin tocar cambios ajenos a esta prueba (`app.ts`, `docker-compose.servidor.yml`, `docker/guia-bash.md`, un `verificar-salud.ts` nuevo con el prefijo `SAL`): son de otra sesión o edición del usuario, no de esta tarea. No se tocaron ni se revirtieron.
+
+**Pendiente:** decidir SUB-01 con consejo y `auditor-*`; cerrar SUB-04/05/06 (ninguno es de una línea, pero son más chicos que SUB-01); SUB-07 es una decisión de producto, no solo de código.
 
 ---
 ## sesión 25-10-2026 (4.ª parte): prueba de secuestro de WebSocket entre sitios (CSWSH)

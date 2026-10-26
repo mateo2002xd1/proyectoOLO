@@ -19,6 +19,13 @@ export { ModalOcupaciones } from './components/modal-ocupaciones';
 export { ResultadosOcupaciones } from './components/resultados-ocupaciones';
 export { HeroBuscadorOcupaciones } from './components/hero-buscador-ocupaciones';
 
+// Textos de la portada (el campo único de Editor.js y el paso desde los tres de Puck)
+export {
+  CONTENIDO_DEL_BUSCADOR_POR_DEFECTO,
+  contenidoDesdeHtml,
+  type TextosEnHtml,
+} from './lib/textos-del-buscador';
+
 // Hooks
 export { useBuscadorOcupaciones } from './hooks/use-buscador-ocupaciones';
 export { useDetalleOcupacion } from './hooks/use-detalle-ocupacion';
