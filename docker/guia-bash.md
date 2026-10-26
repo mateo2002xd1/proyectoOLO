@@ -152,7 +152,8 @@ que faltan valores: es normal. Abre el `.env` (`notepad .env`) y rellena:
 ```
 
 Deberías ver seis servicios: `db`, `redis`, `api`, `sitio-web`, `intranet` y `nginx`, todos
-*Up* (`db` y `redis` además *healthy*). En Docker Desktop aparecen agrupados bajo el proyecto
+*Up* (`db`, `redis` y `api` además *healthy*; la `api` se queda en *health: starting* hasta
+unos 40 segundos mientras arranca). En Docker Desktop aparecen agrupados bajo el proyecto
 **`olo-web-app`**. Los volúmenes conservan el prefijo `olo-app_` del nombre anterior a
 propósito: así no se pierden los datos que ya existían. La base está vacía todavía: el sitio
 abre con la portada de respaldo.
@@ -542,6 +543,35 @@ disco: un respaldo en el mismo equipo no sirve si falla ese equipo.
 > `SITIO_WEB_URL_PUBLICA` e `INTRANET_URL_PUBLICA` en el `.env` y ejecuta `build` y `start`.
 > Sin reconstruir, los botones y el panel seguirían apuntando a la dirección vieja.
 
+### Comprobar que la API está viva
+
+Siguiendo con la analogía del edificio: la API tiene una ventanilla donde cualquiera puede
+preguntar «¿hay alguien?» y alguien contesta «sí», con la hora. No pide sesión, y por eso
+mismo **no cuenta nada más**: no dice cómo está la base de datos ni Redis, porque esa
+información también la vería quien anda buscando huecos desde internet. De la base y de
+Redis se encarga cada una de esas oficinas con su propia comprobación (`db` y `redis` salen
+*healthy* en `status`).
+
+| Quiero saber… | Comando | Qué debe pasar |
+|---|---|---|
+| Si Docker ve viva la API | `./docker/deploy.sh status` | la fila `api` dice `Up … (healthy)`. `health: starting` es normal el primer minuto; `unhealthy` quiere decir que la API dejó de contestar |
+| Si la API contesta, pasando por nginx | `curl -s http://localhost:8080/api-backend/health` | `{"status":"ok","timestamp":"…"}` |
+| Lo mismo, como lo vería un visitante | `curl -s <SITIO_WEB_URL_PUBLICA>/api-backend/health` | la misma respuesta |
+| Qué está registrando la API | `docker logs -f api` (o `docker logs --tail 100 api`) | líneas de errores y de eventos; la comprobación de Docker no escribe las suyas |
+
+Un `ok` quiere decir que el **proceso** de la API está en pie, no que todo funcione. Si la
+API contesta pero el sitio falla, mira `db` y `redis` en `status` y busca el error en
+`docker logs api`. Si ni siquiera contesta, `docker logs api` casi siempre dice por qué (ver
+«`api` se reinicia una y otra vez»). Esa dirección solo sirve por la puerta del sitio (8080):
+por la de la intranet (8081) nginx le antepone `/api/` y `/api-backend/health` da 404.
+
+> **Glosario.** *Healthcheck* («comprobación de salud»): una pregunta corta que Docker le hace
+> a un contenedor cada 30 segundos para saber si sigue contestando; el resultado se ve en
+> `status` como *healthy* (contesta) o *unhealthy* (falló tres veces seguidas). *Logs*: lo que
+> cada pieza escribe mientras trabaja. Docker guarda como máximo 5 archivos de 10 MB por
+> servicio y descarta el más viejo cuando se llena, así que los logs no pueden llenar el disco
+> del servidor.
+
 ### Los archivos subidos
 
 Todo lo que sube la gente vive en el volumen `olo-app_filesystem`, que solo monta la
@@ -773,4 +803,7 @@ Los archivos subidos no están aquí: viven en el volumen `olo-app_filesystem` (
 «Los archivos subidos»).
 
 > La documentación interactiva de la API (Swagger, `/api/docs`) está apagada en
-> producción. Se enciende con `SWAGGER_HABILITADO=true` en el `.env`, si hace falta.
+> producción. Se enciende con `SWAGGER_HABILITADO=true` en el `.env`, si hace falta. Para
+> comprobar que sigue apagada: `curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/api-backend/api/docs.json`
+> debe dar `404` (con la documentación encendida daría `200` y mostraría cada ruta de la API a
+> cualquiera).

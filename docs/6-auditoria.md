@@ -5,6 +5,98 @@
 
 ---
 
+## sesión 25-10-2026 (10.ª parte): "SOLUCIONA TODO" — se cierran SUB-01 (Fase 1), SUB-02, SUB-04, SUB-05 y SUB-06
+
+**Qué pidió el usuario:** solucionar todos los hallazgos de la prueba de subida de archivos (parte anterior).
+
+**Cómo se hizo:** para SUB-01 (ALTA, riesgo con varias salidas posibles) se siguió el proceso que pide el propio proyecto antes de aplicar nada: se convocó `llm-council` (los 5 asesores, con sus textos literales completos) sobre dónde poner el tope de memoria y qué hacer con el worker compartido. El consejo convergió en una fase 1 clara (tope de tamaño descomprimido, hoy) y dejó la fase 2 (quitar el `process.exit(1)` genérico) y la fase 3 (separar el worker) sin aplicar, porque no hubo acuerdo sobre la fase 2 y la 3 es un cambio de arquitectura, no un parche de esta sesión. Los demás hallazgos (SUB-02, 04, 05, 06) no estaban en esa categoría — tenían una sola dirección correcta razonable — y se corrigieron directo, verificando cada uno contra código real antes de darlos por cerrados.
+
+**Qué se hizo:**
+
+- **SUB-01, Fase 1:** `leerDirectorioCentralDeZip` (nuevo, en `@olo/upload-policy`) lee nombres y tamaño descomprimido declarado de un ZIP sin descomprimir nada. `validarYGuardarExcel` lo usa para rechazar (413) cualquier .xlsx que descomprima a más de 400 MB, antes de guardarlo y antes de que cualquiera de las 4 cargas llame a `exceljs.load`. Además, en `docker-compose.servidor.yml`: `NODE_OPTIONS=--max-old-space-size=1536` y `mem_limit: 2048m` en el contenedor de la API, como segunda defensa (no aplicado por mí al archivo final — ver nota de abajo).
+- **SUB-02:** `limitadorDeSubidaDeArchivos` (20 por 10 min, por usuario) en `POST /api/archivos/{sitio,intranet}` y en las 4 rutas de carga del Observatorio y Alertas de inversión. La automatización de la limpieza de huérfanos se dejó sin tocar a propósito: el script que existe borra de verdad con `--aplicar`, y automatizarlo sin revisión humana es su propio riesgo.
+- **SUB-04:** reutilizando el mismo lector del directorio central del ZIP, `traeProyectoDeMacros` busca una entrada `word|xl|ppt/vbaProject.bin` y `validarArchivoSubido` rechaza (415) cualquier docx/xlsx/pptx que la tenga.
+- **SUB-05:** `normalizarNombreOriginal` (`@olo/upload-policy`: NFC, sin controles ni marcas de dirección de texto, tope de 120 caracteres) se aplica al nombre que sube cualquier adjunto o carga de Excel. `nombreDeArchivoDecodificado` (nuevo, en `@olo/url-policy`) envuelve en `try/catch` los 7 sitios de los dos frontales que decodificaban ese nombre sin protección (`archivo-uploader-field.tsx`, `publicaciones.tsx`, `tasa-video.tsx` y `puck.config.tsx`, cada uno por duplicado entre sitio e intranet).
+- **SUB-06:** `limitadorDeDescargaDeArchivos` (300/min) en las dos rutas `GET` de adjuntos, sin tocar el orden de montaje del router de `archivos.routes.ts` (que sigue siendo intencional, documentado ahí: una página pública pide una docena de imágenes de golpe desde una sede con IP compartida).
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `4000-api-backend`, `3000-sitio-web`, `3001-intranet` y los dos paquetes tocados | Sin errores en los cuatro |
+| `idor:verificar` contra la base desechable, con todas las rutas ya tocadas | 178 comprobaciones, 0 fallos, los mismos 2 avisos de siempre (sin relación con este cambio) |
+| `limites:verificar` | 49 comprobaciones, todas en verde — confirma que los limitadores nuevos no rompieron el orden de los que ya existían |
+| `errores:verificar` (en memoria, no tocado esta parte) | Sin cambios, sigue en verde |
+| Lector del ZIP (unidad): un registro construido a mano con tamaño descomprimido declarado de 500 MB | Se lee el tamaño y el nombre de la entrada correctamente |
+| Un .xlsx real sin macros, generado con `exceljs` | Se acepta sin falso positivo de SUB-04 |
+
+**Lo que NO se aplicó, a propósito:**
+
+- **SUB-01, Fases 2 y 3** (quitar el `process.exit(1)` genérico de `unhandledRejection`; separar el worker de BullMQ a su propio proceso): el consejo no llegó a un acuerdo sobre qué debe pasar en el primer caso, y el segundo es un cambio de arquitectura. Queda como SUB-01b en `3-seguridad-del-proyecto.md` §4.10, con el pedido explícito de uno de los asesores (el Pensador de Primeros Principios) de que esto **tenga una fecha de decisión fijada por el usuario**, no un backlog sin dueño ni plazo.
+- **SUB-02, la automatización de la limpieza de huérfanos**: el script ya existe y borra de verdad con `--aplicar`; automatizarlo sin que nadie revise antes es cambiar su naturaleza de "dry-run por defecto" a "borra solo", que es su propia decisión de riesgo.
+- **SUB-07**: sigue siendo una decisión de producto (¿lo retirado se borra o solo se mueve a `backup/`? ¿la intranet necesita ACL por página sobre adjuntos?), no de código. No se decidió por el usuario.
+- **`docker-compose.servidor.yml`**: el cambio de SUB-01 (fase 1, el `NODE_OPTIONS`/`mem_limit`) está escrito en el archivo, pero esa misma hoja tiene mezclados cambios de otra sesión/edición (el healthcheck y la rotación de logs, `SAL-01`) que no son de esta tarea. No se separó con `git add -p` para evitar tocar lo ajeno a ciegas: queda sin añadir a ningún commit mío, a la espera de que se junte con el resto de cambios de ese archivo.
+
+---
+## sesión 25-10-2026 (9.ª parte): color del texto en las dos tarjetas de texto del «Buscador de ocupaciones»
+
+**Qué pidió el usuario:** una opción para cambiar el color del texto, en el mismo acordeón que «Textos del buscador» y, además, debajo de «Texto bloque y placeholder». Se leyó como **una opción de color al final de cada una de las dos tarjetas de texto**, cada una para su texto; si la idea era otra (un solo color, o fuera de las tarjetas), se mueve.
+
+| Tarjeta | Opción nueva | Qué cambia | Vacío |
+|---|---|---|---|
+| Textos del buscador (`grupoTextos`, ahora un grupo con `contenido` y `colorTexto`) | «Color del texto» | El titular y la descripción | Los del diseño (azul y negro) |
+| Texto bloque y placeholder (`grupoRecuadro`) | «Color del texto bloque» (`colorTextoBloque`) | El texto del recuadro azul | Blanco |
+
+«Textos del buscador» pasó de campo suelto a tarjeta con dos controles: el Editor.js (que ahora se llama «Titular y descripción» dentro de ella) y el color. Las dos tarjetas siguen el patrón de la franja GOV.CO de la cabecera: la tarjeta guarda el grupo y `resolveData` copia a las props sueltas (`contenido`, `colorTexto`, `textoBloque`, `searchPlaceholder`, `colorTextoBloque`) que lee el render, así que lo ya publicado sigue leyéndose igual. El paso de la cita de la 8.ª parte se ajustó para actualizar también el grupo (si no, el grupo, que manda, la habría devuelto).
+
+El color solo llega al `style` si es un hexadecimal (`#rgb`, `#rrggbb`, `#rrggbbaa`); lo demás se ignora y se ve el color del diseño. La API ya sanea las claves `color*` al guardar (`sanitizar-contenido.ts`), así que `colorTexto` y `colorTextoBloque` están cubiertos sin tocarla.
+
+**Qué se tocó:** `config/puck.config.tsx`, y en `shared/lib/buscador-ocupaciones/components/`: `hero-buscador-ocupaciones.tsx` y `portada-buscador-ocupaciones.tsx`; y la frase de «Textos» en `docs/manual-de-usuario-formato.md`.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` en `3000-sitio-web` | Sin errores |
+| Página temporal (borrada después): fondo azul oscuro con color de texto blanco y de texto bloque amarillo | Titular y descripción en blanco, texto del recuadro en amarillo |
+| …con `red;background:black` como color | Se ignora: titular azul y descripción negra, como el diseño |
+| …con `#aa0000` | Titular y descripción en rojo; el recuadro sigue en blanco |
+
+**Lo que no se hizo:** no se abrió el editor de Puck (pide sesión): no se vieron las dos tarjetas con su selector de color en el panel, y `resolveData` no se ejecutó (se revisó leyendo el código). Tampoco se miró cómo queda un enlace dentro de los textos con un color elegido.
+
+**Código tocado:** los archivos de la lista.
+
+---
+## sesión 25-10-2026 (8.ª parte): el texto del recuadro del «Buscador de ocupaciones» sale de la cita y va aparte
+
+**Qué pidió el usuario:** (1) quitar el fondo blanco de la sección del buscador; (2) que el texto que va dentro del recuadro azul deje de ser una «cita» del campo de Editor.js y se lea por separado, en un campo propio, «Texto bloque», con su propio Editor.js; (3) llamar «Placeholder» a «Texto de ejemplo del buscador» y «Textos del buscador» a la tarjeta «Textos»; y, a mitad de la sesión, (4) meter «Texto bloque» y «Placeholder» en un solo acordeón. Sustituye lo que decía la 7.ª parte sobre la cita.
+
+**Cómo queda el panel del bloque:**
+
+| Tarjeta | Contiene | Se guarda en |
+|---|---|---|
+| Textos del buscador (abierta) | Editor.js: encabezado = titular; párrafo y lista = descripción | `contenido` |
+| Texto bloque y placeholder | «Texto bloque» (otro Editor.js: el texto del recuadro) y «Placeholder» (el texto de ejemplo de la casilla) | `grupoRecuadro: { textoBloque, searchPlaceholder }`, copiado a las props sueltas `textoBloque` y `searchPlaceholder` que lee el render |
+
+Los dos Editor.js ya no ofrecen la herramienta «Cita» (prop nueva `sinCita` en `EditorjsWrapper`, que reemplaza a `className` de la entrega anterior). En «Texto bloque» salen todos los bloques: el párrafo y la lista como están, y el encabezado en negrita; sin texto, el recuadro queda solo con el buscador y sin hueco encima. La tarjeta sigue el mismo patrón que la franja GOV.CO de la cabecera (`resolverGruposDeProps`).
+
+**Fondo:** la sección ya no lleva `bg-white`; se ve lo que haya detrás (el fondo de la página o el color de «Espaciado y ancho»). Las ayudas de «Imagen de fondo» y «Transparencia» dejaron de hablar de un fondo blanco.
+
+**Datos ya guardados** (`resolveData`, al abrir la portada en el editor):
+
+- Con los HTML de Puck de antes: el titular y la descripción pasan a `contenido`; el texto del recuadro (`titulo`), a `textoBloque`.
+- Con la cita de la 7.ª parte dentro de `contenido`: la cita pasa a `textoBloque` (un párrafo por cita) y se saca de `contenido`, porque el campo ya no tiene la herramienta. Hasta que se abra en el editor, el render sigue leyéndola de ahí.
+- Una portada con `contenido` pero sin texto de recuadro lo deja vacío: no se rellena con el del diseño.
+
+**Qué se tocó:** `config/puck.config.tsx`, `features/editor/edition/components/editorjs-wrapper.tsx`, y en `shared/lib/buscador-ocupaciones/`: `lib/textos-del-buscador.ts`, `components/textos-del-buscador.tsx`, `components/hero-buscador-ocupaciones.tsx`, `components/portada-buscador-ocupaciones.tsx` e `index.ts`; y la frase de «Textos» en `docs/manual-de-usuario-formato.md`.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` en `3000-sitio-web` | Sin errores |
+| Reparto, citas y conversión desde HTML (script aparte, 5 grupos de comprobaciones) | Todas pasan |
+| Página temporal (borrada después), con un fondo rojo detrás | El rojo se ve en toda la sección; el texto de la portada vieja, el del diseño y el del bloque nuevo (párrafo, encabezado en negrita y lista) salen en el recuadro; la cita de la 7.ª parte se lee en el recuadro; sin texto de bloque no hay hueco |
+
+**Lo que no se hizo:** no se abrió el editor de Puck (pide sesión): no se vio la tarjeta «Texto bloque y placeholder» en el panel ni se probó escribir en ella, y `resolveData` no se ejecutó (se revisó leyendo el código; la tarjeta usa la misma función que la cabecera). Con un fondo oscuro detrás, el titular azul y la descripción negra dejan de leerse: el color de esos textos no se puede cambiar desde el bloque.
+
+**Código tocado:** los archivos de la lista.
+
+---
 ## sesión 25-10-2026 (7.ª parte): los tres textos del «Buscador de ocupaciones» en un solo campo de Editor.js
 
 **Qué pidió el usuario:** que en el bloque «Buscador de ocupaciones» (el `Hero` de la portada) el texto se escriba en Editor.js, en **un solo campo** con las opciones para dar formato, en vez de los tres campos de Puck (Titular, Descripción y Texto del recuadro). Elegido entre tres formas de repartirlo: **por tipo de bloque**.
