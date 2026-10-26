@@ -202,7 +202,7 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `admin-panel/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `auth/` `backup-section/` `changelog-view/` `configuration/` `search/` `update-section/` | **no** | 77 |
-| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 44 |
+| `editor/` | páginas editables con Puck, organizadas por etapa del ciclo | `edition/` `model/` `navegation/` `publishing/` `review/` `sections/` | sí | 45 |
 
 ### 3001-intranet
 
