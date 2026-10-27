@@ -18,7 +18,7 @@ docker-compose*.yml text eol=lf
 # Los hooks de git los ejecuta el `sh` de Git también en Windows, y con CRLF fallan igual.
 .githooks/*     text eol=lf
 
-# El volcado de páginas (`npm run paginas:volcar`) lleva texto escrito por personas, con sus
+# La copia de la base (`npm run base:volcar`) lleva texto escrito por personas, con sus
 # saltos de línea reales. Sin esto, un clon en Windows con `core.autocrlf=true` los cambiaría
 # y la carga en el servidor no recibiría lo que se volcó.
-4000-api-backend/seed/paginas-volcado.sql -text
+4000-api-backend/seed/base-datos-*.sql -text

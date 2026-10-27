@@ -765,6 +765,42 @@ El texto que trae el bloque recién puesto es el mismo de antes, ya en esa forma
 
 ---
 
+## sesión 26-10-2026 (2.ª parte): un solo `.sql` con toda la base de Neon (`base-datos-AAAA-MM-DD.sql`) y su prueba
+
+**Qué pidió el usuario:** volcar toda la base de Neon en `seed/`, **eliminar** `contenido-inicial.sql`, `roles-y-permisos.sql` y `paginas-volcado.sql` y dejar **un solo** `.sql`, con la fecha de la copia en el nombre; y probar que todo se migró. Dos decisiones suyas: **sin cuentas ni bitácora** (la carpeta `seed/` sí se sube a GitHub) y **páginas en inicio limpio** (cada una como versión 1).
+
+**Qué se hizo**
+- **`npm run base:volcar`** / `./docker/deploy.sh exportar-base` (nuevo, `volcar-base-datos.ts`) escribe `seed/base-datos-2026-10-26.sql`: 25 tablas, 22.751 filas, 4,8 MB. Cada copia borra la anterior, así que queda un solo archivo. Lleva 23 tablas de contenido y datos (incluidos CNO/CUOC, tendencia ocupacional, programas sobresalientes, alertas de inversión, catálogos, cargas e identidad visual) y las páginas como versión 1 (20 páginas, 20 versiones, 0 visitas).
+- **No lleva:** `usuarios`, `preguntas_seguridad`, `auditoria_cambios`, `bloqueos_edicion`, `subidas_pendientes`, `migraciones_aplicadas`; ni `roles`, `permisos` y `roles_permisos` (los reconcilia el código; reemplazarlos dejaría a las cuentas del servidor sin rol). De los roles solo viaja quién edita cada página, por nombre. Toda columna que apunta a una cuenta (se lee del catálogo, no de una lista a mano) va en NULL.
+- **Cómo se genera bien:** cada valor se pide a Postgres ya como texto (`col::text`), no como tipo de JavaScript: así las fechas conservan los microsegundos y un `date` no se corre un día. Quedan fuera las dos columnas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`, que Postgres rechaza en un INSERT) y las vistas. La etiqueta `$o$` del literal es la más corta que no aparece en ningún dato (reintenta con una más larga si chocara). Las filas salen en orden estable, para que git muestre solo lo que cambió.
+- **`./docker/deploy.sh sembrar`** ahora carga ese archivo (es `importar-paginas --desde-archivo`, que lee la copia más reciente de `seed/`). El archivo es autónomo: guarda cuántas cuentas hay, vacía las tablas que trae (sin `CASCADE`, para no arrastrar otras), inserta, comprueba que **cada tabla** tenga las filas volcadas y que **las cuentas sean las mismas**, y corrige las rutas de Windows de `archivos`. Si algo falla, se deshace todo. Reutiliza los pasos de antes/después de `importar-paginas` y el saneo del contenido (XSS-08). Copia también `cargas-datos`; y, en el inicio limpio, deja `uploads/` y `backup/` de `sitio` e `intranet` como el repositorio.
+- **`docker/sql/comprobar-llaves.sql`** (nuevo): la comprobación de llaves foráneas rotas estaba dentro de `importar-despues.sql`; se extrajo y la usan `importar` y `sembrar`. `importar-despues.sql` solo pierde ese bloque.
+- **Eliminados:** `seed/contenido-inicial.sql`, `seed/roles-y-permisos.sql`, `seed/paginas-volcado.sql`, `generar-seed-contenido.ts` (que además fallaba desde antes: volcaba la tabla `configuraciones`, que ya no existe) y `volcar-paginas.ts`; los comandos `seed:generar`, `paginas:volcar` y `exportar-paginas`; y las variables `SEED`, `SEED_ROLES` y `ARCHIVO_DE_PAGINAS` de `deploy.sh`. `sembrar` ya no carga `roles-y-permisos.sql`: los roles base salen de las migraciones y `sembrar:permisos`. Siguen en el historial de git.
+- **`npm run base:verificar`** (nuevo): compara Neon con la base donde se cargó la copia, tabla por tabla con un hash de todas las filas, y las páginas por contenido.
+- `.gitattributes` (`base-datos-*.sql -text`), `.gitignore` (comentario) y la guía `docker/guia-bash.md` (A6b) puestos al día.
+
+| Verificación | Resultado |
+|---|---|
+| Postgres 18 desechable con las 47 migraciones, como «servidor en uso» (1 cuenta, 4 roles, una página que solo existía allí, 999 visitas en `inicio`), cargado con los pasos de `deploy.sh` (antes + copia + después + comprobar-llaves) | Carga en ~1 s, sin errores |
+| `npm run base:verificar` contra Neon | **23 de 23 tablas idénticas fila por fila** (hash) y 20 de 20 páginas con contenido idéntico, versión 1, publicada; la versión más alta es la 1; **TODO COINCIDE**. La única publicada en Neon que no llega es `intranet/prueba`, excluida a propósito. `archivos` coincide una vez corregidas las rutas de Windows (`uploads\cargas-datos\x` → `uploads/cargas-datos/x`), que es el único cambio deliberado |
+| Estado del servidor tras cargar | 1 cuenta y 4 roles intactos; la página que solo existía allí desaparece; las 999 visitas se conservan; 0 versiones con autor; 0 filas con autor en las demás tablas; 45 concesiones `editar.*` por nombre de rol |
+| Repetir la carga | Mismo resultado (20/20 páginas, 20.774 indicadores) |
+| Carga con una cuenta que no cuadra (condición alterada) | Falla y se deshace todo: siguen los datos y las 777 visitas que había |
+| Carga que además borra una cuenta (alterada) | Falla («Había 1 cuentas y quedaron 0»): la cuenta sigue |
+| `importar` (instalación nueva) con la comprobación extraída: dump de la base de prueba aplicado a una base migrada | Carga 20 páginas y 20.774 indicadores, 0 cuentas |
+| `comprobar-llaves.sql` con una referencia rota a propósito | Aborta («Referencia rota: departamentos_alias.departamento_id…») |
+| `bash -n`; opción desconocida, archivo inexistente, archivo que no es una copia; tabla de comparación del paso 4 con conteos reales | Correcto |
+| `./docker/deploy.sh sembrar` completo en Compose (Redis, volumen, `contenido:revisar`) | **No se ejecutó**: queda para el servidor |
+
+> **Trampa que conviene saber:** `sembrar` **reemplaza** las tablas de contenido y de datos del servidor (no solo agrega). Cualquier carga de Excel, página o cambio hecho allí y que no esté en la copia se pierde. Haz `./docker/deploy.sh backup` antes.
+
+**Pendiente al cierre**
+- **22 archivos que citan las páginas publicadas no están en `filesystem/`** (11 en `sitio/inicio`, 7 PDF en `intranet/inicio`, `Presentación1.pptx`, `tasa.pptx`, un Excel de encuestas y una imagen del pie): con el inicio limpio, `sembrar` borra `uploads/` del servidor antes de copiar, así que si solo existen allí se pierden. Hay que traerlos al repositorio antes de sembrar. Sin cambios desde el hallazgo de esta mañana.
+- Los roles de Neon `Editor Limitado`, `Editor Tendencias`, `Editor inicio` y `Editor prueba` no existen en un servidor nuevo: sus permisos de edición no se copian (sale un `WARNING`).
+- La copia es una foto: hay que regenerarla justo antes del commit.
+
+---
+
 ## sesión 26-10-2026: volcado de páginas actualizado, y 22 archivos que citan las páginas no están en `filesystem/`
 
 **Qué pidió el usuario:** actualizar el volcado (`./docker/deploy.sh exportar-paginas`).

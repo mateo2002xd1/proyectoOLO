@@ -22,9 +22,10 @@ yarn-error.log*
 # Todo .sql se ignora porque puede ser un volcado con datos reales. Se rescata lo
 # que es código del proyecto:
 *.sql
-# La semilla de contenido: hace que una instalación nueva arranque con las páginas
-# cargadas. No lleva usuarios, bitácora ni datos personales. Se regenera con
-# `npm run seed:generar` desde 4000-api-backend/.
+# La copia de la base (`base-datos-AAAA-MM-DD.sql`): hace que un servidor arranque con las
+# páginas y los datos cargados. No lleva usuarios, bitácora ni datos personales. Se
+# regenera con `./docker/deploy.sh exportar-base` (o `npm run base:volcar` en
+# 4000-api-backend/) y cada copia borra la anterior.
 !4000-api-backend/seed/*.sql
 # Los pasos de `deploy.sh importar`. El volcado importacion_*.sql que ese comando
 # deja si algo falla sigue ignorado.

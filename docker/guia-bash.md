@@ -254,53 +254,66 @@ reemplazan las páginas (sitio e intranet, con todas sus versiones) y se queda t
   estaban. Repetirlo no hace daño.
 - Solo se vacía la caché de respuestas de la API (`cache:*`), no la cola de trabajos.
 
-**Sin acceso a la base de origen: llevar las páginas por GitHub.** Si el servidor no
-alcanza Neon (o no quieres dejar su clave en el `.env`), las páginas viajan en un archivo,
-como una carta en vez de una llamada. En el equipo de desarrollo:
+**Sin acceso a la base de origen: llevar la copia de la base por GitHub (`sembrar`).** Si el
+servidor no alcanza Neon (o no quieres dejar su clave en el `.env`), la base viaja en UN
+archivo, como una carta en vez de una llamada. En el equipo de desarrollo:
 
 ```bash
-./docker/deploy.sh exportar-paginas        # escribe 4000-api-backend/seed/paginas-volcado.sql
-git add 4000-api-backend/seed/paginas-volcado.sql && git commit -m "chore: volcado de páginas" && git push
+./docker/deploy.sh exportar-base     # escribe 4000-api-backend/seed/base-datos-AAAA-MM-DD.sql
+git add -A 4000-api-backend/seed && git commit -m "chore: copia de la base" && git push
 ```
 
-(`exportar-paginas` no usa Docker ni el `.env` de la raíz: lee la base a la que apunte
-`4000-api-backend/.env`. Es lo mismo que `npm run paginas:volcar` dentro de esa carpeta.)
+(`exportar-base` no usa Docker ni el `.env` de la raíz: lee la base a la que apunte
+`4000-api-backend/.env`. Es lo mismo que `npm run base:volcar` dentro de esa carpeta. Cada
+copia **borra la anterior**: en `seed/` queda un solo `base-datos-*.sql`, con la fecha de la
+copia en el nombre. El `-A` recoge ese borrado.)
 
 y en el servidor:
 
 ```bash
 git pull
-./docker/deploy.sh importar-paginas --desde-archivo      # o --desde-archivo=otra/ruta.sql
+./docker/deploy.sh backup            # recomendado: la carga borra y reemplaza
+./docker/deploy.sh sembrar
 ```
 
-Hace lo mismo que arriba (mismas tablas, misma transacción, mismo saneo), con estas
-diferencias:
+`sembrar` es `importar-paginas` leyendo del archivo en vez de Neon (`importar-paginas`
+a secas sigue trayendo solo las páginas desde la base de origen). Misma transacción, mismo
+saneo del contenido, misma caché. Diferencias:
 
-- No pide `ORIGEN_DATABASE_URL`.
-- **Las versiones quedan sin autor.** El archivo no lleva cuentas ni correos, porque lo que
-  va a GitHub no puede llevar datos personales. Los permisos de edición sí se conceden, por
-  nombre de rol.
-- **Por defecto es un inicio limpio**: cada página con versión publicada llega con solo esa
-  versión, como la **versión 1**, y con 0 visitas. Sin historial, sin borradores y sin
-  respaldos (`filesystem/*/backup/` no se copia). Lo primero que se edite en el servidor
-  será la versión 2. Una página que en desarrollo no tiene nada publicado no viaja, ni
-  `prueba` de la intranet (la lista de exclusiones está en `volcar-paginas.ts`).
-  Con `./docker/deploy.sh exportar-paginas --con-historial` viajan todas las páginas con
-  todas sus versiones (borradores y en revisión incluidos) y sus visitas, y los respaldos
-  también se copian.
-- **Los archivos también quedan como en el repositorio.** En el inicio limpio, antes de copiar,
-  se **borran** del volumen `uploads/` y `backup/` de `sitio` e `intranet` y se copian los de
-  `filesystem/`. No se tocan `cargas-datos` (los Excel) ni `filesystem/panel` (la identidad
-  visual). Si el repositorio no trae ningún archivo de un ámbito (un `git pull` incompleto), ese
-  ámbito no se limpia. El comando lo avisa antes de pedir confirmación; haz antes
-  `./docker/deploy.sh backup`. Con `--con-historial` o con el origen en vivo solo se agrega lo
-  que falta, sin borrar.
+- **Qué trae:** el contenido y los datos del observatorio de **todas** las tablas (CNO y CUOC,
+  tendencia ocupacional, programas sobresalientes, alertas de inversión, catálogos, cargas,
+  identidad visual...) y las páginas. Las tablas que trae se **vacían y se vuelven a llenar**.
+- **Qué no trae, y por tanto no toca:** `usuarios`, `preguntas_seguridad`,
+  `auditoria_cambios`, `bloqueos_edicion`, `subidas_pendientes` y `migraciones_aplicadas`
+  (cuentas, contraseñas, correos, IP, bitácora, sesiones: no deben ir a GitHub), ni
+  `roles`, `permisos` y `roles_permisos` (los reconcilia el código en cada despliegue).
+  De los roles solo viaja quién podía editar cada página, **por nombre de rol**; si un rol de
+  Neon no existe en el servidor sale un `WARNING` con su nombre.
+- **Las filas que tenían autor quedan sin autor** (`creado_por`, `subido_por`...): sus
+  cuentas no viajan.
+- **Las páginas llegan como «inicio limpio»:** cada página con versión publicada llega con
+  solo esa versión, como la **versión 1**, y con 0 visitas (las que ya tenga el servidor se
+  conservan). Sin historial, sin borradores y sin respaldos. Lo primero que se edite en el
+  servidor será la versión 2. Una página que en desarrollo no tiene nada publicado no viaja,
+  ni `prueba` de la intranet (la lista de exclusiones está en `volcar-base-datos.ts`).
+- **Los archivos también quedan como en el repositorio.** Antes de copiar se **borran** del
+  volumen `uploads/` y `backup/` de `sitio` e `intranet` y se copian los de `filesystem/`
+  (sin respaldos). Los Excel de `cargas-datos` se copian sin pisar nada; `filesystem/panel`
+  (la identidad visual) no se toca. Si el repositorio no trae ningún archivo de un ámbito
+  (un `git pull` incompleto), ese ámbito no se limpia.
+- **Antes de aceptar,** el comando muestra la fecha de la copia y qué tablas reemplaza. **Al
+  terminar,** muestra el número de filas de cada tabla en la copia y aquí.
+- Todo va en una sola transacción. Si algo falla, **se deshace entera**, y el propio archivo
+  comprueba dos cosas antes de confirmar: que cada tabla tenga las filas que se volcaron y que
+  el número de cuentas sea el mismo que antes.
 - Es una foto de la base de desarrollo: lo que no esté **publicado** allí no llega, y lo que
   se edite después tampoco hasta volver a generar el archivo.
-- Si el archivo no cuadra al terminar de cargar (faltan páginas o versiones), la importación
-  entera se deshace.
-- En un servidor nuevo, el orden es `crear-admin` y luego `importar-paginas --desde-archivo`.
-  La bitácora (`auditoria_cambios`) no se toca: arranca vacía.
+- En un servidor nuevo, el orden es `crear-admin` y luego `sembrar`.
+
+**Comprobar que se migró todo.** `npm run base:verificar` (en `4000-api-backend/`) compara
+Neon con una base donde se cargó la copia, tabla por tabla y con un hash de todas las filas:
+`DESTINO_DATABASE_URL=postgres://... npm run base:verificar`. Sirve con una base desechable
+(restaurando la copia como arriba); el servidor no puede correrlo porque no alcanza Neon.
 
 ### A6c. Retirar un rol que el producto ya no tiene (`visitante_interno`)
 

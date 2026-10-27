@@ -85,16 +85,15 @@ Comandos:
   status    - Ver estado de los servicios
   build     - Reconstruir imagenes
   migrar    - Aplicar las migraciones de esquema pendientes
-  sembrar   - Cargar el contenido inicial (paginas, identidad visual)
+  sembrar   - Cargar la copia de la base de 4000-api-backend/seed/base-datos-*.sql (contenido,
+              datos del observatorio y paginas como version 1, mas los archivos de
+              filesystem/). Conserva las cuentas, roles y bitacora de este servidor
   importar  - Copiar los datos de la base de origen (ORIGEN_DATABASE_URL), sin cuentas
               (solo instalacion nueva: se niega si ya hay usuarios)
-  importar-paginas - Traer del origen SOLO las paginas (y sus archivos de filesystem/),
-              conservando los usuarios y todo lo demas de este servidor. Con
-              --desde-archivo[=ruta] las lee del volcado que trae git (por defecto
-              4000-api-backend/seed/paginas-volcado.sql) en vez de conectarse al origen
-  exportar-paginas - (En desarrollo, sin Docker) Generar ese volcado desde la base de
-              desarrollo: cada pagina publicada como version 1, sin historial ni visitas.
-              Con --con-historial lleva todas las versiones. Luego: git add, commit y push
+  importar-paginas - Traer del origen (ORIGEN_DATABASE_URL) SOLO las paginas y sus archivos de
+              filesystem/, conservando los usuarios y todo lo demas de este servidor
+  exportar-base - (En desarrollo, sin Docker) Generar la copia de la base de desarrollo en
+              4000-api-backend/seed/base-datos-AAAA-MM-DD.sql, que viaja por git
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   retirar-rol - Retirar un rol que ya no existe (por defecto visitante_interno) y decidir
               que pasa con sus cuentas. Sin --aplicar solo informa. Uso:
@@ -353,42 +352,22 @@ migrar() {
     verde "Migraciones al dia"
 }
 
-SEED="4000-api-backend/seed/contenido-inicial.sql"
-# El volcado de paginas que se genera en desarrollo (npm run paginas:volcar) y viaja por git.
-ARCHIVO_DE_PAGINAS="4000-api-backend/seed/paginas-volcado.sql"
-SEED_ROLES="4000-api-backend/seed/roles-y-permisos.sql"
+# La copia de la base que se genera en desarrollo (npm run base:volcar) y viaja por git: un
+# solo archivo con la fecha de la copia en el nombre. Si hubiera mas de uno, el de fecha
+# mas reciente (los nombres ordenan igual que las fechas).
+archivo_de_base() {
+    local a
+    for a in 4000-api-backend/seed/base-datos-*.sql; do
+        [ -f "$a" ] && printf '%s\n' "$a"
+    done | LC_ALL=C sort | tail -n1
+}
 
+# Carga la copia de la base (seed/base-datos-AAAA-MM-DD.sql): contenido, datos del
+# observatorio y paginas como version 1, y los archivos de filesystem/. Conserva las
+# cuentas, los roles y la bitacora de este servidor. Es importar-paginas leyendo del archivo
+# en vez de la base de origen.
 sembrar() {
-    comprobar_requisitos
-    comprobar_entorno
-
-    [ -f "$SEED" ] || morir "No existe '$SEED'. Regeneralo con: npm run seed:generar (en 4000-api-backend/)"
-
-    local usuario base
-    usuario=$(leer_env POSTGRES_USER)
-    base=$(leer_env POSTGRES_DB)
-
-    echo "=== Cargando roles y permisos iniciales ==="
-    componer up -d db
-    if [ -f "$SEED_ROLES" ]; then
-        componer exec -T db \
-            psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$SEED_ROLES"
-    fi
-
-    # El bootstrap SQL de arriba puede quedar desactualizado frente al catalogo real en
-    # codigo (src/shared/catalogo-permisos.ts). Correr el reconciliador justo despues
-    # corrige cualquier diferencia sin tener que mantener las dos fuentes sincronizadas a
-    # mano -- es el mismo paso que ya corre aplicar_migraciones() en start/migrar.
-    componer run --rm -T migraciones npm run sembrar:permisos
-
-    echo "=== Cargando contenido inicial ==="
-    # Va DESPUES de las migraciones: el archivo inserta filas en tablas que crean ellas.
-    # Es idempotente (ON CONFLICT DO NOTHING), asi que repetirlo no duplica nada, pero
-    # tampoco pisa lo que ya haya: para reemplazar contenido existente hay que vaciarlo
-    # antes a mano.
-    componer exec -T db \
-        psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$SEED"
-    verde "Contenido y roles iniciales cargados"
+    importar_paginas --desde-archivo "$@"
 }
 
 crear_admin() {
@@ -522,7 +501,8 @@ importar() {
     volcado="importacion_$(date +%Y%m%d_%H%M%S).sql"
     # --disable-triggers: deja entrar filas cuyo autor es un usuario que no viaja, y las
     # referencias circulares (paginas <-> paginas_versiones) sin importar el orden.
-    # importar-despues.sql arregla esas referencias y comprueba todas antes de confirmar.
+    # importar-despues.sql arregla esas referencias y comprobar-llaves.sql comprueba todas antes
+    # de confirmar.
     if ! MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" pg_dump "$origen" \
             --data-only --disable-triggers --no-owner --no-privileges --schema=public \
             "${excluir[@]}" > "$volcado"; then
@@ -532,7 +512,7 @@ importar() {
 
     echo ""
     echo "--- 3/5 Cargando (una sola transaccion: si algo falla, no cambia nada) ---"
-    if ! cat docker/sql/importar-antes.sql "$volcado" docker/sql/importar-despues.sql |
+    if ! cat docker/sql/importar-antes.sql "$volcado" docker/sql/importar-despues.sql docker/sql/comprobar-llaves.sql |
             componer exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U "$usuario" -d "$base"; then
         morir "La carga fallo y se deshizo entera: la base quedo como estaba. El volcado sigue en $volcado para revisarlo."
     fi
@@ -592,25 +572,29 @@ importar() {
 # autoria pasa a la cuenta de aqui con el mismo correo, y los permisos de edicion se
 # conceden por nombre de rol. Las visitas de cada pagina son las de este servidor.
 #
-# El origen es la base en vivo (ORIGEN_DATABASE_URL) o, con --desde-archivo, el volcado que
-# se genero en desarrollo con `npm run paginas:volcar` y llego por git: asi el servidor no
-# necesita alcanzar la base de origen. Ese archivo no lleva correos (no deben ir a GitHub),
-# asi que con el la autoria de las versiones queda vacia.
+# El origen es la base en vivo (ORIGEN_DATABASE_URL) o, con --desde-archivo (o con el
+# comando `sembrar`), la copia que se genero en desarrollo con `npm run base:volcar` y
+# llego por git: asi el servidor no necesita alcanzar la base de origen. Esa copia trae
+# TODAS las tablas de contenido y de datos (no solo las paginas), pero ni correos ni cuentas
+# (no deben ir a GitHub): la autoria de lo que tenia autor queda vacia.
 importar_paginas() {
     local origen="" usuario base volcado respuesta completo=1 archivo="" arg sin_respaldos=""
     # Los argumentos y el archivo se validan antes de pedir Docker o el .env: un error de
     # uso no tiene por que arrancar nada.
     for arg in "$@"; do
         case "$arg" in
-            --desde-archivo) archivo="$ARCHIVO_DE_PAGINAS" ;;
+            --desde-archivo) archivo=$(archivo_de_base) ;;
             --desde-archivo=?*) archivo="${arg#--desde-archivo=}" ;;
             *) morir "Opcion desconocida: '$arg'. Uso: ./docker/deploy.sh importar-paginas [--desde-archivo[=ruta]]" ;;
         esac
     done
+    if [[ " $* " == *" --desde-archivo "* && -z "$archivo" ]]; then
+        morir "No hay ningun 4000-api-backend/seed/base-datos-*.sql. Haz git pull, o generalo en desarrollo con: ./docker/deploy.sh exportar-base"
+    fi
     if [ -n "$archivo" ]; then
-        [ -f "$archivo" ] || morir "No existe '$archivo'. Haz git pull, o genera el volcado en desarrollo con: npm run paginas:volcar (en 4000-api-backend/)"
-        grep -q '^-- conteo: paginas=[0-9]* paginas_versiones=[0-9]*$' "$archivo" ||
-            morir "'$archivo' no parece un volcado de npm run paginas:volcar (falta la linea '-- conteo:')."
+        [ -f "$archivo" ] || morir "No existe '$archivo'. Haz git pull, o generalo en desarrollo con: ./docker/deploy.sh exportar-base"
+        grep -q '^-- modo: ' "$archivo" && grep -q '^-- conteo: [a-z_]*=[0-9]*$' "$archivo" ||
+            morir "'$archivo' no parece una copia de npm run base:volcar (faltan las lineas '-- modo:' y '-- conteo:')."
         # Sin historial no hay versiones archivadas: los respaldos de filesystem/*/backup
         # serian archivos de versiones que aqui no existen.
         grep -q '^-- modo: inicio-limpio' "$archivo" && sin_respaldos=1
@@ -624,18 +608,18 @@ importar_paginas() {
     base=$(leer_env POSTGRES_DB)
 
     if [ -n "$archivo" ]; then
-        echo "=== Importar solo las paginas desde un archivo ==="
+        echo "=== Cargar la copia de la base desde $archivo ==="
+        aviso "$(sed -n 's/^-- Generado el /Generado el /p' "$archivo" | head -n1 | tr -d '\015')."
+        aviso "REEMPLAZA el contenido y los datos de '$base': $(sed -n 's/^-- tablas: //p' "$archivo" | head -n1 | tr -d '\015')."
         if [ -n "$sin_respaldos" ]; then
-            aviso "Reemplaza las paginas de '$base' (sitio e intranet) por las de $archivo: cada una como version 1, sin historial."
-        else
-            aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las de $archivo."
+            aviso "Las paginas quedan como version 1, sin historial. Lo que tenia autor queda sin autor."
         fi
-        aviso "$(sed -n 's/^-- Generado el /Generado el /p' "$archivo" | head -n1 | tr -d '\015'). Las versiones quedan sin autor: el archivo no lleva cuentas."
+        aviso "NO toca usuarios, roles, permisos, bitacora ni ninguna otra tabla. Las visitas se conservan."
     else
         echo "=== Importar solo las paginas desde la base de origen ==="
         aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las del origen."
+        aviso "NO toca usuarios, roles, bitacora ni ninguna otra tabla. Las visitas se conservan."
     fi
-    aviso "NO toca usuarios, roles, bitacora ni ninguna otra tabla. Las visitas se conservan."
     if [ -n "$sin_respaldos" ]; then
         aviso "TAMBIEN BORRA los archivos de sitio/ e intranet/ (uploads y backup) del volumen $VOLUMEN_DE_ARCHIVOS"
         aviso "y deja los del repositorio (filesystem/). cargas-datos y la identidad visual no se tocan. Haz antes: ./docker/deploy.sh backup"
@@ -653,9 +637,9 @@ importar_paginas() {
 
     echo ""
     if [ -n "$archivo" ]; then
-        echo "--- 2/5 Leyendo las paginas de $archivo ---"
-        # Ya trae todo lo que se carga despues (permisos de edicion y las dos tablas) y es
-        # del repositorio: no se genera ni se borra.
+        echo "--- 2/5 Leyendo $archivo ---"
+        # Ya trae todo lo que se carga despues (permisos de edicion y las tablas) y es del
+        # repositorio: no se genera ni se borra.
         volcado="$archivo"
     else
         echo "--- 2/5 Leyendo las paginas del origen ---"
@@ -689,11 +673,11 @@ importar_paginas() {
     echo "--- 3/5 Cargando (una sola transaccion: si algo falla, no cambia nada) ---"
     # `-o /dev/null`: sin el, psql imprime la fila vacia del `set_config` del volcado. Los
     # errores y el aviso de roles que faltan van por stderr y se siguen viendo.
-    if ! cat docker/sql/importar-paginas-antes.sql "$volcado" docker/sql/importar-paginas-despues.sql |
+    if ! cat docker/sql/importar-paginas-antes.sql "$volcado" docker/sql/importar-paginas-despues.sql docker/sql/comprobar-llaves.sql |
             componer exec -T db psql -q -o /dev/null -v ON_ERROR_STOP=1 --single-transaction -U "$usuario" -d "$base"; then
         [ -n "$archivo" ] ||
             aviso "El volcado sigue en $volcado para revisarlo. Lleva los correos de las cuentas del origen: borralo despues."
-        morir "La carga fallo y se deshizo entera: las paginas quedaron como estaban."
+        morir "La carga fallo y se deshizo entera: la base quedo como estaba."
     fi
     [ -n "$archivo" ] || rm -f "$volcado"
 
@@ -702,25 +686,28 @@ importar_paginas() {
     local sql_conteo="SELECT 'paginas', count(*) FROM public.paginas UNION ALL SELECT 'paginas_versiones', count(*) FROM public.paginas_versiones UNION ALL SELECT 'usuarios', count(*) FROM public.usuarios"
     local conteo_origen conteo_destino t o d distintas=0
     if [ -n "$archivo" ]; then
-        # Lo que el volcado dice que llevaba cuando se genero. El propio archivo ya comprobo,
-        # dentro de la transaccion, que entraron todas; esto lo deja a la vista.
-        conteo_origen=$(awk '/^-- conteo:/ { split($3, p, "="); split($4, v, "="); print "paginas", p[2]; print "paginas_versiones", v[2]; exit }' "$archivo" |
-            LC_ALL=C sort)
+        # Lo que la copia dice que llevaba cuando se genero, una linea por tabla. El propio
+        # archivo ya comprobo, dentro de la transaccion, que entraron todas; esto lo deja a
+        # la vista. Se compara con todas las tablas de aqui y solo se muestran las del archivo.
+        sql_conteo="$SQL_CONTEO_POR_TABLA"
+        conteo_origen=$(awk '/^-- conteo: / { split($3, v, "="); print v[1], v[2] }' "$archivo" | LC_ALL=C sort)
     else
         conteo_origen=$(MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" \
             psql "$origen" -AtF ' ' -c "$sql_conteo" | tr -d '\r' | LC_ALL=C sort)
     fi
     conteo_destino=$(componer exec -T db psql -U "$usuario" -d "$base" -AtF ' ' -c "$sql_conteo" |
         tr -d '\r' | LC_ALL=C sort)
-    printf '  %-20s %8s %8s\n' TABLA ORIGEN AQUI
+    printf '  %-34s %8s %8s\n' TABLA ORIGEN AQUI
     while read -r t o d; do
         if [ "$t" = usuarios ]; then
-            printf '  %-20s %8s %8s  %s\n' "$t" "$o" "$d" "(no viaja: las cuentas de aqui se conservan)"
+            printf '  %-34s %8s %8s  %s\n' "$t" "$o" "$d" "(no viaja: las cuentas de aqui se conservan)"
+        elif [ -n "$archivo" ] && [ "$o" = "-" ]; then
+            continue  # una tabla de aqui que la copia no trae (roles, bitacora...): se queda como esta
         elif [ "$o" != "$d" ]; then
-            printf '  %-20s %8s %8s  %s\n' "$t" "$o" "$d" "<-- DISTINTO"
+            printf '  %-34s %8s %8s  %s\n' "$t" "$o" "$d" "<-- DISTINTO"
             distintas=$((distintas + 1))
         else
-            printf '  %-20s %8s %8s\n' "$t" "$o" "$d"
+            printf '  %-34s %8s %8s\n' "$t" "$o" "$d"
         fi
     done < <(LC_ALL=C join -a1 -a2 -e '-' -o '0,1.2,2.2' <(echo "$conteo_origen") <(echo "$conteo_destino"))
 
@@ -736,7 +723,11 @@ importar_paginas() {
     # trabajos y los contadores de intentos de acceso de un servidor en uso.
     componer exec -T -e REDISCLI_AUTH="$(leer_env REDIS_PASSWORD)" redis sh -c \
         'redis-cli --scan --pattern "cache:*" | while IFS= read -r clave; do redis-cli DEL "$clave" >/dev/null; done'
-    copiar_archivos_al_volumen "sitio intranet" "$sin_respaldos"
+    if [ -n "$archivo" ]; then
+        copiar_archivos_al_volumen "sitio intranet cargas-datos" "$sin_respaldos"
+    else
+        copiar_archivos_al_volumen "sitio intranet" "$sin_respaldos"
+    fi
 
     echo ""
     if [ "$distintas" -gt 0 ]; then
@@ -751,14 +742,17 @@ importar_paginas() {
 # El otro extremo de importar-paginas --desde-archivo: se corre en el equipo de DESARROLLO,
 # no en el servidor, y no usa Docker ni el .env de aqui. Lee la base a la que apunte
 # 4000-api-backend/.env (DATABASE_URL) y escribe el volcado que viaja por git.
-exportar_paginas() {
+exportar_base() {
     command -v npm >/dev/null 2>&1 || morir "Hace falta Node/npm: este comando se corre en el equipo de desarrollo."
     [ -f 4000-api-backend/.env ] || morir "No existe 4000-api-backend/.env: sin el no hay a que base conectarse."
-    npm --prefix 4000-api-backend run paginas:volcar -- "$@"
+    npm --prefix 4000-api-backend run base:volcar -- "$@"
+    local archivo
+    archivo=$(archivo_de_base)
     echo ""
-    verde "Volcado listo en $ARCHIVO_DE_PAGINAS"
-    echo "Siguiente paso: git add $ARCHIVO_DE_PAGINAS && git commit && git push"
-    echo "Y en el servidor:  git pull  y  ./docker/deploy.sh importar-paginas --desde-archivo"
+    verde "Copia lista en $archivo"
+    echo "Siguiente paso: git add $archivo && git commit && git push"
+    echo "(Si habia otra copia de otro dia, ya se borro: git add -A 4000-api-backend/seed deja el cambio completo.)"
+    echo "Y en el servidor:  git pull  y  ./docker/deploy.sh sembrar"
 }
 
 backup() {
@@ -960,10 +954,10 @@ case "${1:-help}" in
     status)  status ;;
     build)   build ;;
     migrar)  migrar ;;
-    sembrar) sembrar ;;
+    sembrar) shift; sembrar "$@" ;;
     importar) importar ;;
     importar-paginas) shift; importar_paginas "$@" ;;
-    exportar-paginas) shift; exportar_paginas "$@" ;;
+    exportar-base) shift; exportar_base "$@" ;;
     crear-admin) crear_admin ;;
     retirar-rol) shift; retirar_rol "$@" ;;
     backup)  backup ;;

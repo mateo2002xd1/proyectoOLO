@@ -58,8 +58,8 @@
     "carreras:cargas": "ts-node scripts/verificaciones/probar-carreras-cargas.ts",
     "carreras:cola": "ts-node scripts/verificaciones/probar-carreras-cola.ts",
     "carreras:http": "ts-node scripts/verificaciones/probar-carreras-http.ts",
-    "seed:generar": "ts-node scripts/semillas/generar-seed-contenido.ts",
-    "paginas:volcar": "ts-node scripts/semillas/volcar-paginas.ts",
+    "base:volcar": "ts-node scripts/semillas/volcar-base-datos.ts",
+    "base:verificar": "ts-node scripts/verificaciones/verificar-copia-de-base.ts",
     "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts",
     "roles:retirar": "ts-node scripts/db/retirar-rol.ts",
     "contenido:revisar": "ts-node scripts/puntuales/revisar-contenido-guardado.ts"
